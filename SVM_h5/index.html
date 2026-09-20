@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVM 支持向量机 — 交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #161822;
+    --surface2: #1d1f2e;
+    --text: #e1e4ed;
+    --text2: #8b8fa8;
+    --accent: #818cf8;
+    --blue: #4ea8f6;
+    --red: #e94560;
+    --gold: #f0c040;
+    --green: #4ade80;
+    --orange: #f59342;
+    --border: #252840;
+    --radius: 14px;
+    --class1: #4ea8f6;
+    --class2: #e94560;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #161822 0%, #1a1040 40%, #162238 70%, #161822 100%);
+    border-bottom: 2px solid var(--border);
+    padding: 28px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(129,140,248,0.06) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(240,192,64,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 29px;
+    background: linear-gradient(135deg, var(--accent), var(--blue), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .header p { color: var(--text2); font-size: 17px; position: relative; }
+
+  /* Main */
+  .main {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Section */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+  }
+  .section h2 {
+    font-size: 22px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot.blue { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+  .dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .dot.gold { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.purple { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 17px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* Canvas layout */
+  .viz-row {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1000px) { .viz-row { grid-template-columns: 1fr; } }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 4px; }
+  .control-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .control-group label .val {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 42px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(129,140,248,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(129,140,248,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(129,140,248,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(129,140,248,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn:hover { border-color: var(--accent); background: #252840; }
+  .btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Formula */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 16px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.12em; }
+
+  /* Info cards */
+  .info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .info-card .val {
+    font-size: 24px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .info-card .label { font-size: 16px; color: var(--text2); margin-top: 2px; }
+
+  /* Insight */
+  .insight {
+    background: linear-gradient(135deg, #1a1a30, #1a2030);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 16px;
+    color: #c8ccd8;
+    line-height: 1.8;
+  }
+  .insight strong { color: var(--gold); }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .swatch.cls1 { background: var(--class1); }
+  .swatch.cls2 { background: var(--class2); }
+  .swatch.sv { background: none; border: 3px solid var(--gold); width: 18px; height: 18px; }
+  .swatch.boundary { background: #fff; width: 14px; height: 3px; border-radius: 1px; }
+  .swatch.margin { background: none; border-top: 2px dashed rgba(255,255,255,0.4); width: 14px; height: 0; }
+
+  /* Hinge loss plot area */
+  .loss-legend { display: flex; gap: 16px; margin-bottom: 8px; font-size: 16px; }
+  .loss-legend span { display: flex; align-items: center; gap: 6px; }
+  .loss-legend .line { width: 20px; height: 3px; border-radius: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎯 SVM 支持向量机 — 交互式可视化</h1>
+  <p>最大间隔 · 软间隔 · 核方法 · Hinge Loss — 从几何直觉到数学公式</p>
+</div>
+
+<div class="main">
+
+  <!-- ═══ Section 1: Maximum Margin ═══ -->
+  <div class="section" id="sec-maxmargin">
+    <h2><span class="dot blue"></span> 1. 最大间隔分类器（Hard Margin）</h2>
+    <p class="desc">
+      SVM 的核心思想：在所有能正确分类的超平面中，找到使<b>间隔（margin）最大化</b>的那一个。
+      离决策边界最近的点称为<b>支持向量</b>（Support Vectors），它们定义了间隔的宽度。拖拽数据点观察边界如何变化。
+    </p>
+
+    <div class="formula-block">
+      <h3>📐 硬间隔 SVM 原始问题（Primal）</h3>
+      <div id="formula-hard-primal"></div>
+    </div>
+
+    <div class="viz-row">
+      <div>
+        <div class="legend">
+          <span><span class="swatch cls1"></span> 正类 (+1)</span>
+          <span><span class="swatch cls2"></span> 负类 (−1)</span>
+          <span><span class="swatch sv"></span> 支持向量</span>
+          <span><span class="swatch boundary"></span> 决策边界</span>
+          <span><span class="swatch margin"></span> 间隔边界</span>
+        </div>
+        <canvas id="canvas-hard" width="700" height="420"></canvas>
+      </div>
+      <div class="controls">
+        <div class="info-cards">
+          <div class="info-card"><div class="val" id="hard-margin-width">—</div><div class="label">间隔宽度 2/‖w‖</div></div>
+          <div class="info-card"><div class="val" id="hard-nsv">—</div><div class="label">支持向量数</div></div>
+          <div class="info-card"><div class="val" id="hard-wnorm">—</div><div class="label">‖w‖</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="resetHardMargin()">🔄 重置数据</button>
+          <button class="btn" onclick="addNoiseHard()">🎲 随机扰动</button>
+        </div>
+        <div class="insight" style="margin-top:0;">
+          💡 <strong>直觉：</strong>最大化间隔 = 让分类器对数据扰动最不敏感。支持向量是训练集的「稀疏」表示——只有它们决定边界位置。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Section 2: Soft Margin SVM ═══ -->
+  <div class="section" id="sec-softmargin">
+    <h2><span class="dot red"></span> 2. 软间隔 SVM（Soft Margin）与参数 C</h2>
+    <p class="desc">
+      现实数据往往不可完美线性分离。软间隔 SVM 引入<b>松弛变量 ξᵢ</b>，允许部分点违反间隔约束。
+      正则化参数 <b>C</b> 控制间隔宽度与误分类容忍度之间的权衡。
+    </p>
+
+    <div class="formula-block">
+      <h3>📐 软间隔 SVM 原始问题</h3>
+      <div id="formula-soft-primal"></div>
+    </div>
+
+    <div class="viz-row">
+      <div>
+        <div class="legend">
+          <span><span class="swatch cls1"></span> 正类</span>
+          <span><span class="swatch cls2"></span> 负类</span>
+          <span><span class="swatch sv"></span> 支持向量</span>
+          <span style="color:var(--orange);">⚠ 误分类点</span>
+        </div>
+        <canvas id="canvas-soft" width="700" height="420"></canvas>
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>C = <span class="val" id="soft-c-val">1.00</span></label>
+          <input type="range" id="soft-c-slider" min="0.05" max="10" step="0.05" value="1">
+        </div>
+        <div class="info-cards">
+          <div class="info-card"><div class="val" id="soft-margin">—</div><div class="label">间隔宽度</div></div>
+          <div class="info-card"><div class="val" id="soft-nsv">—</div><div class="label">支持向量</div></div>
+          <div class="info-card"><div class="val" id="soft-violations">—</div><div class="label">违反间隔的点</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="resetSoftMargin()">🔄 重置</button>
+          <button class="btn" onclick="toggleOutlierSoft()">🎯 添加/移除离群点</button>
+        </div>
+        <div class="insight" style="margin-top:0;">
+          💡 <strong>直觉：</strong>C 大 → 更关注正确分类 → 窄间隔、少误分类。C 小 → 更关注宽间隔 → 允许更多误分类。C 控制偏差-方差权衡。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Section 3: Kernel SVM ═══ -->
+  <div class="section" id="sec-kernel">
+    <h2><span class="dot gold"></span> 3. 核方法（Kernel Trick）</h2>
+    <p class="desc">
+      线性 SVM 无法处理非线性可分数据。<b>核技巧</b>将数据隐式映射到高维空间，在高维空间中找到线性决策边界，
+      在原空间中表现为非线性边界。<b>RBF 核</b> K(x, x′) = exp(−γ‖x − x′‖²) 是最常用的核函数之一。
+    </p>
+
+    <div class="formula-block">
+      <h3>📐 核技巧与 RBF 核</h3>
+      <div id="formula-kernel"></div>
+    </div>
+
+    <div class="viz-row">
+      <div>
+        <div class="legend">
+          <span><span class="swatch cls1"></span> 正类</span>
+          <span><span class="swatch cls2"></span> 负类</span>
+          <span><span class="swatch sv"></span> 支持向量</span>
+        </div>
+        <canvas id="canvas-kernel" width="700" height="420"></canvas>
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>γ (gamma) = <span class="val" id="kernel-gamma-val">5.00</span></label>
+          <input type="range" id="kernel-gamma-slider" min="0.5" max="50" step="0.5" value="5">
+        </div>
+        <div class="control-group">
+          <label>C = <span class="val" id="kernel-c-val">10.00</span></label>
+          <input type="range" id="kernel-c-slider" min="0.5" max="50" step="0.5" value="10">
+        </div>
+        <div class="info-cards">
+          <div class="info-card"><div class="val" id="kernel-nsv">—</div><div class="label">支持向量数</div></div>
+          <div class="info-card"><div class="val" id="kernel-accuracy">—</div><div class="label">训练准确率</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="resetKernel()">🔄 重置</button>
+          <button class="btn" onclick="cycleKernelData()">🔀 切换数据集</button>
+        </div>
+        <div class="insight" style="margin-top:0;">
+          💡 <strong>直觉：</strong>γ 控制每个支持向量的影响范围。γ 大 → 边界更复杂、更贴合训练数据（可能过拟合）。γ 小 → 边界更平滑（可能欠拟合）。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Section 4: Hinge Loss ═══ -->
+  <div class="section" id="sec-hinge">
+    <h2><span class="dot green"></span> 4. Hinge Loss 与分类损失对比</h2>
+    <p class="desc">
+      SVM 的损失函数是 <b>Hinge Loss</b>：L(y, f(x)) = max(0, 1 − y·f(x))。当样本被正确分类且离边界足够远（margin ≥ 1）时损失为 0。
+      与其他分类损失（Logistic Loss、0-1 Loss）相比，Hinge Loss 具有稀疏性——多数正确分类的样本不贡献梯度。
+    </p>
+
+    <div class="formula-block">
+      <h3>📐 三种分类损失函数对比</h3>
+      <div id="formula-losses"></div>
+    </div>
+
+    <div class="viz-row">
+      <div>
+        <div class="loss-legend">
+          <span><span class="line" style="background:var(--gold);"></span> Hinge Loss</span>
+          <span><span class="line" style="background:var(--blue);"></span> Logistic Loss</span>
+          <span><span class="line" style="background:var(--red);"></span> 0-1 Loss</span>
+        </div>
+        <canvas id="canvas-loss" width="700" height="380"></canvas>
+      </div>
+      <div>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="val" id="loss-hinge-val">0.00</div>
+            <div class="label">Hinge Loss</div>
+          </div>
+          <div class="info-card">
+            <div class="val" id="loss-logistic-val">0.69</div>
+            <div class="label">Logistic Loss</div>
+          </div>
+          <div class="info-card">
+            <div class="val" id="loss-01-val">0</div>
+            <div class="label">0-1 Loss</div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>当前 margin: y·f(x) = <span class="val" id="loss-margin-val">1.50</span></label>
+          <input type="range" id="loss-margin-slider" min="-2.5" max="3" step="0.01" value="1.5">
+        </div>
+        <div class="insight" style="margin-top:12px;">
+          💡 <strong>关键区别：</strong>Hinge Loss 在 margin ≥ 1 后直接截断为 0 → 产生稀疏解。Logistic Loss 永远非零 → 所有点都影响梯度。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Section 5: Interactive Playground ═══ -->
+  <div class="section" id="sec-playground">
+    <h2><span class="dot purple"></span> 5. 自由实验台</h2>
+    <p class="desc">
+      自由添加和拖拽数据点，实时观察 SVM 决策边界的变化。切换核函数、调节参数，直观理解 SVM 的工作原理。
+    </p>
+
+    <div class="viz-row">
+      <div>
+        <div class="legend">
+          <span><span class="swatch cls1"></span> 正类 (+1)</span>
+          <span><span class="swatch cls2"></span> 负类 (−1)</span>
+          <span><span class="swatch sv"></span> 支持向量</span>
+        </div>
+        <canvas id="canvas-play" width="700" height="450"></canvas>
+      </div>
+      <div class="controls">
+        <div class="btn-row">
+          <button class="btn active" id="btn-add-pos" onclick="setPlayClass(1)">✚ 添加正类</button>
+          <button class="btn" id="btn-add-neg" onclick="setPlayClass(-1)">✚ 添加负类</button>
+        </div>
+        <div class="control-group">
+          <label>核函数</label>
+          <div class="btn-row">
+            <button class="btn active" id="btn-kern-linear" onclick="setPlayKernel('linear')">Linear</button>
+            <button class="btn" id="btn-kern-rbf" onclick="setPlayKernel('rbf')">RBF</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>C = <span class="val" id="play-c-val">1.00</span></label>
+          <input type="range" id="play-c-slider" min="0.1" max="20" step="0.1" value="1">
+        </div>
+        <div class="control-group" id="play-gamma-group" style="display:none;">
+          <label>γ = <span class="val" id="play-gamma-val">5.00</span></label>
+          <input type="range" id="play-gamma-slider" min="0.5" max="30" step="0.5" value="5">
+        </div>
+        <div class="info-cards">
+          <div class="info-card"><div class="val" id="play-nsv">—</div><div class="label">支持向量</div></div>
+          <div class="info-card"><div class="val" id="play-accuracy">—</div><div class="label">准确率</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="resetPlayground()">🔄 清空重置</button>
+          <button class="btn" onclick="loadPlayData('linear')">📦 线性数据</button>
+          <button class="btn" onclick="loadPlayData('circle')">⭕ 环形数据</button>
+          <button class="btn" onclick="loadPlayData('xor')">✖️ XOR数据</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// SVM Implementation
+// ═══════════════════════════════════════════
+
+function dot(a, b) { return a[0]*b[0] + a[1]*b[1]; }
+
+// Linear SVM: Primal Subgradient Descent (Pegasos-style)
+function trainLinearSVM(points, C, lr, iters) {
+  let w = [0, 0], b = 0;
+  for (let t = 0; t < iters; t++) {
+    const eta = lr / (1 + t * 0.002);
+    let dw = [w[0], w[1]], db = 0;
+    for (const p of points) {
+      const m = p.label * (w[0] * p.x + w[1] * p.y + b);
+      if (m < 1) {
+        dw[0] -= C * p.label * p.x;
+        dw[1] -= C * p.label * p.y;
+        db -= C * p.label;
+      }
+    }
+    w[0] -= eta * dw[0];
+    w[1] -= eta * dw[1];
+    b -= eta * db;
+  }
+  const wNorm = Math.sqrt(w[0]*w[0] + w[1]*w[1]);
+  return { w, b, wNorm, margin: wNorm > 0 ? 2 / wNorm : 0 };
+}
+
+// RBF Kernel
+function rbfKernel(a, b, gamma) {
+  const d2 = (a[0]-b[0])**2 + (a[1]-b[1])**2;
+  return Math.exp(-gamma * d2);
+}
+
+function linearKernel(a, b) { return a[0]*b[0] + a[1]*b[1]; }
+
+// Kernel SVM: Dual Gradient Ascent
+function trainKernelSVM(points, C, gamma, kernelFn, lr, iters) {
+  const n = points.length;
+  const X = points.map(p => [p.x, p.y]);
+  const y = points.map(p => p.label);
+
+  // Precompute kernel matrix
+  const K = [];
+  for (let i = 0; i < n; i++) {
+    K[i] = [];
+    for (let j = 0; j <= i; j++) {
+      const kv = kernelFn(X[i], X[j], gamma);
+      K[i][j] = kv;
+    }
+  }
+  // Fill symmetric
+  for (let i = 0; i < n; i++)
+    for (let j = i+1; j < n; j++)
+      K[i][j] = K[j][i];
+
+  let alpha = new Array(n).fill(0);
+
+  for (let t = 0; t < iters; t++) {
+    const eta = lr / Math.sqrt(t + 1);
+    for (let i = 0; i < n; i++) {
+      let s = 0;
+      for (let j = 0; j < n; j++) {
+        s += alpha[j] * y[i] * y[j] * K[i][j];
+      }
+      const grad = 1 - s;
+      alpha[i] += eta * grad;
+      if (alpha[i] < 0) alpha[i] = 0;
+      if (alpha[i] > C) alpha[i] = C;
+    }
+  }
+
+  // Compute b from free support vectors
+  let bSum = 0, bCount = 0;
+  const eps = 1e-4;
+  for (let i = 0; i < n; i++) {
+    if (alpha[i] > eps && alpha[i] < C - eps) {
+      let s = 0;
+      for (let j = 0; j < n; j++) s += alpha[j] * y[j] * K[i][j];
+      bSum += y[i] - s;
+      bCount++;
+    }
+  }
+  const b = bCount > 0 ? bSum / bCount : 0;
+
+  return { alpha, b };
+}
+
+function kernelPredict(pos, points, model, gamma, kernelFn) {
+  let f = model.b;
+  for (let i = 0; i < points.length; i++) {
+    if (model.alpha[i] < 1e-5) continue;
+    f += model.alpha[i] * points[i].label * kernelFn([points[i].x, points[i].y], pos, gamma);
+  }
+  return f;
+}
+
+// ═══════════════════════════════════════════
+// Canvas Utilities
+// ═══════════════════════════════════════════
+
+function getCanvasCtx(id) {
+  const c = document.getElementById(id);
+  return { canvas: c, ctx: c.getContext('2d'), w: c.width, h: c.height };
+}
+
+function clearCanvas(ctx, w, h) {
+  ctx.clearRect(0, 0, w, h);
+}
+
+// Transform between data coords [0,1]^2 and canvas pixels
+function makeTx(cw, ch, pad) {
+  return {
+    toPX: (x, y) => [pad + x * (cw - 2*pad), pad + y * (ch - 2*pad)],
+    toData: (px, py) => [(px - pad) / (cw - 2*pad), (py - pad) / (ch - 2*pad)],
+    scale: cw - 2*pad
+  };
+}
+
+// Draw data points
+function drawPoints(ctx, points, model, tx, opts) {
+  const { showSV, svThreshold } = opts || {};
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    const [cx, cy] = tx.toPX(p.x, p.y);
+    const isSV = showSV && model && isSupportVector(model, i, svThreshold || 1e-4);
+
+    // Fill
+    ctx.beginPath();
+    ctx.arc(cx, cy, isSV ? 13 : 10, 0, Math.PI * 2);
+    ctx.fillStyle = p.label > 0 ? 'rgba(78,168,246,0.35)' : 'rgba(233,69,96,0.35)';
+    ctx.fill();
+
+    // Stroke
+    ctx.strokeStyle = isSV ? '#f0c040' : (p.label > 0 ? '#4ea8f6' : '#e94560');
+    ctx.lineWidth = isSV ? 3.5 : 2.5;
+    ctx.stroke();
+
+    // SV glow
+    if (isSV) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(240,192,64,0.3)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+  }
+}
+
+function isSupportVector(model, i, threshold) {
+  if (model.alpha) return model.alpha[i] > threshold;
+  // For primal model, check margin violation
+  if (model.w) {
+    const p = model.points[i];
+    const m = p.label * (model.w[0]*p.x + model.w[1]*p.y + model.b);
+    return m <= 1.01;
+  }
+  return false;
+}
+
+// Draw linear decision boundary and margins
+function drawLinearBoundary(ctx, w, b, tx, cw, ch) {
+  const wNorm = Math.sqrt(w[0]*w[0] + w[1]*w[1]);
+  if (wNorm < 1e-6) return;
+
+  const offsets = [0, -1, 1]; // boundary, margin-, margin+
+  const styles = [
+    { color: '#ffffff', width: 2.5, dash: [] },
+    { color: 'rgba(255,255,255,0.25)', width: 1.5, dash: [8, 6] },
+    { color: 'rgba(255,255,255,0.25)', width: 1.5, dash: [8, 6] },
+  ];
+
+  for (let k = 0; k < 3; k++) {
+    const offset = offsets[k];
+    const bb = b + offset; // w·x + bb = 0
+
+    // Find intersections with canvas edges
+    const pts = [];
+    // Top edge: y = 0 → find data y from pad
+    const pad = 50; // approximate
+    const topDataY = 0, bottomDataY = 1, leftDataX = 0, rightDataX = 1;
+
+    // Solve w[0]*x + w[1]*y + bb = 0 for x or y at each edge
+    // y = 0: x = -bb / w[0]
+    if (Math.abs(w[0]) > 1e-6) {
+      const x0 = -bb / w[0];
+      if (x0 >= 0 && x0 <= 1) pts.push([x0, 0]);
+      const x1 = -(bb + w[1]*1) / w[0];
+      if (x1 >= 0 && x1 <= 1) pts.push([x1, 1]);
+    }
+    if (Math.abs(w[1]) > 1e-6) {
+      const y0 = -bb / w[1];
+      if (y0 >= 0 && y0 <= 1) pts.push([0, y0]);
+      const y1 = -(bb + w[0]*1) / w[1];
+      if (y1 >= 0 && y1 <= 1) pts.push([1, y1]);
+    }
+
+    if (pts.length >= 2) {
+      const [px1, py1] = tx.toPX(pts[0][0], pts[0][1]);
+      const [px2, py2] = tx.toPX(pts[1][0], pts[1][1]);
+
+      ctx.beginPath();
+      ctx.setLineDash(styles[k].dash);
+      ctx.moveTo(px1, py1);
+      ctx.lineTo(px2, py2);
+      ctx.strokeStyle = styles[k].color;
+      ctx.lineWidth = styles[k].width;
+      ctx.stroke();
+    }
+  }
+  ctx.setLineDash([]);
+}
+
+// Draw kernel decision boundary as heatmap
+function drawKernelHeatmap(ctx, cw, ch, points, model, gamma, kernelFn, tx) {
+  const imageData = ctx.createImageData(cw, ch);
+  const data = imageData.data;
+
+  for (let py = 0; py < ch; py++) {
+    for (let px = 0; px < cw; px++) {
+      const [dx, dy] = tx.toData(px, py);
+      const f = kernelPredict([dx, dy], points, model, gamma, kernelFn);
+      const intensity = Math.tanh(Math.abs(f) * 2);
+      const idx = (py * cw + px) * 4;
+
+      if (f > 0) {
+        // Blue region (class +1)
+        data[idx] = Math.floor(30 + 48 * intensity);
+        data[idx+1] = Math.floor(60 + 108 * intensity);
+        data[idx+2] = Math.floor(80 + 166 * intensity);
+      } else {
+        // Red region (class -1)
+        data[idx] = Math.floor(80 + 153 * intensity);
+        data[idx+1] = Math.floor(30 + 39 * intensity);
+        data[idx+2] = Math.floor(40 + 56 * intensity);
+      }
+      data[idx+3] = 255;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  // Draw contour at f=0
+  const step = 4;
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth = 2;
+  let started = false;
+
+  for (let py = 0; py < ch - step; py += step) {
+    for (let px = 0; px < cw - step; px += step) {
+      const [dx, dy] = tx.toData(px, py);
+      const f00 = kernelPredict([dx, dy], points, model, gamma, kernelFn);
+
+      const [dx2, dy2] = tx.toData(px + step, py + step);
+      const f11 = kernelPredict([dx2, dy2], points, model, gamma, kernelFn);
+
+      // Check if boundary crosses this cell
+      if ((f00 > 0) !== (f11 > 0)) {
+        // Draw small segment
+        const midX = px + step/2, midY = py + step/2;
+        if (!started) { ctx.moveTo(midX, midY); started = true; }
+        else { ctx.lineTo(midX, midY); }
+      }
+    }
+  }
+  ctx.stroke();
+}
+
+// ═══════════════════════════════════════════
+// Section 1: Hard Margin (Linear Separable)
+// ═══════════════════════════════════════════
+
+const hardPoints = [
+  {x:0.15,y:0.30,label:1}, {x:0.20,y:0.55,label:1}, {x:0.25,y:0.20,label:1},
+  {x:0.35,y:0.40,label:1}, {x:0.40,y:0.15,label:1}, {x:0.45,y:0.50,label:1},
+  {x:0.50,y:0.30,label:1},
+  {x:0.55,y:0.70,label:-1}, {x:0.60,y:0.45,label:-1}, {x:0.65,y:0.80,label:-1},
+  {x:0.70,y:0.55,label:-1}, {x:0.75,y:0.35,label:-1}, {x:0.80,y:0.70,label:-1},
+  {x:0.85,y:0.50,label:-1},
+];
+
+let hardDragging = -1;
+
+function getHardModel() {
+  return trainLinearSVM(hardPoints, 100, 0.01, 800);
+}
+
+function drawHard() {
+  const { canvas, ctx, w, h } = getCanvasCtx('canvas-hard');
+  const tx = makeTx(w, h, 55);
+  clearCanvas(ctx, w, h);
+
+  const model = getHardModel();
+  model.points = hardPoints;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 10; i++) {
+    const pos = 55 + i * (w - 110) / 10;
+    ctx.beginPath(); ctx.moveTo(pos, 55); ctx.lineTo(pos, h-55); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(55, pos); ctx.lineTo(w-55, pos); ctx.stroke();
+  }
+
+  drawLinearBoundary(ctx, model.w, model.b, tx, w, h);
+  drawPoints(ctx, hardPoints, model, tx, { showSV: true, svThreshold: 0 });
+
+  // Update info
+  const nsv = hardPoints.filter((p, i) => isSupportVector(model, i, 0)).length;
+  document.getElementById('hard-margin-width').textContent = model.margin.toFixed(3);
+  document.getElementById('hard-nsv').textContent = nsv;
+  document.getElementById('hard-wnorm').textContent = model.wNorm.toFixed(3);
+}
+
+function resetHardMargin() {
+  hardPoints.length = 0;
+  hardPoints.push(
+    {x:0.15,y:0.30,label:1},{x:0.20,y:0.55,label:1},{x:0.25,y:0.20,label:1},
+    {x:0.35,y:0.40,label:1},{x:0.40,y:0.15,label:1},{x:0.45,y:0.50,label:1},
+    {x:0.50,y:0.30,label:1},
+    {x:0.55,y:0.70,label:-1},{x:0.60,y:0.45,label:-1},{x:0.65,y:0.80,label:-1},
+    {x:0.70,y:0.55,label:-1},{x:0.75,y:0.35,label:-1},{x:0.80,y:0.70,label:-1},
+    {x:0.85,y:0.50,label:-1}
+  );
+  drawHard();
+}
+
+function addNoiseHard() {
+  for (const p of hardPoints) {
+    p.x += (Math.random() - 0.5) * 0.06;
+    p.y += (Math.random() - 0.5) * 0.06;
+    p.x = Math.max(0.02, Math.min(0.98, p.x));
+    p.y = Math.max(0.02, Math.min(0.98, p.y));
+  }
+  drawHard();
+}
+
+// Canvas interaction for hard margin
+(function() {
+  const { canvas, w, h } = getCanvasCtx('canvas-hard');
+  const tx = makeTx(w, h, 55);
+
+  canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+
+    hardDragging = -1;
+    let minDist = 0.05;
+    for (let i = hardPoints.length - 1; i >= 0; i--) {
+      const dist = Math.hypot(hardPoints[i].x - dx, hardPoints[i].y - dy);
+      if (dist < minDist) { minDist = dist; hardDragging = i; }
+    }
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (hardDragging < 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    hardPoints[hardDragging].x = Math.max(0.02, Math.min(0.98, dx));
+    hardPoints[hardDragging].y = Math.max(0.02, Math.min(0.98, dy));
+    drawHard();
+  });
+
+  canvas.addEventListener('mouseup', () => { hardDragging = -1; });
+  canvas.addEventListener('mouseleave', () => { hardDragging = -1; });
+
+  // Touch
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.touches[0].clientX - rect.left) * sx;
+    const my = (e.touches[0].clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    hardDragging = -1;
+    let minDist = 0.06;
+    for (let i = hardPoints.length - 1; i >= 0; i--) {
+      const dist = Math.hypot(hardPoints[i].x - dx, hardPoints[i].y - dy);
+      if (dist < minDist) { minDist = dist; hardDragging = i; }
+    }
+  }, {passive: false});
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (hardDragging < 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.touches[0].clientX - rect.left) * sx;
+    const my = (e.touches[0].clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    hardPoints[hardDragging].x = Math.max(0.02, Math.min(0.98, dx));
+    hardPoints[hardDragging].y = Math.max(0.02, Math.min(0.98, dy));
+    drawHard();
+  }, {passive: false});
+  canvas.addEventListener('touchend', () => { hardDragging = -1; });
+})();
+
+// ═══════════════════════════════════════════
+// Section 2: Soft Margin SVM
+// ═══════════════════════════════════════════
+
+const softPoints = [
+  {x:0.12,y:0.25,label:1},{x:0.18,y:0.50,label:1},{x:0.22,y:0.18,label:1},
+  {x:0.30,y:0.38,label:1},{x:0.38,y:0.15,label:1},{x:0.42,y:0.48,label:1},
+  {x:0.48,y:0.28,label:1},
+  {x:0.45,y:0.70,label:-1},{x:0.55,y:0.45,label:-1},{x:0.60,y:0.78,label:-1},
+  {x:0.68,y:0.55,label:-1},{x:0.72,y:0.35,label:-1},{x:0.78,y:0.68,label:-1},
+  {x:0.82,y:0.48,label:-1},
+  // Outlier
+  {x:0.50,y:0.82,label:1,outlier:true},
+];
+let softOutlierOn = true;
+let softDragging = -1;
+
+function getSoftModel() {
+  const C = parseFloat(document.getElementById('soft-c-slider').value);
+  return trainLinearSVM(softPoints, C, 0.01, 600);
+}
+
+function drawSoft() {
+  const { canvas, ctx, w, h } = getCanvasCtx('canvas-soft');
+  const tx = makeTx(w, h, 55);
+  clearCanvas(ctx, w, h);
+
+  const C = parseFloat(document.getElementById('soft-c-slider').value);
+  document.getElementById('soft-c-val').textContent = C.toFixed(2);
+
+  const model = getSoftModel();
+  model.points = softPoints;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 10; i++) {
+    const pos = 55 + i * (w - 110) / 10;
+    ctx.beginPath(); ctx.moveTo(pos, 55); ctx.lineTo(pos, h-55); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(55, pos); ctx.lineTo(w-55, pos); ctx.stroke();
+  }
+
+  drawLinearBoundary(ctx, model.w, model.b, tx, w, h);
+  drawPoints(ctx, softPoints, model, tx, { showSV: true, svThreshold: 0 });
+
+  // Mark misclassified points
+  for (const p of softPoints) {
+    const pred = model.w[0]*p.x + model.w[1]*p.y + model.b;
+    if (p.label * pred < 0) {
+      const [cx, cy] = tx.toPX(p.x, p.y);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 17, 0, Math.PI*2);
+      ctx.strokeStyle = '#f59342';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([4,3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  const nsv = softPoints.filter((p, i) => isSupportVector(model, i, 0)).length;
+  let violations = 0;
+  for (const p of softPoints) {
+    if (p.label * (model.w[0]*p.x + model.w[1]*p.y + model.b) < 1) violations++;
+  }
+  document.getElementById('soft-margin').textContent = model.margin.toFixed(3);
+  document.getElementById('soft-nsv').textContent = nsv;
+  document.getElementById('soft-violations').textContent = violations;
+}
+
+function resetSoftMargin() {
+  softPoints.length = 0;
+  softPoints.push(
+    {x:0.12,y:0.25,label:1},{x:0.18,y:0.50,label:1},{x:0.22,y:0.18,label:1},
+    {x:0.30,y:0.38,label:1},{x:0.38,y:0.15,label:1},{x:0.42,y:0.48,label:1},
+    {x:0.48,y:0.28,label:1},
+    {x:0.45,y:0.70,label:-1},{x:0.55,y:0.45,label:-1},{x:0.60,y:0.78,label:-1},
+    {x:0.68,y:0.55,label:-1},{x:0.72,y:0.35,label:-1},{x:0.78,y:0.68,label:-1},
+    {x:0.82,y:0.48,label:-1},
+    {x:0.50,y:0.82,label:1,outlier:true}
+  );
+  softOutlierOn = true;
+  drawSoft();
+}
+
+function toggleOutlierSoft() {
+  if (softOutlierOn) {
+    // Remove outlier
+    const idx = softPoints.findIndex(p => p.outlier);
+    if (idx >= 0) softPoints.splice(idx, 1);
+  } else {
+    softPoints.push({x:0.50,y:0.82,label:1,outlier:true});
+  }
+  softOutlierOn = !softOutlierOn;
+  drawSoft();
+}
+
+document.getElementById('soft-c-slider').addEventListener('input', drawSoft);
+
+// Soft canvas interaction
+(function() {
+  const { canvas, w, h } = getCanvasCtx('canvas-soft');
+  const tx = makeTx(w, h, 55);
+
+  canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    softDragging = -1;
+    let minDist = 0.05;
+    for (let i = softPoints.length - 1; i >= 0; i--) {
+      const dist = Math.hypot(softPoints[i].x - dx, softPoints[i].y - dy);
+      if (dist < minDist) { minDist = dist; softDragging = i; }
+    }
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (softDragging < 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    softPoints[softDragging].x = Math.max(0.02, Math.min(0.98, dx));
+    softPoints[softDragging].y = Math.max(0.02, Math.min(0.98, dy));
+    drawSoft();
+  });
+  canvas.addEventListener('mouseup', () => { softDragging = -1; });
+  canvas.addEventListener('mouseleave', () => { softDragging = -1; });
+})();
+
+// ═══════════════════════════════════════════
+// Section 3: Kernel SVM
+// ═══════════════════════════════════════════
+
+let kernelDataIdx = 0;
+const kernelDatasets = [
+  // Circle dataset
+  (() => {
+    const pts = [];
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI * 2;
+      const r = 0.20 + Math.random() * 0.06;
+      pts.push({x: 0.5 + r*Math.cos(angle), y: 0.5 + r*Math.sin(angle), label: 1});
+    }
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI * 2 + 0.1;
+      const r = 0.35 + Math.random() * 0.08;
+      pts.push({x: 0.5 + r*Math.cos(angle), y: 0.5 + r*Math.sin(angle), label: -1});
+    }
+    return pts;
+  })(),
+  // XOR dataset
+  (() => {
+    const pts = [];
+    const centers = [[0.3,0.3,1],[0.7,0.7,1],[0.3,0.7,-1],[0.7,0.3,-1]];
+    for (const [cx, cy, l] of centers) {
+      for (let i = 0; i < 6; i++) {
+        pts.push({x: cx + (Math.random()-0.5)*0.12, y: cy + (Math.random()-0.5)*0.12, label: l});
+      }
+    }
+    return pts;
+  })(),
+  // Moon dataset
+  (() => {
+    const pts = [];
+    for (let i = 0; i < 14; i++) {
+      const t = (i / 13) * Math.PI;
+      pts.push({x: 0.3 + t/Math.PI*0.35 + Math.random()*0.04, y: 0.65 - Math.sin(t)*0.25 + Math.random()*0.04, label: 1});
+    }
+    for (let i = 0; i < 14; i++) {
+      const t = (i / 13) * Math.PI;
+      pts.push({x: 0.65 - t/Math.PI*0.35 + Math.random()*0.04, y: 0.25 + Math.sin(t)*0.25 + Math.random()*0.04, label: -1});
+    }
+    return pts;
+  })(),
+];
+
+let kernelPoints = JSON.parse(JSON.stringify(kernelDatasets[0]));
+let kernelDragging = -1;
+
+function getKernelModel() {
+  const gamma = parseFloat(document.getElementById('kernel-gamma-slider').value);
+  const C = parseFloat(document.getElementById('kernel-c-slider').value);
+  return trainKernelSVM(kernelPoints, C, gamma, rbfKernel, 0.05, 500);
+}
+
+function drawKernel() {
+  const { canvas, ctx, w, h } = getCanvasCtx('canvas-kernel');
+  const tx = makeTx(w, h, 55);
+  clearCanvas(ctx, w, h);
+
+  const gamma = parseFloat(document.getElementById('kernel-gamma-slider').value);
+  const C = parseFloat(document.getElementById('kernel-c-slider').value);
+  document.getElementById('kernel-gamma-val').textContent = gamma.toFixed(1);
+  document.getElementById('kernel-c-val').textContent = C.toFixed(1);
+
+  const model = getKernelModel();
+
+  // Draw decision region via sparse sampling (every 3px for efficiency)
+  const imageData = ctx.createImageData(w, h);
+  const idata = imageData.data;
+  for (let py = 0; py < h; py++) {
+    for (let px = 0; px < w; px++) {
+      const [dx, dy] = tx.toData(px, py);
+      const f = kernelPredict([dx, dy], kernelPoints, model, gamma, rbfKernel);
+      const intensity = Math.tanh(Math.abs(f) * 2.5);
+      const idx = (py * w + px) * 4;
+      if (f > 0) {
+        idata[idx] = Math.floor(18 + 52 * intensity);
+        idata[idx+1] = Math.floor(45 + 123 * intensity);
+        idata[idx+2] = Math.floor(70 + 185 * intensity);
+      } else {
+        idata[idx] = Math.floor(90 + 143 * intensity);
+        idata[idx+1] = Math.floor(20 + 49 * intensity);
+        idata[idx+2] = Math.floor(35 + 61 * intensity);
+      }
+      idata[idx+3] = 255;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  // Draw contour
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.lineWidth = 2;
+  const step = 5;
+  for (let py = 0; py < h - step; py += step) {
+    for (let px = 0; px < w - step; px += step) {
+      const [d00x, d00y] = tx.toData(px, py);
+      const [d11x, d11y] = tx.toData(px + step, py + step);
+      const f00 = kernelPredict([d00x, d00y], kernelPoints, model, gamma, rbfKernel);
+      const f11 = kernelPredict([d11x, d11y], kernelPoints, model, gamma, rbfKernel);
+      if ((f00 > 0) !== (f11 > 0)) {
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fillRect(px + step/2 - 1, py + step/2 - 1, 2, 2);
+      }
+    }
+  }
+
+  drawPoints(ctx, kernelPoints, model, tx, { showSV: true, svThreshold: 1e-3 });
+
+  // Accuracy
+  let correct = 0;
+  for (const p of kernelPoints) {
+    const f = kernelPredict([p.x, p.y], kernelPoints, model, gamma, rbfKernel);
+    if (f * p.label > 0) correct++;
+  }
+  const nsv = kernelPoints.filter((_, i) => model.alpha[i] > 1e-3).length;
+  document.getElementById('kernel-nsv').textContent = nsv;
+  document.getElementById('kernel-accuracy').textContent = (correct/kernelPoints.length*100).toFixed(0)+'%';
+}
+
+function resetKernel() {
+  kernelPoints = JSON.parse(JSON.stringify(kernelDatasets[kernelDataIdx]));
+  drawKernel();
+}
+
+function cycleKernelData() {
+  kernelDataIdx = (kernelDataIdx + 1) % kernelDatasets.length;
+  kernelPoints = JSON.parse(JSON.stringify(kernelDatasets[kernelDataIdx]));
+  drawKernel();
+}
+
+document.getElementById('kernel-gamma-slider').addEventListener('input', drawKernel);
+document.getElementById('kernel-c-slider').addEventListener('input', drawKernel);
+
+// Kernel canvas interaction
+(function() {
+  const { canvas, w, h } = getCanvasCtx('canvas-kernel');
+  const tx = makeTx(w, h, 55);
+
+  canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    kernelDragging = -1;
+    let minDist = 0.06;
+    for (let i = kernelPoints.length - 1; i >= 0; i--) {
+      const dist = Math.hypot(kernelPoints[i].x - dx, kernelPoints[i].y - dy);
+      if (dist < minDist) { minDist = dist; kernelDragging = i; }
+    }
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (kernelDragging < 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    kernelPoints[kernelDragging].x = Math.max(0.02, Math.min(0.98, dx));
+    kernelPoints[kernelDragging].y = Math.max(0.02, Math.min(0.98, dy));
+    drawKernel();
+  });
+  canvas.addEventListener('mouseup', () => { kernelDragging = -1; });
+  canvas.addEventListener('mouseleave', () => { kernelDragging = -1; });
+})();
+
+// ═══════════════════════════════════════════
+// Section 4: Hinge Loss
+// ═══════════════════════════════════════════
+
+function drawLoss() {
+  const { canvas, ctx, w, h } = getCanvasCtx('canvas-loss');
+  clearCanvas(ctx, w, h);
+
+  const pad = { left: 70, right: 30, top: 30, bottom: 50 };
+  const pw = w - pad.left - pad.right;
+  const ph = h - pad.top - pad.bottom;
+  const xMin = -2.5, xMax = 3, yMin = -0.3, yMax = 3.5;
+
+  function toX(x) { return pad.left + (x - xMin) / (xMax - xMin) * pw; }
+  function toY(y) { return pad.top + ph - (y - yMin) / (yMax - yMin) * ph; }
+
+  // Axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(toX(xMin), toY(0));
+  ctx.lineTo(toX(xMax), toY(0));
+  ctx.moveTo(toX(0), toY(yMin));
+  ctx.lineTo(toX(0), toY(yMax));
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = 'var(--text2)';
+  ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+  ctx.fillStyle = '#8b8fa8';
+  ctx.textAlign = 'center';
+  for (let v = -2; v <= 3; v++) {
+    ctx.fillText(v, toX(v), toY(0) + 18);
+  }
+  ctx.textAlign = 'right';
+  for (let v = 0; v <= 3; v++) {
+    ctx.fillText(v, toX(0) - 8, toY(v) + 5);
+  }
+  ctx.fillText('margin: y·f(x)', toX(1), toY(0)+36);
+  ctx.save();
+  ctx.translate(toX(0)-50, toY(1.5));
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('Loss', 0, 0);
+  ctx.restore();
+
+  // Hinge Loss
+  ctx.beginPath();
+  ctx.strokeStyle = '#f0c040';
+  ctx.lineWidth = 3;
+  let first = true;
+  for (let px = 0; px <= pw; px++) {
+    const x = xMin + (px / pw) * (xMax - xMin);
+    const y = Math.max(0, 1 - x);
+    const cx = toX(x), cy = toY(y);
+    if (first) { ctx.moveTo(cx, cy); first = false; }
+    else ctx.lineTo(cx, cy);
+  }
+  ctx.stroke();
+
+  // Logistic Loss: log(1 + exp(-x))
+  ctx.beginPath();
+  ctx.strokeStyle = '#4ea8f6';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([6, 3]);
+  first = true;
+  for (let px = 0; px <= pw; px++) {
+    const x = xMin + (px / pw) * (xMax - xMin);
+    let y;
+    if (x > 50) y = Math.exp(-x);
+    else if (x < -50) y = -x;
+    else y = Math.log(1 + Math.exp(-x));
+    const cx = toX(x), cy = toY(y);
+    if (first) { ctx.moveTo(cx, cy); first = false; }
+    else ctx.lineTo(cx, cy);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 0-1 Loss
+  ctx.beginPath();
+  ctx.strokeStyle = '#e94560';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([3, 4]);
+  first = true;
+  for (let px = 0; px <= pw; px++) {
+    const x = xMin + (px / pw) * (xMax - xMin);
+    const y = x < 0 ? 1 : 0;
+    const cx = toX(x), cy = toY(y);
+    if (first) { ctx.moveTo(cx, cy); first = false; }
+    else ctx.lineTo(cx, cy);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Current margin marker
+  const marginVal = parseFloat(document.getElementById('loss-margin-slider').value);
+  const mx = toX(marginVal);
+  ctx.beginPath();
+  ctx.moveTo(mx, toY(yMin));
+  ctx.lineTo(mx, toY(yMax));
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Dot on each curve
+  const hingeY = Math.max(0, 1 - marginVal);
+  const logY = marginVal > 50 ? 0 : (marginVal < -50 ? -marginVal : Math.log(1+Math.exp(-marginVal)));
+  const zeroOneY = marginVal < 0 ? 1 : 0;
+
+  [[hingeY, '#f0c040'],[logY, '#4ea8f6'],[zeroOneY, '#e94560']].forEach(([y, col]) => {
+    ctx.beginPath();
+    ctx.arc(toX(marginVal), toY(y), 7, 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  document.getElementById('loss-hinge-val').textContent = hingeY.toFixed(3);
+  document.getElementById('loss-logistic-val').textContent = logY.toFixed(3);
+  document.getElementById('loss-01-val').textContent = zeroOneY;
+  document.getElementById('loss-margin-val').textContent = marginVal.toFixed(2);
+}
+
+document.getElementById('loss-margin-slider').addEventListener('input', drawLoss);
+
+// ═══════════════════════════════════════════
+// Section 5: Playground
+// ═══════════════════════════════════════════
+
+let playPoints = [];
+let playClass = 1;
+let playKernel = 'linear';
+let playDragging = -1;
+
+function setPlayClass(cls) {
+  playClass = cls;
+  document.getElementById('btn-add-pos').classList.toggle('active', cls === 1);
+  document.getElementById('btn-add-neg').classList.toggle('active', cls === -1);
+}
+
+function setPlayKernel(k) {
+  playKernel = k;
+  document.getElementById('btn-kern-linear').classList.toggle('active', k === 'linear');
+  document.getElementById('btn-kern-rbf').classList.toggle('active', k === 'rbf');
+  document.getElementById('play-gamma-group').style.display = k === 'rbf' ? 'flex' : 'none';
+  drawPlayground();
+}
+
+function getPlayModel() {
+  const C = parseFloat(document.getElementById('play-c-slider').value);
+  if (playKernel === 'linear') {
+    return trainLinearSVM(playPoints, C, 0.01, 600);
+  } else {
+    const gamma = parseFloat(document.getElementById('play-gamma-slider').value);
+    return trainKernelSVM(playPoints, C, gamma, rbfKernel, 0.05, 400);
+  }
+}
+
+function drawPlayground() {
+  const { canvas, ctx, w, h } = getCanvasCtx('canvas-play');
+  const tx = makeTx(w, h, 55);
+  clearCanvas(ctx, w, h);
+
+  document.getElementById('play-c-val').textContent = parseFloat(document.getElementById('play-c-slider').value).toFixed(1);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 10; i++) {
+    const pos = 55 + i * (w - 110) / 10;
+    ctx.beginPath(); ctx.moveTo(pos, 55); ctx.lineTo(pos, h-55); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(55, pos); ctx.lineTo(w-55, pos); ctx.stroke();
+  }
+
+  if (playPoints.length < 2) {
+    // Show hint
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('点击画布添加数据点（至少需要 2 个不同类别的点）', w/2, h/2);
+    ctx.textAlign = 'start';
+  }
+
+  if (playKernel === 'linear' && playPoints.length >= 2 && hasBothClasses()) {
+    const model = getPlayModel();
+    model.points = playPoints;
+    drawLinearBoundary(ctx, model.w, model.b, tx, w, h);
+    drawPoints(ctx, playPoints, model, tx, { showSV: true, svThreshold: 0 });
+
+    const nsv = playPoints.filter((_, i) => isSupportVector(model, i, 0)).length;
+    let correct = 0;
+    for (const p of playPoints) {
+      if (p.label*(model.w[0]*p.x+model.w[1]*p.y+model.b) > 0) correct++;
+    }
+    document.getElementById('play-nsv').textContent = nsv;
+    document.getElementById('play-accuracy').textContent = playPoints.length>0 ? (correct/playPoints.length*100).toFixed(0)+'%' : '—';
+  } else if (playKernel === 'rbf' && playPoints.length >= 2 && hasBothClasses()) {
+    const gamma = parseFloat(document.getElementById('play-gamma-slider').value);
+    document.getElementById('play-gamma-val').textContent = gamma.toFixed(1);
+    const model = getPlayModel();
+
+    // Heatmap
+    const imageData = ctx.createImageData(w, h);
+    const idata = imageData.data;
+    for (let py = 0; py < h; py++) {
+      for (let px = 0; px < w; px++) {
+        const [dx, dy] = tx.toData(px, py);
+        const f = kernelPredict([dx, dy], playPoints, model, gamma, rbfKernel);
+        const intensity = Math.tanh(Math.abs(f) * 2.5);
+        const idx = (py * w + px) * 4;
+        if (f > 0) {
+          idata[idx] = Math.floor(18+52*intensity);
+          idata[idx+1] = Math.floor(45+123*intensity);
+          idata[idx+2] = Math.floor(70+185*intensity);
+        } else {
+          idata[idx] = Math.floor(90+143*intensity);
+          idata[idx+1] = Math.floor(20+49*intensity);
+          idata[idx+2] = Math.floor(35+61*intensity);
+        }
+        idata[idx+3] = 255;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    // Contour
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    const step = 5;
+    for (let py = 0; py < h-step; py += step) {
+      for (let px = 0; px < w-step; px += step) {
+        const [d00x, d00y] = tx.toData(px, py);
+        const [d11x, d11y] = tx.toData(px+step, py+step);
+        const f00 = kernelPredict([d00x, d00y], playPoints, model, gamma, rbfKernel);
+        const f11 = kernelPredict([d11x, d11y], playPoints, model, gamma, rbfKernel);
+        if ((f00>0) !== (f11>0)) ctx.fillRect(px+2, py+2, 1, 1);
+      }
+    }
+
+    drawPoints(ctx, playPoints, model, tx, { showSV: true, svThreshold: 1e-3 });
+
+    const nsv = playPoints.filter((_, i) => model.alpha[i] > 1e-3).length;
+    let correct = 0;
+    for (const p of playPoints) {
+      if (kernelPredict([p.x, p.y], playPoints, model, gamma, rbfKernel)*p.label > 0) correct++;
+    }
+    document.getElementById('play-nsv').textContent = nsv;
+    document.getElementById('play-accuracy').textContent = playPoints.length>0 ? (correct/playPoints.length*100).toFixed(0)+'%' : '—';
+  } else {
+    // Just draw points without boundary
+    drawPoints(ctx, playPoints, null, tx, { showSV: false });
+    document.getElementById('play-nsv').textContent = '—';
+    document.getElementById('play-accuracy').textContent = '—';
+  }
+}
+
+function hasBothClasses() {
+  let hasPos = false, hasNeg = false;
+  for (const p of playPoints) {
+    if (p.label > 0) hasPos = true;
+    else hasNeg = true;
+  }
+  return hasPos && hasNeg;
+}
+
+function resetPlayground() {
+  playPoints = [];
+  drawPlayground();
+}
+
+function loadPlayData(type) {
+  playPoints = [];
+  if (type === 'linear') {
+    for (let i = 0; i < 8; i++) playPoints.push({x:0.15+Math.random()*0.3, y:0.2+Math.random()*0.5, label:1});
+    for (let i = 0; i < 8; i++) playPoints.push({x:0.55+Math.random()*0.3, y:0.25+Math.random()*0.5, label:-1});
+  } else if (type === 'circle') {
+    for (let i = 0; i < 12; i++) {
+      const a = i/12*Math.PI*2;
+      playPoints.push({x:0.5+0.18*Math.cos(a), y:0.5+0.18*Math.sin(a), label:1});
+    }
+    for (let i = 0; i < 12; i++) {
+      const a = i/12*Math.PI*2+0.13;
+      playPoints.push({x:0.5+0.38*Math.cos(a), y:0.5+0.38*Math.sin(a), label:-1});
+    }
+    setPlayKernel('rbf');
+    document.getElementById('play-c-slider').value = 10;
+    document.getElementById('play-gamma-slider').value = 8;
+  } else if (type === 'xor') {
+    const cs = [[0.3,0.3,1],[0.7,0.7,1],[0.3,0.7,-1],[0.7,0.3,-1]];
+    for (const [cx,cy,l] of cs) {
+      for (let i=0;i<4;i++) playPoints.push({x:cx+(Math.random()-0.5)*0.1, y:cy+(Math.random()-0.5)*0.1, label:l});
+    }
+    setPlayKernel('rbf');
+    document.getElementById('play-c-slider').value = 10;
+    document.getElementById('play-gamma-slider').value = 5;
+  }
+  drawPlayground();
+}
+
+document.getElementById('play-c-slider').addEventListener('input', drawPlayground);
+document.getElementById('play-gamma-slider').addEventListener('input', drawPlayground);
+
+// Playground canvas interaction
+(function() {
+  const { canvas, w, h } = getCanvasCtx('canvas-play');
+  const tx = makeTx(w, h, 55);
+
+  canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+
+    // Check if clicking near existing point
+    playDragging = -1;
+    let minDist = 0.05;
+    for (let i = playPoints.length - 1; i >= 0; i--) {
+      const dist = Math.hypot(playPoints[i].x - dx, playPoints[i].y - dy);
+      if (dist < minDist) { minDist = dist; playDragging = i; }
+    }
+
+    if (playDragging < 0) {
+      // Add new point
+      playPoints.push({x: dx, y: dy, label: playClass});
+      drawPlayground();
+    }
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (playDragging < 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    playPoints[playDragging].x = Math.max(0.02, Math.min(0.98, dx));
+    playPoints[playDragging].y = Math.max(0.02, Math.min(0.98, dy));
+    drawPlayground();
+  });
+
+  canvas.addEventListener('mouseup', () => { playDragging = -1; });
+  canvas.addEventListener('mouseleave', () => { playDragging = -1; });
+
+  // Right-click to remove point
+  canvas.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const sx = w / rect.width;
+    const mx = (e.clientX - rect.left) * sx;
+    const my = (e.clientY - rect.top) * (h / rect.height);
+    const [dx, dy] = tx.toData(mx, my);
+    for (let i = playPoints.length - 1; i >= 0; i--) {
+      if (Math.hypot(playPoints[i].x-dx, playPoints[i].y-dy) < 0.05) {
+        playPoints.splice(i, 1);
+        drawPlayground();
+        break;
+      }
+    }
+  });
+})();
+
+// ═══════════════════════════════════════════
+// KaTeX Formula Rendering
+// ═══════════════════════════════════════════
+
+function renderFormulas() {
+  // Hard margin primal
+  katex.render(String.raw`
+  \begin{aligned}
+  \min_{\mathbf{w}, b} \quad & \frac{1}{2}\|\mathbf{w}\|^2 \\
+  \text{s.t.} \quad & y_i(\mathbf{w}^\top \mathbf{x}_i + b) \geq 1, \quad \forall i
+  \end{aligned}
+  `, document.getElementById('formula-hard-primal'), { displayMode: true });
+
+  // Soft margin primal
+  katex.render(String.raw`
+  \begin{aligned}
+  \min_{\mathbf{w}, b, \boldsymbol{\xi}} \quad & \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^{n}\xi_i \\
+  \text{s.t.} \quad & y_i(\mathbf{w}^\top \mathbf{x}_i + b) \geq 1 - \xi_i, \\
+  & \xi_i \geq 0, \quad \forall i
+  \end{aligned}
+  `, document.getElementById('formula-soft-primal'), { displayMode: true });
+
+  // Kernel
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{RBF 核:} \quad & K(\mathbf{x}, \mathbf{x}') = \exp\!\big(-\gamma\|\mathbf{x} - \mathbf{x}'\|^2\big) \\
+  \text{决策函数:} \quad & f(\mathbf{x}) = \sum_{i=1}^{n} \alpha_i y_i K(\mathbf{x}_i, \mathbf{x}) + b \\
+  \text{对偶问题:} \quad & \max_{\boldsymbol{\alpha}} \sum_{i}\alpha_i - \frac{1}{2}\sum_{i,j}\alpha_i\alpha_j y_i y_j K(\mathbf{x}_i, \mathbf{x}_j) \\
+  & \text{s.t. } 0 \leq \alpha_i \leq C
+  \end{aligned}
+  `, document.getElementById('formula-kernel'), { displayMode: true });
+
+  // Losses
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{Hinge Loss:} \quad & L_{\text{hinge}}(y, f) = \max(0,\, 1 - y \cdot f) \\
+  \text{Logistic Loss:} \quad & L_{\text{logistic}}(y, f) = \log(1 + e^{-y \cdot f}) \\
+  \text{0-1 Loss:} \quad & L_{0\text{-}1}(y, f) = \mathbf{1}[y \cdot f < 0]
+  \end{aligned}
+  `, document.getElementById('formula-losses'), { displayMode: true });
+}
+
+// ═══════════════════════════════════════════
+// Initialize
+// ═══════════════════════════════════════════
+
+function init() {
+  renderFormulas();
+  drawHard();
+  drawSoft();
+  drawKernel();
+  drawLoss();
+  resetPlayground();
+  // Set playground default data
+  loadPlayData('linear');
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

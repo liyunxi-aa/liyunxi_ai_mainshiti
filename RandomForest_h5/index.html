@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>随机森林 — Bootstrap、Bagging与集成投票交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222634;
+    --text: #e1e4eb;
+    --text2: #9ca3b4;
+    --green: #4ade80;
+      --accent: #4ade80;
+    --blue: #4ea8f6;
+    --orange: #f59342;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --yellow: #facc15;
+    --border: #2d3148;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16.0px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #1e302e 50%, #1a1d2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--green), var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header p { color: var(--text2); font-size: 18px; }
+
+  .container { max-width: 1500px; margin: 0 auto; padding: 24px 20px; }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot.bootstrap { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.ensemble { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+  .dot.feature { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+  .dot.oob { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .dot.boundary { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+
+  .section .desc { color: var(--text2); font-size: 18px; margin-bottom: 20px; line-height: 1.8; }
+
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px; color: var(--text2); margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 17px;
+    color: var(--text2);
+  }
+  .slider-group label .val {
+    font-weight: 600; color: var(--text);
+    font-family: 'Courier New', monospace; font-size: 17px;
+    min-width: 48px; text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .s-green::-webkit-slider-thumb { background: var(--green); }
+  .s-blue::-webkit-slider-thumb { background: var(--blue); }
+  .s-orange::-webkit-slider-thumb { background: var(--orange); }
+  .s-purple::-webkit-slider-thumb { background: var(--purple); }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px; margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2); border-radius: 6px; padding: 10px 14px;
+    font-size: 17px; color: var(--text2); font-family: 'Courier New', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+  .info-card .v-green { color: var(--green); }
+  .info-card .v-blue { color: var(--blue); }
+  .info-card .v-orange { color: var(--orange); }
+  .info-card .v-purple { color: var(--purple); }
+
+  .insight {
+    background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(78,168,246,0.08));
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 8px; padding: 14px 18px; margin-top: 16px;
+    font-size: 17px; color: var(--text2); line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); cursor: pointer;
+    font-size: 17px; font-weight: 600; transition: all .2s;
+  }
+  .btn:hover { border-color: var(--green); background: #2a2d3a; }
+  .btn.active { border-color: var(--green); background: rgba(74,222,128,0.2); color: var(--green); }
+
+  .tree-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .mini-tree {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .mini-tree.selected { border-color: var(--green); background: rgba(74,222,128,0.1); }
+  .mini-tree .vote { font-weight: 700; font-size: 18px; }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 16px; }
+    .sliders { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌲🌲🌲 随机森林 · 从 Bagging 到集成学习</h1>
+  <p>Bootstrap 采样 · 特征随机性 · 多树投票 · OOB 误差 · 偏差-方差权衡 — 交互式可视化</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Bootstrap 采样 (Bagging核心) -->
+<!-- ================================================================ -->
+<div class="section" id="bootstrap-section">
+  <h2><span class="dot bootstrap"></span> 一、Bootstrap 自助采样 — Bagging 的核心</h2>
+  <p class="desc">
+    随机森林的第一个关键思想是 <b>Bagging (Bootstrap Aggregating)</b>：从原始训练集中<b>有放回地</b>随机采样 N 次，
+    生成 B 个不同的"自助样本"。每个自助样本大约包含原始数据 <b>63.2%</b> 的样本（其余是重复的），剩下的 <b>36.8%</b>
+    成为<b>袋外样本 (OOB)</b>，可用于无偏评估。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 核心公式</h3>
+    <div id="formula-bootstrap"></div>
+  </div>
+
+  <canvas id="bootstrapCanvas" width="1400" height="500"></canvas>
+
+  <div class="info-row" id="bootstrap-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>自助样本数 B (树的数量) <span class="val" id="val-B">5</span></label>
+      <input type="range" class="s-green" id="slider-B" min="1" max="15" value="5" step="1">
+    </div>
+    <div class="slider-group">
+      <label>原始样本数 N <span class="val" id="val-N">20</span></label>
+      <input type="range" class="s-green" id="slider-N" min="10" max="40" value="20" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>每个样本被选中的概率是 1/N，N 次采样后某样本从未被选中的概率是
+    (1-1/N)^N ≈ e⁻¹ ≈ 36.8%。这天然的"训练/验证"分割使得随机森林<b>无需额外留出验证集</b>即可估计泛化误差（OOB Error）。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: 集成投票 — 多棵树如何做决策 -->
+<!-- ================================================================ -->
+<div class="section" id="ensemble-section">
+  <h2><span class="dot ensemble"></span> 二、集成投票 — 森林如何做决策</h2>
+  <p class="desc">
+    每棵树在各自的自助样本上独立训练。对新样本，<b>所有树各自预测</b>，然后进行<b>多数投票（分类）</b>或<b>平均（回归）</b>。
+    森林的<b>多样性</b>来自两个随机源：① 自举采样（不同训练数据）② 特征随机子集（每次分裂只考虑部分特征）。
+    这让森林的泛化能力远优于单棵树。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 核心公式</h3>
+    <div id="formula-voting"></div>
+  </div>
+
+  <canvas id="ensembleCanvas" width="1400" height="580"></canvas>
+
+  <div class="info-row" id="ensemble-info"></div>
+
+  <div class="tree-grid" id="mini-trees"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>树的数量 <span class="val" id="val-nTrees">5</span></label>
+      <input type="range" class="s-blue" id="slider-nTrees" min="1" max="21" value="5" step="2">
+    </div>
+    <div class="slider-group">
+      <label>每棵树最大深度 <span class="val" id="val-eDepth">3</span></label>
+      <input type="range" class="s-blue" id="slider-eDepth" min="1" max="6" value="3" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>单棵树容易过拟合（高方差），多棵树投票<b>平滑了决策边界</b>，降低方差的同时保持低偏差。
+    这被称为<b>"Wisdom of Crowds"</b>——群体决策优于个体决策。注意看：即使每棵树很弱（深度浅），组合起来也能形成复杂的决策边界。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: 特征随机性 — 随机森林 vs Bagging -->
+<!-- ================================================================ -->
+<div class="section" id="feature-section">
+  <h2><span class="dot feature"></span> 三、特征随机性 — 区别于纯 Bagging</h2>
+  <p class="desc">
+    普通 Bagging 只对<b>样本</b>做随机化。随机森林在此基础上增加了<b>特征随机化</b>：每次分裂时，
+    不是在所有特征中选最优，而是<b>随机选取 m 个特征子集</b>，从中选最优。通常 m = √d（分类）或 d/3（回归）。
+    这进一步<b>降低了树之间的相关性</b>，提升集成效果。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 特征子集大小选择</h3>
+    <div id="formula-feature"></div>
+  </div>
+
+  <canvas id="featureCanvas" width="1400" height="520"></canvas>
+
+  <div class="info-row" id="feature-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>特征子集大小 m <span class="val" id="val-mtry">2</span></label>
+      <input type="range" class="s-purple" id="slider-mtry" min="1" max="5" value="2" step="1">
+    </div>
+    <div class="slider-group">
+      <label>总特征数 d <span class="val" id="val-d">5</span></label>
+      <input type="range" class="s-purple" id="slider-d" min="2" max="8" value="5" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>如果 m = d（每个分裂考虑所有特征），就是普通的 Bagging；
+    如果 m = 1（每次随机选一个特征），树的相关性最低但每棵树太弱。√d 是实践中很好的折中——既保持树的独立多样性，又保证每棵树有足够的判别力。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: 决策边界对比 — 单树 vs 随机森林 -->
+<!-- ================================================================ -->
+<div class="section" id="boundary-section">
+  <h2><span class="dot boundary"></span> 四、决策边界对比 — 单树 vs 随机森林</h2>
+  <p class="desc">
+    可视化对比<b>单棵决策树</b>与<b>随机森林</b>在相同数据集上的决策边界。
+    单棵树产生<b>轴对齐的矩形区域</b>，容易对噪声点过拟合。随机森林通过<b>多棵树平均/投票</b>，产生更平滑、更鲁棒的边界。
+  </p>
+
+  <canvas id="boundaryCanvas" width="1400" height="580"></canvas>
+
+  <div class="info-row" id="boundary-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>森林树数量 <span class="val" id="val-btrees">21</span></label>
+      <input type="range" class="s-green" id="slider-btrees" min="1" max="51" value="21" step="2">
+    </div>
+    <div class="slider-group">
+      <label>单棵树最大深度 <span class="val" id="val-bdepth">5</span></label>
+      <input type="range" class="s-green" id="slider-bdepth" min="1" max="8" value="5" step="1">
+    </div>
+    <div class="slider-group">
+      <label>数据点数 <span class="val" id="val-bpts">150</span></label>
+      <input type="range" class="s-green" id="slider-bpts" min="50" max="300" value="150" step="10">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>随机森林的边界更平滑，"锯齿"更少——这正是<b>方差降低</b>的直观体现。
+    随着树数量增加，边界趋于稳定（边际收益递减）。但也要注意：随机森林不能消除<b>偏差</b>——如果数据本质上是非线性的，
+    轴对齐分割仍然有局限性，这时需要 XGBoost 等 boosting 方法来进一步降低偏差。
+  </div>
+</div>
+
+</div>
+
+<script>
+// ==================== KaTeX ====================
+katex.render(String.raw`
+  \begin{aligned}
+  P(\text{样本 }i\text{ 不在自助样本中}) &= \left(1 - \frac{1}{N}\right)^N \xrightarrow{N \to \infty} e^{-1} \approx 36.8\% \\[6pt]
+  \text{Bootstrap Sample}_b &= \{(x_i^{(b)}, y_i^{(b)})\}_{i=1}^N \quad \text{从原始数据有放回采样 N 次} \\[6pt]
+  \text{OOB}_b &= \{(x_i, y_i) \mid i \notin \text{Bootstrap Sample}_b\}
+  \end{aligned}
+`, document.getElementById('formula-bootstrap'), { displayMode: true });
+
+katex.render(String.raw`
+  \begin{aligned}
+  \hat{y}_{\text{RF}}(\boldsymbol{x}) &= \underset{k \in \{1,\ldots,K\}}{\operatorname{majority\_vote}}\{\hat{y}_b(\boldsymbol{x})\}_{b=1}^B \\[6pt]
+  \text{Var}(\hat{y}_{\text{RF}}) &= \rho \cdot \sigma^2 + \frac{1-\rho}{B} \cdot \sigma^2 \quad (\rho\text{: 树间相关性})
+  \end{aligned}
+`, document.getElementById('formula-voting'), { displayMode: true });
+
+katex.render(String.raw`
+  \begin{aligned}
+  m_{\text{classification}} &= \lfloor\sqrt{d}\rfloor, \quad m_{\text{regression}} = \lfloor d/3\rfloor \\[6pt]
+  \text{每次分裂：从 }d\text{ 个特征中随机选 }m\text{ 个，只在这 }m\text{ 个中找最优分裂}
+  \end{aligned}
+`, document.getElementById('formula-feature'), { displayMode: true });
+
+// ==================== Common: Gini impurity ====================
+function gini(labels) {
+  if (labels.length === 0) return 0;
+  const counts = {};
+  for (const l of labels) counts[l] = (counts[l] || 0) + 1;
+  let s = 0;
+  for (const c in counts) s += (counts[c] / labels.length) ** 2;
+  return 1 - s;
+}
+
+function bestSplit(points, criterion, minSplit, mtry) {
+  if (points.length < minSplit) return null;
+  const allLabels = points.map(p => p.label);
+  const parentImp = gini(allLabels);
+  let bestGain = 0, bestFeat = 0, bestThresh = 0;
+
+  // Randomly select mtry features
+  const feats = [0, 1];
+  const selectedFeats = feats.sort(() => Math.random() - 0.5).slice(0, mtry);
+
+  for (const feat of selectedFeats) {
+    const vals = points.map(p => feat === 0 ? p.x : p.y).sort((a, b) => a - b);
+    for (let i = 1; i < vals.length; i++) {
+      const thresh = (vals[i-1] + vals[i]) / 2;
+      const left = [], right = [];
+      for (const p of points) {
+        const v = feat === 0 ? p.x : p.y;
+        if (v <= thresh) left.push(p.label); else right.push(p.label);
+      }
+      if (left.length < minSplit || right.length < minSplit) continue;
+      const gain = parentImp - (left.length/points.length)*gini(left)
+                   - (right.length/points.length)*gini(right);
+      if (gain > bestGain) { bestGain = gain; bestFeat = feat; bestThresh = thresh; }
+    }
+  }
+  if (bestGain === 0) return null;
+  return { feat: bestFeat, thresh: bestThresh, gain: bestGain };
+}
+
+function buildTree(points, maxDepth, minSplit, mtry, depth = 0) {
+  const labels = points.map(p => p.label);
+  const majority = labels.filter(l => l === 1).length >= labels.length / 2 ? 1 : 0;
+  const leaf = { label: majority, n: points.length, depth, isLeaf: true };
+
+  if (depth >= maxDepth) return leaf;
+  const split = bestSplit(points, 'gini', minSplit, mtry);
+  if (!split) return leaf;
+
+  const leftPts = [], rightPts = [];
+  for (const p of points) {
+    const v = split.feat === 0 ? p.x : p.y;
+    if (v <= split.thresh) leftPts.push(p); else rightPts.push(p);
+  }
+  if (leftPts.length === 0 || rightPts.length === 0) return leaf;
+
+  return {
+    ...split, depth, n: points.length, isLeaf: false,
+    left: buildTree(leftPts, maxDepth, minSplit, mtry, depth + 1),
+    right: buildTree(rightPts, maxDepth, minSplit, mtry, depth + 1),
+    label: majority
+  };
+}
+
+function predict(node, x, y) {
+  if (node.isLeaf) return node.label;
+  const v = node.feat === 0 ? x : y;
+  return predict(v <= node.thresh ? node.left : node.right, x, y);
+}
+
+// ==================== Data generation ====================
+const baseData = [];
+function generateBaseData(n = 150) {
+  baseData.length = 0;
+  // Two classes with some overlap
+  for (let i = 0; i < n; i++) {
+    let x, y, label;
+    if (i < n/2) {
+      // Class 0: cluster around (0.3, 0.4)
+      x = 0.2 + 0.35 * (Math.random() + Math.random()) / 2;
+      y = 0.2 + 0.45 * (Math.random() + Math.random()) / 2;
+      label = 0;
+    } else {
+      // Class 1: cluster around (0.65, 0.6)
+      x = 0.45 + 0.35 * (Math.random() + Math.random()) / 2;
+      y = 0.35 + 0.45 * (Math.random() + Math.random()) / 2;
+      label = 1;
+    }
+    baseData.push({ x: Math.min(1, Math.max(0, x)), y: Math.min(1, Math.max(0, y)), label });
+  }
+}
+generateBaseData(150);
+
+// ==================== SECTION 1: Bootstrap Visualization ====================
+const bootCanvas = document.getElementById('bootstrapCanvas');
+const bootCtx = bootCanvas.getContext('2d');
+const W1 = bootCanvas.width, H1 = bootCanvas.height;
+
+function drawBootstrap() {
+  const B = parseInt(document.getElementById('slider-B').value);
+  const N = parseInt(document.getElementById('slider-N').value);
+  document.getElementById('val-B').textContent = B;
+  document.getElementById('val-N').textContent = N;
+
+  bootCtx.clearRect(0, 0, W1, H1);
+
+  const data = baseData.slice(0, N);
+  const bootSamples = [];
+  const oobSets = [];
+  const selectedCounts = new Array(N).fill(0);
+
+  for (let b = 0; b < B; b++) {
+    const sample = [];
+    const inBag = new Set();
+    for (let i = 0; i < N; i++) {
+      const idx = Math.floor(Math.random() * N);
+      sample.push(data[idx]);
+      inBag.add(idx);
+      selectedCounts[idx]++;
+    }
+    bootSamples.push(sample);
+    const oob = data.filter((_, i) => !inBag.has(i));
+    oobSets.push(oob);
+  }
+
+  const rows = B;
+  const rowH = Math.min((H1 - 100) / rows, 70);
+  const totalH = rows * rowH + 20;
+  const startY = (H1 - totalH) / 2;
+
+  // Draw each bootstrap sample as a row
+  for (let b = 0; b < B; b++) {
+    const y = startY + b * rowH;
+    // Label
+    bootCtx.fillStyle = '#9ca3b4';
+    bootCtx.font = '17px "Segoe UI","PingFang SC",sans-serif';
+    bootCtx.textAlign = 'right';
+    bootCtx.fillText(`B₍${b+1}₎`, 55, y + rowH/2 + 5);
+
+    // In-bag cells
+    const inBagSet = new Set();
+    for (const pt of bootSamples[b]) inBagSet.add(data.indexOf(pt));
+
+    const cellW = (W1 - 80) / N;
+    for (let i = 0; i < N; i++) {
+      const cx = 75 + i * cellW;
+      if (inBagSet.has(i)) {
+        const count = bootSamples[b].filter(pt => data.indexOf(pt) === i).length;
+        const alpha = Math.min(1, 0.3 + count * 0.35);
+        bootCtx.fillStyle = `rgba(74,222,128,${alpha})`;
+        bootCtx.fillRect(cx + 1, y + 4, cellW - 2, rowH - 8);
+        if (count > 1) {
+          bootCtx.fillStyle = '#fff';
+          bootCtx.font = '15px "Courier New", monospace';
+          bootCtx.textAlign = 'center';
+          bootCtx.fillText(`×${count}`, cx + cellW/2, y + rowH/2 + 5);
+        }
+      }
+    }
+
+    // OOB indicator
+    const oobCount = oobSets[b].length;
+    bootCtx.fillStyle = '#9ca3b4';
+    bootCtx.font = '15px "Segoe UI","PingFang SC",sans-serif';
+    bootCtx.textAlign = 'left';
+    bootCtx.fillText(`OOB: ${oobCount} (${(oobCount/N*100).toFixed(0)}%)`, W1 - 120, y + rowH/2 + 5);
+  }
+
+  // Column numbers at bottom
+  bootCtx.fillStyle = '#9ca3b4';
+  bootCtx.font = '16px "Courier New", monospace';
+  bootCtx.textAlign = 'center';
+  const cellW = (W1 - 80) / N;
+  for (let i = 0; i < N; i += Math.max(1, Math.floor(N/20))) {
+    bootCtx.fillText(i+1, 75 + i * cellW + cellW/2, startY + totalH + 20);
+  }
+
+  // Title
+  bootCtx.fillStyle = '#e1e4eb';
+  bootCtx.font = '19px "Segoe UI","PingFang SC",sans-serif';
+  bootCtx.textAlign = 'left';
+  bootCtx.fillText(`每个 Bootstrap 样本: N=${N}, █ 被选中 █ OOB`, 75, startY - 15);
+
+  // Info
+  const avgOob = oobSets.reduce((s, o) => s + o.length, 0) / B;
+  const uniqueRatio = (new Set(bootSamples[0].map(p => data.indexOf(p))).size / N * 100).toFixed(1);
+  document.getElementById('bootstrap-info').innerHTML = `
+    <div class="info-card">自助样本数 B <span class="val v-green">${B}</span></div>
+    <div class="info-card">每个样本大小 N <span class="val v-blue">${N}</span></div>
+    <div class="info-card">平均 OOB 样本数 <span class="val v-orange">${avgOob.toFixed(0)} (≈36.8%)</span></div>
+    <div class="info-card">首个样本中唯一样本 <span class="val v-purple">${uniqueRatio}% (≈63.2%)</span></div>
+  `;
+}
+
+// ==================== SECTION 2: Ensemble Voting ====================
+const ensCanvas = document.getElementById('ensembleCanvas');
+const ensCtx = ensCanvas.getContext('2d');
+const W2 = ensCanvas.width, H2 = ensCanvas.height;
+
+function drawEnsemble() {
+  const nTrees = parseInt(document.getElementById('slider-nTrees').value);
+  const maxDepth = parseInt(document.getElementById('slider-eDepth').value);
+  document.getElementById('val-nTrees').textContent = nTrees;
+  document.getElementById('val-eDepth').textContent = maxDepth;
+
+  ensCtx.clearRect(0, 0, W2, H2);
+
+  // Train forest
+  const trees = [];
+  for (let t = 0; t < nTrees; t++) {
+    // Bootstrap sample
+    const sample = [];
+    for (let i = 0; i < baseData.length; i++) {
+      sample.push(baseData[Math.floor(Math.random() * baseData.length)]);
+    }
+    const tree = buildTree(sample, maxDepth, 3, 2); // mtry=2 for 2D
+    trees.push(tree);
+  }
+
+  const pad = { l: 70, r: 30, t: 40, b: 55 };
+  const pw = W2 - pad.l - pad.r;
+  const ph = H2 - pad.t - pad.b;
+
+  // Draw decision regions (forest prediction)
+  const step = 5;
+  for (let px = 0; px < pw; px += step) {
+    for (let py = 0; py < ph; py += step) {
+      const x = px / pw;
+      const y = 1 - py / ph;
+      let votes0 = 0, votes1 = 0;
+      for (const tree of trees) {
+        if (predict(tree, x, y) === 0) votes0++; else votes1++;
+      }
+      const totalVotes = votes0 + votes1;
+      const conf = Math.abs(votes0 - votes1) / totalVotes;
+      const alpha = 0.08 + conf * 0.22;
+      const pred = votes1 > votes0 ? 1 : 0;
+      ensCtx.fillStyle = pred === 0
+        ? `rgba(78,168,246,${alpha})`
+        : `rgba(239,68,68,${alpha})`;
+      ensCtx.fillRect(pad.l + px, pad.t + py, step, step);
+    }
+  }
+
+  // Data points
+  for (const pt of baseData) {
+    const sx = pad.l + pt.x * pw;
+    const sy = pad.t + (1 - pt.y) * ph;
+    ensCtx.beginPath();
+    ensCtx.fillStyle = pt.label === 0 ? '#4ea8f6' : '#ef4444';
+    ensCtx.arc(sx, sy, 3, 0, Math.PI*2);
+    ensCtx.fill();
+    ensCtx.strokeStyle = '#0f1117';
+    ensCtx.lineWidth = 0.5;
+    ensCtx.stroke();
+  }
+
+  // Axis labels
+  ensCtx.fillStyle = '#9ca3b4';
+  ensCtx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+  ensCtx.textAlign = 'center';
+  ensCtx.fillText('特征 X₁', pad.l + pw/2, pad.t + ph + 38);
+  ensCtx.save();
+  ensCtx.translate(pad.l - 40, pad.t + ph/2);
+  ensCtx.rotate(-Math.PI/2);
+  ensCtx.fillText('特征 X₂', 0, 0);
+  ensCtx.restore();
+
+  // Legend
+  ensCtx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+  ensCtx.textAlign = 'left';
+  ensCtx.fillStyle = 'rgba(78,168,246,0.6)';
+  ensCtx.fillRect(pad.l + 10, pad.t + 8, 18, 18);
+  ensCtx.fillStyle = '#e1e4eb';
+  ensCtx.fillText('预测类别 0', pad.l + 36, pad.t + 23);
+
+  ensCtx.fillStyle = 'rgba(239,68,68,0.6)';
+  ensCtx.fillRect(pad.l + 155, pad.t + 8, 18, 18);
+  ensCtx.fillStyle = '#e1e4eb';
+  ensCtx.fillText('预测类别 1', pad.l + 181, pad.t + 23);
+
+  // Mini trees display
+  let mtHtml = '';
+  for (let t = 0; t < nTrees; t++) {
+    const leaves = []; collectLeaves(trees[t], leaves);
+    const trainAcc = (baseData.filter(p => predict(trees[t], p.x, p.y) === p.label).length / baseData.length * 100).toFixed(0);
+    mtHtml += `<div class="mini-tree">
+      🌲 树${t+1}<br>
+      <span class="vote">叶节点: ${leaves.length}</span><br>
+      训练Acc: ${trainAcc}%
+    </div>`;
+  }
+  document.getElementById('mini-trees').innerHTML = mtHtml;
+
+  // Overall accuracy
+  const correct = baseData.filter(p => {
+    let v0 = 0, v1 = 0;
+    for (const tree of trees) {
+      if (predict(tree, p.x, p.y) === 0) v0++; else v1++;
+    }
+    return (v1 > v0 ? 1 : 0) === p.label;
+  }).length;
+  const ensembleAcc = (correct / baseData.length * 100).toFixed(1);
+
+  // Average single tree accuracy
+  const avgTreeAcc = (trees.reduce((s, t) => {
+    return s + baseData.filter(p => predict(t, p.x, p.y) === p.label).length / baseData.length;
+  }, 0) / nTrees * 100).toFixed(1);
+
+  document.getElementById('ensemble-info').innerHTML = `
+    <div class="info-card">树的数量 <span class="val v-green">${nTrees}</span></div>
+    <div class="info-card">集成准确率 <span class="val v-blue">${ensembleAcc}%</span></div>
+    <div class="info-card">平均单树准确率 <span class="val v-orange">${avgTreeAcc}%</span></div>
+    <div class="info-card">提升 <span class="val v-purple">+${(ensembleAcc - avgTreeAcc).toFixed(1)}%</span></div>
+  `;
+}
+
+function collectLeaves(node, leaves) {
+  if (!node) return;
+  if (node.isLeaf) { leaves.push(node); return; }
+  collectLeaves(node.left, leaves);
+  collectLeaves(node.right, leaves);
+}
+
+// ==================== SECTION 3: Feature Randomness ====================
+const featCanvas = document.getElementById('featureCanvas');
+const featCtx = featCanvas.getContext('2d');
+const W3 = featCanvas.width, H3 = featCanvas.height;
+
+function drawFeatureRandomness() {
+  const mtry = parseInt(document.getElementById('slider-mtry').value);
+  const d = parseInt(document.getElementById('slider-d').value);
+  document.getElementById('val-mtry').textContent = mtry;
+  document.getElementById('val-d').textContent = d;
+
+  featCtx.clearRect(0, 0, W3, H3);
+
+  const nSims = 100;
+  const pad = { l: 80, r: 40, t: 50, b: 80 };
+  const pw = W3 - pad.l - pad.r;
+  const ph = H3 - pad.t - pad.b;
+
+  // Simulate: for each mtry, what's the probability a given feature is selected?
+  const probs = [];
+  for (let m = 1; m <= d; m++) {
+    probs.push({ m, p: m / d });
+  }
+
+  // Bar chart
+  const barW = (pw / d) * 0.7;
+  const gap = pw / d;
+
+  for (let m = 0; m < d; m++) {
+    const x = pad.l + m * gap + gap * 0.15;
+    const h = (probs[m].p) * ph;
+    const y = pad.t + ph - h;
+
+    // Gradient bar
+    const grad = featCtx.createLinearGradient(x, y, x, pad.t + ph);
+    const alpha = probs[m].p;
+    grad.addColorStop(0, `rgba(168,85,247,${0.3 + alpha * 0.7})`);
+    grad.addColorStop(1, 'rgba(168,85,247,0.1)');
+    featCtx.fillStyle = grad;
+    featCtx.fillRect(x, y, barW, h);
+
+    // Border
+    featCtx.strokeStyle = '#a855f7';
+    featCtx.lineWidth = 2;
+    featCtx.strokeRect(x, y, barW, h);
+
+    // Label
+    featCtx.fillStyle = '#e1e4eb';
+    featCtx.font = '17px "Segoe UI","PingFang SC",sans-serif';
+    featCtx.textAlign = 'center';
+    featCtx.fillText(`m=${m+1}`, x + barW/2, pad.t + ph + 25);
+    featCtx.fillText(`${(probs[m].p*100).toFixed(0)}%`, x + barW/2, y - 8);
+
+    // Highlight recommended
+    const recM = Math.floor(Math.sqrt(d));
+    if (m + 1 === recM) {
+      featCtx.strokeStyle = '#4ade80';
+      featCtx.lineWidth = 3;
+      featCtx.setLineDash([4, 3]);
+      featCtx.strokeRect(x - 3, y - 3, barW + 6, h + 6);
+      featCtx.setLineDash([]);
+      featCtx.fillStyle = '#4ade80';
+      featCtx.font = 'bold 18px "Segoe UI","PingFang SC",sans-serif';
+      featCtx.fillText(`推荐 √d≈${recM}`, x + barW/2, y - 25);
+    }
+  }
+
+  // Axes
+  featCtx.strokeStyle = '#2d3148';
+  featCtx.lineWidth = 2;
+  featCtx.beginPath();
+  featCtx.moveTo(pad.l, pad.t);
+  featCtx.lineTo(pad.l, pad.t + ph);
+  featCtx.lineTo(pad.l + pw, pad.t + ph);
+  featCtx.stroke();
+
+  featCtx.fillStyle = '#e1e4eb';
+  featCtx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+  featCtx.textAlign = 'center';
+  featCtx.fillText('每次随机选择的特征数 m', W3/2, H3 - 8);
+  featCtx.save();
+  featCtx.translate(16, pad.t + ph/2);
+  featCtx.rotate(-Math.PI/2);
+  featCtx.fillText('单特征被选中概率', 0, 0);
+  featCtx.restore();
+
+  // Y ticks
+  featCtx.fillStyle = '#9ca3b4';
+  featCtx.font = '15px "Courier New", monospace';
+  featCtx.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const v = i / 5;
+    const y = pad.t + ph * (1 - v);
+    featCtx.fillText((v*100).toFixed(0) + '%', pad.l - 10, y + 5);
+  }
+
+  // Info
+  document.getElementById('feature-info').innerHTML = `
+    <div class="info-card">总特征数 d <span class="val v-purple">${d}</span></div>
+    <div class="info-card">当前 mtry <span class="val v-green">${mtry}</span></div>
+    <div class="info-card">推荐 mtry <span class="val v-blue">${Math.floor(Math.sqrt(d))} (√d)</span></div>
+    <div class="info-card">选中概率= <span class="val v-orange">${(mtry/d*100).toFixed(0)}%</span></div>
+  `;
+}
+
+// ==================== SECTION 4: Decision Boundary Comparison ====================
+const bndCanvas = document.getElementById('boundaryCanvas');
+const bndCtx = bndCanvas.getContext('2d');
+const W4 = bndCanvas.width, H4 = bndCanvas.height;
+
+function drawBoundaryComparison() {
+  const nTrees = parseInt(document.getElementById('slider-btrees').value);
+  const maxDepth = parseInt(document.getElementById('slider-bdepth').value);
+  const nPts = parseInt(document.getElementById('slider-bpts').value);
+  document.getElementById('val-btrees').textContent = nTrees;
+  document.getElementById('val-bdepth').textContent = maxDepth;
+  document.getElementById('val-bpts').textContent = nPts;
+
+  generateBaseData(nPts);
+
+  bndCtx.clearRect(0, 0, W4, H4);
+
+  const pad = { l: 70, r: 30, t: 45, b: 55 };
+  const gap = 40;
+  const pw = (W4 - pad.l - pad.r - gap) / 2;
+  const ph = H4 - pad.t - pad.b;
+
+  // Train single tree
+  const singleTree = buildTree(baseData, maxDepth, 3, 2);
+
+  // Train RF
+  const trees = [];
+  for (let t = 0; t < nTrees; t++) {
+    const sample = [];
+    for (let i = 0; i < baseData.length; i++) {
+      sample.push(baseData[Math.floor(Math.random() * baseData.length)]);
+    }
+    trees.push(buildTree(sample, maxDepth, 3, 2));
+  }
+
+  // Draw single tree (left)
+  const step = 5;
+  for (let px = 0; px < pw; px += step) {
+    for (let py = 0; py < ph; py += step) {
+      const x = px / pw;
+      const y = 1 - py / ph;
+      const pred = predict(singleTree, x, y);
+      bndCtx.fillStyle = pred === 0
+        ? `rgba(78,168,246,${0.22})`
+        : `rgba(239,68,68,${0.22})`;
+      bndCtx.fillRect(pad.l + px, pad.t + py, step, step);
+    }
+  }
+
+  // Draw single tree split lines
+  function drawLines(node, xOff, xMin, xMax, yMin, yMax) {
+    if (!node || node.isLeaf) return;
+    const x1 = xOff + xMin * pw;
+    const x2 = xOff + xMax * pw;
+    const y1 = pad.t + (1 - yMin) * ph;
+    const y2 = pad.t + (1 - yMax) * ph;
+    bndCtx.beginPath();
+    bndCtx.strokeStyle = '#fff';
+    bndCtx.lineWidth = 1.5;
+    if (node.feat === 0) {
+      const sx = xOff + node.thresh * pw;
+      bndCtx.moveTo(sx, y1); bndCtx.lineTo(sx, y2);
+      bndCtx.stroke();
+      drawLines(node.left, xOff, xMin, node.thresh, yMin, yMax);
+      drawLines(node.right, xOff, node.thresh, xMax, yMin, yMax);
+    } else {
+      const sy = pad.t + (1 - node.thresh) * ph;
+      bndCtx.moveTo(x1, sy); bndCtx.lineTo(x2, sy);
+      bndCtx.stroke();
+      drawLines(node.left, xOff, xMin, xMax, yMin, node.thresh);
+      drawLines(node.right, xOff, xMin, xMax, node.thresh, yMax);
+    }
+  }
+  drawLines(singleTree, pad.l, 0, 1, 0, 1);
+
+  // Draw RF (right)
+  const rfOff = pad.l + pw + gap;
+  for (let px = 0; px < pw; px += step) {
+    for (let py = 0; py < ph; py += step) {
+      const x = px / pw;
+      const y = 1 - py / ph;
+      let v0 = 0, v1 = 0;
+      for (const tree of trees) {
+        if (predict(tree, x, y) === 0) v0++; else v1++;
+      }
+      const conf = Math.abs(v0 - v1) / trees.length;
+      const alpha = 0.08 + conf * 0.25;
+      const pred = v1 > v0 ? 1 : 0;
+      bndCtx.fillStyle = pred === 0
+        ? `rgba(78,168,246,${alpha})`
+        : `rgba(239,68,68,${alpha})`;
+      bndCtx.fillRect(rfOff + px, pad.t + py, step, step);
+    }
+  }
+
+  // Data points on both
+  for (const pt of baseData) {
+    // Left
+    let sx = pad.l + pt.x * pw;
+    let sy = pad.t + (1 - pt.y) * ph;
+    bndCtx.beginPath();
+    bndCtx.fillStyle = pt.label === 0 ? '#4ea8f6' : '#ef4444';
+    bndCtx.arc(sx, sy, 2.5, 0, Math.PI*2);
+    bndCtx.fill();
+    // Right
+    sx = rfOff + pt.x * pw;
+    sy = pad.t + (1 - pt.y) * ph;
+    bndCtx.beginPath();
+    bndCtx.fillStyle = pt.label === 0 ? '#4ea8f6' : '#ef4444';
+    bndCtx.arc(sx, sy, 2.5, 0, Math.PI*2);
+    bndCtx.fill();
+  }
+
+  // Labels
+  bndCtx.fillStyle = '#e1e4eb';
+  bndCtx.font = 'bold 20px "Segoe UI","PingFang SC",sans-serif';
+  bndCtx.textAlign = 'center';
+  bndCtx.fillText('单棵决策树', pad.l + pw/2, pad.t - 10);
+  bndCtx.fillText(`随机森林 (${nTrees}棵树)`, rfOff + pw/2, pad.t - 10);
+
+  // Axis labels
+  bndCtx.fillStyle = '#9ca3b4';
+  bndCtx.font = '15px "Segoe UI","PingFang SC",sans-serif';
+  bndCtx.fillText('X₁', pad.l + pw/2, pad.t + ph + 35);
+  bndCtx.fillText('X₁', rfOff + pw/2, pad.t + ph + 35);
+
+  // Stats
+  const correctSingle = baseData.filter(p => predict(singleTree, p.x, p.y) === p.label).length;
+  const correctRF = baseData.filter(p => {
+    let v0 = 0, v1 = 0;
+    for (const tree of trees) {
+      if (predict(tree, p.x, p.y) === 0) v0++; else v1++;
+    }
+    return (v1 > v0 ? 1 : 0) === p.label;
+  }).length;
+  const accSingle = (correctSingle / baseData.length * 100).toFixed(1);
+  const accRF = (correctRF / baseData.length * 100).toFixed(1);
+
+  document.getElementById('boundary-info').innerHTML = `
+    <div class="info-card">单棵树准确率 <span class="val v-orange">${accSingle}%</span></div>
+    <div class="info-card">随机森林准确率 <span class="val v-green">${accRF}%</span></div>
+    <div class="info-card">提升 <span class="val v-blue">+${(parseFloat(accRF) - parseFloat(accSingle)).toFixed(1)}%</span></div>
+    <div class="info-card">森林大小 <span class="val v-purple">${nTrees} 棵树</span></div>
+  `;
+}
+
+// ==================== Event handlers ====================
+document.getElementById('slider-B').addEventListener('input', drawBootstrap);
+document.getElementById('slider-N').addEventListener('input', drawBootstrap);
+document.getElementById('slider-nTrees').addEventListener('input', drawEnsemble);
+document.getElementById('slider-eDepth').addEventListener('input', drawEnsemble);
+document.getElementById('slider-mtry').addEventListener('input', drawFeatureRandomness);
+document.getElementById('slider-d').addEventListener('input', drawFeatureRandomness);
+document.getElementById('slider-btrees').addEventListener('input', drawBoundaryComparison);
+document.getElementById('slider-bdepth').addEventListener('input', drawBoundaryComparison);
+document.getElementById('slider-bpts').addEventListener('input', drawBoundaryComparison);
+
+// Initialize
+drawBootstrap();
+drawEnsemble();
+drawFeatureRandomness();
+drawBoundaryComparison();
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

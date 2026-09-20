@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XGBoost — 梯度提升、残差拟合与正则化交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222634;
+    --text: #e1e4eb;
+    --text2: #9ca3b4;
+    --green: #4ade80;
+      --accent: #4ade80;
+    --blue: #4ea8f6;
+    --orange: #f59342;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --yellow: #facc15;
+    --border: #2d3148;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16.0px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #2e1a2e 50%, #1a1d2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--orange), var(--red), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header p { color: var(--text2); font-size: 18px; }
+
+  .container { max-width: 1500px; margin: 0 auto; padding: 24px 20px; }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot.boosting { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .dot.additive { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.regularization { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+  .dot.compare { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+
+  .section .desc { color: var(--text2); font-size: 18px; margin-bottom: 20px; line-height: 1.8; }
+
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px; color: var(--text2); margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.1em; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 17px;
+    color: var(--text2);
+  }
+  .slider-group label .val {
+    font-weight: 600; color: var(--text);
+    font-family: 'Courier New', monospace; font-size: 17px;
+    min-width: 48px; text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .s-orange::-webkit-slider-thumb { background: var(--orange); }
+  .s-green::-webkit-slider-thumb { background: var(--green); }
+  .s-purple::-webkit-slider-thumb { background: var(--purple); }
+  .s-blue::-webkit-slider-thumb { background: var(--blue); }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px; margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2); border-radius: 6px; padding: 10px 14px;
+    font-size: 17px; color: var(--text2); font-family: 'Courier New', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+  .info-card .v-green { color: var(--green); }
+  .info-card .v-blue { color: var(--blue); }
+  .info-card .v-orange { color: var(--orange); }
+  .info-card .v-purple { color: var(--purple); }
+
+  .insight {
+    background: linear-gradient(135deg, rgba(245,147,66,0.08), rgba(168,85,247,0.08));
+    border: 1px solid rgba(245,147,66,0.2);
+    border-radius: 8px; padding: 14px 18px; margin-top: 16px;
+    font-size: 17px; color: var(--text2); line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); cursor: pointer;
+    font-size: 17px; font-weight: 600; transition: all .2s;
+  }
+  .btn:hover { border-color: var(--orange); background: #2a2d3a; }
+  .btn.active { border-color: var(--orange); background: rgba(245,147,66,0.2); color: var(--orange); }
+
+  .step-indicator {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .step-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--surface2); border: 2px solid var(--border);
+    transition: all .2s;
+  }
+  .step-dot.done { background: var(--green); border-color: var(--green); }
+  .step-dot.current { background: var(--orange); border-color: var(--orange); box-shadow: 0 0 8px var(--orange); }
+
+  .compare-table {
+    width: 100%; border-collapse: collapse; font-size: 17px;
+    margin: 16px 0;
+  }
+  .compare-table th, .compare-table td {
+    padding: 14px 18px; text-align: left; border: 1px solid var(--border);
+  }
+  .compare-table th {
+    background: var(--surface2); color: var(--text); font-weight: 700;
+    font-size: 18px;
+  }
+  .compare-table td { color: var(--text2); }
+  .compare-table td:first-child { font-weight: 700; color: var(--text); }
+  .compare-table .hl-green { color: var(--green); }
+  .compare-table .hl-orange { color: var(--orange); }
+  .compare-table .hl-blue { color: var(--blue); }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 16px; }
+    .sliders { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🚀 XGBoost · 梯度提升的极致工程化</h1>
+  <p>Gradient Boosting · 残差拟合 · 二阶泰勒展开 · 正则化 · 与决策树/随机森林对比 — 交互式可视化</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Gradient Boosting — 梯度提升框架 -->
+<!-- ================================================================ -->
+<div class="section" id="boosting-section">
+  <h2><span class="dot boosting"></span> 一、Gradient Boosting — 从残差拟合到梯度下降</h2>
+  <p class="desc">
+    Boosting 的核心思想是<b>序列式地</b>训练弱学习器（小决策树），每一棵新树<b>拟合前一棵树的残差（负梯度）</b>。
+    与 Bagging 不同，Boosting 是<b>串行</b>的：每棵树依赖前一轮的结果。XGBoost 更进一步，使用<b>二阶泰勒展开</b>
+    逼近损失函数，同时加入<b>正则化项</b>防止过拟合。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 核心公式 — 加法模型与梯度提升</h3>
+    <div id="formula-boosting"></div>
+  </div>
+
+  <canvas id="boostingCanvas" width="1400" height="550"></canvas>
+
+  <div class="info-row" id="boosting-info"></div>
+
+  <div class="btn-row">
+    <button class="btn active" id="btn-play" onclick="togglePlay()">▶ 自动演示</button>
+    <button class="btn" id="btn-step" onclick="stepBoosting()">⏭ 下一步</button>
+    <button class="btn" id="btn-reset-boost" onclick="resetBoosting()">🔄 重置</button>
+  </div>
+
+  <div class="step-indicator" id="step-dots"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>学习率 η <span class="val" id="val-eta">0.30</span></label>
+      <input type="range" class="s-orange" id="slider-eta" min="0.05" max="1" value="0.3" step="0.05">
+    </div>
+    <div class="slider-group">
+      <label>树的最大深度 <span class="val" id="val-gdepth">2</span></label>
+      <input type="range" class="s-orange" id="slider-gdepth" min="1" max="4" value="2" step="1">
+    </div>
+    <div class="slider-group">
+      <label>总迭代轮数 T <span class="val" id="val-T">10</span></label>
+      <input type="range" class="s-orange" id="slider-T" min="3" max="20" value="10" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>看右下方——每轮迭代后，总预测（橙色线）逐步逼近真实函数（蓝色虚线）。
+    每棵新树专注于修正前一轮的误差（残差 = 负梯度方向）。学习率 η 控制每棵树贡献的幅值；
+    η 小 → 需要更多树但泛化更好，η 大 → 收敛快但容易过拟合。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: XGBoost 目标函数 — 正则化与二阶近似 -->
+<!-- ================================================================ -->
+<div class="section" id="objective-section">
+  <h2><span class="dot additive"></span> 二、XGBoost 目标函数 — 正则化的泰勒展开</h2>
+  <p class="desc">
+    XGBoost 与传统 GBDT 的核心区别在于<b>目标函数的形式化</b>：① 使用<b>二阶泰勒展开</b>（而不仅是负梯度），
+    ② 目标函数中包含<b>显式正则化项</b> Ω(f) = γT + ½λ||w||²（T=叶节点数，w=叶权重，γ/λ 控制复杂度惩罚）。
+    这使得 XGBoost 天生<b>防止过拟合</b>，无需额外剪枝步骤。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 XGBoost 目标函数（第 t 轮）</h3>
+    <div id="formula-xgb-obj"></div>
+  </div>
+
+  <canvas id="regularizationCanvas" width="1400" height="520"></canvas>
+
+  <div class="info-row" id="reg-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>L2 正则 λ <span class="val" id="val-lambda">0.5</span></label>
+      <input type="range" class="s-purple" id="slider-lambda" min="0" max="3" value="0.5" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>叶节点惩罚 γ <span class="val" id="val-gamma">0.1</span></label>
+      <input type="range" class="s-purple" id="slider-gamma" min="0" max="1" value="0.1" step="0.05">
+    </div>
+    <div class="slider-group">
+      <label>学习率 η <span class="val" id="val-eta2">0.30</span></label>
+      <input type="range" class="s-purple" id="slider-eta2" min="0.05" max="0.5" value="0.3" step="0.05">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>λ 越大 → 叶节点权重被压缩 → 模型更保守（欠拟合倾向）；γ 越大 → 分裂门槛越高 → 树更小更简单。
+    这两个超参是 XGBoost <b>防止过拟合</b>的关键武器。当 λ=γ=0 时，目标函数退化为普通 GBDT。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: 三大方法对比 -->
+<!-- ================================================================ -->
+<div class="section" id="compare-section">
+  <h2><span class="dot compare"></span> 三、决策树 vs 随机森林 vs XGBoost — 全面对比</h2>
+  <p class="desc">
+    三种树模型代表了集成学习的三种范式：<b>单模型（决策树）</b>、<b>并行 Bagging（随机森林）</b>、<b>串行 Boosting（XGBoost）</b>。
+    它们在偏差-方差权衡、训练方式、可解释性上有本质区别。
+  </p>
+
+  <canvas id="compareCanvas" width="1400" height="580"></canvas>
+
+  <div class="info-row" id="compare-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>训练数据噪声 σ <span class="val" id="val-noise">0.05</span></label>
+      <input type="range" class="s-blue" id="slider-noise" min="0" max="0.2" value="0.05" step="0.01">
+    </div>
+    <div class="slider-group">
+      <label>样本数 <span class="val" id="val-cpts">100</span></label>
+      <input type="range" class="s-blue" id="slider-cpts" min="50" max="200" value="100" step="10">
+    </div>
+  </div>
+
+  <table class="compare-table">
+    <tr>
+      <th>维度</th><th>🌳 决策树</th><th>🌲🌲 随机森林</th><th>🚀 XGBoost</th>
+    </tr>
+    <tr>
+      <td>训练方式</td>
+      <td>单次递归分裂</td>
+      <td class="hl-blue">并行 Bagging</td>
+      <td class="hl-orange">串行 Boosting</td>
+    </tr>
+    <tr>
+      <td>每棵树角色</td>
+      <td>唯一模型</td>
+      <td class="hl-blue">独立投票者</td>
+      <td class="hl-orange">残差修正者</td>
+    </tr>
+    <tr>
+      <td>核心思想</td>
+      <td>信息增益最大化</td>
+      <td class="hl-blue">降低方差 (variance)</td>
+      <td class="hl-orange">降低偏差 (bias)</td>
+    </tr>
+    <tr>
+      <td>过拟合控制</td>
+      <td>剪枝 / 最大深度</td>
+      <td class="hl-blue">大量树 + 随机性</td>
+      <td class="hl-orange">学习率 + L1/L2 正则</td>
+    </tr>
+    <tr>
+      <td>可解释性</td>
+      <td>⭐⭐⭐⭐⭐ 极好</td>
+      <td class="hl-blue">⭐⭐⭐ 特征重要性</td>
+      <td class="hl-orange">⭐⭐⭐ SHAP 值</td>
+    </tr>
+    <tr>
+      <td>训练速度</td>
+      <td>快</td>
+      <td class="hl-blue">中等（可并行）</td>
+      <td class="hl-orange">较慢（串行）</td>
+    </tr>
+    <tr>
+      <td>典型应用</td>
+      <td>规则提取</td>
+      <td class="hl-blue">通用分类/回归</td>
+      <td class="hl-orange">竞赛/工业界首选</td>
+    </tr>
+  </table>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>如果你需要<b>解释性</b>，用单棵决策树；你需要<b>快速可靠的基线</b>，用随机森林；
+    你需要<b>最优性能且数据不太少</b>，用 XGBoost（或其变体 LightGBM/CatBoost）。
+    三者并非排斥关系——实践中常用随机森林做特征选择，再用 XGBoost 精调。
+  </div>
+</div>
+
+</div>
+
+<script>
+// ==================== KaTeX ====================
+katex.render(String.raw`
+  \begin{aligned}
+  \hat{y}_i^{(t)} &= \hat{y}_i^{(t-1)} + \eta \cdot f_t(\boldsymbol{x}_i) \quad \text{(加法模型)} \\[6pt]
+  f_t &= \underset{f}{\arg\min} \sum_{i=1}^N \left[ g_i f(\boldsymbol{x}_i) + \frac{1}{2} h_i f(\boldsymbol{x}_i)^2 \right] + \Omega(f) \\[6pt]
+  g_i &= \frac{\partial \ell(y_i, \hat{y}_i^{(t-1)})}{\partial \hat{y}_i^{(t-1)}}, \quad h_i = \frac{\partial^2 \ell(y_i, \hat{y}_i^{(t-1)})}{\partial (\hat{y}_i^{(t-1)})^2}
+  \end{aligned}
+`, document.getElementById('formula-boosting'), { displayMode: true });
+
+katex.render(String.raw`
+  \begin{aligned}
+  \mathcal{L}^{(t)} &= \sum_{i=1}^N \left[ g_i f_t(\boldsymbol{x}_i) + \frac{1}{2} h_i f_t(\boldsymbol{x}_i)^2 \right] + \gamma T + \frac{1}{2}\lambda \sum_{j=1}^T w_j^2 \\[6pt]
+  w_j^* &= -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i + \lambda}, \quad
+  \text{Gain} = \frac{1}{2}\left[ \frac{(\sum_{i \in I_L} g_i)^2}{\sum_{i \in I_L} h_i + \lambda} + \frac{(\sum_{i \in I_R} g_i)^2}{\sum_{i \in I_R} h_i + \lambda} - \frac{(\sum_{i \in I} g_i)^2}{\sum_{i \in I} h_i + \lambda} \right] - \gamma
+  \end{aligned}
+`, document.getElementById('formula-xgb-obj'), { displayMode: true });
+
+// ==================== SECTION 1: Boosting visualization ====================
+const boostCanvas = document.getElementById('boostingCanvas');
+const boostCtx = boostCanvas.getContext('2d');
+const W1 = boostCanvas.width, H1 = boostCanvas.height;
+
+// Generate 1D regression data
+const nRegPts = 80;
+const regX = [];
+const regY = [];
+function generateRegData() {
+  regX.length = 0; regY.length = 0;
+  for (let i = 0; i < nRegPts; i++) {
+    const x = i / nRegPts;
+    const y = 0.5 + 0.4 * Math.sin(x * 4 * Math.PI) + 0.15 * Math.cos(x * 7 * Math.PI) + (Math.random() - 0.5) * 0.12;
+    regX.push(x);
+    regY.push(y);
+  }
+}
+generateRegData();
+
+let boostStep = 0;
+let boostPredictions = null; // [nPts][T] cumulative predictions
+let boostTrees = []; // array of tree structures for regression
+
+// Simple regression tree for 1D
+function buildRegTreeStump(xs, residuals, maxDepth) {
+  // returns a function: x -> prediction
+  if (maxDepth <= 0) {
+    const avg = residuals.reduce((a, b) => a + b, 0) / residuals.length;
+    return { isLeaf: true, pred: avg };
+  }
+  // Find best split
+  const sorted = xs.map((x, i) => ({ x, r: residuals[i] })).sort((a, b) => a.x - b.x);
+  let bestLoss = Infinity, bestThresh = 0;
+  let leftSum = 0, rightSum = residuals.reduce((a, b) => a + b, 0);
+  let leftN = 0, rightN = residuals.length;
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    leftSum += sorted[i].r; rightSum -= sorted[i].r;
+    leftN++; rightN--;
+    if (leftN < 3 || rightN < 3) continue;
+    const leftMean = leftSum / leftN, rightMean = rightSum / rightN;
+    let leftLoss = 0, rightLoss = 0;
+    for (let j = 0; j <= i; j++) leftLoss += (sorted[j].r - leftMean) ** 2;
+    for (let j = i+1; j < sorted.length; j++) rightLoss += (sorted[j].r - rightMean) ** 2;
+    const loss = leftLoss + rightLoss;
+    if (loss < bestLoss) { bestLoss = loss; bestThresh = (sorted[i].x + sorted[i+1].x) / 2; }
+  }
+  if (bestLoss === Infinity) {
+    const avg = residuals.reduce((a, b) => a + b, 0) / residuals.length;
+    return { isLeaf: true, pred: avg };
+  }
+
+  const leftIdx = [], rightIdx = [];
+  for (let i = 0; i < xs.length; i++) {
+    if (xs[i] <= bestThresh) leftIdx.push(i); else rightIdx.push(i);
+  }
+  return {
+    isLeaf: false, thresh: bestThresh,
+    left: buildRegTreeStump(leftIdx.map(i => xs[i]), leftIdx.map(i => residuals[i]), maxDepth - 1),
+    right: buildRegTreeStump(rightIdx.map(i => xs[i]), rightIdx.map(i => residuals[i]), maxDepth - 1)
+  };
+}
+
+function regTreePredict(tree, x) {
+  if (tree.isLeaf) return tree.pred;
+  return regTreePredict(x <= tree.thresh ? tree.left : tree.right, x);
+}
+
+function trainBoosting(T, eta, maxDepth) {
+  const preds = new Array(nRegPts).fill(0);
+  boostPredictions = [preds.slice()];
+  boostTrees = [];
+
+  for (let t = 0; t < T; t++) {
+    const residuals = regY.map((y, i) => y - preds[i]);
+    const tree = buildRegTreeStump(regX.slice(), residuals, maxDepth);
+    boostTrees.push(tree);
+    for (let i = 0; i < nRegPts; i++) {
+      preds[i] += eta * regTreePredict(tree, regX[i]);
+    }
+    boostPredictions.push(preds.slice());
+  }
+}
+
+function drawBoosting() {
+  const T = parseInt(document.getElementById('slider-T').value);
+  const eta = parseFloat(document.getElementById('slider-eta').value);
+  const maxDepth = parseInt(document.getElementById('slider-gdepth').value);
+  document.getElementById('val-eta').textContent = eta.toFixed(2);
+  document.getElementById('val-gdepth').textContent = maxDepth;
+  document.getElementById('val-T').textContent = T;
+
+  trainBoosting(T, eta, maxDepth);
+
+  boostCtx.clearRect(0, 0, W1, H1);
+
+  const pad = { l: 65, r: 30, t: 30, b: 75 };
+  const pw = W1 - pad.l - pad.r;
+  const ph = H1 - pad.t - pad.b - 120; // leave room for residual panel
+  const rph = 90; // residual panel height
+
+  // Data points in main panel
+  for (let i = 0; i < nRegPts; i++) {
+    const sx = pad.l + regX[i] * pw;
+    const sy = pad.t + (1 - regY[i]) * ph;
+    boostCtx.beginPath();
+    boostCtx.fillStyle = '#4ea8f6';
+    boostCtx.arc(sx, sy, 3, 0, Math.PI*2);
+    boostCtx.fill();
+  }
+
+  // True function
+  boostCtx.beginPath();
+  boostCtx.strokeStyle = 'rgba(78,168,246,0.4)';
+  boostCtx.lineWidth = 2;
+  boostCtx.setLineDash([6, 4]);
+  for (let i = 0; i <= pw; i++) {
+    const x = i / pw;
+    const y = 0.5 + 0.4 * Math.sin(x * 4 * Math.PI) + 0.15 * Math.cos(x * 7 * Math.PI);
+    const sx = pad.l + i;
+    const sy = pad.t + (1 - y) * ph;
+    if (i === 0) boostCtx.moveTo(sx, sy);
+    else boostCtx.lineTo(sx, sy);
+  }
+  boostCtx.stroke();
+  boostCtx.setLineDash([]);
+
+  // Draw current prediction
+  if (boostStep > 0 && boostPredictions && boostStep <= boostPredictions.length - 1) {
+    boostCtx.beginPath();
+    boostCtx.strokeStyle = '#f59342';
+    boostCtx.lineWidth = 3;
+    const preds = boostPredictions[boostStep];
+    for (let i = 0; i <= pw; i++) {
+      // interpolate
+      const xi = i / pw;
+      // Find nearest regX
+      let bestIdx = 0, bestDist = Infinity;
+      for (let j = 0; j < nRegPts; j++) {
+        const d = Math.abs(regX[j] - xi);
+        if (d < bestDist) { bestDist = d; bestIdx = j; }
+      }
+      const pred = preds[bestIdx];
+      const sx = pad.l + i;
+      const sy = pad.t + (1 - pred) * ph;
+      if (i === 0) boostCtx.moveTo(sx, sy);
+      else boostCtx.lineTo(sx, sy);
+    }
+    boostCtx.stroke();
+
+    // Last tree contribution (residual fitting)
+    if (boostStep > 0 && boostStep <= boostTrees.length) {
+      const tree = boostTrees[boostStep - 1];
+      boostCtx.beginPath();
+      boostCtx.strokeStyle = 'rgba(168,85,247,0.5)';
+      boostCtx.lineWidth = 2;
+      for (let i = 0; i <= pw; i++) {
+        const xi = i / pw;
+        let bestIdx = 0, bestDist = Infinity;
+        for (let j = 0; j < nRegPts; j++) {
+          const d = Math.abs(regX[j] - xi);
+          if (d < bestDist) { bestDist = d; bestIdx = j; }
+        }
+        const contrib = eta * regTreePredict(tree, regX[bestIdx]);
+        const sy = pad.t + (1 - contrib) * ph;
+        if (i === 0) boostCtx.moveTo(sx, sy);
+        else boostCtx.lineTo(sx, sy);
+      }
+      boostCtx.stroke();
+    }
+
+    // Show residuals in bottom panel
+    const rY = pad.t + ph + 20;
+    boostCtx.fillStyle = '#2d3148';
+    boostCtx.fillRect(pad.l, rY, pw, rph);
+    boostCtx.strokeStyle = '#3d4158';
+    boostCtx.lineWidth = 1;
+    boostCtx.strokeRect(pad.l, rY, pw, rph);
+
+    // Zero line
+    boostCtx.beginPath();
+    boostCtx.strokeStyle = '#555';
+    boostCtx.lineWidth = 1;
+    boostCtx.setLineDash([3, 5]);
+    boostCtx.moveTo(pad.l, rY + rph/2);
+    boostCtx.lineTo(pad.l + pw, rY + rph/2);
+    boostCtx.stroke();
+    boostCtx.setLineDash([]);
+
+    // Residual bars
+    const step = Math.max(1, Math.floor(nRegPts / 100));
+    for (let i = 0; i < nRegPts; i += step) {
+      const res = regY[i] - boostPredictions[boostStep][i];
+      const sx = pad.l + regX[i] * pw;
+      const barH = Math.min(rph/2 - 2, Math.abs(res) * rph * 2);
+      boostCtx.fillStyle = res > 0 ? 'rgba(239,68,68,0.6)' : 'rgba(74,222,128,0.6)';
+      boostCtx.fillRect(sx - 1, res > 0 ? rY + rph/2 - barH : rY + rph/2, 2, barH);
+    }
+
+    boostCtx.fillStyle = '#9ca3b4';
+    boostCtx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+    boostCtx.textAlign = 'left';
+    boostCtx.fillText('残差 (Residuals)', pad.l + 6, rY + 16);
+  }
+
+  // Legend
+  boostCtx.font = '17px "Segoe UI","PingFang SC",sans-serif';
+  boostCtx.textAlign = 'left';
+  boostCtx.strokeStyle = 'rgba(78,168,246,0.4)';
+  boostCtx.lineWidth = 2;
+  boostCtx.setLineDash([6, 4]);
+  boostCtx.beginPath(); boostCtx.moveTo(pad.l + 10, pad.t + 8); boostCtx.lineTo(pad.l + 40, pad.t + 8); boostCtx.stroke();
+  boostCtx.setLineDash([]);
+  boostCtx.fillStyle = '#e1e4eb';
+  boostCtx.fillText('真实函数', pad.l + 48, pad.t + 14);
+
+  boostCtx.strokeStyle = '#f59342';
+  boostCtx.lineWidth = 3;
+  boostCtx.beginPath(); boostCtx.moveTo(pad.l + 10, pad.t + 28); boostCtx.lineTo(pad.l + 40, pad.t + 28); boostCtx.stroke();
+  boostCtx.fillText('当前预测', pad.l + 48, pad.t + 34);
+
+  boostCtx.strokeStyle = 'rgba(168,85,247,0.5)';
+  boostCtx.lineWidth = 2;
+  boostCtx.beginPath(); boostCtx.moveTo(pad.l + 150, pad.t + 8); boostCtx.lineTo(pad.l + 180, pad.t + 8); boostCtx.stroke();
+  boostCtx.fillText('新树贡献', pad.l + 188, pad.t + 14);
+
+  boostCtx.fillStyle = '#4ea8f6';
+  boostCtx.beginPath(); boostCtx.arc(pad.l + 25, pad.t + 50, 4, 0, Math.PI*2); boostCtx.fill();
+  boostCtx.fillStyle = '#e1e4eb';
+  boostCtx.fillText('训练数据', pad.l + 40, pad.t + 55);
+
+  // Progress
+  boostCtx.fillStyle = '#e1e4eb';
+  boostCtx.font = 'bold 18px "Segoe UI","PingFang SC",sans-serif';
+  boostCtx.textAlign = 'right';
+  boostCtx.fillText(`迭代: ${boostStep} / ${T}`, W1 - pad.r - 10, pad.t + 20);
+
+  // MSE
+  let mse = 0;
+  if (boostStep > 0 && boostPredictions) {
+    for (let i = 0; i < nRegPts; i++) {
+      mse += (regY[i] - boostPredictions[boostStep][i]) ** 2;
+    }
+    mse /= nRegPts;
+  }
+  document.getElementById('boosting-info').innerHTML = `
+    <div class="info-card">迭代轮数 <span class="val v-orange">${boostStep} / ${T}</span></div>
+    <div class="info-card">学习率 η <span class="val v-green">${eta.toFixed(2)}</span></div>
+    <div class="info-card">树的最大深度 <span class="val v-blue">${maxDepth}</span></div>
+    <div class="info-card">MSE <span class="val v-purple">${boostStep > 0 ? mse.toFixed(6) : '---'}</span></div>
+  `;
+
+  // Step dots
+  let dotsHtml = '';
+  for (let t = 0; t <= T; t++) {
+    let cls = '';
+    if (t < boostStep) cls = 'done';
+    else if (t === boostStep) cls = 'current';
+    dotsHtml += `<span class="step-dot ${cls}" title="t=${t}"></span>`;
+  }
+  document.getElementById('step-dots').innerHTML = dotsHtml;
+}
+
+function stepBoosting() {
+  const T = parseInt(document.getElementById('slider-T').value);
+  if (boostStep < T) boostStep++;
+  drawBoosting();
+}
+
+function resetBoosting() {
+  boostStep = 0;
+  boostPredictions = null;
+  boostTrees = [];
+  generateRegData();
+  drawBoosting();
+}
+
+let playInterval = null;
+function togglePlay() {
+  const btn = document.getElementById('btn-play');
+  if (playInterval) {
+    clearInterval(playInterval);
+    playInterval = null;
+    btn.textContent = '▶ 自动演示';
+    btn.classList.remove('active');
+  } else {
+    btn.textContent = '⏸ 暂停';
+    btn.classList.add('active');
+    playInterval = setInterval(() => {
+      const T = parseInt(document.getElementById('slider-T').value);
+      if (boostStep >= T) {
+        clearInterval(playInterval);
+        playInterval = null;
+        btn.textContent = '▶ 自动演示';
+        btn.classList.remove('active');
+        return;
+      }
+      stepBoosting();
+    }, 500);
+  }
+}
+
+// ==================== SECTION 2: Regularization ====================
+const regCanvas = document.getElementById('regularizationCanvas');
+const regCtx = regCanvas.getContext('2d');
+const W2 = regCanvas.width, H2 = regCanvas.height;
+
+function drawRegularization() {
+  const lambda = parseFloat(document.getElementById('slider-lambda').value);
+  const gamma = parseFloat(document.getElementById('slider-gamma').value);
+  const eta = parseFloat(document.getElementById('slider-eta2').value);
+  document.getElementById('val-lambda').textContent = lambda.toFixed(1);
+  document.getElementById('val-gamma').textContent = gamma.toFixed(2);
+  document.getElementById('val-eta2').textContent = eta.toFixed(2);
+
+  regCtx.clearRect(0, 0, W2, H2);
+
+  const pad = { l: 70, r: 40, t: 40, b: 70 };
+  const pw = W2 - pad.l - pad.r;
+  const ph = H2 - pad.t - pad.b;
+
+  // Plot: optimal leaf weight w* vs sum of gradients, for different lambda
+  const gradSums = [];
+  for (let i = 0; i < 100; i++) gradSums.push(i / 100 * 2 - 1); // -1 to 1
+
+  // Axes
+  regCtx.strokeStyle = '#2d3148';
+  regCtx.lineWidth = 2;
+  regCtx.beginPath();
+  regCtx.moveTo(pad.l + pw/2, pad.t);
+  regCtx.lineTo(pad.l + pw/2, pad.t + ph);
+  regCtx.moveTo(pad.l, pad.t + ph/2);
+  regCtx.lineTo(pad.l + pw, pad.t + ph/2);
+  regCtx.stroke();
+
+  // Grid
+  regCtx.strokeStyle = '#222634';
+  regCtx.lineWidth = 1;
+  for (let i = 0; i <= 10; i++) {
+    const x = pad.l + pw * i / 10;
+    regCtx.beginPath(); regCtx.moveTo(x, pad.t); regCtx.lineTo(x, pad.t + ph); regCtx.stroke();
+    const y = pad.t + ph * i / 10;
+    regCtx.beginPath(); regCtx.moveTo(pad.l, y); regCtx.lineTo(pad.l + pw, y); regCtx.stroke();
+  }
+
+  // Draw curves for different lambda values
+  const lambdas = [0, 0.5, 1, 2, 5];
+  const colors = ['#ef4444', '#f59342', '#facc15', '#4ade80', '#4ea8f6'];
+
+  for (let li = 0; li < lambdas.length; li++) {
+    const l = lambdas[li];
+    regCtx.beginPath();
+    regCtx.strokeStyle = colors[li];
+    regCtx.lineWidth = l === lambda ? 3.5 : 1.5;
+    if (l === lambda) regCtx.setLineDash([]);
+    else regCtx.setLineDash([4, 4]);
+
+    for (let i = 0; i <= pw; i++) {
+      const g = (i / pw - 0.5) * 2; // -1 to 1
+      const h = 0.5; // assume h_i ≈ 0.5 typical
+      const w = -g / (h + l);
+      const sx = pad.l + i;
+      const sy = pad.t + ph/2 - w * ph/2; // scale
+      if (i === 0) regCtx.moveTo(sx, Math.max(pad.t, Math.min(pad.t + ph, sy)));
+      else regCtx.lineTo(sx, Math.max(pad.t, Math.min(pad.t + ph, sy)));
+    }
+    regCtx.stroke();
+  }
+  regCtx.setLineDash([]);
+
+  // Highlight current lambda
+  regCtx.font = '17px "Segoe UI","PingFang SC",sans-serif';
+  for (let li = 0; li < lambdas.length; li++) {
+    regCtx.fillStyle = colors[li];
+    regCtx.textAlign = 'left';
+    const y = pad.t + 14 + li * 22;
+    regCtx.fillRect(pad.l + pw - 200, y - 10, 16, 3);
+    regCtx.fillText(`λ=${lambdas[li]}`, pad.l + pw - 178, y);
+    if (lambdas[li] === lambda) {
+      regCtx.fillText('◀ 当前', pad.l + pw - 115, y);
+    }
+  }
+
+  // Labels
+  regCtx.fillStyle = '#e1e4eb';
+  regCtx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+  regCtx.textAlign = 'center';
+  regCtx.fillText('∑gᵢ (一阶梯度之和)', pad.l + pw/2, pad.t + ph + 45);
+  regCtx.save();
+  regCtx.translate(16, pad.t + ph/2);
+  regCtx.rotate(-Math.PI/2);
+  regCtx.fillText('w* (最优叶权重)', 0, 0);
+  regCtx.restore();
+
+  // Show gain threshold effect of gamma
+  const gainPanelX = pad.l + pw + 30;
+  const gainW = W2 - gainPanelX - pad.r;
+  // Gain vs split quality
+  regCtx.fillStyle = '#e1e4eb';
+  regCtx.font = 'bold 20px "Segoe UI","PingFang SC",sans-serif';
+  regCtx.textAlign = 'center';
+  regCtx.fillText('γ 分裂门槛效应', gainPanelX + gainW/2, pad.t + 30);
+
+  const barCount = 8;
+  const barW = (gainW - 40) / barCount;
+  for (let i = 0; i < barCount; i++) {
+    const rawGain = (i + 1) * 0.5;
+    const netGain = rawGain - gamma;
+    const h = Math.max(0, netGain) * 90;
+    const x = gainPanelX + 20 + i * barW;
+    const y = pad.t + ph - h - 20;
+
+    regCtx.fillStyle = netGain > 0 ? 'rgba(74,222,128,0.6)' : 'rgba(239,68,68,0.3)';
+    regCtx.fillRect(x + 4, y, barW - 8, h);
+    regCtx.strokeStyle = netGain > 0 ? '#4ade80' : '#ef4444';
+    regCtx.lineWidth = 1;
+    regCtx.strokeRect(x + 4, y, barW - 8, h);
+
+    regCtx.fillStyle = '#9ca3b4';
+    regCtx.font = '15px "Courier New", monospace';
+    regCtx.textAlign = 'center';
+    regCtx.fillText((rawGain).toFixed(1), x + barW/2, pad.t + ph - 2);
+
+    if (netGain <= 0) {
+      regCtx.fillStyle = '#ef4444';
+      regCtx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+      regCtx.fillText('✗不分裂', x + barW/2, y - 6);
+    }
+  }
+
+  // Gamma threshold line
+  const threshY = pad.t + ph - gamma * 90 - 20;
+  regCtx.beginPath();
+  regCtx.strokeStyle = '#f59342';
+  regCtx.lineWidth = 2;
+  regCtx.setLineDash([4, 4]);
+  regCtx.moveTo(gainPanelX + 20, threshY);
+  regCtx.lineTo(gainPanelX + gainW - 20, threshY);
+  regCtx.stroke();
+  regCtx.setLineDash([]);
+  regCtx.fillStyle = '#f59342';
+  regCtx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+  regCtx.fillText(`γ=${gamma.toFixed(2)} 门槛`, gainPanelX + gainW/2, threshY - 8);
+
+  // Info
+  // Simulate effect: compute optimal weight for a typical case
+  const gSum = 0.5, hSum = 0.5;
+  const wStar = -gSum / (hSum + lambda);
+  document.getElementById('reg-info').innerHTML = `
+    <div class="info-card">λ = <span class="val v-purple">${lambda.toFixed(1)}</span></div>
+    <div class="info-card">γ = <span class="val v-orange">${gamma.toFixed(2)}</span></div>
+    <div class="info-card">示例 w* ≈ <span class="val v-green">${wStar.toFixed(3)}</span></div>
+    <div class="info-card">λ↑ → |w|↓ <span class="val v-blue">收缩权重</span></div>
+  `;
+}
+
+// ==================== SECTION 3: Three-way Comparison ====================
+const compCanvas = document.getElementById('compareCanvas');
+const compCtx = compCanvas.getContext('2d');
+const W3 = compCanvas.width, H3 = compCanvas.height;
+
+function drawComparison() {
+  const noise = parseFloat(document.getElementById('slider-noise').value);
+  const nPts = parseInt(document.getElementById('slider-cpts').value);
+  document.getElementById('val-noise').textContent = noise.toFixed(2);
+  document.getElementById('val-cpts').textContent = nPts;
+
+  // Generate classification data
+  const compData = [];
+  for (let i = 0; i < nPts; i++) {
+    let x = Math.random();
+    let y = Math.random();
+    // Nonlinear boundary: spiral-ish
+    const dist0 = Math.sqrt((x - 0.3) ** 2 + (y - 0.35) ** 2);
+    const dist1 = Math.sqrt((x - 0.65) ** 2 + (y - 0.6) ** 2);
+    let label;
+    if (dist0 < dist1) {
+      label = 0;
+      x += (Math.random() - 0.5) * noise * 2;
+      y += (Math.random() - 0.5) * noise * 2;
+    } else {
+      label = 1;
+      x += (Math.random() - 0.5) * noise * 2;
+      y += (Math.random() - 0.5) * noise * 2;
+    }
+    compData.push({ x: Math.min(1, Math.max(0, x)), y: Math.min(1, Math.max(0, y)), label });
+  }
+
+  compCtx.clearRect(0, 0, W3, H3);
+
+  const pad = { l: 55, r: 30, t: 45, b: 55 };
+  const gap = 35;
+  const panelW = (W3 - pad.l - pad.r - gap * 2) / 3;
+  const ph = H3 - pad.t - pad.b;
+
+  // Build all three models
+  // 1. Decision Tree
+  const dt = buildTree2D(compData, 'gini', 4, 3);
+
+  // 2. Random Forest
+  const rfTrees = [];
+  for (let t = 0; t < 21; t++) {
+    const sample = [];
+    for (let i = 0; i < compData.length; i++) {
+      sample.push(compData[Math.floor(Math.random() * compData.length)]);
+    }
+    rfTrees.push(buildTree2D(sample, 'gini', 4, 2));
+  }
+
+  // 3. XGBoost (simplified: GBDT with small trees)
+  const xgbTrees = [];
+  let xgbPreds = compData.map(() => 0);
+  for (let t = 0; t < 20; t++) {
+    // Compute gradients (for cross-entropy loss with p=sigmoid(pred))
+    const grads = compData.map((p, i) => {
+      const prob = 1 / (1 + Math.exp(-xgbPreds[i]));
+      return prob - p.label; // gradient of log loss
+    });
+    const hess = compData.map((p, i) => {
+      const prob = 1 / (1 + Math.exp(-xgbPreds[i]));
+      return prob * (1 - prob); // hessian of log loss
+    });
+    // Build a stump fitting the gradients
+    const tree = buildXGBTree(compData, grads, hess, 2, 0.5);
+    xgbTrees.push(tree);
+    const eta = 0.3;
+    for (let i = 0; i < compData.length; i++) {
+      xgbPreds[i] += eta * xgbTreePredict(tree, compData[i].x, compData[i].y);
+    }
+  }
+
+  const panels = [
+    { title: '决策树', offset: pad.l, model: 'dt', color: '#4ea8f6' },
+    { title: '随机森林', offset: pad.l + panelW + gap, model: 'rf', color: '#4ade80' },
+    { title: 'XGBoost', offset: pad.l + (panelW + gap) * 2, model: 'xgb', color: '#f59342' }
+  ];
+
+  const step = 5;
+  for (const panel of panels) {
+    // Draw decision regions
+    for (let px = 0; px < panelW; px += step) {
+      for (let py = 0; py < ph; py += step) {
+        const x = px / panelW;
+        const y = 1 - py / ph;
+        let pred;
+        if (panel.model === 'dt') {
+          pred = predict2D(dt, x, y);
+        } else if (panel.model === 'rf') {
+          let v0 = 0, v1 = 0;
+          for (const t of rfTrees) {
+            if (predict2D(t, x, y) === 0) v0++; else v1++;
+          }
+          pred = v1 > v0 ? 1 : 0;
+        } else {
+          // xgb
+          let raw = 0;
+          for (const t of xgbTrees) raw += 0.3 * xgbTreePredict(t, x, y);
+          pred = raw > 0 ? 1 : 0;
+        }
+        compCtx.fillStyle = pred === 0
+          ? 'rgba(78,168,246,0.18)'
+          : 'rgba(239,68,68,0.18)';
+        compCtx.fillRect(panel.offset + px, pad.t + py, step, step);
+      }
+    }
+
+    // Data points
+    for (const pt of compData) {
+      const sx = panel.offset + pt.x * panelW;
+      const sy = pad.t + (1 - pt.y) * ph;
+      compCtx.beginPath();
+      compCtx.fillStyle = pt.label === 0 ? '#4ea8f6' : '#ef4444';
+      compCtx.arc(sx, sy, 2, 0, Math.PI*2);
+      compCtx.fill();
+    }
+
+    // Title
+    compCtx.fillStyle = '#e1e4eb';
+    compCtx.font = 'bold 20px "Segoe UI","PingFang SC",sans-serif';
+    compCtx.textAlign = 'center';
+    compCtx.fillText(panel.title, panel.offset + panelW/2, pad.t - 10);
+
+    // Accuracy
+    let correct = 0;
+    for (const pt of compData) {
+      let pred;
+      if (panel.model === 'dt') {
+        pred = predict2D(dt, pt.x, pt.y);
+      } else if (panel.model === 'rf') {
+        let v0 = 0, v1 = 0;
+        for (const t of rfTrees) {
+          if (predict2D(t, pt.x, pt.y) === 0) v0++; else v1++;
+        }
+        pred = v1 > v0 ? 1 : 0;
+      } else {
+        let raw = 0;
+        for (const t of xgbTrees) raw += 0.3 * xgbTreePredict(t, pt.x, pt.y);
+        pred = raw > 0 ? 1 : 0;
+      }
+      if (pred === pt.label) correct++;
+    }
+    const acc = (correct / compData.length * 100).toFixed(1);
+    compCtx.fillStyle = panel.color;
+    compCtx.font = 'bold 18px "Segoe UI","PingFang SC",sans-serif';
+    compCtx.fillText(`Acc: ${acc}%`, panel.offset + panelW/2, pad.t + ph + 35);
+  }
+
+  document.getElementById('compare-info').innerHTML = `
+    <div class="info-card">噪声水平 σ <span class="val v-orange">${noise.toFixed(2)}</span></div>
+    <div class="info-card">数据点数 <span class="val v-blue">${nPts}</span></div>
+    <div class="info-card">决策树最大深度 <span class="val v-purple">4</span></div>
+    <div class="info-card">RF/XGB 树数 <span class="val v-green">21 / 20</span></div>
+  `;
+}
+
+// Helper: 2D classification tree
+function buildTree2D(points, criterion, maxDepth, minSplit, depth = 0) {
+  const labels = points.map(p => p.label);
+  const majority = labels.filter(l => l === 1).length >= labels.length / 2 ? 1 : 0;
+
+  if (depth >= maxDepth || points.length < minSplit) {
+    return { label: majority, n: points.length, isLeaf: true };
+  }
+
+  // Find best split
+  const parentImp = criterion === 'gini' ? gini2(labels) : entropy2(labels);
+  let bestGain = 0, bestFeat = 0, bestThresh = 0;
+
+  for (const feat of [0, 1]) {
+    const vals = points.map(p => feat === 0 ? p.x : p.y).sort((a, b) => a - b);
+    for (let i = 1; i < vals.length; i++) {
+      const thresh = (vals[i-1] + vals[i]) / 2;
+      const leftL = [], rightL = [];
+      for (const p of points) {
+        const v = feat === 0 ? p.x : p.y;
+        if (v <= thresh) leftL.push(p.label); else rightL.push(p.label);
+      }
+      if (leftL.length < minSplit || rightL.length < minSplit) continue;
+      const gain = parentImp
+        - (leftL.length/points.length) * (criterion === 'gini' ? gini2(leftL) : entropy2(leftL))
+        - (rightL.length/points.length) * (criterion === 'gini' ? gini2(rightL) : entropy2(rightL));
+      if (gain > bestGain) { bestGain = gain; bestFeat = feat; bestThresh = thresh; }
+    }
+  }
+  if (bestGain === 0) return { label: majority, n: points.length, isLeaf: true };
+
+  const leftPts = [], rightPts = [];
+  for (const p of points) {
+    const v = bestFeat === 0 ? p.x : p.y;
+    if (v <= bestThresh) leftPts.push(p); else rightPts.push(p);
+  }
+
+  return {
+    feat: bestFeat, thresh: bestThresh, isLeaf: false,
+    left: buildTree2D(leftPts, criterion, maxDepth, minSplit, depth + 1),
+    right: buildTree2D(rightPts, criterion, maxDepth, minSplit, depth + 1),
+    label: majority
+  };
+}
+
+function gini2(labels) {
+  if (labels.length === 0) return 0;
+  const c1 = labels.filter(l => l === 1).length;
+  const p1 = c1 / labels.length;
+  return 1 - p1*p1 - (1-p1)*(1-p1);
+}
+
+function entropy2(labels) {
+  if (labels.length === 0) return 0;
+  const c1 = labels.filter(l => l === 1).length;
+  const p1 = c1 / labels.length;
+  let e = 0;
+  if (p1 > 0) e -= p1 * Math.log2(p1);
+  if (p1 < 1) e -= (1-p1) * Math.log2(1-p1);
+  return e;
+}
+
+function predict2D(node, x, y) {
+  if (node.isLeaf) return node.label;
+  const v = node.feat === 0 ? x : y;
+  return predict2D(v <= node.thresh ? node.left : node.right, x, y);
+}
+
+// XGBoost-style regression tree (for classification via log loss)
+function buildXGBTree(points, grads, hess, maxDepth, lambda, depth = 0) {
+  if (depth >= maxDepth) {
+    const gSum = grads.reduce((a, b) => a + b, 0);
+    const hSum = hess.reduce((a, b) => a + b, 0);
+    return { isLeaf: true, weight: -gSum / (hSum + lambda + 1e-6) };
+  }
+
+  let bestGain = -Infinity, bestFeat = 0, bestThresh = 0;
+  const totalG = grads.reduce((a, b) => a + b, 0);
+  const totalH = hess.reduce((a, b) => a + b, 0);
+
+  for (const feat of [0, 1]) {
+    const indices = points.map((_, i) => i).sort((a, b) => {
+      const va = feat === 0 ? points[a].x : points[a].y;
+      const vb = feat === 0 ? points[b].x : points[b].y;
+      return va - vb;
+    });
+
+    let leftG = 0, leftH = 0;
+    for (let j = 0; j < indices.length - 1; j++) {
+      leftG += grads[indices[j]];
+      leftH += hess[indices[j]];
+      const rightG = totalG - leftG;
+      const rightH = totalH - leftH;
+      if (leftH < 1e-6 || rightH < 1e-6) continue;
+      const gain = leftG*leftG/(leftH + lambda) + rightG*rightG/(rightH + lambda) - totalG*totalG/(totalH + lambda);
+      if (gain > bestGain) {
+        bestGain = gain;
+        bestFeat = feat;
+        const vi = feat === 0 ? points[indices[j]].x : points[indices[j]].y;
+        const vj = feat === 0 ? points[indices[j+1]].x : points[indices[j+1]].y;
+        bestThresh = (vi + vj) / 2;
+      }
+    }
+  }
+
+  if (bestGain <= 0) {
+    return { isLeaf: true, weight: -totalG / (totalH + lambda + 1e-6) };
+  }
+
+  const leftIdx = [], rightIdx = [];
+  for (let i = 0; i < points.length; i++) {
+    const v = bestFeat === 0 ? points[i].x : points[i].y;
+    if (v <= bestThresh) leftIdx.push(i); else rightIdx.push(i);
+  }
+
+  return {
+    isLeaf: false, feat: bestFeat, thresh: bestThresh,
+    left: buildXGBTree(leftIdx.map(i => points[i]), leftIdx.map(i => grads[i]), leftIdx.map(i => hess[i]), maxDepth, lambda, depth + 1),
+    right: buildXGBTree(rightIdx.map(i => points[i]), rightIdx.map(i => grads[i]), rightIdx.map(i => hess[i]), maxDepth, lambda, depth + 1),
+    weight: -totalG / (totalH + lambda + 1e-6)
+  };
+}
+
+function xgbTreePredict(tree, x, y) {
+  if (tree.isLeaf) return tree.weight;
+  const v = tree.feat === 0 ? x : y;
+  return xgbTreePredict(v <= tree.thresh ? tree.left : tree.right, x, y);
+}
+
+// ==================== Event handlers ====================
+document.getElementById('slider-T').addEventListener('input', () => {
+  resetBoosting();
+  drawBoosting();
+});
+document.getElementById('slider-eta').addEventListener('input', () => {
+  resetBoosting();
+  drawBoosting();
+});
+document.getElementById('slider-gdepth').addEventListener('input', () => {
+  resetBoosting();
+  drawBoosting();
+});
+document.getElementById('slider-lambda').addEventListener('input', drawRegularization);
+document.getElementById('slider-gamma').addEventListener('input', drawRegularization);
+document.getElementById('slider-eta2').addEventListener('input', drawRegularization);
+document.getElementById('slider-noise').addEventListener('input', drawComparison);
+document.getElementById('slider-cpts').addEventListener('input', drawComparison);
+
+// Initialize
+drawBoosting();
+drawRegularization();
+drawComparison();
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

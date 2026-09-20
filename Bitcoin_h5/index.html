@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitcoin · 比特币协议深度解析</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #f7931a;
+    --accent2: #fbbf24;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --orange: #fb923c;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a1410 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.orange { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.green  { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.cyan   { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+  .dot.red    { background: var(--red);    box-shadow: 0 0 10px var(--red); }
+  .dot.pink   { background: var(--pink);   box-shadow: 0 0 10px var(--pink); }
+  .dot.amber  { background: var(--accent2); box-shadow: 0 0 10px var(--accent2); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+  .section h3 {
+    font-size: 1.4rem;
+    margin: 20px 0 10px;
+    color: var(--text);
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px; border-radius: 4px; background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px; border-radius: 4px; background: var(--border); border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px; border-radius: 4px 0 0 4px; background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(247,147,26,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px; transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(247,147,26,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(247,147,26,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text); cursor: pointer;
+    font-size: 16px; font-weight: 600;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #2a2218; }
+  .btn.active {
+    background: var(--accent); color: #0b0e14;
+    border-color: var(--accent); box-shadow: 0 0 12px rgba(247,147,26,0.3);
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(247,147,26,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(247,147,26,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text2);
+    overflow-x: auto;
+    white-space: pre;
+    margin-bottom: 16px;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .co { color: #8b949e; }
+  .code-block .nm { color: #79c0ff; }
+  .code-block .op { color: #ff7b72; }
+  .code-block .str { color: #a5d6ff; }
+
+  /* ── Mermaid wrap ── */
+  /* ── Table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+  .cmp-table th, .cmp-table td {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .cmp-table td {
+    color: var(--text2);
+  }
+  .hl-cell { color: var(--green) !important; font-weight: 600; }
+  .warn-cell { color: var(--red) !important; }
+
+  /* ── Merkle tree viz ── */
+  .merkle-viz {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin: 20px 0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+  }
+  .merkle-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .merkle-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--text);
+    text-align: center;
+    min-width: 80px;
+    transition: all 0.3s;
+  }
+  .merkle-node.root {
+    border-color: var(--accent);
+    background: rgba(247,147,26,0.12);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .merkle-node.leaf {
+    border-color: var(--green);
+    background: rgba(74,222,128,0.08);
+  }
+  .merkle-node.highlight {
+    border-color: var(--cyan);
+    box-shadow: 0 0 8px rgba(34,211,238,0.3);
+  }
+  .merkle-connector {
+    width: 20px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Grid 2-col ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>₿ Bitcoin · 比特币协议深度解析</h1>
+  <p>从区块数据结构、Merkle 树、UTXO 模型、椭圆曲线密码学，到 PoW 共识与 SPV 轻验证——拆解中本聪白皮书的每一层设计。</p>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: 系统全景 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-overview">
+  <h2><span class="dot orange"></span> 1. 比特币系统全景</h2>
+  <p class="desc">
+    比特币是首个去中心化数字货币，由 <strong>Satoshi Nakamoto</strong> 于 2008 年提出，2009 年上线。
+    其核心创新在于用 <strong>PoW（Proof of Work）工作量证明</strong> 解决了分布式系统中的拜占庭将军问题，无需中心化机构即可达成共识。
+    每约 10 分钟产生一个区块，总量上限 <strong>2100 万枚</strong>，每 210,000 个区块（约 4 年）发生一次"减半"。
+  </p>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TB
+    subgraph layer["比特币协议栈"]
+        direction TB
+        app["💱 应用层 — 钱包 / 交易所 / 支付"]
+        tx["📝 交易层 — 交易构造 / 签名 / 广播"]
+        cons["⚡ 共识层 — PoW 挖矿 / 难度调整 / 最长链"]
+        net["🌐 网络层 — P2P 节点 / 交易中继 / 区块传播"]
+        data["🗄️ 数据层 — 区块链 / Merkle Tree / UTXO Set"]
+    end
+    data --> net --> cons --> tx --> app
+    style layer fill:#0b0e14,stroke:#2a3040,color:#e1e4eb
+    style app fill:#38bdf815,stroke:#38bdf8,color:#e1e4eb
+    style tx fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    style cons fill:#f7931a15,stroke:#f7931a,color:#e1e4eb
+    style net fill:#a78bfa15,stroke:#a78bfa,color:#e1e4eb
+    style data fill:#f472b615,stroke:#f472b6,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="info-row">
+    <div class="info-card">⏱️ 出块间隔 <div class="val">~10 分钟</div></div>
+    <div class="info-card">💰 总量上限 <div class="val">21,000,000 BTC</div></div>
+    <div class="info-card">🔐 签名算法 <div class="val">ECDSA (secp256k1)</div></div>
+    <div class="info-card">🧱 区块大小 <div class="val">≤ 1MB (后扩至 4MB 权重)</div></div>
+    <div class="info-card">#️⃣ 哈希算法 <div class="val">SHA-256 (双重)</div></div>
+    <div class="info-card">📐 难度周期 <div class="val">2016 个区块 (≈2 周)</div></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心理念：</strong>比特币不是"币存在地址里"，而是 <strong>UTXO（未花费交易输出）集合</strong> 的总和。
+    每个全节点独立验证所有交易，不存在"官方账本"——共识是涌现的，而非被指定的。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: 区块链数据结构 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-blockchain">
+  <h2><span class="dot blue"></span> 2. 区块链数据结构</h2>
+  <p class="desc">
+    区块链是一个<strong>单向链表</strong>，每个区块通过包含前一区块的哈希值形成不可篡改的链条。
+    区块由 <strong>区块头（80 字节）</strong> 和 <strong>交易列表</strong> 两部分组成。
+  </p>
+
+  <h3>📦 区块头 (Block Header) — 80 字节</h3>
+  <div class="code-block">
+<span class="co">// C++ 风格结构体表示</span>
+<span class="kw">struct</span> <span class="fn">CBlockHeader</span> {
+    <span class="nm">int32_t</span>  nVersion;      <span class="co">// 4 字节 — 版本号</span>
+    <span class="nm">uint256</span>  hashPrevBlock; <span class="co">// 32 字节 — 前一区块哈希</span>
+    <span class="nm">uint256</span>  hashMerkleRoot;<span class="co">// 32 字节 — Merkle 树根</span>
+    <span class="nm">uint32_t</span> nTime;         <span class="co">// 4 字节 — Unix 时间戳</span>
+    <span class="nm">uint32_t</span> nBits;         <span class="co">// 4 字节 — 压缩难度目标</span>
+    <span class="nm">uint32_t</span> nNonce;        <span class="co">// 4 字节 — PoW 随机数</span>
+}; <span class="co">// 总计 80 字节</span>
+  </div>
+
+  <h3>🔗 区块链结构示意</h3>
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart LR
+    subgraph b0["创世区块 (高度 0)"]
+        h0["hashPrevBlock: 000...000"]
+        t0["hashMerkleRoot: 4a5e1e..."]
+        n0["Nonce: 2083236893"]
+    end
+    subgraph b1["区块 1"]
+        h1["hashPrevBlock → H(b0)"]
+        t1["hashMerkleRoot: ..."]
+        n1["Nonce: ..."]
+    end
+    subgraph b2["区块 2"]
+        h2["hashPrevBlock → H(b1)"]
+        t2["hashMerkleRoot: ..."]
+        n2["Nonce: ..."]
+    end
+    b0 -->|"SHA-256²"| b1 -->|"SHA-256²"| b2
+    style b0 fill:#f7931a15,stroke:#f7931a,color:#e1e4eb
+    style b1 fill:#38bdf815,stroke:#38bdf8,color:#e1e4eb
+    style b2 fill:#38bdf815,stroke:#38bdf8,color:#e1e4eb
+    </pre>
+  </div>
+
+  <canvas id="canvasBlockchain" width="1400" height="360"></canvas>
+
+  <div class="insight">
+    💡 <strong>为什么 80 字节如此精妙？</strong> 区块头 = 80 字节正好适配一个 SHA-256 压缩函数的输入块（64 字节 + 填充），使得挖矿时 SHA-256² 计算极为高效。
+    仅改变 nonce 就足以扰动整个哈希输出，这是 PoW 的设计基础。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: Merkle 树 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-merkle">
+  <h2><span class="dot green"></span> 3. Merkle 树 — 交易的密码学摘要</h2>
+  <p class="desc">
+    <strong>Merkle 树</strong>将区块中所有交易的两两哈希逐层归约为一个 32 字节的 <strong>Merkle 根（Merkle Root）</strong>。
+    这使得轻节点只需区块头 + Merkle Proof 即可验证某笔交易是否在区块中，无需下载完整区块。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 Merkle 树构造公式</h3>
+    <div id="formula-merkle"></div>
+  </div>
+
+  <h3>🌳 交互式 Merkle 树</h3>
+  <p class="desc">拖动滑块调整交易数量，点击任意叶子节点查看验证路径。（绿色 = 叶子，橙色 = 根，青色 = 验证路径）</p>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>交易数量 <span class="val" id="val-merkle-n">8</span></label>
+      <input type="range" id="slider-merkle-n" min="2" max="16" value="8" step="1">
+    </div>
+  </div>
+  <canvas id="canvasMerkle" width="1400" height="500"></canvas>
+
+  <div class="insight">
+    💡 <strong>Merkle Proof 验证仅需 O(log₂N) 个哈希：</strong>一笔交易在包含 2048 笔交易的区块中，验证其存在仅需 11 个中间哈希值（约 352 字节），而非下载整个区块（~1-4 MB）。
+    这正是 <strong>SPV（Simple Payment Verification）</strong> 轻节点的核心原理。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: 交易与 UTXO 模型 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-utxo">
+  <h2><span class="dot green"></span> 4. 交易与 UTXO 模型</h2>
+  <p class="desc">
+    比特币的"余额"不是存在某个地址里，而是由 <strong>UTXO（Unspent Transaction Output，未花费交易输出）</strong> 集合决定。
+    每笔交易 <strong>消费旧的 UTXO</strong>，并 <strong>创建新的 UTXO</strong>——这类似于现金交易中的找零模型。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 UTXO 守恒公式</h3>
+    <div id="formula-utxo"></div>
+  </div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart LR
+    subgraph tx_in["交易输入"]
+        in0["UTXOₐ (来自 TX₁)<br/>面值: 2 BTC<br/>解锁脚本: 签名+公钥"]
+        in1["UTXOᵦ (来自 TX₂)<br/>面值: 1 BTC<br/>解锁脚本: 签名+公钥"]
+    end
+    subgraph tx_out["交易输出"]
+        out0["UTXO_γ → Bob<br/>面值: 2.5 BTC<br/>锁定脚本: H(PK_Bob)"]
+        out1["UTXO_δ → Alice (找零)<br/>面值: 0.499 BTC<br/>锁定脚本: H(PK_Alice)"]
+    end
+    in0 --> tx_out
+    in1 --> tx_out
+    subgraph fee["矿工费"]
+        f["0.001 BTC<br/>(隐含 = Σ输入 - Σ输出)"]
+    end
+    tx_out --> fee
+    style tx_in fill:#f7931a15,stroke:#f7931a,color:#e1e4eb
+    style tx_out fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    style fee fill:#f8717115,stroke:#f87171,color:#e1e4eb
+    style in0 fill:#f7931a10,stroke:#f7931a,color:#e1e4eb
+    style in1 fill:#f7931a10,stroke:#f7931a,color:#e1e4eb
+    style out0 fill:#4ade8010,stroke:#4ade80,color:#e1e4eb
+    style out1 fill:#4ade8010,stroke:#4ade80,color:#e1e4eb
+    style f fill:#f8717110,stroke:#f87171,color:#e1e4eb
+    </pre>
+  </div>
+
+  <h3>🔐 锁定脚本与解锁脚本</h3>
+  <div class="code-block">
+<span class="co">// P2PKH (Pay-to-PubKey-Hash) — 最常见的交易类型</span>
+<span class="co">// 锁定脚本 (ScriptPubKey) — 放在输出上</span>
+<span class="op">OP_DUP OP_HASH160</span> &lt;PubKeyHash&gt; <span class="op">OP_EQUALVERIFY OP_CHECKSIG</span>
+
+<span class="co">// 解锁脚本 (ScriptSig) — 放在输入上，消费时提供</span>
+&lt;Signature&gt; &lt;PublicKey&gt;
+
+<span class="co">// 验证时，两段拼接执行:</span>
+&lt;Sig&gt; &lt;PubKey&gt; <span class="op">OP_DUP OP_HASH160</span> &lt;PubKeyHash&gt; <span class="op">OP_EQUALVERIFY OP_CHECKSIG</span>
+  </div>
+
+  <div class="insight">
+    💡 <strong>UTXO vs 账户模型：</strong>比特币的 UTXO 模型天然支持并行验证（各 UTXO 独立），隐私性更好。
+    以太坊的账户模型更易编写智能合约，但需要全局状态树。两者各有取舍。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: 椭圆曲线密码学 (ECDSA) -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-ecc">
+  <h2><span class="dot purple"></span> 5. 椭圆曲线密码学 (ECDSA on secp256k1)</h2>
+  <p class="desc">
+    比特币使用 <strong>secp256k1</strong> 曲线上的 <strong>ECDSA</strong>（椭圆曲线数字签名算法）来确保只有私钥持有者才能花费对应的 UTXO。
+    secp256k1 是 Koblitz 曲线，参数特殊设计为高效计算优化。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 secp256k1 曲线参数</h3>
+    <div id="formula-secp256k1"></div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <h3>🔑 密钥生成</h3>
+      <div class="formula-block">
+        <div id="formula-keygen"></div>
+      </div>
+      <div class="code-block">
+<span class="co">// 比特币地址生成流程</span>
+Private Key (256-bit 随机数) k
+    ↓ <span class="co">ECDSA 公钥推导</span>
+Public Key (secp256k1 点, 33/65 字节) K = k·G
+    ↓ <span class="co">SHA-256</span>
+H₁ = SHA256(K)
+    ↓ <span class="co">RIPEMD-160</span>
+H₂ = RIPEMD160(H₁)    <span class="co">// 20 字节</span>
+    ↓ <span class="co">Base58Check 编码</span>
+Address (1... 开头)     <span class="co">// P2PKH 地址</span>
+      </div>
+    </div>
+    <div>
+      <h3>✍️ 签名与验证</h3>
+      <div class="formula-block">
+        <div id="formula-sign"></div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="canvasECC" width="700" height="450"></canvas>
+
+  <div class="insight">
+    💡 <strong>为什么 SHA-256 之后还要 RIPEMD-160？</strong>
+    双重哈希增加了抗碰撞安全性，同时将公钥哈希压缩到 20 字节（160 位），
+    使得比特币地址更短。即使 SHA-256 被部分攻破，RIPEMD-160 仍提供第二层防护。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 6: PoW 挖矿与难度 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-mining">
+  <h2><span class="dot amber"></span> 6. PoW 工作量证明与挖矿</h2>
+  <p class="desc">
+    矿工不断改变 <strong>nonce</strong>（以及 extraNonce、时间戳），对区块头做 <strong>SHA-256²（双重 SHA-256）</strong>，
+    直到哈希值小于当前难度目标。这是纯粹的随机尝试过程，符合 <strong>伯努利试验</strong> 分布。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 PoW 数学模型</h3>
+    <div id="formula-pow"></div>
+  </div>
+
+  <h3>⛏️ 交互式挖矿模拟</h3>
+  <p class="desc">调整难度前导零个数，观察找到有效 nonce 所需的尝试次数。彩色线条表示实时哈希速率。</p>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>难度（前导零位数） <span class="val" id="val-difficulty">4</span></label>
+      <input type="range" id="slider-difficulty" min="1" max="7" value="4" step="1">
+    </div>
+    <div class="slider-group">
+      <label>模拟速度 (hashes/s) <span class="val" id="val-speed">1000</span></label>
+      <input type="range" id="slider-speed" min="100" max="10000" value="1000" step="100">
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn play-btn" id="btn-mine">▶ 开始挖矿</button>
+    <button class="btn" id="btn-mine-reset">↺ 重置</button>
+  </div>
+
+  <canvas id="canvasMining" width="1400" height="400"></canvas>
+  <div class="info-row" id="info-mining">
+    <div class="info-card">当前 nonce <div class="val" id="nonce-val">—</div></div>
+    <div class="info-card">尝试次数 <div class="val" id="attempts-val">0</div></div>
+    <div class="info-card">当前哈希 <div class="val" id="hash-val" style="font-size:13px">—</div></div>
+    <div class="info-card">目标模式 <div class="val" id="target-val">—</div></div>
+    <div class="info-card">已找到区块 <div class="val" id="blocks-val">0</div></div>
+  </div>
+
+  <h3>📊 难度调整机制</h3>
+  <p class="desc">每 <strong>2016 个区块</strong>（约 2 周），网络自动调整难度，使得平均出块时间回归 10 分钟。</p>
+  <div class="formula-block">
+    <div id="formula-difficulty-adjust"></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>PoW 的本质是"燃烧能量换取安全性"：</strong>攻击者需要掌握 >50% 全网算力才能双花，而诚实矿工的总算力已超过全球 Top 500 超算总和的数十万倍。
+    任何对历史的篡改都需要完全重做从那之后所有区块的 PoW，算力成本指数级增长。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 7: Merkle Proof / SPV 交互验证 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-spv">
+  <h2><span class="dot cyan"></span> 7. SPV 轻节点与 Merkle Proof 验证</h2>
+  <p class="desc">
+    <strong>SPV（Simple Payment Verification）</strong> 节点仅存储区块头（~80 字节/块，每年约 4.2 MB），
+    通过向全节点请求 <strong>Merkle Proof</strong> 来验证特定交易是否被确认。
+  </p>
+
+  <h3>🔍 交互式 Merkle Proof 验证</h3>
+  <p class="desc">点击任意绿色叶子节点（交易），生成验证该交易所需的 Merkle Proof 路径。</p>
+
+  <canvas id="canvasSPV" width="1400" height="520"></canvas>
+
+  <div class="insight">
+    💡 <strong>SPV 安全性：</strong>SPV 节点无法独立验证交易是否双花（需要全节点），但 Merkle Proof 密码学保证了"交易在区块中"这一事实。
+    结合 <strong>工作量证明链</strong>（最长链 = 最多累计难度），SPV 节点能确认交易已被网络接受。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 8: 网络共识与分叉 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-consensus">
+  <h2><span class="dot red"></span> 8. 网络共识与分叉</h2>
+  <p class="desc">
+    比特币网络采用 <strong>Nakamoto 共识</strong>——最长链（实际上是 <strong>最多累计工作量</strong> 的链）为有效链。
+    当两个矿工几乎同时发现新区块时，网络暂时分叉，随后通过"最长链胜出"规则解决。
+  </p>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TB
+    subgraph chain["区块链分叉与重组"]
+        direction LR
+        g["创世块"] --> a["区块 A"]
+        a --> b["区块 B"]
+        b --> c["区块 C (主链)"]
+        b --> d["区块 D (孤块)"]
+        c --> e["区块 E"]
+        c --> f["区块 F"]
+    end
+    subgraph rule["Nakamoto 共识规则"]
+        r1["1. 最长链（最多累计 PoW）为有效"]
+        r2["2. 新区块必须在已知最长链上构建"]
+        r3["3. 先收到先广播（中继优先）"]
+        r4["4. 孤块（stale block）无奖励"]
+    end
+    chain --> rule
+    style g fill:#f7931a15,stroke:#f7931a,color:#e1e4eb
+    style a fill:#38bdf815,stroke:#38bdf8,color:#e1e4eb
+    style b fill:#38bdf815,stroke:#38bdf8,color:#e1e4eb
+    style c fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    style d fill:#f8717115,stroke:#f87171,color:#e1e4eb
+    style e fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    style f fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    style chain fill:#0b0e14,stroke:#2a3040,color:#e1e4eb
+    style rule fill:#0b0e14,stroke:#2a3040,color:#e1e4eb
+    </pre>
+  </div>
+
+  <canvas id="canvasFork" width="1400" height="400"></canvas>
+
+  <div class="insight">
+    💡 <strong>"6 次确认"的由来：</strong>中本聪在白皮书中计算了攻击者在落后 z 个区块后追上主链的概率（遵循泊松分布）。
+    假设攻击者掌握 10% 算力，6 次确认（z=6）可使双花成功概率降至约 0.024%，商业上可接受。参见 [[bitcoin-whitepaper]] 第 11 节。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 9: 关键数据结构汇总 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-datastruct">
+  <h2><span class="dot pink"></span> 9. 关键数据结构汇总</h2>
+  <p class="desc">
+    以下汇总比特币协议中涉及的所有核心数据结构及其关系。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr><th>数据结构</th><th>大小</th><th>核心字段</th><th>作用</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Block Header</td><td class="hl-cell">80 B</td>
+        <td>version, prevHash, merkleRoot, time, bits, nonce</td>
+        <td>PoW 计算目标；链链接</td>
+      </tr>
+      <tr>
+        <td>Block</td><td>≤ 4M 权重单位</td>
+        <td>Block Header + [Transaction...]</td>
+        <td>交易的容器</td>
+      </tr>
+      <tr>
+        <td>Transaction</td><td>不定 (250 B ~ 数 KB)</td>
+        <td>version, [TxIn...], [TxOut...], lockTime</td>
+        <td>转移 BTC 所有权</td>
+      </tr>
+      <tr>
+        <td>TxIn</td><td>不定</td>
+        <td>prevTxHash, prevIndex, scriptSig, sequence</td>
+        <td>引用一个 UTXO</td>
+      </tr>
+      <tr>
+        <td>TxOut</td><td>~44 B (P2PKH)</td>
+        <td>value (8 B), scriptPubKey (可变)</td>
+        <td>创建新 UTXO</td>
+      </tr>
+      <tr>
+        <td>UTXO Set</td><td>~数 GB</td>
+        <td>{ (txid, vout) → TxOut } 映射</td>
+        <td>快速验证交易输入</td>
+      </tr>
+      <tr>
+        <td>Merkle Tree</td><td>O(N) 节点</td>
+        <td>叶子 = TXID 双重 SHA-256, 内部 = H(L||R)</td>
+        <td>高效交易存在性证明</td>
+      </tr>
+      <tr>
+        <td>Private Key</td><td class="hl-cell">32 B</td>
+        <td>256-bit 随机数 ∈ [1, n-1]</td>
+        <td>签名交易输入</td>
+      </tr>
+      <tr>
+        <td>Public Key</td><td>33 B (压缩) / 65 B</td>
+        <td>secp256k1 椭圆曲线点</td>
+        <td>验证签名</td>
+      </tr>
+      <tr>
+        <td>Address</td><td>~34 字符 (Base58)</td><td>PubKey 的 HASH160 编码</td>
+        <td>接收 BTC</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>设计哲学：</strong>中本聪将数据结构设计得<strong>极简而完备</strong>——每个字段都有其不可替代的存在理由。
+    80 字节的区块头、Merkle 树嵌入、UTXO 模型、变长整数（VarInt）编码，处处可见"简洁即美"的工程美学。
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  ₿ Bitcoin 协议深度解析 · Created for Learning · 基于 Satoshi Nakamoto 白皮书 (2008) &amp; Bitcoin Core 源码
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- KaTeX Render -->
+<script>
+(function() {
+  // Merkle公式
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{Node}(i,j) &= \operatorname{SHA256}\!\left(\operatorname{SHA256}(\text{Left} \parallel \text{Right})\right) & &\text{(内部节点)} \\[4pt]
+  \text{MerkleRoot} &= \text{Node}(0, N-1) & &\text{(根哈希)} \\[4pt]
+  \text{MerkleProof} &= \{\text{Sibling}(\text{path}_k) \mid k = 0 \ldots \lceil\log_2 N\rceil - 1\} & &\text{(验证路径)}
+  \end{aligned}
+  `, document.getElementById('formula-merkle'), { displayMode: true });
+
+  // UTXO守恒
+  katex.render(String.raw`
+  \sum \text{Inputs} = \sum \text{Outputs} + \text{Fee} \qquad
+  \text{Fee} = \sum \text{Inputs} - \sum \text{Outputs} \geq 0
+  `, document.getElementById('formula-utxo'), { displayMode: true });
+
+  // secp256k1参数
+  katex.render(String.raw`
+  y^2 = x^3 + 7 \quad \text{over} \quad \mathbb{F}_p, \quad
+  p = 2^{256} - 2^{32} - 2^9 - 2^8 - 2^7 - 2^6 - 2^4 - 1
+  \qquad
+  G = (\text{生成点}), \quad n = \text{阶}
+  `, document.getElementById('formula-secp256k1'), { displayMode: true });
+
+  // 密钥生成
+  katex.render(String.raw`
+  K = k \cdot G \quad (k \in [1, n-1], \text{私钥}; G \text{为基点}; K \text{为公钥点})
+  `, document.getElementById('formula-keygen'), { displayMode: true });
+
+  // 签名
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{Sign: } (r, s) = \operatorname{ECDSA\_Sign}(m, k) \quad \text{其中 } r = (k_r \cdot G)_x \bmod n \\
+  &\text{Verify: } \operatorname{ECDSA\_Verify}(m, (r, s), K) = \mathbf{true/false}
+  \end{aligned}
+  `, document.getElementById('formula-sign'), { displayMode: true });
+
+  // PoW
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{Find } \text{nonce}: &\quad \operatorname{SHA256}(\operatorname{SHA256}(\text{BlockHeader})) < \text{Target} \\[4pt]
+  P(\text{一次成功}) &= \frac{\text{Target}}{2^{256} - 1} \approx \frac{1}{D \times 2^{32}} \quad (D = \text{难度}) \\[4pt]
+  T_{\text{expected}} &= \frac{2^{256}}{D \times 2^{32} \times H} \quad (H = \text{全网算力 hashes/s})
+  \end{aligned}
+  `, document.getElementById('formula-pow'), { displayMode: true });
+
+  // 难度调整
+  katex.render(String.raw`
+  D_{\text{new}} = D_{\text{old}} \times \frac{T_{\text{actual}}}{T_{\text{target}}}
+  \quad \text{其中 } T_{\text{target}} = 2016 \times 10 \text{ min}, \quad D_{\text{new}} \in [\tfrac{1}{4}D_{\text{old}},\; 4\,D_{\text{old}}]
+  `, document.getElementById('formula-difficulty-adjust'), { displayMode: true });
+})();
+</script>
+
+<!-- ═══ Section 2: Blockchain Visualization Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasBlockchain');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const blocks = [
+      { height: 0, time: '2009-01-03', txCount: 1, label: '创世块' },
+      { height: 1, time: '2009-01-09', txCount: 1, label: 'Block 1' },
+      { height: 170, time: '2010-07-12', txCount: 23, label: 'Block 170' },
+      { height: 210000, time: '2012-11-28', txCount: 1324, label: '首次减半' },
+      { height: 420000, time: '2016-07-09', txCount: 1876, label: '二次减半' },
+      { height: 630000, time: '2020-05-11', txCount: 2350, label: '三次减半' },
+      { height: 840000, time: '2024-04-20', txCount: 3050, label: '四次减半' },
+    ];
+
+    const margin = { top: 40, left: 80, right: 40, bottom: 30 };
+    const bw = (W - margin.left - margin.right) / blocks.length;
+    const maxHeight = Math.max(...blocks.map(b => b.height));
+    const barMaxH = H - margin.top - margin.bottom - 60;
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 26px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('区块高度增长与关键里程碑', W/2, margin.top);
+
+    // Bars
+    blocks.forEach((b, i) => {
+      const x = margin.left + i * bw;
+      const h = Math.max(20, (b.height / maxHeight) * barMaxH);
+      const y = margin.top + 30 + barMaxH - h;
+
+      // Slot line
+      ctx.strokeStyle = '#2a3040';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + bw/2, margin.top + 30);
+      ctx.lineTo(x + bw/2, margin.top + 30 + barMaxH);
+      ctx.stroke();
+
+      // Block bar
+      const alpha = 1 - i * 0.1;
+      const grad = ctx.createLinearGradient(x, y, x, margin.top + 30 + barMaxH);
+      if (b.label.includes('减半')) {
+        grad.addColorStop(0, '#f7931a');
+        grad.addColorStop(1, '#f7931a44');
+      } else if (b.height === 0) {
+        grad.addColorStop(0, '#fbbf24');
+        grad.addColorStop(1, '#fbbf2444');
+      } else {
+        grad.addColorStop(0, `rgba(56,189,248,${alpha})`);
+        grad.addColorStop(1, `rgba(56,189,248,${alpha*0.2})`);
+      }
+      ctx.fillStyle = grad;
+      const barW = bw * 0.7;
+      const bx = x + (bw - barW) / 2;
+      ctx.fillRect(bx, y, barW, h);
+      ctx.strokeStyle = b.label.includes('减半') ? '#f7931a' : b.height === 0 ? '#fbbf24' : '#38bdf8';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(bx, y, barW, h);
+
+      // Height label
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.height.toLocaleString(), x + bw/2, margin.top + 30 + barMaxH + 22);
+
+      // Sub-label
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(b.label, x + bw/2, margin.top + 30 + barMaxH + 44);
+
+      // Time label
+      ctx.fillText(b.time, x + bw/2, margin.top + 30 + barMaxH + 64);
+    });
+
+    // Subsidy annotation
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('初始补贴: 50 BTC/块', W - margin.right - 10, margin.top + 60);
+    ctx.fillStyle = '#f7931a';
+    ctx.fillText('减半→ 25 BTC', W - margin.right - 10, margin.top + 84);
+    ctx.fillText('减半→ 12.5 → 6.25 → 3.125 ...', W - margin.right - 10, margin.top + 108);
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ═══ Section 3: Merkle Tree Interactive Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasMerkle');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  let selectedLeaf = -1;
+
+  // Simple hash for visualization
+  function fakeHash(seed) {
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) {
+      h = ((h << 5) - h) + seed.charCodeAt(i);
+      h |= 0;
+    }
+    // return 8-char hex
+    let s = '';
+    for (let i = 0; i < 8; i++) {
+      s += '0123456789abcdef'[Math.abs((h * (i + 1) + i * 31)) % 16];
+    }
+    return s;
+  }
+
+  function buildMerkleTree(leafCount) {
+    let leaves = [];
+    for (let i = 0; i < leafCount; i++) {
+      leaves.push({ hash: fakeHash('tx' + i), label: 'TX' + i, isLeaf: true, idx: i });
+    }
+    let layers = [leaves];
+    let current = leaves;
+    while (current.length > 1) {
+      let next = [];
+      for (let i = 0; i < current.length; i += 2) {
+        const left = current[i];
+        const right = (i + 1 < current.length) ? current[i + 1] : current[i]; // duplicate odd
+        const combined = left.hash + right.hash;
+        next.push({ hash: fakeHash(combined), label: '', isLeaf: false, left, right });
+      }
+      layers.unshift(next);
+      current = next;
+    }
+    return { layers, root: current[0] };
+  }
+
+  function getProofPaths(layers, leafIdx) {
+    // layers[0]=root, layers[last]=leaves
+    let proofNodes = new Set();
+    let idx = leafIdx;
+    for (let l = layers.length - 1; l > 0; l--) {
+      const layer = layers[l];
+      const parentLayer = layers[l - 1];
+      const sibling = (idx % 2 === 0) ? (idx + 1 < layer.length ? layer[idx + 1] : null) : layer[idx - 1];
+      if (sibling) proofNodes.add(sibling.hash);
+      proofNodes.add(layer[idx].hash);
+      idx = Math.floor(idx / 2);
+    }
+    proofNodes.add(layers[0][0].hash); // root
+    return proofNodes;
+  }
+
+  canvas.addEventListener('click', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    const scaleY = H / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    draw(mx, my);
+  });
+
+  function draw(clickX, clickY) {
+    const N = +document.getElementById('slider-merkle-n').value;
+    document.getElementById('val-merkle-n').textContent = N;
+    const tree = buildMerkleTree(N);
+    const layers = tree.layers;
+    const nLayers = layers.length;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Check click on leaves
+    if (clickX !== undefined && clickY !== undefined) {
+      const leafLayer = layers[layers.length - 1];
+      const lw = W / leafLayer.length;
+      const leafY = H - 60;
+      const nodeH = 36;
+      for (let i = 0; i < leafLayer.length; i++) {
+        const cx = (i + 0.5) * lw;
+        const nw = Math.min(lw - 8, 90);
+        if (clickX > cx - nw/2 && clickX < cx + nw/2 &&
+            clickY > leafY - nodeH/2 && clickY < leafY + nodeH/2) {
+          selectedLeaf = i;
+          break;
+        }
+      }
+    }
+
+    const proofNodes = selectedLeaf >= 0 ? getProofPaths(layers, selectedLeaf) : new Set();
+    const proofPath = [];
+    if (selectedLeaf >= 0) {
+      let idx = selectedLeaf;
+      for (let l = layers.length - 1; l >= 0; l--) {
+        proofPath.push({ layer: l, idx: idx, hash: layers[l][idx].hash });
+        idx = Math.floor(idx / 2);
+      }
+    }
+    const proofHashSet = new Set(proofPath.map(p => p.hash));
+
+    // Draw each layer
+    const layerHeight = Math.min(70, (H - 100) / nLayers);
+    for (let li = 0; li < nLayers; li++) {
+      const layer = layers[li];
+      const y = 50 + li * layerHeight;
+      const lw = W / layer.length;
+
+      for (let ni = 0; ni < layer.length; ni++) {
+        const node = layer[ni];
+        const cx = (ni + 0.5) * lw;
+        const nw = Math.min(lw - 8, 90);
+        const nh = 34;
+
+        // Determine color
+        let fillColor, borderColor;
+        if (li === 0 && layer.length === 1) {
+          // Root
+          fillColor = 'rgba(247,147,26,0.15)';
+          borderColor = '#f7931a';
+        } else if (proofHashSet.has(node.hash) && li < nLayers - 1) {
+          fillColor = 'rgba(34,211,238,0.12)';
+          borderColor = '#22d3ee';
+        } else if (li === nLayers - 1 && ni === selectedLeaf) {
+          fillColor = 'rgba(251,191,36,0.2)';
+          borderColor = '#fbbf24';
+          ctx.shadowColor = 'rgba(251,191,36,0.5)';
+          ctx.shadowBlur = 12;
+        } else if (li === nLayers - 1) {
+          fillColor = 'rgba(74,222,128,0.08)';
+          borderColor = '#4ade80';
+        } else {
+          fillColor = 'rgba(30,35,50,0.9)';
+          borderColor = '#2a3040';
+        }
+
+        ctx.fillStyle = fillColor;
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(cx - nw/2, y - nh/2, nw, nh, 5);
+        ctx.fill();
+        ctx.stroke();
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        // Text
+        const displayHash = node.hash ? node.hash.substring(0, 8) : '...';
+        ctx.fillStyle = li === 0 ? '#f7931a' : li === nLayers - 1 ? '#4ade80' : '#e1e4eb';
+        ctx.font = 'bold 15px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(displayHash, cx, y);
+
+        // Draw connections to children
+        if (li > 0) {
+          const parentLayer = layers[li - 1];
+          const childLayer = layers[li];
+          // Each parent at li-1 has two children at li
+          // Find which parent this node belongs to
+          const parentIdx = Math.floor(ni / 2);
+          if (parentIdx < parentLayer.length) {
+            const px = (parentIdx + 0.5) * (W / parentLayer.length);
+            const py = 50 + (li - 1) * layerHeight + 17;
+            const cy = y - nh/2;
+            ctx.strokeStyle = proofHashSet.has(node.hash) && proofHashSet.has(parentLayer[parentIdx].hash) ? '#22d3ee' : '#2a3040';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx, (py + cy) / 2);
+            ctx.lineTo(px, (py + cy) / 2);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // Labels
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('🍃 叶子 = 交易 (TX₀...TX' + (N-1) + ')', 10, H - 20);
+    ctx.fillText('🟠 根 = Merkle Root', 350, H - 20);
+    if (selectedLeaf >= 0) {
+      ctx.fillStyle = '#22d3ee';
+      ctx.fillText('🔵 青色路径 = Merkle Proof for TX' + selectedLeaf, 600, H - 20);
+    } else {
+      ctx.fillStyle = '#8e96a9';
+      ctx.fillText('👆 点击叶子节点查看 Merkle Proof', 600, H - 20);
+    }
+  }
+
+  document.getElementById('slider-merkle-n').addEventListener('input', function() {
+    selectedLeaf = -1;
+    draw();
+  });
+  draw();
+})();
+</script>
+
+<!-- ═══ Section 5: ECC Curve Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasECC');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = W * 0.5, cy = H * 0.55;
+    const scale = 100;
+
+    // Draw axes
+    ctx.strokeStyle = '#2a3040';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(30, cy); ctx.lineTo(W - 30, cy);
+    ctx.moveTo(cx, 20); ctx.lineTo(cx, H - 20);
+    ctx.stroke();
+
+    // Draw secp256k1-style curve y² = x³ + 7
+    // We'll plot the right half (x >= -1.5 approximately) since y² = x³ + 7 >= 0
+    ctx.strokeStyle = '#f7931a';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let started = false;
+    for (let px = 0; px < W; px++) {
+      const x = (px - cx) / scale;
+      const rhs = x * x * x + 0; // simplified for visual
+      if (rhs >= 0) {
+        const y = Math.sqrt(rhs);
+        const pyUp = cy - y * scale;
+        const pyDown = cy + y * scale;
+        if (!started) {
+          ctx.moveTo(px, pyUp);
+          started = true;
+        } else {
+          ctx.lineTo(px, pyUp);
+        }
+      } else {
+        started = false;
+      }
+    }
+    ctx.stroke();
+
+    // Draw lower half
+    ctx.beginPath();
+    started = false;
+    for (let px = 0; px < W; px++) {
+      const x = (px - cx) / scale;
+      const rhs = x * x * x + 0;
+      if (rhs >= 0) {
+        const y = Math.sqrt(rhs);
+        const pyDown = cy + y * scale;
+        if (!started) { ctx.moveTo(px, pyDown); started = true; }
+        else { ctx.lineTo(px, pyDown); }
+      } else { started = false; }
+    }
+    ctx.stroke();
+
+    // Draw generator point G
+    const gx = cx + 2 * scale;
+    const gy = cy - Math.sqrt(8) * 0.5 * scale;
+    ctx.fillStyle = '#4ade80';
+    ctx.beginPath();
+    ctx.arc(gx, gy, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 20px "Segoe UI", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('G (生成点)', gx + 14, gy + 6);
+
+    // Draw a public key point k*G
+    const k = 3; // visualize 3G
+    const kgx = cx + 5 * scale;
+    const kgy = cy + Math.sqrt(125) * 0.3 * scale;
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.arc(kgx, kgy, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('K = k·G (公钥)', kgx + 14, kgy + 6);
+
+    // Labels
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('椭圆曲线 secp256k1: y² = x³ + 7', W/2, 30);
+    ctx.fillText('x', W - 20, cy + 20);
+    ctx.fillText('y', cx + 20, 30);
+
+    // Point addition illustration
+    ctx.fillStyle = '#f472b6';
+    ctx.beginPath();
+    ctx.arc(cx - 1.5 * scale, cy + Math.sqrt(3.375) * 0.6 * scale, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('P', cx - 1.5 * scale - 16, cy + Math.sqrt(3.375) * 0.6 * scale + 6);
+
+    ctx.fillStyle = '#f472b6';
+    ctx.beginPath();
+    ctx.arc(cx + 1 * scale, cy - 0.5 * scale, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('Q', cx + 1 * scale + 16, cy - 0.5 * scale - 6);
+
+    // Secant line
+    ctx.strokeStyle = '#a78bfa';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(cx - 1.5 * scale, cy + Math.sqrt(3.375) * 0.6 * scale);
+    ctx.lineTo(cx + 1 * scale, cy - 0.5 * scale);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#a78bfa';
+    ctx.font = '16px "Segoe UI", sans-serif';
+    ctx.fillText('点加法: P+Q = -R', cx + 1.5 * scale, cy - 2 * scale);
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ═══ Section 6: Mining Simulation ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasMining');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  let mining = false;
+  let nonce = 0;
+  let attempts = 0;
+  let blocksFound = 0;
+  let animId = null;
+  let hashHistory = [];
+  const MAX_HISTORY = 200;
+
+  // Fake SHA-256-like hash
+  function fakeHash(input) {
+    let h = 0x6a09e667;
+    const str = String(input);
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+      h = ((h << 13) | (h >>> 19)) ^ 0x5be0cd19;
+    }
+    h = ((h >> 16) ^ h) * 0x45d9f3b;
+    h = ((h >> 16) ^ h) * 0x45d9f3b;
+    h = (h >> 16) ^ h;
+    // Output as 64-char hex
+    let hex = '';
+    for (let i = 0; i < 16; i++) {
+      const v = ((h * (i + 1) + i * 2654435761) >>> 0) % 16;
+      hex += '0123456789abcdef'[v];
+    }
+    // Make it 64 chars
+    while (hex.length < 64) hex = hex + '0123456789abcdef'[hex.length % 16];
+    return hex.substring(0, 64);
+  }
+
+  function getTarget(difficulty) {
+    return '0'.repeat(difficulty);
+  }
+
+  function getHashColor(hash) {
+    // Color based on how many leading zeros
+    let zeros = 0;
+    while (zeros < hash.length && hash[zeros] === '0') zeros++;
+    const hue = zeros >= 6 ? 120 : zeros >= 4 ? 45 : zeros >= 2 ? 30 : 0;
+    const sat = 80;
+    const light = 30 + zeros * 8;
+    return `hsl(${hue}, ${sat}%, ${Math.min(light, 75)}%)`;
+  }
+
+  function draw() {
+    const difficulty = +document.getElementById('slider-difficulty').value;
+    ctx.clearRect(0, 0, W, H);
+
+    const margin = { top: 30, left: 70, right: 30, bottom: 50 };
+    const pw = W - margin.left - margin.right;
+    const ph = H - margin.top - margin.bottom;
+
+    // Draw hash history as horizontal bars
+    const barH = Math.max(2, Math.floor(ph / MAX_HISTORY));
+    const displayHistory = hashHistory.slice(-Math.floor(ph / barH));
+
+    for (let i = 0; i < displayHistory.length; i++) {
+      const entry = displayHistory[i];
+      const y = margin.top + i * barH;
+      // Width proportional to leading zeros
+      let zeros = 0;
+      while (zeros < entry.hash.length && entry.hash[zeros] === '0') zeros++;
+      const w = (zeros / difficulty) * pw * 0.8 + pw * 0.05;
+      ctx.fillStyle = entry.found ? '#4ade80' : getHashColor(entry.hash);
+      ctx.fillRect(margin.left, y, Math.min(w, pw), barH - 1);
+    }
+
+    // Target line
+    ctx.strokeStyle = '#f7931a';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(margin.left, margin.top);
+    ctx.lineTo(margin.left + pw, margin.top);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Labels
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('实时哈希视图 — 每个条形代表一次 SHA-256² 尝试', margin.left, margin.top - 8);
+
+    ctx.fillStyle = '#f7931a';
+    ctx.fillText('← 目标难度: 前导 ' + difficulty + ' 个零 → 绿色 = 命中!', margin.left + pw * 0.5, margin.top - 8);
+
+    // Found blocks markers
+    ctx.fillStyle = '#4ade80';
+    ctx.font = '18px "Segoe UI", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('已找到: ' + blocksFound + ' 个有效区块 | 尝试: ' + attempts.toLocaleString(), margin.left, H - 10);
+  }
+
+  function mineStep() {
+    const difficulty = +document.getElementById('slider-difficulty').value;
+    const speed = +document.getElementById('slider-speed').value;
+    const target = getTarget(difficulty);
+
+    const stepsPerFrame = Math.max(1, Math.floor(speed / 60));
+    for (let s = 0; s < stepsPerFrame; s++) {
+      nonce++;
+      attempts++;
+      const hash = fakeHash('block_' + nonce + '_' + Math.random());
+      const found = hash.startsWith(target);
+      hashHistory.push({ hash, found, nonce });
+      if (hashHistory.length > MAX_HISTORY * 3) hashHistory = hashHistory.slice(-MAX_HISTORY * 2);
+
+      if (found) {
+        blocksFound++;
+        document.getElementById('nonce-val').textContent = nonce.toLocaleString();
+        document.getElementById('attempts-val').textContent = attempts.toLocaleString();
+        document.getElementById('hash-val').textContent = hash;
+        document.getElementById('blocks-val').textContent = blocksFound;
+        document.getElementById('target-val').textContent = target + '...';
+        draw();
+        // Brief pause after finding
+        setTimeout(() => { if (mining) animId = requestAnimationFrame(mineLoop); }, 800);
+        return;
+      }
+    }
+
+    // Update info periodically
+    if (attempts % 100 === 0) {
+      document.getElementById('nonce-val').textContent = nonce.toLocaleString();
+      document.getElementById('attempts-val').textContent = attempts.toLocaleString();
+      document.getElementById('target-val').textContent = target + '...';
+    }
+
+    draw();
+    if (mining) animId = requestAnimationFrame(mineLoop);
+  }
+
+  function mineLoop() { mineStep(); }
+
+  document.getElementById('btn-mine').addEventListener('click', function() {
+    if (mining) {
+      mining = false;
+      if (animId) cancelAnimationFrame(animId);
+      this.textContent = '▶ 开始挖矿';
+      this.classList.remove('play-btn');
+    } else {
+      mining = true;
+      this.textContent = '⏸ 暂停';
+      this.classList.add('play-btn');
+      mineLoop();
+    }
+  });
+
+  document.getElementById('btn-mine-reset').addEventListener('click', function() {
+    mining = false;
+    if (animId) cancelAnimationFrame(animId);
+    nonce = 0;
+    attempts = 0;
+    blocksFound = 0;
+    hashHistory = [];
+    document.getElementById('btn-mine').textContent = '▶ 开始挖矿';
+    document.getElementById('btn-mine').classList.remove('play-btn');
+    document.getElementById('nonce-val').textContent = '—';
+    document.getElementById('attempts-val').textContent = '0';
+    document.getElementById('hash-val').textContent = '—';
+    document.getElementById('blocks-val').textContent = '0';
+    document.getElementById('target-val').textContent = '—';
+    draw();
+  });
+
+  document.getElementById('slider-difficulty').addEventListener('input', function() {
+    document.getElementById('val-difficulty').textContent = this.value;
+    document.getElementById('target-val').textContent = getTarget(+this.value) + '...';
+  });
+  document.getElementById('slider-speed').addEventListener('input', function() {
+    document.getElementById('val-speed').textContent = this.value;
+  });
+
+  document.getElementById('val-difficulty').textContent = document.getElementById('slider-difficulty').value;
+  document.getElementById('val-speed').textContent = document.getElementById('slider-speed').value;
+  document.getElementById('target-val').textContent = getTarget(+document.getElementById('slider-difficulty').value) + '...';
+  draw();
+})();
+</script>
+
+<!-- ═══ Section 7: SPV Merkle Proof Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasSPV');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  let selectedTx = -1;
+
+  function fakeHash(seed) {
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) {
+      h = ((h << 5) - h) + seed.charCodeAt(i);
+      h |= 0;
+    }
+    let s = '';
+    for (let i = 0; i < 8; i++) s += '0123456789abcdef'[Math.abs((h * (i + 1) + i * 31)) % 16];
+    return s;
+  }
+
+  function buildTree(N) {
+    let leaves = [];
+    for (let i = 0; i < N; i++) leaves.push({ hash: fakeHash('tx' + i), label: 'TX' + i });
+    let layers = [leaves];
+    let cur = leaves;
+    while (cur.length > 1) {
+      let next = [];
+      for (let i = 0; i < cur.length; i += 2) {
+        const r = (i + 1 < cur.length) ? cur[i + 1] : cur[i];
+        next.push({ hash: fakeHash(cur[i].hash + r.hash), left: cur[i], right: r });
+      }
+      layers.unshift(next);
+      cur = next;
+    }
+    return layers;
+  }
+
+  canvas.addEventListener('click', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    const scaleY = H / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    const N = 8;
+    const tree = buildTree(N);
+    const leafLayer = tree[tree.length - 1];
+    const lw = W / N;
+    const leafY = H - 40;
+    for (let i = 0; i < N; i++) {
+      const cx = (i + 0.5) * lw;
+      const nw = Math.min(lw - 6, 70);
+      const nh = 32;
+      if (mx > cx - nw/2 && mx < cx + nw/2 && my > leafY - nh/2 && my < leafY + nh/2) {
+        selectedTx = i;
+        draw();
+        return;
+      }
+    }
+  });
+
+  function draw() {
+    const N = 8;
+    const tree = buildTree(N);
+    ctx.clearRect(0, 0, W, H);
+
+    // Find Merkle proof for selectedTx
+    let proofHashes = [];
+    let proofDirections = [];
+    if (selectedTx >= 0) {
+      let idx = selectedTx;
+      for (let l = tree.length - 1; l > 0; l--) {
+        const layer = tree[l];
+        const isRightChild = idx % 2 === 1;
+        const siblingIdx = isRightChild ? idx - 1 : idx + 1;
+        if (siblingIdx < layer.length) {
+          proofHashes.push(layer[siblingIdx].hash);
+          proofDirections.push(isRightChild ? 'L' : 'R');
+        } else {
+          // Odd node, duplicate
+          proofHashes.push(layer[idx].hash);
+          proofDirections.push('D');
+        }
+        idx = Math.floor(idx / 2);
+      }
+      proofHashes.push(tree[0][0].hash); // root
+    }
+
+    const proofSet = new Set(proofHashes);
+    const nLayers = tree.length;
+    const layerHeight = Math.min(70, (H - 140) / nLayers);
+
+    for (let li = 0; li < nLayers; li++) {
+      const layer = tree[li];
+      const y = 60 + li * layerHeight;
+      const lw = W / layer.length;
+
+      for (let ni = 0; ni < layer.length; ni++) {
+        const node = layer[ni];
+        const cx = (ni + 0.5) * lw;
+        const nw = Math.min(lw - 6, 80);
+        const nh = 32;
+
+        let fillColor, borderColor;
+        const isRoot = li === 0;
+        const isLeaf = li === nLayers - 1;
+        const isSelected = isLeaf && ni === selectedTx;
+        const isInProof = proofSet.has(node.hash);
+
+        if (isRoot) { fillColor = 'rgba(247,147,26,0.2)'; borderColor = '#f7931a'; }
+        else if (isSelected) { fillColor = 'rgba(251,191,36,0.25)'; borderColor = '#fbbf24'; }
+        else if (isInProof) { fillColor = 'rgba(34,211,238,0.12)'; borderColor = '#22d3ee'; }
+        else if (isLeaf) { fillColor = 'rgba(74,222,128,0.08)'; borderColor = '#4ade80'; }
+        else { fillColor = 'rgba(30,35,50,0.9)'; borderColor = '#2a3040'; }
+
+        ctx.fillStyle = fillColor;
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = isInProof ? 2.5 : 1;
+        ctx.beginPath();
+        ctx.roundRect(cx - nw/2, y - nh/2, nw, nh, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        const txt = node.hash.substring(0, 6);
+        ctx.fillStyle = isRoot ? '#f7931a' : isLeaf ? '#4ade80' : '#e1e4eb';
+        ctx.font = 'bold 14px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(txt, cx, y);
+
+        // Connections
+        if (li > 0) {
+          const parentLayer = tree[li - 1];
+          const pi = Math.floor(ni / 2);
+          if (pi < parentLayer.length) {
+            const px = (pi + 0.5) * (W / parentLayer.length);
+            const py = 60 + (li - 1) * layerHeight + 16;
+            ctx.strokeStyle = (isInProof && proofSet.has(parentLayer[pi].hash)) ? '#22d3ee' : '#2a3040';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(cx, y - nh/2);
+            ctx.lineTo((cx + px) / 2, (y - nh/2 + py) / 2);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // Proof description on right
+    if (selectedTx >= 0) {
+      const px = W * 0.72, py = 80;
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('🔍 Merkle Proof for TX' + selectedTx, px, py);
+
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '17px "JetBrains Mono", monospace';
+      for (let i = 0; i < proofHashes.length - 1; i++) {
+        const dir = proofDirections[i];
+        ctx.fillText(dir + ' sibling: ' + proofHashes[i], px, py + 30 + i * 26);
+      }
+      ctx.fillStyle = '#f7931a';
+      ctx.font = 'bold 17px "JetBrains Mono", monospace';
+      ctx.fillText('Root: ' + proofHashes[proofHashes.length - 1], px, py + 30 + (proofHashes.length - 1) * 26);
+
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '16px "Segoe UI", sans-serif';
+      ctx.fillText('验证: 对 TX' + selectedTx + ' 沿路径计算', px, py + 30 + proofHashes.length * 26 + 14);
+      ctx.fillText('哈希并与 Merkle Root 对比', px, py + 30 + proofHashes.length * 26 + 34);
+      ctx.fillText('Proof 大小: ' + ((proofHashes.length - 1) * 32) + ' 字节', px, py + 30 + proofHashes.length * 26 + 58);
+    } else {
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('👆 点击任意绿色叶子节点 (TX) 查看其 Merkle Proof', W/2, H - 10);
+    }
+  }
+
+  document.getElementById('slider-merkle-n')?.addEventListener('input', function() {
+    selectedTx = -1;
+    draw();
+  });
+  draw();
+})();
+</script>
+
+<!-- ═══ Section 8: Fork Visualization Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasFork');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const nodes = [
+      { id: 'G', x: 0.08, y: 0.55, label: '创世块', color: '#f7931a', level: 0 },
+      { id: 'A', x: 0.2, y: 0.55, label: 'A', color: '#38bdf8', level: 1 },
+      { id: 'B', x: 0.35, y: 0.55, label: 'B', color: '#38bdf8', level: 2 },
+      { id: 'C', x: 0.55, y: 0.3, label: 'C (主链)', color: '#4ade80', level: 3 },
+      { id: 'D', x: 0.55, y: 0.75, label: 'D (孤块)', color: '#f87171', level: 3, stale: true },
+      { id: 'E', x: 0.75, y: 0.3, label: 'E', color: '#4ade80', level: 4 },
+      { id: 'F', x: 0.75, y: 0.15, label: 'F', color: '#4ade80', level: 4 },
+      { id: 'H', x: 0.92, y: 0.3, label: 'H', color: '#4ade80', level: 5 },
+    ];
+
+    const edges = [
+      ['G','A'], ['A','B'], ['B','C'], ['B','D'], ['C','E'], ['C','F'], ['E','H']
+    ];
+
+    // Edges
+    edges.forEach(([from, to]) => {
+      const fn = nodes.find(n => n.id === from);
+      const tn = nodes.find(n => n.id === to);
+      const fx = fn.x * W, fy = fn.y * H;
+      const tx = tn.x * W, ty = tn.y * H;
+      const isStale = tn.stale;
+
+      ctx.strokeStyle = isStale ? '#f8717144' : '#2a3040';
+      ctx.lineWidth = isStale ? 1.5 : 2;
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      // Bezier curve
+      const midX = (fx + tx) / 2;
+      ctx.lineTo(midX, fy);
+      ctx.lineTo(midX, ty);
+      ctx.lineTo(tx, ty);
+      ctx.stroke();
+    });
+
+    // Nodes
+    nodes.forEach(n => {
+      const nx = n.x * W, ny = n.y * H;
+      ctx.fillStyle = n.color + '22';
+      ctx.strokeStyle = n.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (n.stale) {
+        ctx.setLineDash([5, 3]);
+      }
+      ctx.arc(nx, ny, 28, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = n.color;
+      ctx.font = 'bold 19px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(n.label, nx, ny);
+    });
+
+    // Annotations
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 20px "Segoe UI", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('✓ 主链 (最长链 = 最多累计 PoW)', W * 0.6, 60);
+
+    ctx.fillStyle = '#f87171';
+    ctx.fillText('✗ 孤块 (stale block) — 无奖励', W * 0.6, 90);
+
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '17px "Segoe UI", sans-serif';
+    ctx.fillText('Nakamoto 共识: 当出现分叉，节点选择累计工作量最多的链继续构建。', W * 0.1, H - 20);
+    ctx.fillText('孤块率: ~0.5-2% (取决于区块传播延迟)', W * 0.1, H - 46);
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ═══ Mermaid Init ═══ -->
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1e1b4b',
+    primaryTextColor: '#e1e4eb',
+    primaryBorderColor: '#6366f1',
+    lineColor: '#ffffff',
+    secondaryColor: '#16213e',
+    tertiaryColor: '#0b0e14',
+    fontSize: '18px',
+    noteBkgColor: '#1e2332',
+    noteTextColor: '#e1e4eb',
+    noteBorderColor: '#f7931a',
+    sequenceNumberColor: '#f7931a',
+  },
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: 'basis',
+    padding: 18,
+  },
+  sequence: {
+    useMaxWidth: true,
+    boxMargin: 10,
+    mirrorActors: false,
+  },
+});
+</script>
+
+<!-- ═══ Slider progress fill ═══ -->
+<script>
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

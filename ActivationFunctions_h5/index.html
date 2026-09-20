@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>激活函数全览 — 交互式对比可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://unpkg.com/@antv/g2@5.2.12/dist/g2.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #161822;
+    --card2: #1a1c2a;
+    --text: #e1e4ed;
+    --text2: #8b8fa8;
+    --accent: #6366f1;
+    --red: #ef4444;
+    --orange: #f97316;
+    --amber: #f59e0b;
+    --green: #22c55e;
+    --teal: #14b8a6;
+    --cyan: #06b6d4;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --border: #252840;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #161822 0%, #1a1040 40%, #162238 70%, #161822 100%);
+    border-bottom: 2px solid var(--border);
+    padding: 28px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(99,102,241,0.06) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(236,72,153,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 29px;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .header p { color: var(--text2); font-size: 17px; position: relative; }
+
+  /* Main */
+  .main {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Section */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+  }
+  .section h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section h2 .dot {
+    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+  }
+  .section > p.desc {
+    font-size: 16px;
+    color: var(--text2);
+    margin-bottom: 18px;
+    line-height: 1.7;
+  }
+
+  /* Formula block */
+  .formula-block {
+    background: #0d0e16;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    border-left: 3px solid var(--accent);
+  }
+  .formula-block h3 {
+    font-size: 16px;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+  .formula-block .katex-display { margin: 6px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* Grid layouts */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 1200px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .grid-4 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 720px) { .grid-4 { grid-template-columns: 1fr; } }
+
+  /* Canvas container */
+  .canvas-wrap {
+    position: relative;
+    background: #0a0b12;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+  }
+
+  /* Info card */
+  .info-card {
+    background: #0d0e16;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--blue);
+  }
+  .info-card h4 {
+    font-size: 16px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .info-card p {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  /* Controls */
+  .control-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 14px;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 130px;
+  }
+  .control-group label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .control-group label .val {
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    min-width: 32px;
+  }  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(99,102,241,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(99,102,241,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .control-group select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0d0e16;
+    color: var(--text);
+    font-size: 16px;
+    font-family: inherit;
+  }
+
+  /* Checkbox toggles */
+  .toggle-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .toggle-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: #1a1c2e;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .toggle-btn:hover { border-color: #4a4d66; color: var(--text); }
+  .toggle-btn.on { border-color: var(--accent); background: rgba(99,102,241,0.15); color: var(--text); }
+  .toggle-btn .t-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* Insight block */
+  .insight {
+    background: linear-gradient(135deg, #1a1030, #162040);
+    border: 1px solid #3a3560;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 16px;
+  }
+  .insight h4 {
+    font-size: 16px;
+    color: #a78bfa;
+    margin-bottom: 6px;
+  }
+  .insight p {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  /* Comparison table */
+  .compare-table-wrap {
+    overflow-x: auto;
+    margin-top: 12px;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    min-width: 1100px;
+  }
+  .compare-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #0d0e16;
+    color: var(--text2);
+    font-weight: 600;
+    font-size: 16px;
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+  .compare-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .compare-table tr:hover td { background: #0d0e16; }
+  .compare-table .fn-name {
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .compare-table .rec-yes { color: var(--green); font-weight: 600; }
+  .compare-table .rec-warn { color: var(--amber); font-weight: 600; }
+  .compare-table .rec-no { color: var(--red); font-weight: 600; }
+  .compare-table .rec-best { background: rgba(34,197,94,0.08); border-radius: 4px; padding: 2px 8px; }
+
+  /* Tabs */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); background: #1a1c2e; }
+  .tab-btn.active {
+    color: var(--text);
+    background: #1a1c2e;
+    border-color: var(--border);
+    border-bottom-color: transparent;
+  }
+
+  /* Footer */
+  .page-footer {
+    text-align: center;
+    padding: 20px;
+    color: #555;
+    font-size: 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  .katex-display { overflow-x: auto; overflow-y: hidden; }
+
+  .fn-mini-card {
+    background: #0d0e16;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--accent);
+  }
+  .fn-mini-card h4 {
+    font-size: 17px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fn-mini-card h4 .dot-sm {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .fn-mini-card .fn-desc {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .fn-mini-card .fn-props {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .fn-mini-card .fn-props span {
+    background: #1a1c2e;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ 激活函数全览 — 交互式对比可视化</h1>
+  <p>涵盖 27 种激活函数: S型·ReLU家族·平滑·门控·部署优化 — 基于 AntV G2 绘制，支持参数交互调节</p>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════ SECTION 1: 总览对比 ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--purple);"></span>📊 激活函数总览对比</h2>
+  <p class="desc">
+    在同一坐标系中对比主流激活函数的曲线形态。点击下方按钮切换显示/隐藏，拖动滑块调整 x 轴范围。
+  </p>
+
+  <div class="toggle-row" id="overview-toggles"></div>
+
+  <div class="control-row">
+    <div class="control-group">
+      <label>📐 X 轴范围 <span class="val" id="val-xrange">±6</span></label>
+      <input type="range" id="sl-xrange" min="3" max="10" value="6" step="0.5" oninput="onOverviewRangeChange()">
+    </div>
+    <div class="control-group">
+      <label>🔢 采样点数</label>
+      <select id="sel-samples-overview" onchange="redrawOverview()">
+        <option value="200">200</option>
+        <option value="400" selected>400</option>
+        <option value="800">800</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div id="chart-overview" style="width:100%;height:460px;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 2: 经典 S 型激活函数 ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--red);"></span>🔄 经典 S 型激活函数</h2>
+  <p class="desc">
+    Sigmoid 和 Tanh 是最早广泛使用的激活函数，具有平滑、有界的 S 形曲线。但由于梯度消失问题，现主要用于特定场景（输出层、门控机制）。
+  </p>
+
+  <div class="control-row">
+    <div class="control-group">
+      <label>📐 X 轴范围 <span class="val" id="val-srange">±6</span></label>
+      <input type="range" id="sl-srange" min="3" max="10" value="6" step="0.5" oninput="onSigmoidRangeChange()">
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="canvas-wrap">
+      <div id="chart-sigmoid" style="width:100%;height:360px;"></div>
+    </div>
+    <div>
+      <div class="fn-mini-card" style="border-left-color:var(--red);">
+        <h4><span class="dot-sm" style="background:var(--red);"></span>Sigmoid</h4>
+        <div class="fn-desc">
+          <div id="formula-sigmoid"></div>
+          <div class="fn-props">
+            <span>📦 输出: (0, 1)</span>
+            <span>⚡ 计算: ★★</span>
+            <span>⚠️ 梯度消失</span>
+            <span>✅ 二分类输出</span>
+          </div>
+        </div>
+      </div>
+      <div class="fn-mini-card" style="border-left-color:var(--orange); margin-top:12px;">
+        <h4><span class="dot-sm" style="background:var(--orange);"></span>Tanh</h4>
+        <div class="fn-desc">
+          <div id="formula-tanh"></div>
+          <div class="fn-props">
+            <span>📦 输出: (-1, 1)</span>
+            <span>🎯 零中心</span>
+            <span>⚡ 计算: ★★</span>
+            <span>✅ RNN/LSTM</span>
+          </div>
+        </div>
+      </div>
+      <div class="fn-mini-card" style="border-left-color:var(--amber); margin-top:12px;">
+        <h4><span class="dot-sm" style="background:var(--amber);"></span>Softsign</h4>
+        <div class="fn-desc">
+          <div id="formula-softsign"></div>
+          <div class="fn-props">
+            <span>📦 输出: (-1, 1)</span>
+            <span>🎯 零中心</span>
+            <span>⚡ 无 exp</span>
+            <span>⚠️ 小众选择</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <h4>💡 核心直觉</h4>
+    <p>Sigmoid 输出恒正（非零中心），导致后续层输入的 zig-zag 梯度更新；Tanh 虽为零中心，但两者的饱和区梯度几乎为零，深层网络难以训练。现代深度网络几乎不在隐藏层使用它们。</p>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 3: ReLU 家族 ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--green);"></span>⚙️ ReLU 家族</h2>
+  <p class="desc">
+    ReLU 是深度学习中最广泛使用的激活函数家族。从基础 ReLU 到各种改进变体（Leaky ReLU、ELU、SELU 等），核心目标都是解决 ReLU 的"神经元死亡"问题。
+  </p>
+
+  <div class="control-row">
+    <div class="control-group">
+      <label>📐 X 轴范围 <span class="val" id="val-rrange">±4</span></label>
+      <input type="range" id="sl-rrange" min="2" max="8" value="4" step="0.5" oninput="onReLURangeChange()">
+    </div>
+    <div class="control-group">
+      <label>🔧 Leaky α <span class="val" id="val-lalpha">0.01</span></label>
+      <input type="range" id="sl-lalpha" min="0" max="50" value="1" step="1" oninput="onReLUParamChange()">
+    </div>
+    <div class="control-group">
+      <label>🔧 ELU α <span class="val" id="val-ealpha">1.00</span></label>
+      <input type="range" id="sl-ealpha" min="5" max="300" value="100" step="5" oninput="onReLUParamChange()">
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div id="chart-relu" style="width:100%;height:420px;"></div>
+  </div>
+
+  <div class="grid-3" style="margin-top:16px;">
+    <div class="fn-mini-card" style="border-left-color:#22c55e;">
+      <h4><span class="dot-sm" style="background:#22c55e;"></span>ReLU</h4>
+      <div class="fn-desc"><div id="formula-relu"></div></div>
+      <div class="fn-props"><span>✅ 通用推荐</span><span>⚠️ 神经元死亡</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:#10b981;">
+      <h4><span class="dot-sm" style="background:#10b981;"></span>ReLU-6</h4>
+      <div class="fn-desc"><div id="formula-relu6"></div></div>
+      <div class="fn-props"><span>✅ 移动端</span><span>📦 输出 [0,6]</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--teal);">
+      <h4><span class="dot-sm" style="background:var(--teal);"></span>Leaky ReLU</h4>
+      <div class="fn-desc"><div id="formula-lrelu"></div></div>
+      <div class="fn-props"><span>✅ 缓解死亡</span><span>🔧 α=0.01</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--blue);">
+      <h4><span class="dot-sm" style="background:var(--blue);"></span>PReLU</h4>
+      <div class="fn-desc"><div id="formula-prelu"></div></div>
+      <div class="fn-props"><span>🔧 α 可学习</span><span>⚠️ 易过拟合</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--cyan);">
+      <h4><span class="dot-sm" style="background:var(--cyan);"></span>ELU</h4>
+      <div class="fn-desc"><div id="formula-elu"></div></div>
+      <div class="fn-props"><span>✅ 深层推荐</span><span>⚡ 含 exp</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:#6366f1;">
+      <h4><span class="dot-sm" style="background:#6366f1;"></span>SELU</h4>
+      <div class="fn-desc"><div id="formula-selu"></div></div>
+      <div class="fn-props"><span>🎯 自归一化</span><span>⚠️ 仅全连接</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--pink);">
+      <h4><span class="dot-sm" style="background:var(--pink);"></span>CELU</h4>
+      <div class="fn-desc"><div id="formula-celu"></div></div>
+      <div class="fn-props"><span>✅ 处处可导</span><span>⚡ 含 exp</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:#eab308;">
+      <h4><span class="dot-sm" style="background:#eab308;"></span>Softplus</h4>
+      <div class="fn-desc"><div id="formula-softplus"></div></div>
+      <div class="fn-props"><span>📦 输出正数</span><span>⚡ 含 exp+log</span></div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <h4>💡 核心直觉</h4>
+    <p>ReLU 的"死亡"源于负半轴梯度为 0——一旦神经元落入负激活区，就不再更新。Leaky ReLU 用微小斜率 (α=0.01) 保留梯度流；ELU 用指数函数使负输出近零中心；SELU 更进一步，通过精心设计的 λ 参数实现自归一化。</p>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 4: 平滑激活函数 ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--blue);"></span>🌟 平滑激活函数（现代模型首选）</h2>
+  <p class="desc">
+    GELU、Swish/SiLU、Mish 等平滑激活函数在 Transformer 和现代 CNN 中表现优异。它们具有平滑的梯度和非单调特性，但计算成本较高。
+  </p>
+
+  <div class="control-row">
+    <div class="control-group">
+      <label>📐 X 轴范围 <span class="val" id="val-smrange">±5</span></label>
+      <input type="range" id="sl-smrange" min="3" max="8" value="5" step="0.5" oninput="onSmoothRangeChange()">
+    </div>
+    <div class="control-group">
+      <label>🔧 Swish β <span class="val" id="val-sbeta">1.00</span></label>
+      <input type="range" id="sl-sbeta" min="0" max="500" value="100" step="10" oninput="onSmoothParamChange()">
+    </div>
+    <div class="control-group">
+      <label>🧮 GELU 模式</label>
+      <select id="sel-gelu-mode" onchange="onSmoothParamChange()">
+        <option value="exact">精确 Φ(x)</option>
+        <option value="approx" selected>近似 tanh</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div id="chart-smooth" style="width:100%;height:440px;"></div>
+  </div>
+
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="fn-mini-card" style="border-left-color:var(--accent);">
+      <h4><span class="dot-sm" style="background:var(--accent);"></span>GELU</h4>
+      <div class="fn-desc"><div id="formula-gelu"></div></div>
+      <div class="fn-props"><span>✅ Transformer</span><span>📊 有理论依据</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--purple);">
+      <h4><span class="dot-sm" style="background:var(--purple);"></span>Swish / SiLU</h4>
+      <div class="fn-desc"><div id="formula-swish"></div></div>
+      <div class="fn-props"><span>✅ 替代 ReLU</span><span>🔧 β 可调</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--teal);">
+      <h4><span class="dot-sm" style="background:var(--teal);"></span>HardSwish</h4>
+      <div class="fn-desc"><div id="formula-hswish"></div></div>
+      <div class="fn-props"><span>✅ 移动端</span><span>⚡ 无 exp</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--pink);">
+      <h4><span class="dot-sm" style="background:var(--pink);"></span>Mish</h4>
+      <div class="fn-desc"><div id="formula-mish"></div></div>
+      <div class="fn-props"><span>⚠️ 研究用途</span><span>⚡ 计算极重</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:#ef4444;">
+      <h4><span class="dot-sm" style="background:#ef4444;"></span>TanhExp</h4>
+      <div class="fn-desc"><div id="formula-tanhexp"></div></div>
+      <div class="fn-props"><span>❌ 不推荐</span><span>⚡ 不稳定</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--amber);">
+      <h4><span class="dot-sm" style="background:var(--amber);"></span>Softsign</h4>
+      <div class="fn-desc"><div id="formula-softsign2"></div></div>
+      <div class="fn-props"><span>⚠️ 不推荐主流</span><span>⚡ 无 exp</span></div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <h4>💡 核心直觉</h4>
+    <p>GELU 通过将输入乘以标准正态 CDF Φ(x) 实现"概率性"门控——小输入更可能被抑制，大输入更可能通过。Swish 用 Sigmoid 实现类似效果。两者的非单调"凹陷"（约在 x≈-1 处）被认为是性能优势的关键，允许梯度在负区域有更丰富的表达。</p>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 5: 门控线性单元 GLU ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--orange);"></span>🚪 门控线性单元 (GLU Family)</h2>
+  <p class="desc">
+    GLU 引入了门控机制：将输入分成两路，一路做线性变换，另一路通过激活函数做门控。SwiGLU 是当前 LLM（如 Llama）中最主流的激活函数。
+  </p>
+
+  <div class="control-row">
+    <div class="control-group">
+      <label>📐 X 轴范围 <span class="val" id="val-grange">±5</span></label>
+      <input type="range" id="sl-grange" min="3" max="8" value="5" step="0.5" oninput="onGLURangeChange()">
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div id="chart-glu" style="width:100%;height:400px;"></div>
+  </div>
+
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="fn-mini-card" style="border-left-color:#3b82f6;">
+      <h4><span class="dot-sm" style="background:#3b82f6;"></span>GLU</h4>
+      <div class="fn-desc"><div id="formula-glu"></div></div>
+      <div class="fn-props"><span>✅ Transformer FFN</span><span>⚠️ 参数翻倍</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:#22c55e;">
+      <h4><span class="dot-sm" style="background:#22c55e;"></span>ReGLU</h4>
+      <div class="fn-desc"><div id="formula-reglu"></div></div>
+      <div class="fn-props"><span>⚡ 计算快</span><span>⚠️ 不够平滑</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--accent);">
+      <h4><span class="dot-sm" style="background:var(--accent);"></span>GeGLU</h4>
+      <div class="fn-desc"><div id="formula-geglu"></div></div>
+      <div class="fn-props"><span>✅ T5, PaLM</span><span>⚡ 计算重</span></div>
+    </div>
+    <div class="fn-mini-card" style="border-left-color:var(--purple);">
+      <h4><span class="dot-sm" style="background:var(--purple);"></span>SwiGLU 🏆</h4>
+      <div class="fn-desc"><div id="formula-swiglu"></div></div>
+      <div class="fn-props"><span>✅ Llama 首选</span><span>⚡ 性能最优</span></div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <h4>💡 核心直觉</h4>
+    <p>GLU 的核心思想是"学习哪些信息可以通过"。门控路径 (σ(W<sub>g</sub>x)) 输出 0~1 的权重，逐元素控制线性路径的输出。SwiGLU 将门控激活替换为 Swish，在 LLM 中表现最佳——Llama 系列模型全部采用 SwiGLU 作为 FFN 激活函数。</p>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 6: 部署优化 ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--green);"></span>📱 部署优化激活函数</h2>
+  <p class="desc">
+    针对边缘设备、移动端和量化模型的轻量级激活函数，牺牲少量精度换取推理速度和硬件友好性。
+  </p>
+
+  <div class="grid-2">
+    <div>
+      <div class="canvas-wrap">
+        <div id="chart-deploy" style="width:100%;height:360px;"></div>
+      </div>
+      <div class="control-row" style="margin-top:8px;">
+        <div class="control-group">
+          <label>🔢 LUT 分段数 <span class="val" id="val-lut-n">16</span></label>
+          <input type="range" id="sl-lut-n" min="4" max="64" value="16" step="4" oninput="onDeployParamChange()">
+        </div>
+        <div class="control-group">
+          <label>🔧 量化步长 Δ <span class="val" id="val-qstep">0.25</span></label>
+          <input type="range" id="sl-qstep" min="5" max="100" value="25" step="5" oninput="onDeployParamChange()">
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="fn-mini-card" style="border-left-color:var(--amber);">
+        <h4><span class="dot-sm" style="background:var(--amber);"></span>LUT-based (查表法)</h4>
+        <div class="fn-desc"><div id="formula-lut"></div></div>
+        <div class="fn-props"><span>⚡ 极速推理</span><span>💾 内存占用</span><span>✅ FPGA/边缘</span></div>
+      </div>
+      <div class="fn-mini-card" style="border-left-color:var(--teal); margin-top:12px;">
+        <h4><span class="dot-sm" style="background:var(--teal);"></span>QuantReLU</h4>
+        <div class="fn-desc"><div id="formula-qrelu"></div></div>
+        <div class="fn-props"><span>📦 低比特</span><span>🔧 STE 近似梯度</span><span>✅ 工业部署</span></div>
+      </div>
+      <div class="insight">
+        <h4>💡 核心直觉</h4>
+        <p>LUT 将激活函数预计算为离散查找表，推理时只需 O(1) 查表；QuantReLU 将连续值量化为整数倍，大幅降低存储和计算需求。两者都依赖量化感知训练 (QAT) 弥补精度损失。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 7: 全面属性对比表 ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--text2);"></span>📋 激活函数全属性对比表</h2>
+  <p class="desc">
+    27 种激活函数的数学形式、输出范围、可导性、零中心性、计算成本、适用场景和推荐度的全面对比。
+  </p>
+
+  <div class="compare-table-wrap">
+    <table class="compare-table" id="full-compare-table">
+      <thead>
+        <tr>
+          <th>激活函数</th>
+          <th>数学形式</th>
+          <th>输出范围</th>
+          <th>可导</th>
+          <th>零中心</th>
+          <th>计算</th>
+          <th>适用场景</th>
+          <th>优点</th>
+          <th>缺点</th>
+          <th>推荐</th>
+        </tr>
+      </thead>
+      <tbody id="compare-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 8: 总结与推荐 ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--amber);"></span>🏆 总结与推荐</h2>
+
+  <div class="grid-3">
+    <div class="info-card" style="border-left-color: var(--green);">
+      <h4 style="color:var(--green);">✅ 通用隐藏层首选</h4>
+      <p><b>基础选择：</b>ReLU — 简单高效<br>
+      <b>进阶选择：</b>GELU / Swish — Transformer 标配<br>
+      <b>防死亡：</b>Leaky ReLU / ELU — 深层网络</p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--blue);">
+      <h4 style="color:var(--blue);">✅ LLM / Transformer</h4>
+      <p><b>FFN 激活：</b>SwiGLU（Llama 首选）<br>
+      <b>注意力头：</b>Softmax（不可替代）<br>
+      <b>位置编码：</b>无需激活或 Linear</p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--teal);">
+      <h4 style="color:var(--teal);">✅ 移动端 / 边缘部署</h4>
+      <p><b>轻量 CNN：</b>ReLU-6 / HardSwish<br>
+      <b>量化模型：</b>QuantReLU<br>
+      <b>FPGA/嵌入式：</b>LUT-based</p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--red);">
+      <h4 style="color:var(--red);">⚠️ 仅限特定场景</h4>
+      <p><b>Sigmoid：</b>二分类输出、门控<br>
+      <b>Tanh：</b>RNN/LSTM 隐藏状态<br>
+      <b>Linear：</b>回归输出、残差连接</p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--orange);">
+      <h4 style="color:var(--orange);">⚠️ 实验/不推荐</h4>
+      <p><b>Mish：</b>视觉任务实验<br>
+      <b>TanhExp：</b>计算极重且不稳定<br>
+      <b>Softsign：</b>小众、表达能力弱<br>
+      <b>PReLU：</b>易过拟合、不稳定</p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--purple);">
+      <h4 style="color:var(--purple);">📐 选型决策流程</h4>
+      <p>1. Transformer FFN → <b>SwiGLU</b><br>
+      2. 通用 CNN/MLP → <b>ReLU</b> 或 <b>GELU</b><br>
+      3. 移动端 → <b>HardSwish / ReLU-6</b><br>
+      4. 二分类输出 → <b>Sigmoid</b><br>
+      5. 多分类输出 → <b>Softmax</b></p>
+    </div>
+  </div>
+</div>
+
+</div> <!-- .main -->
+
+<div class="page-footer">
+  Activation Functions Visualization · Built with AntV G2 &amp; KaTeX · © 2026
+</div>
+
+<!-- ═══════════════ SCRIPTS ═══════════════ -->
+<script>
+// ========== Activation Function Definitions ==========
+const FNS = {
+  sigmoid:    { fn: x => 1/(1+Math.exp(-x)), color: '#ef4444', range: [-8,8] },
+  tanh:       { fn: x => Math.tanh(x), color: '#f97316', range: [-5,5] },
+  softsign:   { fn: x => x/(1+Math.abs(x)), color: '#f59e0b', range: [-6,6] },
+  linear:     { fn: x => x, color: '#6b7280', range: [-4,4] },
+  relu:       { fn: x => Math.max(0,x), color: '#22c55e', range: [-3,5] },
+  relu6:      { fn: x => Math.min(Math.max(0,x),6), color: '#10b981', range: [-2,8] },
+  leaky_relu: { fn: (x,a=0.01) => x>0?x:a*x, color: '#14b8a6', range: [-4,4] },
+  prelu:      { fn: (x,a=0.25) => x>0?x:a*x, color: '#3b82f6', range: [-4,4] },
+  elu:        { fn: (x,a=1) => x>0?x:a*(Math.exp(x)-1), color: '#06b6d4', range: [-4,4] },
+  selu:       { fn: x => { const la=1.0507009873554805, a=1.6732632423543773; return la*(x>0?x:a*(Math.exp(x)-1)); }, color: '#6366f1', range: [-3,4] },
+  celu:       { fn: (x,a=1) => x>0?x:a*(Math.exp(x/a)-1), color: '#ec4899', range: [-4,4] },
+  gelu:       { fn: x => { /* erf approx */ const t=Math.tanh(Math.sqrt(2/Math.PI)*(x+0.044715*x*x*x)); return 0.5*x*(1+t); }, color: '#8b5cf6', range: [-4,4] },
+  gelu_exact: { fn: x => { /* via erf */ const erf = (z) => { const sign=z>=0?1:-1; z=Math.abs(z); const t=1/(1+0.3275911*z); const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429; const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-z*z); return sign*y; }; return x*0.5*(1+erf(x/Math.sqrt(2))); }, color: '#8b5cf6', range: [-4,4] },
+  swish:      { fn: (x,b=1) => x/(1+Math.exp(-b*x)), color: '#a855f7', range: [-5,5] },
+  hardswish:  { fn: x => { if(x<=-3) return 0; if(x>=3) return x; return x*(x+3)/6; }, color: '#2dd4bf', range: [-5,5] },
+  softplus:   { fn: x => Math.log(1+Math.exp(x)), color: '#eab308', range: [-4,6] },
+  mish:       { fn: x => x*Math.tanh(Math.log(1+Math.exp(x))), color: '#f472b6', range: [-4,5] },
+  tanhexp:    { fn: x => x*Math.tanh(Math.exp(x)), color: '#dc2626', range: [-3,3] },
+  glu:        { fn: x => x/(1+Math.exp(-x)), color: '#3b82f6', range: [-5,5] },        // x*sigmoid(x) ≈ Swish β=1
+  reglu:      { fn: x => x*Math.max(0,x), color: '#22c55e', range: [-4,4] },           // x*ReLU(x)
+  geglu:      { fn: x => { const t=Math.tanh(Math.sqrt(2/Math.PI)*(x+0.044715*x*x*x)); return x*0.5*(1+t); }, color: '#6366f1', range: [-4,4] }, // x*GELU(x)
+  swiglu:     { fn: x => x*x/(1+Math.exp(-x)), color: '#a855f7', range: [-5,5] },       // x*Swish(x)
+};
+
+const CATEGORIES = {
+  'S型':     ['sigmoid','tanh','softsign'],
+  '线性':    ['linear'],
+  'ReLU家族': ['relu','relu6','leaky_relu','prelu','elu','selu','celu','softplus'],
+  '平滑':    ['gelu','swish','hardswish','mish','tanhexp'],
+  '门控GLU': ['glu','reglu','geglu','swiglu'],
+};
+
+const OVERVIEW_DEFAULTS = ['sigmoid','tanh','relu','leaky_relu','elu','gelu','swish','mish','softplus','hardswish'];
+let overviewActive = new Set(OVERVIEW_DEFAULTS);
+let allCharts = {};
+
+function getShortName(key) {
+  const map = {
+    sigmoid:'Sigmoid', tanh:'Tanh', softsign:'Softsign', linear:'Linear',
+    relu:'ReLU', relu6:'ReLU-6', leaky_relu:'Leaky ReLU', prelu:'PReLU',
+    elu:'ELU', selu:'SELU', celu:'CELU', softplus:'Softplus',
+    gelu:'GELU', swish:'Swish', hardswish:'HardSwish', mish:'Mish', tanhexp:'TanhExp',
+    glu:'GLU', reglu:'ReGLU', geglu:'GeGLU', swiglu:'SwiGLU',
+  };
+  return map[key] || key;
+}
+
+function samplePoints(fnKey, xMin, xMax, n, extraParams) {
+  const pts = [];
+  const dx = (xMax - xMin) / (n - 1);
+  const fnDef = FNS[fnKey];
+  for (let i = 0; i < n; i++) {
+    const x = xMin + i * dx;
+    let y;
+    switch (fnKey) {
+      case 'leaky_relu': y = fnDef.fn(x, extraParams?.alpha ?? 0.01); break;
+      case 'prelu':      y = fnDef.fn(x, extraParams?.alpha ?? 0.25); break;
+      case 'elu':        y = fnDef.fn(x, extraParams?.alpha ?? 1.0); break;
+      case 'celu':       y = fnDef.fn(x, extraParams?.alpha ?? 1.0); break;
+      case 'swish':      y = fnDef.fn(x, extraParams?.beta ?? 1.0); break;
+      case 'gelu':
+        if (extraParams?.geluMode === 'exact') y = FNS.gelu_exact.fn(x);
+        else y = fnDef.fn(x);
+        break;
+      default: y = fnDef.fn(x); break;
+    }
+    if (!isFinite(y)) y = fnKey.includes('relu') ? 0 : (x > 0 ? x : -10);
+    pts.push({ x, y, fn: getShortName(fnKey) });
+  }
+  return pts;
+}
+
+// ========== G2 Chart Helpers ==========
+function createChart(containerId, height) {
+  const el = document.getElementById(containerId);
+  if (!el) return null;
+  el.innerHTML = '';
+  const chart = new G2.Chart({
+    container: el,
+    height: height || 400,
+    theme: 'dark',
+    autoFit: true,
+    paddingLeft: 56,
+    paddingRight: 24,
+    paddingTop: 24,
+    paddingBottom: 48,
+  });
+  return chart;
+}
+
+function drawLineChart(chartKey, containerId, data, colorMap, height) {
+  // Destroy previous chart instance
+  if (allCharts[chartKey]) {
+    try { allCharts[chartKey].destroy(); } catch(e) {}
+    delete allCharts[chartKey];
+  }
+
+  const chart = createChart(containerId, height);
+  if (!chart) return;
+  allCharts[chartKey] = chart;
+
+  const domain = Object.keys(colorMap);
+  const range = Object.values(colorMap);
+
+  chart.data(data);
+  // Set color scale with exact domain/range mapping
+  chart.scale('color', { domain: domain, range: range });
+  // Add line mark with color encoding
+  chart.line()
+    .encode('x', 'x')
+    .encode('y', 'y')
+    .encode('color', 'fn')
+    .style('lineWidth', 2.5)
+    .tooltip(false);
+  chart.render();
+}
+
+// ========== Overview Chart ==========
+function getOverviewParams() {
+  const xr = parseFloat(document.getElementById('sl-xrange').value);
+  const n = parseInt(document.getElementById('sel-samples-overview').value) || 400;
+  const beta = 1.0;
+  const alpha_l = 0.01;
+  const alpha_e = 1.0;
+  return { xr, n, beta, alpha_l, alpha_e };
+}
+
+function drawOverview() {
+  const { xr, n, beta, alpha_l, alpha_e } = getOverviewParams();
+  const allData = [];
+  const colorMap = {};
+  for (const key of overviewActive) {
+    const color = FNS[key]?.color || '#fff';
+    colorMap[getShortName(key)] = color;
+    if (key === 'elu' || key === 'celu') {
+      allData.push(...samplePoints(key, -xr, xr, n, { alpha: alpha_e }));
+    } else {
+      allData.push(...samplePoints(key, -xr, xr, n, { beta, alpha: alpha_l }));
+    }
+  }
+  drawLineChart('overview', 'chart-overview', allData, colorMap, 460);
+}
+
+function onOverviewRangeChange() {
+  document.getElementById('val-xrange').textContent = '±' + document.getElementById('sl-xrange').value;
+  drawOverview();
+}
+
+function redrawOverview() { drawOverview(); }
+
+function toggleOverview(key) {
+  if (overviewActive.has(key)) {
+    if (overviewActive.size > 1) overviewActive.delete(key);
+  } else {
+    overviewActive.add(key);
+  }
+  renderOverviewToggles();
+  drawOverview();
+}
+
+function renderOverviewToggles() {
+  const container = document.getElementById('overview-toggles');
+  const allKeys = [...new Set([...OVERVIEW_DEFAULTS, ...Object.keys(FNS).filter(k => !['gelu_exact','softsign','linear','prelu','selu','celu','softplus','tanhexp','glu','reglu','geglu','swiglu','relu6','hardswish','mish'].includes(k))])];
+  // Use a curated list for overview
+  const overviewKeys = ['sigmoid','tanh','linear','relu','leaky_relu','elu','gelu','swish','mish','softplus','hardswish'];
+  let html = '';
+  for (const key of overviewKeys) {
+    const color = FNS[key]?.color || '#888';
+    const on = overviewActive.has(key);
+    html += `<button class="toggle-btn${on?' on':''}" onclick="toggleOverview('${key}')"><span class="t-dot" style="background:${color};"></span>${getShortName(key)}</button>`;
+  }
+  container.innerHTML = html;
+}
+
+// ========== Sigmoid Family Chart ==========
+function drawSigmoidFamily() {
+  const xr = parseFloat(document.getElementById('sl-srange').value);
+  const n = 300;
+  const keys = ['sigmoid','tanh','softsign'];
+  const allData = [];
+  const colorMap = {};
+  for (const key of keys) {
+    colorMap[getShortName(key)] = FNS[key].color;
+    allData.push(...samplePoints(key, -xr, xr, n));
+  }
+  drawLineChart('sigmoid', 'chart-sigmoid', allData, colorMap, 360);
+}
+
+function onSigmoidRangeChange() {
+  document.getElementById('val-srange').textContent = '±' + document.getElementById('sl-srange').value;
+  drawSigmoidFamily();
+}
+
+// ========== ReLU Family Chart ==========
+function getReLUParams() {
+  const xr = parseFloat(document.getElementById('sl-rrange').value);
+  const lalpha = parseInt(document.getElementById('sl-lalpha').value) / 100;
+  const ealpha = parseInt(document.getElementById('sl-ealpha').value) / 100;
+  return { xr, lalpha, ealpha };
+}
+
+function drawReLUFamilly() {
+  const { xr, lalpha, ealpha } = getReLUParams();
+  const n = 300;
+  const keys = ['relu','relu6','leaky_relu','elu','selu','celu','softplus'];
+  const allData = [];
+  const colorMap = {};
+  for (const key of keys) {
+    colorMap[getShortName(key)] = FNS[key].color;
+    if (key === 'leaky_relu') allData.push(...samplePoints(key, -xr, xr, n, { alpha: lalpha }));
+    else if (key === 'elu') allData.push(...samplePoints(key, -xr, xr, n, { alpha: ealpha }));
+    else if (key === 'celu') allData.push(...samplePoints(key, -xr, xr, n, { alpha: ealpha }));
+    else allData.push(...samplePoints(key, -xr, xr, n));
+  }
+  drawLineChart('relu', 'chart-relu', allData, colorMap, 420);
+}
+
+function onReLURangeChange() {
+  document.getElementById('val-rrange').textContent = '±' + document.getElementById('sl-rrange').value;
+  drawReLUFamilly();
+}
+
+function onReLUParamChange() {
+  document.getElementById('val-lalpha').textContent = (parseInt(document.getElementById('sl-lalpha').value)/100).toFixed(2);
+  document.getElementById('val-ealpha').textContent = (parseInt(document.getElementById('sl-ealpha').value)/100).toFixed(2);
+  drawReLUFamilly();
+}
+
+// ========== Smooth Activation Chart ==========
+function getSmoothParams() {
+  const xr = parseFloat(document.getElementById('sl-smrange').value);
+  const beta = parseInt(document.getElementById('sl-sbeta').value) / 100;
+  const geluMode = document.getElementById('sel-gelu-mode').value;
+  return { xr, beta, geluMode };
+}
+
+function drawSmoothFamily() {
+  const { xr, beta, geluMode } = getSmoothParams();
+  const n = 300;
+  const keys = ['gelu','swish','hardswish','mish','tanhexp','softplus'];
+  const allData = [];
+  const colorMap = {};
+  for (const key of keys) {
+    colorMap[getShortName(key)] = FNS[key].color;
+    if (key === 'swish') allData.push(...samplePoints(key, -xr, xr, n, { beta }));
+    else if (key === 'gelu') allData.push(...samplePoints(key, -xr, xr, n, { geluMode }));
+    else allData.push(...samplePoints(key, -xr, xr, n));
+  }
+  drawLineChart('smooth', 'chart-smooth', allData, colorMap, 440);
+}
+
+function onSmoothRangeChange() {
+  document.getElementById('val-smrange').textContent = '±' + document.getElementById('sl-smrange').value;
+  drawSmoothFamily();
+}
+
+function onSmoothParamChange() {
+  document.getElementById('val-sbeta').textContent = (parseInt(document.getElementById('sl-sbeta').value)/100).toFixed(2);
+  drawSmoothFamily();
+}
+
+// ========== GLU Family Chart ==========
+function drawGLUFamily() {
+  const xr = parseFloat(document.getElementById('sl-grange').value);
+  const n = 300;
+  const keys = ['glu','reglu','geglu','swiglu'];
+  const allData = [];
+  const colorMap = {};
+  for (const key of keys) {
+    colorMap[getShortName(key)] = FNS[key].color;
+    allData.push(...samplePoints(key, -xr, xr, n));
+  }
+  drawLineChart('glu', 'chart-glu', allData, colorMap, 400);
+}
+
+function onGLURangeChange() {
+  document.getElementById('val-grange').textContent = '±' + document.getElementById('sl-grange').value;
+  drawGLUFamily();
+}
+
+// ========== Deploy Chart ==========
+function drawDeployChart() {
+  const lutN = parseInt(document.getElementById('sl-lut-n').value);
+  const qStep = parseInt(document.getElementById('sl-qstep').value) / 100;
+  const n = 200;
+  const allData = [];
+  const colorMap = {};
+
+  // LUT-based: piecewise constant approximation of Swish
+  const xMin = -5, xMax = 5;
+  const dx = (xMax - xMin) / lutN;
+  for (let i = 0; i < lutN; i++) {
+    const x0 = xMin + i * dx;
+    const xMid = x0 + dx/2;
+    const y = FNS.swish.fn(xMid, 1);
+    // Create step shape
+    allData.push({ x: x0, y, fn: 'LUT (查表)' });
+    allData.push({ x: x0 + dx * 0.999, y, fn: 'LUT (查表)' });
+  }
+  colorMap['LUT (查表)'] = '#f59e0b';
+
+  // QuantReLU
+  const qtPts = [];
+  for (let i = 0; i < n; i++) {
+    const x = -2 + (6 * i) / (n - 1);
+    const raw = Math.max(0, x);
+    const quantized = qStep * Math.round(raw / qStep);
+    qtPts.push({ x, y: quantized, fn: 'QuantReLU' });
+  }
+  allData.push(...qtPts);
+  colorMap['QuantReLU'] = '#14b8a6';
+
+  // Also add standard ReLU for reference
+  for (let i = 0; i < n; i++) {
+    const x = -2 + (6 * i) / (n - 1);
+    allData.push({ x, y: Math.max(0, x), fn: 'ReLU (参考)' });
+  }
+  colorMap['ReLU (参考)'] = '#22c55e';
+
+  drawLineChart('deploy', 'chart-deploy', allData, colorMap, 360);
+}
+
+function onDeployParamChange() {
+  document.getElementById('val-lut-n').textContent = document.getElementById('sl-lut-n').value;
+  document.getElementById('val-qstep').textContent = (parseInt(document.getElementById('sl-qstep').value)/100).toFixed(2);
+  drawDeployChart();
+}
+
+// ========== Comparison Table ==========
+function buildCompareTable() {
+  const data = [
+    ['Sigmoid', 'σ(x)= 1/(1+e⁻ˣ)', '(0,1)', '✓', '✗', '★★', '二分类输出、门控', '输出概率解释', '梯度消失，非零中心', '⚠️ 仅用于输出或门控'],
+    ['Tanh', 'tanh(x)= (eˣ−e⁻ˣ)/(eˣ+e⁻ˣ)', '(−1,1)', '✓', '✓', '★★', 'RNN、LSTM、输出层', '零中心，输出有界', '梯度消失严重', '⚠️ 一般不用于深层 CNN'],
+    ['Linear', 'f(x)=x', '(−∞,+∞)', '✓', '✓', '★', '输出层（回归）、残差连接', '无非线性，保留原始信息', '无法引入非线性', '✅ 仅用于输出层'],
+    ['Softmax', 'softmax(xᵢ)=eˣᵢ/Σᵢ eˣⱼ', '(0,1), 和=1', '✓', '✗', '★★★', '多分类输出层', '输出为概率分布', '数值不稳定', '✅ 多分类任务必须'],
+    ['ReLU', 'max(0,x)', '[0,+∞)', '✗(0处)', '✗', '★', '通用隐藏层（CNN、MLP）', '简单高效，训练快', '神经元死亡问题', '✅ 广泛推荐（基础选择）'],
+    ['ReLU-6', 'min(max(0,x),6)', '[0,6]', '✗(0,6处)', '✗', '★', '移动端 CNN、轻量模型', '有界输出稳定训练', '饱和特性可能限制表达', '✅ 轻量模型与量化场景'],
+    ['Leaky ReLU', 'x>0: x; x≤0: αx (α≈0.01)', '(−∞,+∞)', '✗(0处)', '近似是', '★', '缓解死亡问题的网络', '缓解死亡问题', 'α 需手动设置', '✅ 推荐替代 ReLU'],
+    ['PReLU', 'x>0: x; x≤0: αx (α可学习)', '(−∞,+∞)', '✗(0处)', '近似是', '★★', 'CNN、小样本任务', '自适应负斜率', '易过拟合，训练不稳定', '⚠️ 实验性使用'],
+    ['ELU', 'x>0: x; x≤0: α(eˣ−1)', '(−α,+∞)', '✓', '近似是', '★★', '深层网络、RNN', '缓解死亡，输出近零中心', '计算慢（含 exp）', '✅ 深层网络推荐'],
+    ['SELU', 'λ·{x>0: x; x≤0: α(eˣ−1)}', '(−αλ,+∞)', '✓', '✓(自归一化)', '★★', 'Self-Normalizing Networks', '自归一化，稳定训练', '需特定初始化和架构', '⚠️ 仅用于全连接网络'],
+    ['CELU', 'x>0: x; x≤0: α(exp(x/α)−1)', '(−α,+∞)', '✓(处处可导)', '近似是', '★★', '深层网络、需平滑梯度', '连续可导，缓解死亡', '计算较重（含 exp）', '⚠️ 可作为 ELU 的平滑替代'],
+    ['GELU', 'x·Φ(x) 或 x·σ(1.702x)', '(−0.17,+∞)', '✓', '近似是', '★★★', 'Transformer、大模型', '平滑、有理论依据', '计算较重', '✅ 现代模型首选'],
+    ['Softplus', 'log(1+eˣ)', '(0,+∞)', '✓', '✗', '★★★', 'ReLU 平滑替代、正数约束', '平滑、无死亡问题', '计算重（exp+log）', '⚠️ 实验或特定场景'],
+    ['Softsign', 'x/(1+|x|)', '(−1,1)', '✓', '✓', '★★', '替代 Tanh的低成本激活', '有界、零中心、无指数', '饱和严重，表达力弱', '⚠️ 不推荐主流使用'],
+    ['Swish/SiLU', 'x·σ(βx) (β=1)', '(−0.26,+∞)', '✓', '近似是', '★★★', '通用隐藏层、大模型', '无上界有下界，性能优', '计算开销较高', '✅ 替代 ReLU 的现代选择'],
+    ['HardSwish', 'x·HardSigmoid(x)', '[0,+∞)', '分段可导', '✗', '★★', '移动端、轻量模型', '无 exp，硬件友好', '精度略低', '✅ MobileNet 等轻量模型'],
+    ['GLU', 'x·σ(Wₓ x)', '(−∞,+∞)', '✓', '✓', '★★★', 'Transformer FFN', '门控机制增强表达', '参数翻倍', '✅ 结构性改进'],
+    ['ReGLU', 'x·ReLU(Wₓ x)', '(−∞,+∞)', '分段可导', '✓', '★★★', '高效门控结构', '计算快', '不够平滑', '⚠️ 实验性'],
+    ['GeGLU', 'x·GELU(Wₓ x)', '(−∞,+∞)', '✓', '✓', '★★★★', '大语言模型 (T5, PaLM)', '高性能门控', '计算重', '✅ LLM 推荐'],
+    ['SwiGLU', 'x·Swish(Wₓ x)', '(−∞,+∞)', '✓', '✓', '★★★★', '大语言模型 (Llama)', '性能优异，平滑', '计算重', '✅ 当前最主流 LLM 激活'],
+    ['Mish', 'x·tanh(softplus(x))', '(−0.31,+∞)', '✓', '近似是', '★★★★', '视觉任务实验', '平滑、无上界', '计算极重，难部署', '⚠️ 研究用途'],
+    ['TanhExp', 'x·tanh(eˣ)', '(−∞,+∞)', '✓', '✓', '★★★★', '实验性研究', '自门控，理论强', '计算极重，不稳定', '❌ 不推荐'],
+    ['LUT-based', 'y=LUT[index(x)]', '可配置', '✓(若插值)', '可配置', '★(查表)', '边缘设备、FPGA、QAT', '极速推理，硬件友好', '内存占用高，精度受限', '✅ 部署优化首选'],
+    ['QuantReLU', 'Δ·round(max(0,x)/Δ)', '[0,+∞) 整数倍', '✓(STE近似)', '✗', '★', '量化模型、边缘部署', '低比特，省存储', '精度损失，需 QAT', '✅ 工业部署必备'],
+  ];
+
+  const tbody = document.getElementById('compare-tbody');
+  let html = '';
+  for (const row of data) {
+    const recRaw = row[9];
+    let recClass = '';
+    if (recRaw.startsWith('✅')) recClass = 'rec-best';
+    else if (recRaw.startsWith('⚠')) recClass = 'rec-warn';
+    else if (recRaw.startsWith('❌')) recClass = 'rec-no';
+    html += `<tr>
+      <td class="fn-name">${row[0]}</td>
+      <td>${row[1]}</td>
+      <td>${row[2]}</td>
+      <td>${row[3]}</td>
+      <td>${row[4]}</td>
+      <td>${row[5]}</td>
+      <td>${row[6]}</td>
+      <td>${row[7]}</td>
+      <td>${row[8]}</td>
+      <td class="${recClass}">${recRaw}</td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+// ========== KaTeX Rendering ==========
+function renderFormulas() {
+  const formulas = {
+    'formula-sigmoid': String.raw`\sigma(x) = \dfrac{1}{1+e^{-x}}`,
+    'formula-tanh': String.raw`\tanh(x) = \dfrac{e^x - e^{-x}}{e^x + e^{-x}}`,
+    'formula-softsign': String.raw`f(x) = \dfrac{x}{1+|x|}`,
+    'formula-relu': String.raw`f(x) = \max(0, x)`,
+    'formula-relu6': String.raw`f(x) = \min(\max(0, x), 6)`,
+    'formula-lrelu': String.raw`f(x) = \max(0,x) + \alpha\min(0,x),\ \alpha=0.01`,
+    'formula-prelu': String.raw`f(x) = \max(0,x) + \alpha\min(0,x),\ \alpha\text{ 可学习}`,
+    'formula-elu': String.raw`f(x) = \max(0,x) + \min(0,\alpha(e^x-1))`,
+    'formula-selu': String.raw`f(x) = \lambda\max(0,x) + \lambda\alpha\min(0,e^x-1)`,
+    'formula-celu': String.raw`f(x) = \max(0,x) + \min(0,\alpha(e^{x/\alpha}-1))`,
+    'formula-softplus': String.raw`f(x) = \log(1 + e^x)`,
+    'formula-gelu': String.raw`f(x) = x\cdot\Phi(x) \approx 0.5x\!\left[1+\tanh\!\big(\sqrt{\tfrac{2}{\pi}}(x+0.044715x^3)\big)\right]`,
+    'formula-swish': String.raw`f(x) = x\cdot\sigma(\beta x) = \dfrac{x}{1+e^{-\beta x}}`,
+    'formula-hswish': String.raw`f(x) = x\cdot\dfrac{\text{ReLU-6}(x+3)}{6}`,
+    'formula-mish': String.raw`f(x) = x\cdot\tanh(\log(1+e^x))`,
+    'formula-tanhexp': String.raw`f(x) = x\cdot\tanh(e^x)`,
+    'formula-glu': String.raw`f(x) = (xW_1+b_1) \odot \sigma(xW_2+b_2)`,
+    'formula-reglu': String.raw`f(x) = (xW_1+b_1) \odot \text{ReLU}(xW_2+b_2)`,
+    'formula-geglu': String.raw`f(x) = (xW_1+b_1) \odot \text{GELU}(xW_2+b_2)`,
+    'formula-swiglu': String.raw`f(x) = (xW_1+b_1) \odot \text{Swish}(xW_2+b_2)`,
+    'formula-lut': String.raw`y = \text{LUT}[\text{index}(x)]`,
+    'formula-qrelu': String.raw`y = \Delta \cdot \text{round}\!\left(\frac{\max(0, x)}{\Delta}\right)`,
+    'formula-softsign2': String.raw`f(x) = \dfrac{x}{1+|x|}`,
+  };
+
+  for (const [id, formula] of Object.entries(formulas)) {
+    const el = document.getElementById(id);
+    if (el) {
+      katex.render(formula, el, { displayMode: true, throwOnError: false });
+    }
+  }
+}
+
+// ========== Initialization ==========
+function initAll() {
+  renderFormulas();
+  renderOverviewToggles();
+  buildCompareTable();
+
+  // Small delay for DOM layout
+  setTimeout(() => {
+    drawOverview();
+    drawSigmoidFamily();
+    drawReLUFamilly();
+    drawSmoothFamily();
+    drawGLUFamily();
+    drawDeployChart();
+  }, 100);
+}
+
+// Handle window resize for G2 charts
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    Object.values(allCharts).forEach(c => { try { c.render(); } catch(e) {} });
+  }, 200);
+});
+
+// Start
+document.addEventListener('DOMContentLoaded', initAll);
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>归一化 — Batch / Layer / RMS / Group Norm 交互可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222634;
+    --text: #e1e4eb;
+    --text2: #9ca3b4;
+    --bn: #4da6ff;
+    --bn2: #7cc4ff;
+    --ln: #4ade80;
+    --ln2: #86efac;
+    --rms: #a78bfa;
+    --rms2: #c4b5fd;
+    --gn: #fb923c;
+    --gn2: #fdba74;
+    --accent: #38bdf8;
+    --border: #2d3148;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #1e2240 50%, #1a1d2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--bn), var(--ln), var(--rms), var(--gn));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p { color: var(--text2); font-size: 18px; max-width: 860px; margin: 0 auto; }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot.bn  { background: var(--bn);  box-shadow: 0 0 10px var(--bn); }
+  .dot.ln  { background: var(--ln);  box-shadow: 0 0 10px var(--ln); }
+  .dot.rms { background: var(--rms); box-shadow: 0 0 10px var(--rms); }
+  .dot.gn  { background: var(--gn);  box-shadow: 0 0 10px var(--gn); }
+
+  .section .desc { color: var(--text2); font-size: 18px; margin-bottom: 20px; line-height: 1.8; }
+
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 { font-size: 17px; color: var(--text2); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  canvas {
+    display: block;
+    max-width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .canvas-wrap { overflow-x: auto; }
+
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 17px; color: var(--text2); margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600; color: var(--text);
+    font-family: 'Courier New', monospace; font-size: 17px;
+    min-width: 48px; text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 8px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct,0%), var(--border) var(--pct,0%));
+    outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; background: transparent; }
+  input[type=range]::-moz-range-track { height: 8px; border-radius: 4px; background: var(--border); border: none; }
+  input[type=range]::-moz-range-progress { height: 8px; border-radius: 4px 0 0 4px; background: var(--accent); }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(56,189,248,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(56,189,248,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(56,189,248,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover { box-shadow: 0 0 0 8px rgba(56,189,248,0.2), 0 2px 8px rgba(0,0,0,0.3); }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2); border-radius: 6px;
+    padding: 10px 14px; font-size: 17px;
+    color: var(--text2); font-family: 'Courier New', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+  .info-card .v-bn  { color: var(--bn); }
+  .info-card .v-ln  { color: var(--ln); }
+  .info-card .v-rms { color: var(--rms); }
+  .info-card .v-gn  { color: var(--gn); }
+
+  .insight {
+    background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(77,166,255,0.08));
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 8px; padding: 14px 18px; margin-top: 16px;
+    font-size: 17px; color: var(--text2); line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 17px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 24px; height: 3px; border-radius: 2px; }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px; margin-bottom: 20px;
+  }
+  .compare-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px 20px;
+  }
+  .compare-card h3 { font-size: 18px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .compare-card p { font-size: 16px; color: var(--text2); line-height: 1.6; }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 16px; }
+    .sliders { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>归一化方法全景 · Normalization</h1>
+  <p>核心区分量：沿<b>哪些轴</b>计算 μ 和 σ —— 这决定了归一化的行为和适用场景</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: What is Normalization -->
+<!-- ================================================================ -->
+<div class="section" id="what-is-norm">
+  <h2>📐 归一化的统一形式</h2>
+  <p class="desc">
+    所有归一化方法共享同一个核心公式，区别仅在于 <b>μ 和 σ 在哪些维度上计算</b>。
+    输入张量形状为 <b>(N, C, H, W)</b>，不同的归一化方法沿不同的轴做规约。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 统一公式</h3>
+    <div id="formula-unified"></div>
+  </div>
+
+  <div class="formula-block">
+    <h3>🎯 各方法统计量计算轴</h3>
+    <div id="formula-axes"></div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvasTensorAxes" width="1320" height="400"></canvas>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--bn)"></span> BN: 同一通道跨样本</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--ln)"></span> LN: 同一样本跨通道</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--rms)"></span> RMS: 同 LN 轴但不减均值</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--gn)"></span> GN: 通道分组内</div>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>Batch Size N <span class="val" id="val-N">6</span></label>
+      <input type="range" id="slider-N" min="3" max="12" value="6" step="1">
+    </div>
+    <div class="slider-group">
+      <label>通道数 C <span class="val" id="val-C">8</span></label>
+      <input type="range" id="slider-C" min="4" max="16" value="8" step="1">
+    </div>
+    <div class="slider-group">
+      <label>Group Norm 组数 G <span class="val" id="val-G">4</span></label>
+      <input type="range" id="slider-G" min="1" max="8" value="4" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>归一化 = 在选定的"统计量共享区域"内计算 μ 和 σ，然后对该区域内每个元素做 (x−μ)/σ。
+    BN 的"区域"是跨样本同通道 → 依赖 batch 大小；LN 的"区域"是同样本跨通道 → 与 batch 无关，更适合序列模型。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: Batch Normalization -->
+<!-- ================================================================ -->
+<div class="section" id="bn-section">
+  <h2><span class="dot bn"></span> Batch Normalization · 批归一化 (BN)</h2>
+  <p class="desc">
+    BN 在 <b>(N, H, W)</b> 维度上计算 μ 和 σ，每个通道 C 有独立的统计量。
+    同一通道的所有样本和空间位置共享 μ、σ。
+    <b>问题：</b>batch 太小时统计量不稳定；推理时需要 running_mean / running_var。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 BN 公式</h3>
+    <div id="formula-bn"></div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvasBN" width="1320" height="380"></canvas>
+  </div>
+
+  <div class="info-row" id="bn-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>Batch Size N <span class="val" id="val-bnN">4</span></label>
+      <input type="range" id="slider-bnN" min="2" max="16" value="4" step="1">
+    </div>
+    <div class="slider-group">
+      <label>高亮通道 c* <span class="val" id="val-bnC">2</span></label>
+      <input type="range" id="slider-bnC" min="0" max="7" value="2" step="1">
+    </div>
+    <div class="slider-group">
+      <label>特征维度 H×W <span class="val" id="val-bnHW">32</span></label>
+      <input type="range" id="slider-bnHW" min="8" max="128" value="32" step="8">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>BN 让每个通道在 batch 内标准化 —— 相当于"白化"每个特征。
+    但 batch 太小（如 N=2）时 μ,σ 估计方差大，效果差。这就是为什么 BN 不适合小 batch 或变长序列。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: Layer Normalization -->
+<!-- ================================================================ -->
+<div class="section" id="ln-section">
+  <h2><span class="dot ln"></span> Layer Normalization · 层归一化 (LN)</h2>
+  <p class="desc">
+    LN 在 <b>(C, H, W)</b> 维度上计算 μ 和 σ，每个样本 N 有独立的统计量。
+    与 batch 大小完全无关 —— 每个样本独立归一化。
+    <b>优势：</b>天然适合变长序列（NLP/Transformer），训练和推理行为一致。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 LN 公式</h3>
+    <div id="formula-ln"></div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvasLN" width="1320" height="380"></canvas>
+  </div>
+
+  <div class="info-row" id="ln-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>高亮样本 n* <span class="val" id="val-lnN">1</span></label>
+      <input type="range" id="slider-lnN" min="0" max="5" value="1" step="1">
+    </div>
+    <div class="slider-group">
+      <label>通道数 C <span class="val" id="val-lnC">8</span></label>
+      <input type="range" id="slider-lnC" min="4" max="32" value="8" step="2">
+    </div>
+    <div class="slider-group">
+      <label>特征维度 H×W <span class="val" id="val-lnHW">32</span></label>
+      <input type="range" id="slider-lnHW" min="8" max="128" value="32" step="8">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>LN 对每个样本独立归一化 → 天然适配 batch size=1 和变长序列。
+    Transformer 中 LN 在每个 token 的特征维度上归一化：每个 token 向量独立地做 (x−μ)/σ。
+    这就是为什么所有 transformer 都用 LN。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: RMS Normalization -->
+<!-- ================================================================ -->
+<div class="section" id="rms-section">
+  <h2><span class="dot rms"></span> RMS Normalization · 均方根归一化 (RMS Norm)</h2>
+  <p class="desc">
+    RMS Norm 是 LN 的简化版：<b>只除以 RMS(x)，不减均值</b>。
+    计算更快（省去均值计算和减法），效果与 LN 相当甚至更好，被 LLaMA、Gemma 等主流模型采用。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 RMS Norm 公式</h3>
+    <div id="formula-rms"></div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvasRMS" width="1320" height="440"></canvas>
+  </div>
+
+  <div class="info-row" id="rms-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>特征维度数 <span class="val" id="val-rmsD">64</span></label>
+      <input type="range" id="slider-rmsD" min="8" max="256" value="64" step="8">
+    </div>
+    <div class="slider-group">
+      <label>数据均值偏移 <span class="val" id="val-rmsShift">0.0</span></label>
+      <input type="range" id="slider-rmsShift" min="-2.0" max="2.0" value="0.0" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>缩放 γ <span class="val" id="val-rmsGamma">1.0</span></label>
+      <input type="range" id="slider-rmsGamma" min="0.2" max="2.0" value="1.0" step="0.1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>为什么可以不要均值减法？因为后续的线性层（权重矩阵乘法 + bias）可以吸收均值偏移。
+    RMS Norm = 只做"缩放归一化"，省去减法操作 → 更快、更简单，且实验证明效果不减。
+    LLaMA 论文明确指出 RMS Norm 简化了 LayerNorm 并降低了计算开销。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: Group Normalization -->
+<!-- ================================================================ -->
+<div class="section" id="gn-section">
+  <h2><span class="dot gn"></span> Group Normalization · 分组归一化 (GN)</h2>
+  <p class="desc">
+    GN 是 BN 和 LN 的折中：将 C 个通道分成 G 组，在每组内的 <b>(C/G, H, W)</b> 维度上计算 μ 和 σ。
+    每个样本 N 独立归一化，每组通道独立统计。<b>优势：</b>对小 batch 鲁棒，适合检测/分割等 vision task。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 GN 公式</h3>
+    <div id="formula-gn"></div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvasGN" width="1320" height="400"></canvas>
+  </div>
+
+  <div class="info-row" id="gn-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>总通道数 C <span class="val" id="val-gnC">16</span></label>
+      <input type="range" id="slider-gnC" min="4" max="32" value="16" step="4">
+    </div>
+    <div class="slider-group">
+      <label>组数 G <span class="val" id="val-gnG">4</span></label>
+      <input type="range" id="slider-gnG" min="1" max="8" value="4" step="1">
+    </div>
+    <div class="slider-group">
+      <label>高亮样本 n* <span class="val" id="val-gnN">0</span></label>
+      <input type="range" id="slider-gnN" min="0" max="3" value="0" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>GN = 将通道分组，组内做 LN。G=1 → LN；G=C → IN（Instance Norm）。
+    GN 不依赖 batch 维度，对小 batch 鲁棒，在检测/分割任务中常优于 BN。
+    极端情况：G=C 时每个通道独立归一化 = Instance Norm（风格迁移常用）。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: Full Comparison -->
+<!-- ================================================================ -->
+<div class="section" id="comparison-section">
+  <h2>📊 四种归一化方法对比热力图</h2>
+  <p class="desc">
+    横轴为四种归一化方法，纵轴为不同 batch size。热力图展示各方法在不同 batch size 下的 <b>统计量稳定性</b>（σ 估计的变异系数 CV = std(σ̂) / σ）。绿色 = 稳定，红色 = 不稳定。
+  </p>
+
+  <div class="canvas-wrap">
+    <canvas id="canvasCompare" width="1320" height="480"></canvas>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>通道数 C <span class="val" id="val-cmpC">64</span></label>
+      <input type="range" id="slider-cmpC" min="8" max="256" value="64" step="8">
+    </div>
+    <div class="slider-group">
+      <label>特征维度 H×W <span class="val" id="val-cmpHW">64</span></label>
+      <input type="range" id="slider-cmpHW" min="16" max="256" value="64" step="16">
+    </div>
+    <div class="slider-group">
+      <label>GN 组数 G <span class="val" id="val-cmpG">8</span></label>
+      <input type="range" id="slider-cmpG" min="2" max="32" value="8" step="2">
+    </div>
+  </div>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <h3>🔵 Batch Norm</h3>
+      <p>统计量跨 (N,H,W) 计算<br>依赖 batch size，小 batch 不稳定<br>训练/推理行为不一致<br><b>适合：</b>大 batch CV 分类</p>
+    </div>
+    <div class="compare-card">
+      <h3>🟢 Layer Norm</h3>
+      <p>统计量跨 (C,H,W) 计算<br>与 batch size 无关<br>训练/推理行为一致<br><b>适合：</b>NLP / Transformer</p>
+    </div>
+    <div class="compare-card">
+      <h3>🟣 RMS Norm</h3>
+      <p>同 LN 轴但不减均值<br>计算量比 LN 少 ~15%<br>被 LLaMA/DeepSeek 采用<br><b>适合：</b>大模型推理优化</p>
+    </div>
+    <div class="compare-card">
+      <h3>🟠 Group Norm</h3>
+      <p>通道分组内做 LN<br>不依赖 batch，小 batch 鲁棒<br>G=1→LN，G=C→IN<br><b>适合：</b>检测/分割/小 batch</p>
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>选型指南：</strong>CV 分类用 BN（大 batch）；NLP/Transformer 用 LN 或 RMS Norm（变长序列）；
+    检测/分割/小 batch 用 GN；追求推理速度用 RMS Norm（LLaMA 系标配）。
+    核心原理一句话：<b>不要让你想要的统计量依赖于一个你控制不了的维度</b>（如 batch size）。
+  </div>
+</div>
+
+</div><!-- .container -->
+
+<script>
+// ============================================================
+// KaTeX formula rendering
+// ============================================================
+function renderFormulas() {
+  const formulas = {
+    'formula-unified': String.raw`
+      \begin{aligned}
+      \hat{x}_i &= \frac{x_i - \mu}{\sqrt{\sigma^2 + \epsilon}} &&\text{标准化} \\[4pt]
+      y_i &= \gamma \cdot \hat{x}_i + \beta &&\text{仿射变换} \\[4pt]
+      \mu &= \frac{1}{|S|}\sum_{i \in S} x_i,\quad \sigma^2 = \frac{1}{|S|}\sum_{i \in S} (x_i - \mu)^2 &&\text{S = 统计量计算区域}
+      \end{aligned}
+    `,
+    'formula-axes': String.raw`
+      \begin{aligned}
+      \text{BN:}\quad S_{\text{BN}} &= \{(n,*,h,w)\} &&\text{Per-channel: } N \times H \times W \text{ 个值共享 } \mu_c,\sigma_c \\[4pt]
+      \text{LN:}\quad S_{\text{LN}} &= \{(*,c,h,w)\} &&\text{Per-sample: } C \times H \times W \text{ 个值共享 } \mu_n,\sigma_n \\[4pt]
+      \text{RMS:}\quad S_{\text{RMS}} &= S_{\text{LN}},\quad \text{RMS}(x) = \sqrt{\frac{1}{|S|}\sum x_i^2} &&\text{同 LN 轴，但不减均值} \\[4pt]
+      \text{GN:}\quad S_{\text{GN}} &= \{(n,g_k(c),h,w)\} &&\text{Per-group-per-sample: } \frac{C}{G} \times H \times W \text{ 个值共享}
+      \end{aligned}
+    `,
+    'formula-bn': String.raw`
+      \begin{aligned}
+      \mu_c &= \frac{1}{NHW}\sum_{n=1}^{N}\sum_{h=1}^{H}\sum_{w=1}^{W} x_{nchw} &&\text{每个通道 c 独立统计} \\[4pt]
+      \sigma_c^2 &= \frac{1}{NHW}\sum_{n=1}^{N}\sum_{h=1}^{H}\sum_{w=1}^{W} (x_{nchw} - \mu_c)^2 \\[4pt]
+      \hat{x}_{nchw} &= \frac{x_{nchw} - \mu_c}{\sqrt{\sigma_c^2 + \epsilon}},\quad y_{nchw} = \gamma_c \cdot \hat{x}_{nchw} + \beta_c
+      \end{aligned}
+    `,
+    'formula-ln': String.raw`
+      \begin{aligned}
+      \mu_n &= \frac{1}{CHW}\sum_{c=1}^{C}\sum_{h=1}^{H}\sum_{w=1}^{W} x_{nchw} &&\text{每个样本 n 独立统计} \\[4pt]
+      \sigma_n^2 &= \frac{1}{CHW}\sum_{c=1}^{C}\sum_{h=1}^{H}\sum_{w=1}^{W} (x_{nchw} - \mu_n)^2 \\[4pt]
+      \hat{x}_{nchw} &= \frac{x_{nchw} - \mu_n}{\sqrt{\sigma_n^2 + \epsilon}},\quad y_{nchw} = \gamma \cdot \hat{x}_{nchw} + \beta
+      \end{aligned}
+    `,
+    'formula-rms': String.raw`
+      \begin{aligned}
+      \text{RMS}(x) &= \sqrt{\frac{1}{d}\sum_{i=1}^{d} x_i^2} &&\text{均方根（无均值减法）} \\[4pt]
+      \hat{x}_i &= \frac{x_i}{\text{RMS}(x)} \cdot \gamma_i &&\text{仅做缩放归一化} \\[4pt]
+      y_i &= \gamma_i \cdot \frac{x_i}{\sqrt{\frac{1}{d}\sum_{j=1}^{d} x_j^2 + \epsilon}} &&\text{LLaMA 采用的完整形式}
+      \end{aligned}
+    `,
+    'formula-gn': String.raw`
+      \begin{aligned}
+      \text{group}_k &= \left\{c \;\middle|\; \frac{kC}{G} \le c < \frac{(k+1)C}{G}\right\} \\[4pt]
+      \mu_{n,k} &= \frac{G}{CHW}\sum_{c \in \text{group}_k}\sum_{h,w} x_{nchw} &&\text{每组每样本独立统计} \\[4pt]
+      G=1 &\Rightarrow \text{LN};\quad G=C \Rightarrow \text{IN};\quad 1<G<C \Rightarrow \text{GN}
+      \end{aligned}
+    `,
+  };
+  for (const [id, tex] of Object.entries(formulas)) {
+    try {
+      katex.render(tex, document.getElementById(id), { displayMode: true, throwOnError: false });
+    } catch(e) { document.getElementById(id).textContent = tex; }
+  }
+}
+renderFormulas();
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+const state = {
+  N: 6, C: 8, G: 4,
+  bnN: 4, bnC: 2, bnHW: 32,
+  lnN: 1, lnC: 8, lnHW: 32,
+  rmsD: 64, rmsShift: 0.0, rmsGamma: 1.0,
+  gnC: 16, gnG: 4, gnN: 0,
+  cmpC: 64, cmpHW: 64, cmpG: 8,
+};
+
+// ============================================================
+// DETERMINISTIC PSEUDO-RANDOM (seeded by parameters)
+// ============================================================
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function seededGaussian(rand) {
+  // Box-Muller
+  let u1 = rand(), u2 = rand();
+  while (u1 === 0) u1 = rand();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+
+// ============================================================
+// UTILITY
+// ============================================================
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function lerpColor(c1, c2, t) {
+  const r1 = parseInt(c1.slice(1,3), 16), g1 = parseInt(c1.slice(3,5), 16), b1 = parseInt(c1.slice(5,7), 16);
+  const r2 = parseInt(c2.slice(1,3), 16), g2 = parseInt(c2.slice(3,5), 16), b2 = parseInt(c2.slice(5,7), 16);
+  return `rgb(${Math.round(r1 + (r2-r1)*t)},${Math.round(g1 + (g2-g1)*t)},${Math.round(b1 + (b2-b1)*t)})`;
+}
+
+// ============================================================
+// Canvas 1: Tensor Axes Overview — 4 methods side by side
+// ============================================================
+function drawTensorAxes() {
+  const canvas = document.getElementById('canvasTensorAxes');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f1117';
+  ctx.fillRect(0, 0, W, H);
+
+  const { N, C, G } = state;
+  const groupSize = Math.floor(C / G);
+
+  const methods = [
+    { name: 'Batch Norm', color: '#4da6ff', desc: 'per channel' },
+    { name: 'Layer Norm',  color: '#4ade80', desc: 'per sample' },
+    { name: 'RMS Norm',    color: '#a78bfa', desc: 'per sample\n(no subtract μ)' },
+    { name: 'Group Norm',  color: '#fb923c', desc: `per group\n(${groupSize}ch/grp)` },
+  ];
+
+  const margin = { l: 40, r: 40, t: 55, b: 35 };
+  const nM = methods.length;
+
+  // Dynamically size cells to fit
+  const availW = W - margin.l - margin.r;
+  const sectionW = availW / nM;
+  const cellW = Math.min(40, Math.floor((sectionW - 20) / C));
+  const cellH = Math.min(30, Math.floor((H - margin.t - margin.b - 80) / N));
+  const actualCellW = cellW, actualCellH = cellH;
+  const gapX = Math.max(2, Math.floor((sectionW - 24 - C * actualCellW) / (C - 1)));
+  const gapY = Math.max(2, Math.floor((H - margin.t - margin.b - 80 - N * actualCellH) / (N - 1)));
+  const gridW = C * actualCellW + (C - 1) * gapX;
+  const gridH = N * actualCellH + (N - 1) * gapY;
+
+  for (let mi = 0; mi < nM; mi++) {
+    const method = methods[mi];
+    const sx = margin.l + mi * sectionW;
+    const gx = sx + (sectionW - gridW) / 2;
+    const gy = margin.t + 20;
+
+    // Method title
+    ctx.fillStyle = method.color;
+    ctx.font = 'bold 19px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(method.name, sx + sectionW / 2, margin.t - 8);
+
+    // Description
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '15px sans-serif';
+    const descLines = method.desc.split('\n');
+    descLines.forEach((line, li) => {
+      ctx.fillText(line, sx + sectionW / 2, gy + gridH + 22 + li * 18);
+    });
+
+    // Draw N×C grid
+    for (let n = 0; n < N; n++) {
+      for (let c = 0; c < C; c++) {
+        const cx = gx + c * (actualCellW + gapX);
+        const cy = gy + n * (actualCellH + gapY);
+
+        ctx.fillStyle = hexToRgba(method.color, 0.22);
+        ctx.strokeStyle = hexToRgba(method.color, 0.6);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(cx, cy, actualCellW, actualCellH, 3);
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
+
+    // Highlight sharing pattern
+    if (mi === 0) {
+      // BN: highlight a column → per channel
+      const hc = Math.min(3, C - 1);
+      const hx = gx + hc * (actualCellW + gapX) - 2;
+      ctx.strokeStyle = '#4da6ff';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([5, 3]);
+      ctx.strokeRect(hx, gy - 2, actualCellW + 4, gridH + 4);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#4da6ff';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('↕ same μ,σ', gx + hc * (actualCellW + gapX) + actualCellW/2, gy - 8);
+    } else if (mi === 1) {
+      // LN: highlight a row → per sample
+      const hn = Math.min(2, N - 1);
+      const hy = gy + hn * (actualCellH + gapY) - 2;
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([5, 3]);
+      ctx.strokeRect(gx - 2, hy, gridW + 4, actualCellH + 4);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#4ade80';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('↔ same μ,σ', gx + gridW + 10, hy + actualCellH/2 + 6);
+    } else if (mi === 2) {
+      // RMS: same as LN (row) but label differently
+      const hn = Math.min(2, N - 1);
+      const hy = gy + hn * (actualCellH + gapY) - 2;
+      ctx.strokeStyle = '#a78bfa';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([5, 3]);
+      ctx.strokeRect(gx - 2, hy, gridW + 4, actualCellH + 4);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#a78bfa';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('↔ same RMS', gx + gridW + 10, hy + actualCellH/2 + 6);
+    } else if (mi === 3) {
+      // GN: highlight groups
+      for (let g = 0; g < Math.min(G, 4); g++) {
+        const gcx = gx + g * groupSize * (actualCellW + gapX) - 2;
+        const gcw = groupSize * (actualCellW + gapX);
+        ctx.strokeStyle = hexToRgba('#fb923c', 0.5);
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeRect(gcx, gy - 2, gcw, gridH + 4);
+        ctx.setLineDash([]);
+        // group label
+        if (groupSize * (actualCellW + gapX) > 24) {
+          ctx.fillStyle = '#fb923c';
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`G${g}`, gcx + gcw/2, gy - 8);
+        }
+      }
+    }
+  }
+
+  // Axis labels
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('N (样本) ↓', margin.l - 10, margin.t + 20 + gridH / 2);
+  ctx.fillText('C (通道) →', margin.l + availW / 2, H - 6);
+}
+
+// ============================================================
+// Canvas 2: Batch Normalization
+// ============================================================
+function drawBN() {
+  const canvas = document.getElementById('canvasBN');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f1117';
+  ctx.fillRect(0, 0, W, H);
+
+  const { bnN, bnC, bnHW } = state;
+  const C = 8;
+  const m = { l: 40, r: 280, t: 35, b: 25 };
+
+  // Seed deterministic RNG for stable rendering
+  const seed = bnN * 1000 + bnC * 100 + bnHW;
+  const rand = mulberry32(seed);
+
+  const cellW = Math.min(56, Math.floor((W - m.l - m.r - 300) / C));
+  const cellH = Math.min(38, Math.floor((H - m.t - m.b) / bnN));
+  const gap = Math.max(4, Math.floor((W - m.l - m.r - 300 - C * cellW) / (C - 1)));
+  const gx = m.l, gy = m.t + 22;
+  const gridW = C * cellW + (C - 1) * gap;
+  const gridH = bnN * cellH + (bnN - 1) * gap;
+
+  // Title
+  ctx.fillStyle = '#4da6ff';
+  ctx.font = 'bold 19px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Batch Norm — 蓝色列 = 同一 μ_c, σ_c', m.l, m.t - 8);
+
+  // Per-channel synthetic data (deterministic)
+  const channelStats = [];
+  for (let c = 0; c < C; c++) {
+    const baseMean = (c - C/2) * 0.5;
+    const baseStd = 0.5 + rand() * 0.6;
+    let sum = 0;
+    const count = bnN * bnHW;
+    for (let i = 0; i < count; i++) {
+      sum += baseMean + seededGaussian(rand) * baseStd;
+    }
+    const mean = sum / count;
+    // second pass for variance
+    let sumSq = 0;
+    // Use same seed pattern
+    const rand2 = mulberry32(seed + c * 999 + 1);
+    for (let i = 0; i < count; i++) {
+      const val = baseMean + seededGaussian(rand2) * baseStd;
+      sumSq += (val - mean) * (val - mean);
+    }
+    const variance = sumSq / count;
+    channelStats.push({ mean, std: Math.sqrt(Math.max(0.0001, variance)) });
+  }
+
+  // Draw cells — color by which channel group
+  for (let n = 0; n < bnN; n++) {
+    for (let c = 0; c < C; c++) {
+      const cx = gx + c * (cellW + gap);
+      const cy = gy + n * cellH + Math.max(0, n-1) * gap;
+
+      // Same channel = same color intensity → shows per-channel grouping
+      const alpha = 0.15 + 0.5 * (c / C);
+      ctx.fillStyle = hexToRgba('#4da6ff', alpha);
+      ctx.strokeStyle = c === bnC ? '#facc15' : '#3b82f6';
+      ctx.lineWidth = c === bnC ? 2.5 : 1;
+      ctx.beginPath();
+      ctx.roundRect(cx, cy, cellW, cellH, 3);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  // Highlight column
+  const hx = gx + bnC * (cellW + gap) - 3;
+  ctx.strokeStyle = '#facc15';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([6, 3]);
+  ctx.strokeRect(hx, gy - 3, cellW + 6, gridH + 6);
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#facc15';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`c=${bnC}`, hx + (cellW+6)/2, gy - 9);
+
+  // Right side: stats
+  const rx = gx + gridW + 24;
+  const stats = channelStats[bnC];
+  ctx.fillStyle = '#e1e4eb';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`通道 c=${bnC}`, rx, gy + 14);
+  ctx.fillStyle = '#9ca3b4';
+  ctx.font = '17px monospace';
+  ctx.fillText(`μ_c = ${stats.mean.toFixed(3)}`, rx, gy + 44);
+  ctx.fillText(`σ_c = ${stats.std.toFixed(3)}`, rx, gy + 70);
+
+  const nEff = bnN * bnHW;
+  ctx.fillStyle = '#4da6ff';
+  ctx.font = 'bold 17px sans-serif';
+  ctx.fillText(`统计量基于 ${nEff} 个值`, rx, gy + 104);
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '16px sans-serif';
+  ctx.fillText(`= N × H×W = ${bnN} × ${bnHW}`, rx, gy + 130);
+  const cv = 1 / Math.sqrt(nEff);
+  ctx.fillText(`CV(σ̂) ≈ ${cv.toFixed(4)}`, rx, gy + 154);
+  if (bnN < 4) {
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText(`⚠ N=${bnN} 太小时估计不稳定`, rx, gy + 182);
+  }
+
+  // Info div
+  const infoDiv = document.getElementById('bn-info');
+  infoDiv.innerHTML = `
+    <div class="info-card">通道 c=${bnC}<br><span class="val v-bn">μ=${stats.mean.toFixed(3)}</span></div>
+    <div class="info-card">N × H×W = ${bnN}×${bnHW}<br><span class="val v-bn">= ${nEff} 个值共享 μ,σ</span></div>
+    <div class="info-card">σ_c<br><span class="val v-bn">${stats.std.toFixed(3)}</span></div>
+    <div class="info-card">CV(σ̂)<br><span class="val v-bn">${cv.toFixed(4)}</span></div>
+  `;
+}
+
+// ============================================================
+// Canvas 3: Layer Normalization
+// ============================================================
+function drawLN() {
+  const canvas = document.getElementById('canvasLN');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f1117';
+  ctx.fillRect(0, 0, W, H);
+
+  const { lnN, lnC, lnHW } = state;
+  const N = 6;
+  const m = { l: 40, r: 280, t: 35, b: 25 };
+  const seed = lnN * 1000 + lnC * 100 + lnHW;
+  const rand = mulberry32(seed);
+
+  const cellW = Math.min(48, Math.floor((W - m.l - m.r - 300) / lnC));
+  const cellH = Math.min(40, Math.floor((H - m.t - m.b) / N));
+  const gap = Math.max(4, Math.floor((W - m.l - m.r - 300 - lnC * cellW) / (lnC - 1)));
+  const gx = m.l, gy = m.t + 22;
+  const gridW = lnC * cellW + (lnC - 1) * gap;
+  const gridH = N * cellH + (N - 1) * gap;
+
+  // Title
+  ctx.fillStyle = '#4ade80';
+  ctx.font = 'bold 19px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Layer Norm — 绿色行 = 同一 μ_n, σ_n', m.l, m.t - 8);
+
+  // Per-sample stats (deterministic)
+  const sampleStats = [];
+  for (let n = 0; n < N; n++) {
+    const r = mulberry32(seed + n * 777);
+    const baseMean = (n - N/2) * 0.3;
+    const baseStd = 0.4 + r() * 0.5;
+    let sum = 0;
+    const count = lnC * lnHW;
+    for (let i = 0; i < count; i++) {
+      sum += baseMean + seededGaussian(r) * baseStd;
+    }
+    const mean = sum / count;
+    const r2 = mulberry32(seed + n * 777 + 1);
+    let sumSq = 0;
+    for (let i = 0; i < count; i++) {
+      const val = baseMean + seededGaussian(r2) * baseStd;
+      sumSq += (val - mean) * (val - mean);
+    }
+    const variance = sumSq / count;
+    sampleStats.push({ mean, std: Math.sqrt(Math.max(0.0001, variance)) });
+  }
+
+  // Draw cells
+  for (let n = 0; n < N; n++) {
+    for (let c = 0; c < lnC; c++) {
+      const cx = gx + c * (cellW + gap);
+      const cy = gy + n * cellH + Math.max(0, n-1) * gap;
+
+      // Same row = same color intensity → shows per-sample grouping
+      const alpha = 0.15 + 0.5 * (n / N);
+      ctx.fillStyle = hexToRgba('#4ade80', alpha);
+      ctx.strokeStyle = n === lnN ? '#facc15' : '#22c55e';
+      ctx.lineWidth = n === lnN ? 2.5 : 1;
+      ctx.beginPath();
+      ctx.roundRect(cx, cy, cellW, cellH, 3);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  // Highlight row
+  const hy = gy + lnN * cellH + Math.max(0, lnN-1) * gap - 3;
+  ctx.strokeStyle = '#facc15';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([6, 3]);
+  ctx.strokeRect(gx - 3, hy, gridW + 6, cellH + 6);
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#facc15';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(`n=${lnN}`, gx - 10, hy + cellH/2 + 5);
+
+  // Right stats
+  const rx = gx + gridW + 24;
+  const stats = sampleStats[lnN];
+  ctx.fillStyle = '#e1e4eb';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`样本 n=${lnN}`, rx, gy + 14);
+  ctx.fillStyle = '#9ca3b4';
+  ctx.font = '17px monospace';
+  ctx.fillText(`μ_n = ${stats.mean.toFixed(3)}`, rx, gy + 44);
+  ctx.fillText(`σ_n = ${stats.std.toFixed(3)}`, rx, gy + 70);
+
+  const nEff = lnC * lnHW;
+  ctx.fillStyle = '#4ade80';
+  ctx.font = 'bold 17px sans-serif';
+  ctx.fillText(`统计量基于 ${nEff} 个值`, rx, gy + 104);
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '16px sans-serif';
+  ctx.fillText(`= C × H×W = ${lnC} × ${lnHW}`, rx, gy + 130);
+  ctx.fillText(`(与 batch size 无关 ✓)`, rx, gy + 154);
+
+  const infoDiv = document.getElementById('ln-info');
+  infoDiv.innerHTML = `
+    <div class="info-card">样本 n=${lnN}<br><span class="val v-ln">μ=${stats.mean.toFixed(3)}</span></div>
+    <div class="info-card">C × H×W = ${lnC}×${lnHW}<br><span class="val v-ln">= ${nEff} 个值共享 μ,σ</span></div>
+    <div class="info-card">σ_n<br><span class="val v-ln">${stats.std.toFixed(3)}</span></div>
+    <div class="info-card">与 batch 关系<br><span class="val v-ln">无关 ✓</span></div>
+  `;
+}
+
+// ============================================================
+// Canvas 4: RMS Norm — 3-row bar chart comparison
+// ============================================================
+function drawRMS() {
+  const canvas = document.getElementById('canvasRMS');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f1117';
+  ctx.fillRect(0, 0, W, H);
+
+  const { rmsD, rmsShift, rmsGamma } = state;
+  const seed = rmsD * 100 + Math.round(rmsShift * 10) + Math.round(rmsGamma * 10);
+  const rand = mulberry32(seed);
+
+  // Generate data deterministically
+  const data = [];
+  for (let i = 0; i < rmsD; i++) {
+    data.push(seededGaussian(rand) * 1.5 + rmsShift);
+  }
+  const dataMean = data.reduce((s, v) => s + v, 0) / data.length;
+  const rms = Math.sqrt(data.reduce((s, v) => s + v * v, 0) / data.length);
+  const dataStd = Math.sqrt(data.reduce((s, v) => s + (v - dataMean) * (v - dataMean), 0) / data.length);
+  const lnNormed = data.map(v => (v - dataMean) / (dataStd || 0.001));
+  const rmsNormed = data.map(v => v / (rms || 0.001) * rmsGamma);
+
+  const m = { l: 100, r: 30, t: 30, b: 30 };
+  const pw = W - m.l - m.r;
+  const plotH = (H - m.t - m.b - 20) / 3;
+  const barW = Math.max(2, Math.min(6, pw / rmsD - 1));
+
+  const rows = [
+    { label: '原始数据 x', data: data, color: '#9ca3b4', y0: m.t },
+    { label: 'LN: (x−μ)/σ', data: lnNormed, color: '#4ade80', y0: m.t + plotH },
+    { label: `RMS: x/RMS · γ (γ=${rmsGamma.toFixed(1)})`, data: rmsNormed, color: '#a78bfa', y0: m.t + 2 * plotH },
+  ];
+
+  rows.forEach((row, ri) => {
+    const baseY = row.y0;
+    const zy = baseY + plotH / 2;
+    const hh = plotH / 2 - 4;
+
+    // Label
+    ctx.fillStyle = row.color;
+    ctx.font = 'bold 17px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(row.label, m.l, baseY + 20);
+
+    // Zero line
+    ctx.strokeStyle = '#2d3148';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(m.l, zy);
+    ctx.lineTo(m.l + pw, zy);
+    ctx.stroke();
+
+    // Bars
+    const maxAbs = Math.max(...row.data.map(Math.abs), 0.01);
+    for (let i = 0; i < data.length; i++) {
+      const val = row.data[i];
+      const barH = (Math.abs(val) / maxAbs) * hh;
+      const x = m.l + (i / data.length) * pw;
+      const y = val >= 0 ? zy - barH : zy;
+      ctx.fillStyle = val >= 0 ? row.color : hexToRgba(row.color, 0.35);
+      ctx.fillRect(x, y, barW, Math.max(1, barH));
+    }
+
+    // Stats annotation
+    ctx.fillStyle = row.color;
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'right';
+    if (ri === 0) {
+      ctx.fillText(`μ=${dataMean.toFixed(3)}, σ=${dataStd.toFixed(3)}, RMS=${rms.toFixed(3)}`, m.l + pw, zy + hh - 2);
+    } else if (ri === 1) {
+      const lnMean = lnNormed.reduce((s,v)=>s+v,0)/lnNormed.length;
+      const lnStd = Math.sqrt(lnNormed.reduce((s,v)=>s+(v-lnMean)*(v-lnMean),0)/lnNormed.length);
+      ctx.fillText(`μ′=${lnMean.toFixed(2)}, σ′=${lnStd.toFixed(2)}`, m.l + pw, zy + hh - 2);
+    } else {
+      const rmMean = rmsNormed.reduce((s,v)=>s+v,0)/rmsNormed.length;
+      ctx.fillText(`μ′=${rmMean.toFixed(2)}, RMS′=${(Math.sqrt(rmsNormed.reduce((s,v)=>s+v*v,0)/rmsNormed.length)).toFixed(2)}`, m.l + pw, zy + hh - 2);
+    }
+  });
+
+  const infoDiv = document.getElementById('rms-info');
+  infoDiv.innerHTML = `
+    <div class="info-card">RMS(x)<br><span class="val v-rms">${rms.toFixed(4)}</span></div>
+    <div class="info-card">mean(x) = ${dataMean.toFixed(3)}<br><span class="val v-rms">${Math.abs(dataMean) > 0.05 ? '未去均值' : '≈ 0'}</span></div>
+    <div class="info-card">γ = ${rmsGamma.toFixed(1)}<br><span class="val v-rms">输出缩放</span></div>
+    <div class="info-card">计算量<br><span class="val v-rms">比 LN 少 ~15%</span></div>
+  `;
+}
+
+// ============================================================
+// Canvas 5: Group Normalization
+// ============================================================
+function drawGN() {
+  const canvas = document.getElementById('canvasGN');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f1117';
+  ctx.fillRect(0, 0, W, H);
+
+  const { gnC, gnG, gnN } = state;
+  const N = 4;
+  const perGroup = Math.floor(gnC / gnG);
+  const m = { l: 40, r: 290, t: 35, b: 25 };
+
+  const cellW = Math.min(44, Math.floor((W - m.l - m.r - 300) / gnC));
+  const cellH = Math.min(42, Math.floor((H - m.t - m.b) / N));
+  const gap = Math.max(3, Math.floor((W - m.l - m.r - 300 - gnC * cellW) / (gnC - 1)));
+  const gx = m.l, gy = m.t + 22;
+  const gridW = gnC * cellW + (gnC - 1) * gap;
+  const gridH = N * cellH + (N - 1) * gap;
+
+  const groupColors = ['#fb923c', '#facc15', '#4ade80', '#38bdf8', '#a78bfa', '#f87171', '#fb923c', '#facc15'];
+
+  // Title
+  ctx.fillStyle = '#fb923c';
+  ctx.font = 'bold 19px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Group Norm — G=${gnG} 组, 每组 ${perGroup} 通道独立统计`, m.l, m.t - 8);
+
+  // Draw cells with group-aware coloring
+  for (let n = 0; n < N; n++) {
+    for (let c = 0; c < gnC; c++) {
+      const cx = gx + c * (cellW + gap);
+      const cy = gy + n * cellH + Math.max(0, n-1) * gap;
+      const g = Math.min(Math.floor(c / perGroup), gnG - 1);
+
+      ctx.fillStyle = hexToRgba(groupColors[g % groupColors.length], 0.25);
+      ctx.strokeStyle = n === gnN ? '#fff' : groupColors[g % groupColors.length];
+      ctx.lineWidth = n === gnN ? 2 : 1;
+      ctx.beginPath();
+      ctx.roundRect(cx, cy, cellW, cellH, 3);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  // Group boundaries
+  for (let g = 0; g < gnG; g++) {
+    const gcStart = g * perGroup;
+    const gcx = gx + gcStart * (cellW + gap) - 2;
+    const gcw = perGroup * (cellW + gap);
+    ctx.strokeStyle = groupColors[g % groupColors.length];
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 3]);
+    ctx.strokeRect(gcx, gy - 2, gcw, gridH + 4);
+    ctx.setLineDash([]);
+    // Group label at bottom
+    ctx.fillStyle = groupColors[g % groupColors.length];
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`G${g}`, gcx + gcw/2, gy + gridH + 20);
+  }
+
+  // Highlight sample row
+  const hy = gy + gnN * cellH + Math.max(0, gnN-1) * gap - 2;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([4, 3]);
+  ctx.strokeRect(gx - 4, hy, gridW + 8, cellH + 4);
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(`n=${gnN}`, gx - 8, hy + cellH/2 + 5);
+
+  // Right side
+  const rx = gx + gridW + 24;
+  ctx.fillStyle = '#e1e4eb';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`GN (样本 n=${gnN})`, rx, gy + 14);
+  ctx.fillStyle = groupColors[0];
+  ctx.font = '17px monospace';
+  ctx.fillText(`C/G = ${gnC}/${gnG} = ${perGroup} ch/组`, rx, gy + 44);
+  ctx.fillStyle = '#9ca3b4';
+  ctx.fillText(`${perGroup} × H×W 个值/组`, rx, gy + 70);
+
+  // Degeneration cases
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '16px sans-serif';
+  const cases = [
+    `G=1  → Layer Norm`,
+    `G=${gnC} → Instance Norm`,
+    `G=${gnG} → ${perGroup} 通道/组 (当前)`,
+  ];
+  cases.forEach((t, i) => ctx.fillText(t, rx, gy + 110 + i * 24));
+
+  const infoDiv = document.getElementById('gn-info');
+  infoDiv.innerHTML = `
+    <div class="info-card">通道分组<br><span class="val v-gn">${gnG} 组 × ${perGroup} 通道</span></div>
+    <div class="info-card">每组统计量<br><span class="val v-gn">${perGroup} × H×W 个值</span></div>
+    <div class="info-card">G=1<br><span class="val v-gn">→ Layer Norm</span></div>
+    <div class="info-card">G=C=${gnC}<br><span class="val v-gn">→ Instance Norm</span></div>
+  `;
+}
+
+// ============================================================
+// Canvas 6: Full Comparison Heatmap
+// ============================================================
+function drawCompare() {
+  const canvas = document.getElementById('canvasCompare');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f1117';
+  ctx.fillRect(0, 0, W, H);
+
+  const { cmpC, cmpHW, cmpG } = state;
+  const m = { l: 100, r: 30, t: 45, b: 70 };
+  const methods = ['Batch Norm', 'Layer Norm', 'RMS Norm', 'Group Norm'];
+  const methodColors = ['#4da6ff', '#4ade80', '#a78bfa', '#fb923c'];
+  const batchSizes = [1, 2, 4, 8, 16, 32, 64, 128];
+  const cols = methods.length;
+  const rows = batchSizes.length;
+
+  const cellW = (W - m.l - m.r) / (cols + 0.5);
+  const cellH = (H - m.t - m.b) / (rows + 0.8);
+  const cx0 = m.l, cy0 = m.t;
+
+  function getCV(method, N) {
+    let nEff;
+    switch (method) {
+      case 'Batch Norm': nEff = N * cmpHW; break;
+      case 'Layer Norm': nEff = cmpC * cmpHW; break;
+      case 'RMS Norm':   nEff = cmpC * cmpHW; break;
+      case 'Group Norm': nEff = (cmpC / cmpG) * cmpHW; break;
+      default: nEff = 1;
+    }
+    return 1 / Math.sqrt(Math.max(1, nEff));
+  }
+
+  // Find min/max CV
+  let minCV = Infinity, maxCV = -Infinity;
+  for (const method of methods) {
+    for (const N of batchSizes) {
+      const cv = getCV(method, N);
+      if (cv < minCV) minCV = cv;
+      if (cv > maxCV) maxCV = cv;
+    }
+  }
+  // Ensure range isn't zero
+  if (maxCV - minCV < 0.001) maxCV = minCV + 0.01;
+
+  // Draw cells
+  for (let col = 0; col < cols; col++) {
+    for (let row = 0; row < rows; row++) {
+      const cv = getCV(methods[col], batchSizes[row]);
+      const t = (cv - minCV) / (maxCV - minCV);
+      // Green(0) → Yellow(0.5) → Red(1)
+      const color = lerpColor('#22c55e', '#ef4444', Math.pow(t, 0.6));
+      const x = cx0 + col * cellW * 1.12;
+      const y = cy0 + row * cellH * 1.12;
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(x, y, cellW, cellH, 5);
+      ctx.fill();
+
+      // CV text
+      ctx.fillStyle = t > 0.5 ? '#fff' : '#0f1117';
+      ctx.font = 'bold 16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(cv.toFixed(3), x + cellW/2, y + cellH/2 + 5);
+    }
+  }
+
+  // Column headers
+  for (let col = 0; col < cols; col++) {
+    ctx.fillStyle = methodColors[col];
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    const x = cx0 + col * cellW * 1.12 + cellW/2;
+    ctx.fillText(methods[col], x, cy0 - 14);
+  }
+
+  // Row labels
+  ctx.textAlign = 'right';
+  for (let row = 0; row < rows; row++) {
+    const N = batchSizes[row];
+    ctx.fillStyle = N < 4 ? '#ef4444' : N < 16 ? '#facc15' : '#22c55e';
+    ctx.font = 'bold 17px monospace';
+    const y = cy0 + row * cellH * 1.12 + cellH/2 + 5;
+    ctx.fillText(`N=${N}`, cx0 - 14, y);
+  }
+
+  // Y axis
+  ctx.save();
+  ctx.fillStyle = '#9ca3b4';
+  ctx.font = 'bold 17px sans-serif';
+  ctx.translate(12, cy0 + (rows * cellH * 1.12) / 2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center';
+  ctx.fillText('Batch Size ↑', 0, 0);
+  ctx.restore();
+
+  // Color bar
+  const barX = cx0, barY = cy0 + rows * cellH * 1.12 + 16;
+  const barW = cols * cellW * 1.12;
+  const barH = 12;
+  const grad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+  for (let i = 0; i <= 30; i++) {
+    const t = i/30;
+    grad.addColorStop(t, lerpColor('#22c55e', '#ef4444', Math.pow(t, 0.6)));
+  }
+  ctx.fillStyle = grad;
+  ctx.fillRect(barX, barY, barW, barH);
+  ctx.fillStyle = '#9ca3b4';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('← CV 低 (稳定)', barX, barY + 28);
+  ctx.textAlign = 'right';
+  ctx.fillText('CV 高 (不稳定) →', barX + barW, barY + 28);
+
+  // Key insight
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('CV = std(σ̂)/σ — 越小越稳定。BN 列在小 N 时呈红色（不稳定），LN/RMS/GN 列始终稳定（绿色）。', cx0, barY + 48);
+}
+
+// ============================================================
+// Bind sliders
+// ============================================================
+function bindSlider(id, stateKey, drawFns) {
+  const slider = document.getElementById(id);
+  if (!slider) return;
+  const valSpan = document.getElementById('val-' + id.replace('slider-', ''));
+  slider.addEventListener('input', () => {
+    state[stateKey] = parseFloat(slider.value);
+    if (valSpan) valSpan.textContent = slider.value;
+    drawFns.forEach(fn => fn());
+    // Update range fill
+    const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.setProperty('--pct', pct + '%');
+  });
+  // Initial fill
+  const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+  slider.style.setProperty('--pct', pct + '%');
+}
+
+// Overview
+bindSlider('slider-N', 'N', [drawTensorAxes]);
+bindSlider('slider-C', 'C', [drawTensorAxes]);
+bindSlider('slider-G', 'G', [drawTensorAxes]);
+
+// BN
+bindSlider('slider-bnN', 'bnN', [drawBN]);
+bindSlider('slider-bnC', 'bnC', [drawBN]);
+bindSlider('slider-bnHW', 'bnHW', [drawBN]);
+
+// LN
+bindSlider('slider-lnN', 'lnN', [drawLN]);
+bindSlider('slider-lnC', 'lnC', [drawLN]);
+bindSlider('slider-lnHW', 'lnHW', [drawLN]);
+
+// RMS
+bindSlider('slider-rmsD', 'rmsD', [drawRMS]);
+bindSlider('slider-rmsShift', 'rmsShift', [drawRMS]);
+bindSlider('slider-rmsGamma', 'rmsGamma', [drawRMS]);
+
+// GN
+bindSlider('slider-gnC', 'gnC', [drawGN]);
+bindSlider('slider-gnG', 'gnG', [drawGN]);
+bindSlider('slider-gnN', 'gnN', [drawGN]);
+
+// Compare
+bindSlider('slider-cmpC', 'cmpC', [drawCompare]);
+bindSlider('slider-cmpHW', 'cmpHW', [drawCompare]);
+bindSlider('slider-cmpG', 'cmpG', [drawCompare]);
+
+// Initial draw
+drawTensorAxes();
+drawBN();
+drawLN();
+drawRMS();
+drawGN();
+drawCompare();
+</script>
+
+</body>
+</html>

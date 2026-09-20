@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RNN 循环神经网络 — RNN · LSTM · GRU · Bi-RNN · Transformer 交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #161822;
+    --card2: #1a1c2a;
+    --text: #e1e4ed;
+    --text2: #8b8fa8;
+    --accent: #6366f1;
+    --accent2: #818cf8;
+    --rnn: #f59e0b;
+    --lstm: #22c55e;
+    --gru: #3b82f6;
+    --birnn: #a855f7;
+    --transformer: #ec4899;
+    --border: #252840;
+    --radius: 14px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #161822 0%, #1a1040 30%, #162238 60%, #161822 100%);
+    border-bottom: 2px solid var(--border);
+    padding: 36px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 50%, rgba(245,158,11,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(99,102,241,0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 50%, rgba(236,72,153,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 30px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--rnn), var(--lstm), var(--gru), var(--transformer));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 17px;
+    position: relative;
+  }
+  .header .tag-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .header .tag {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .tag.tag-rnn { color: var(--rnn); border-color: var(--rnn); background: rgba(245,158,11,0.08); }
+  .tag.tag-lstm { color: var(--lstm); border-color: var(--lstm); background: rgba(34,197,94,0.08); }
+  .tag.tag-gru { color: var(--gru); border-color: var(--gru); background: rgba(59,130,246,0.08); }
+  .tag.tag-birnn { color: var(--birnn); border-color: var(--birnn); background: rgba(168,85,247,0.08); }
+  .tag.tag-transformer { color: var(--transformer); border-color: var(--transformer); background: rgba(236,72,153,0.08); }
+
+  /* ── Main ── */
+  .main {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+  .toc h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .toc-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .toc-nav a {
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .toc-nav a:hover {
+    border-color: var(--accent2);
+    color: var(--text);
+    background: rgba(99,102,241,0.08);
+  }
+  .toc-nav a.rnn-link:hover { border-color: var(--rnn); background: rgba(245,158,11,0.08); }
+  .toc-nav a.lstm-link:hover { border-color: var(--lstm); background: rgba(34,197,94,0.08); }
+  .toc-nav a.gru-link:hover { border-color: var(--gru); background: rgba(59,130,246,0.08); }
+  .toc-nav a.birnn-link:hover { border-color: var(--birnn); background: rgba(168,85,247,0.08); }
+  .toc-nav a.transformer-link:hover { border-color: var(--transformer); background: rgba(236,72,153,0.08); }
+
+  /* ── Section ── */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    scroll-margin-top: 20px;
+  }
+  .section h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+    box-shadow: 0 0 10px currentColor;
+  }
+  .dot.rnn { background: var(--rnn); color: var(--rnn); }
+  .dot.lstm { background: var(--lstm); color: var(--lstm); }
+  .dot.gru { background: var(--gru); color: var(--gru); }
+  .dot.birnn { background: var(--birnn); color: var(--birnn); }
+  .dot.transformer { background: var(--transformer); color: var(--transformer); }
+  .section > p.desc {
+    font-size: 17px;
+    color: var(--text2);
+    margin: 14px 0;
+    line-height: 1.8;
+  }
+
+  /* ── Mermaid diagram wrap ── */
+  /* Override mermaid SVG sizing — fixed width 80%, height auto */
+  /* ── Formula block ── */
+  .formula-block {
+    background: #0d0e16;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    border-left: 4px solid var(--accent);
+  }
+  .formula-block.rnn-block { border-left-color: var(--rnn); }
+  .formula-block.lstm-block { border-left-color: var(--lstm); }
+  .formula-block.gru-block { border-left-color: var(--gru); }
+  .formula-block.birnn-block { border-left-color: var(--birnn); }
+  .formula-block.transformer-block { border-left-color: var(--transformer); }
+  .formula-block h4 {
+    font-size: 17px;
+    margin-bottom: 10px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.18em; }
+
+  /* ── Insight box ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(168,85,247,0.04) 100%);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .insight .insight-icon { font-size: 22px; flex-shrink: 0; }
+  .insight p { font-size: 16px; color: var(--text2); line-height: 1.7; }
+
+  /* ── Two-column grid ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 16px;
+  }
+  @media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── Comparison table ── */
+  .cmp-table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    min-width: 700px;
+  }
+  .cmp-table thead th {
+    background: #0d0e16;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 700;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    font-size: 16px;
+    white-space: nowrap;
+  }
+  .cmp-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .cmp-table tbody tr:hover { background: rgba(99,102,241,0.04); }
+  .cmp-table tbody td:first-child {
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    min-width: 120px;
+  }
+  .cmp-table .chk { color: var(--lstm); font-weight: 700; }
+  .cmp-table .cross { color: #ef4444; }
+  .cmp-table .note { color: var(--amber); }
+
+  /* ── Timeline ── */
+  .timeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px 0;
+  }
+  .timeline-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    text-align: center;
+  }
+  .timeline-item .year {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .timeline-item .model {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .timeline-item .model.rnn-c { color: var(--rnn); }
+  .timeline-item .model.lstm-c { color: var(--lstm); }
+  .timeline-item .model.gru-c { color: var(--gru); }
+  .timeline-item .model.birnn-c { color: var(--birnn); }
+  .timeline-item .model.transformer-c { color: var(--transformer); }
+  .timeline-arrow {
+    font-size: 24px;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+
+  /* ── Footer ── */
+  .page-footer {
+    background: #0a0b14;
+    border-top: 1px solid var(--border);
+    padding: 24px;
+    text-align: center;
+    margin-top: 24px;
+  }
+  .page-footer p {
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .page-footer a {
+    color: var(--accent2);
+    text-decoration: none;
+  }
+  .page-footer a:hover { text-decoration: underline; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .header { padding: 24px 16px; }
+    .header h1 { font-size: 24px; }
+    .main { padding: 16px; }
+    .section { padding: 20px 16px; }
+    .section h2 { font-size: 20px; }
+    .timeline-item { padding: 0 8px; }
+    .timeline-item .year { font-size: 16px; }
+    .timeline-arrow { font-size: 18px; }
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* ── highlight.js code blocks ── */
+  .hljs {
+    background: #0d1117 !important;
+    border-radius: 10px;
+    padding: 18px 22px !important;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  pre code.hljs {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<!-- ═══ Header ═══ -->
+<header class="header">
+  <h1>🔄 RNN 循环神经网络家族</h1>
+  <p>从经典 RNN 到 LSTM · GRU · Bi-RNN · Transformer — 架构演进、公式推导与交互式图解</p>
+  <div class="tag-row">
+    <span class="tag tag-rnn">Vanilla RNN
+    <span class="tag tag-lstm">LSTM
+    <span class="tag tag-gru">GRU
+    <span class="tag tag-birnn">Bi-RNN
+    <span class="tag tag-transformer">Transformer
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ═══ TOC ═══ -->
+  <nav class="toc">
+    <h3>📑 目录导航</h3>
+    <div class="toc-nav">
+      <a href="#rnn" class="rnn-link">🟡 Vanilla RNN</a>
+      <a href="#lstm" class="lstm-link">🟢 LSTM</a>
+      <a href="#gru" class="gru-link">🔵 GRU</a>
+      <a href="#birnn" class="birnn-link">🟣 Bi-RNN</a>
+      <a href="#transformer" class="transformer-link">🩷 Transformer</a>
+      <a href="#compare">📊 对比总结</a>
+    </div>
+  </nav>
+
+  <!-- ═══ 发展时间线 ═══ -->
+  <div class="section">
+    <h2>📜 RNN 家族发展时间线</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <span class="year">1986
+        <span class="model rnn-c">RNN
+      </div>
+      <span class="timeline-arrow">→
+      <div class="timeline-item">
+        <span class="year">1997
+        <span class="model lstm-c">LSTM
+      </div>
+      <span class="timeline-arrow">→
+      <div class="timeline-item">
+        <span class="year">1997
+        <span class="model birnn-c">Bi-RNN
+      </div>
+      <span class="timeline-arrow">→
+      <div class="timeline-item">
+        <span class="year">2014
+        <span class="model gru-c">GRU
+      </div>
+      <span class="timeline-arrow">→
+      <div class="timeline-item">
+        <span class="year">2017
+        <span class="model transformer-c">Transformer
+      </div>
+    </div>
+    <p class="desc" style="text-align:center; margin-top:8px;">
+      RNN 最早由 Rumelhart 等人于 1986 年提出；LSTM 和 Bi-RNN 均诞生于 1997 年；
+      GRU 在 2014 年由 Cho 等人提出作为 LSTM 的简化版；2017 年 Transformer 以纯注意力机制彻底改变了序列建模范式。
+    </p>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- Section 1: Vanilla RNN                     -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="rnn">
+    <h2><span class="dot rnn"></span> 1. Vanilla RNN — 循环神经网络基础</h2>
+    <p class="desc">
+      RNN（Recurrent Neural Network）是处理<strong>序列数据</strong>的基础架构。它的核心思想是：
+      当前时刻的输出不仅依赖当前输入，还依赖上一时刻的<strong>隐藏状态（Hidden State）</strong>。
+      通过权重共享，同一个 RNN 单元在时间维度上反复使用，形成"时间展开（Unrolled）"结构。
+    </p>
+
+    <!-- RNN 结构图 -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    subgraph unroll["⏱ RNN 时间展开 (Unrolled Through Time)"]
+        direction LR
+        h0(("h₀"))
+        x1["x₁"] --> h1(("h₁"))
+        x2["x₂"] --> h2(("h₂"))
+        x3["x₃"] --> h3(("h₃"))
+        x4["..."] --> ht(("h_t"))
+        h0 -->|"W_h"| h1
+        h1 -->|"W_h"| h2
+        h2 -->|"W_h"| h3
+        h3 -->|"W_h"| ht
+        h1 --> y1["ŷ₁"]
+        h2 --> y2["ŷ₂"]
+        h3 --> y3["ŷ₃"]
+        ht --> yt["ŷ_t"]
+    end
+    style unroll fill:#0a0b14,stroke:#252840,color:#e1e4ed
+    style h0 fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+    style h1 fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+    style h2 fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+    style h3 fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+    style ht fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+      </pre>
+    </div>
+
+    <!-- RNN 公式 -->
+    <div class="formula-block rnn-block">
+      <h4>📐 RNN 核心公式</h4>
+      <div id="formula-rnn"></div>
+    </div>
+
+    <!-- RNN 循环连接图 -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    subgraph cell["🔄 RNN 单元循环连接"]
+        direction LR
+        xt["x<sub>t</sub><br/>(当前输入)"] --> tanh["tanh<br/>激活函数"]
+        h_prev["h<sub>t-1</sub><br/>(上一时刻隐藏状态)"] --> tanh
+        tanh --> ht_out["h<sub>t</sub><br/>(当前隐藏状态)"]
+        ht_out --> yt_out["y<sub>t</sub><br/>(输出)"]
+        ht_out -.->|"循环连接 (Recurrent)"| h_prev
+    end
+    style cell fill:#0a0b14,stroke:#252840,color:#e1e4ed
+    style tanh fill:#f59e0b33,stroke:#f59e0b,color:#f59e0b
+    style xt fill:#6366f122,stroke:#6366f1,color:#e1e4ed
+    style ht_out fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+      </pre>
+    </div>
+
+    <div class="insight">
+      <span class="insight-icon">💡
+      <p><strong>核心直觉：</strong>RNN 就像一个带记忆的 MLP——每个时间步的计算共享同一套权重 <code>W_h, W_x</code>。
+      优点是理论上可以处理任意长度的序列；缺点是在长序列上容易出现<strong>梯度消失/爆炸（Vanishing/Exploding Gradient）</strong>，
+      导致难以学习长期依赖。这也是 LSTM 和 GRU 被提出的直接动因。</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- Section 2: LSTM                           -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="lstm">
+    <h2><span class="dot lstm"></span> 2. LSTM — 长短期记忆网络</h2>
+    <p class="desc">
+      LSTM（Long Short-Term Memory）由 Hochreiter &amp; Schmidhuber 于 <strong>1997 年</strong> 提出，
+      通过引入<strong>记忆单元（Cell State）</strong>和<strong>三个门控机制</strong>（遗忘门、输入门、输出门），
+      有效解决了 vanilla RNN 的长期依赖问题。记忆单元 c_t 像一条"信息高速公路"，让梯度可以无损地跨越多个时间步。
+    </p>
+
+    <!-- LSTM 结构图 -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph lstm["🧠 LSTM 单元 — 三门控结构"]
+        direction TB
+        concat["拼接 h<sub>t-1</sub>, x<sub>t</sub>"]
+        concat --> forget["🔴 遗忘门<br/>f<sub>t</sub> (Forget Gate)"]
+        concat --> input_gate["🟢 输入门<br/>i<sub>t</sub> (Input Gate)"]
+        concat --> candidate["🔵 候选记忆<br/>c̃<sub>t</sub> (Candidate)"]
+        concat --> output_gate["🟡 输出门<br/>o<sub>t</sub> (Output Gate)"]
+        forget --> cell_update["🟣 记忆单元更新<br/>c<sub>t</sub> = f<sub>t</sub>⊙c<sub>t-1</sub> + i<sub>t</sub>⊙c̃<sub>t</sub>"]
+        input_gate --> cell_update
+        candidate --> cell_update
+        cell_update -->|"tanh"| hidden["⭐ 隐藏状态输出<br/>h<sub>t</sub> = o<sub>t</sub>⊙tanh(c<sub>t</sub>)"]
+        output_gate --> hidden
+    end
+    style lstm fill:#0a0b14,stroke:#22c55e,color:#e1e4ed
+    style concat fill:#6366f122,stroke:#6366f1,color:#e1e4ed
+    style forget fill:#ef444422,stroke:#ef4444,color:#ef4444
+    style input_gate fill:#22c55e22,stroke:#22c55e,color:#22c55e
+    style candidate fill:#3b82f622,stroke:#3b82f6,color:#3b82f6
+    style output_gate fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+    style cell_update fill:#a855f722,stroke:#a855f7,color:#a855f7
+    style hidden fill:#22c55e22,stroke:#22c55e,color:#22c55e
+      </pre>
+    </div>
+
+    <!-- LSTM 公式 -->
+    <div class="formula-block lstm-block">
+      <h4>📐 LSTM 核心公式</h4>
+      <div id="formula-lstm"></div>
+    </div>
+
+    <div class="grid-2">
+      <!-- 门控功能说明 -->
+      <div class="formula-block lstm-block">
+        <h4>🔑 三门控功能解析</h4>
+        <div id="formula-lstm-gates"></div>
+      </div>
+      <!-- 梯度流分析 -->
+      <div class="insight" style="margin-top:0;">
+        <span class="insight-icon">💡
+        <p><strong>为什么 LSTM 能缓解梯度消失？</strong><br/>
+        记忆单元 c_t 的更新是<strong>线性加法</strong>（c_t = f_t ⊙ c_{t-1} + i_t ⊙ c̃_t），
+        没有经过 tanh 或 sigmoid 挤压。反向传播时梯度可以通过 c_t 这条路径<strong>直接传递</strong>，
+        不需要经过多次非线性变换。遗忘门 f_t 接近 1 时，梯度几乎无损地流向远处的时间步。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- Section 3: GRU                            -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="gru">
+    <h2><span class="dot gru"></span> 3. GRU — 门控循环单元</h2>
+    <p class="desc">
+      GRU（Gated Recurrent Unit）由 Cho 等人于 <strong>2014 年</strong> 提出，是 LSTM 的一种<strong>简化变体</strong>。
+      它将 LSTM 的遗忘门和输入门合并为<strong>更新门（Update Gate）</strong>，用<strong>重置门（Reset Gate）</strong>
+      控制历史信息的使用程度。GRU 没有独立的记忆单元，只有隐藏状态 h_t。
+      相比 LSTM 参数更少、训练更快，在中小规模数据上表现往往与 LSTM 持平。
+    </p>
+
+    <!-- GRU 结构图 -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph gru["🔵 GRU 单元 — 双门控结构"]
+        direction TB
+        concat["拼接 h<sub>t-1</sub>, x<sub>t</sub>"]
+        concat --> reset["🔴 重置门<br/>r<sub>t</sub> (Reset Gate)"]
+        concat --> update["🔵 更新门<br/>z<sub>t</sub> (Update Gate)"]
+        reset --> gated_h["r<sub>t</sub> ⊙ h<sub>t-1</sub>"]
+        gated_h --> candidate["🟢 候选隐藏状态<br/>h̃<sub>t</sub> (Candidate)"]
+        concat --> candidate
+        update --> final["🟣 最终隐藏状态<br/>h<sub>t</sub> = (1-z<sub>t</sub>)⊙h<sub>t-1</sub> + z<sub>t</sub>⊙h̃<sub>t</sub>"]
+        candidate --> final
+    end
+    style gru fill:#0a0b14,stroke:#3b82f6,color:#e1e4ed
+    style concat fill:#6366f122,stroke:#6366f1,color:#e1e4ed
+    style reset fill:#ef444422,stroke:#ef4444,color:#ef4444
+    style update fill:#3b82f622,stroke:#3b82f6,color:#3b82f6
+    style candidate fill:#22c55e22,stroke:#22c55e,color:#22c55e
+    style final fill:#a855f722,stroke:#a855f7,color:#a855f7
+      </pre>
+    </div>
+
+    <!-- GRU 公式 -->
+    <div class="formula-block gru-block">
+      <h4>📐 GRU 核心公式</h4>
+      <div id="formula-gru"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="formula-block gru-block">
+        <h4>🔑 双门控功能解析</h4>
+        <div id="formula-gru-gates"></div>
+      </div>
+      <div class="insight" style="margin-top:0;">
+        <span class="insight-icon">💡
+        <p><strong>GRU vs LSTM：</strong><br/>
+        GRU 少了一个门（2 门 vs 3 门），无独立记忆单元，参数减少约 1/4。
+        z_t 同时承担"遗忘"和"输入"两个职责：(1−z_t) 控制保留多少旧信息，z_t 控制接受多少新信息。
+        当 z_t=0 时完全保留历史，z_t=1 时完全更新。这种<strong>互补耦合</strong>设计让 GRU 更简洁高效。</p>
+      </div>
+    </div>
+
+    <!-- LSTM vs GRU 对比图 -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    subgraph comp["LSTM vs GRU 结构对比"]
+        direction LR
+        subgraph lstm_side["LSTM (4组权重)"]
+            direction TB
+            l_in["[h<sub>t-1</sub>, x<sub>t</sub>]"] --> l_f["遗忘门 f<sub>t</sub>"]
+            l_in --> l_i["输入门 i<sub>t</sub>"]
+            l_in --> l_c["候选 c̃<sub>t</sub>"]
+            l_in --> l_o["输出门 o<sub>t</sub>"]
+            l_f --> l_ct["c<sub>t</sub> → h<sub>t</sub>"]
+            l_i --> l_ct
+            l_c --> l_ct
+            l_o --> l_ct
+        end
+        subgraph gru_side["GRU (3组权重)"]
+            direction TB
+            g_in["[h<sub>t-1</sub>, x<sub>t</sub>]"] --> g_r["重置门 r<sub>t</sub>"]
+            g_in --> g_z["更新门 z<sub>t</sub>"]
+            g_r --> g_ht["h̃<sub>t</sub> → h<sub>t</sub>"]
+            g_in --> g_ht
+            g_z --> g_ht
+        end
+    end
+    style comp fill:#0a0b14,stroke:#252840,color:#e1e4ed
+    style lstm_side fill:#22c55e10,stroke:#22c55e,color:#e1e4ed
+    style gru_side fill:#3b82f610,stroke:#3b82f6,color:#e1e4ed
+      </pre>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- Section 4: Bidirectional RNN              -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="birnn">
+    <h2><span class="dot birnn"></span> 4. Bi-RNN / Bi-LSTM / Bi-GRU — 双向循环网络</h2>
+    <p class="desc">
+      Bidirectional RNN 由 Schuster &amp; Paliwal 于 <strong>1997 年</strong> 提出。
+      核心思想很简单：同时运行一个<strong>前向 RNN</strong>（从左到右）和一个<strong>后向 RNN</strong>（从右到左），
+      然后将两者的隐藏状态拼接起来作为最终表示。这样每个时间步都能同时看到<strong>过去和未来</strong>的上下文信息。
+      Bi-RNN 可以包裹任何 RNN 单元——Bi-LSTM、Bi-GRU 在实践中非常常见，尤其在 NLP 任务中。
+    </p>
+
+    <!-- Bi-RNN 结构图 -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph birnn["🔁 Bidirectional RNN 架构"]
+        direction TB
+        subgraph fwd["前向层 (Forward)"]
+            direction LR
+            f1["h<sub>1</sub>→"] --> f2["h<sub>2</sub>→"] --> f3["h<sub>3</sub>→"] --> f4["...→ h<sub>n</sub>"]
+        end
+        subgraph bwd["后向层 (Backward)"]
+            direction LR
+            b4["...← h<sub>n</sub>"] --> b3["←h<sub>3</sub>"] --> b2["←h<sub>2</sub>"] --> b1["←h<sub>1</sub>"]
+        end
+        input_seq["输入序列: x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>, ..., x<sub>n</sub>"] --> f1
+        input_seq --> b4
+        f1 --> concat1["[h<sub>1</sub>→; ←h<sub>1</sub>]"]
+        b1 --> concat1
+        f2 --> concat2["[h<sub>2</sub>→; ←h<sub>2</sub>]"]
+        b2 --> concat2
+        f3 --> concat3["[h<sub>3</sub>→; ←h<sub>3</sub>]"]
+        b3 --> concat3
+        concat1 --> output["最终表示<br/>(每个时间步都包含完整上下文)"]
+        concat2 --> output
+        concat3 --> output
+    end
+    style birnn fill:#0a0b14,stroke:#a855f7,color:#e1e4ed
+    style fwd fill:#22c55e12,stroke:#22c55e,color:#22c55e
+    style bwd fill:#3b82f612,stroke:#3b82f6,color:#3b82f6
+    style input_seq fill:#6366f122,stroke:#6366f1,color:#e1e4ed
+    style output fill:#a855f722,stroke:#a855f7,color:#a855f7
+      </pre>
+    </div>
+
+    <!-- Bi-RNN 公式 -->
+    <div class="formula-block birnn-block">
+      <h4>📐 Bi-RNN 核心公式</h4>
+      <div id="formula-birnn"></div>
+    </div>
+
+    <div class="insight">
+      <span class="insight-icon">💡
+      <p><strong>核心直觉：</strong>普通 RNN 每个时间步只能看到"过去"的信息。
+      Bi-RNN 通过反向 RNN 给了模型"预知未来"的能力。
+      这在不允许看到未来的任务中<strong>不能使用</strong>（如自回归文本生成），
+      但在<strong>分类、序列标注（NER、POS Tagging）、机器翻译编码器</strong>等可以完整看到输入序列的任务中非常有效。</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- Section 5: Transformer                    -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="transformer">
+    <h2><span class="dot transformer"></span> 5. Transformer — 纯注意力驱动的序列建模</h2>
+    <p class="desc">
+      Transformer 由 Vaswani 等人在 <strong>2017 年</strong> 的论文
+      <em>"Attention Is All You Need"</em> 中提出。它完全抛弃了循环结构，使用
+      <strong>Self-Attention（自注意力）</strong>机制来捕获序列中的依赖关系。
+      相比 RNN，Transformer 具有<strong>并行计算</strong>的优势——所有时间步可以同时处理，
+      训练速度大幅提升。它已成为现代 LLM（GPT、Claude 等）的基础架构。
+    </p>
+
+    <!-- Transformer 架构图 -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph transformer["🤖 Transformer 架构 (Attention Is All You Need, 2017)"]
+        direction TB
+        subgraph enc["Encoder (编码器) × N 层"]
+            direction TB
+            enc_in["Input Embedding<br/>+ Positional Encoding"] --> enc_sa["Multi-Head Self-Attention"]
+            enc_sa --> enc_add1["Add &amp; LayerNorm"]
+            enc_add1 --> enc_ffn["Feed-Forward Network"]
+            enc_ffn --> enc_add2["Add &amp; LayerNorm"]
+        end
+        subgraph dec["Decoder (解码器) × N 层"]
+            direction TB
+            dec_in["Output Embedding<br/>+ Positional Encoding"] --> dec_msa["Masked Multi-Head<br/>Self-Attention"]
+            dec_msa --> dec_add1["Add &amp; LayerNorm"]
+            dec_add1 --> dec_cross["Cross-Attention<br/>(Encoder-Decoder)"]
+            enc_add2 --> dec_cross
+            dec_cross --> dec_add2["Add &amp; LayerNorm"]
+            dec_add2 --> dec_ffn["Feed-Forward Network"]
+            dec_ffn --> dec_add3["Add &amp; LayerNorm"]
+        end
+        dec_add3 --> linear["Linear"]
+        linear --> softmax["Softmax"]
+        softmax --> output["Output Probabilities"]
+    end
+    style transformer fill:#0a0b14,stroke:#ec4899,color:#e1e4ed
+    style enc fill:#6366f112,stroke:#6366f1,color:#e1e4ed
+    style dec fill:#f59e0b12,stroke:#f59e0b,color:#e1e4ed
+    style enc_sa fill:#ec489922,stroke:#ec4899,color:#ec4899
+    style dec_msa fill:#ec489922,stroke:#ec4899,color:#ec4899
+    style dec_cross fill:#a855f722,stroke:#a855f7,color:#a855f7
+    style output fill:#22c55e22,stroke:#22c55e,color:#22c55e
+      </pre>
+    </div>
+
+    <!-- Attention 公式 -->
+    <div class="formula-block transformer-block">
+      <h4>📐 Scaled Dot-Product Attention 公式</h4>
+      <div id="formula-attention"></div>
+    </div>
+
+    <div class="formula-block transformer-block">
+      <h4>📐 Multi-Head Attention 与 Position-wise FFN</h4>
+      <div id="formula-mha"></div>
+    </div>
+
+    <!-- Transformer vs RNN 对比 -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph paradigm["🔀 序列建模范式转变"]
+        direction LR
+        subgraph rnn_way["RNN 方式 (Sequential)"]
+            direction LR
+            s1["x₁ → h₁"] --> s2["→ h₂"] --> s3["→ h₃"] --> s4["→ ... → h_n"]
+        end
+        subgraph tf_way["Transformer 方式 (Parallel)"]
+            direction LR
+            a1["x₁"]
+            a2["x₂"]
+            a3["x₃"]
+            a4["..."]
+            a5["x_n"]
+            a1 <-->|"Self-Attention (所有 token 两两交互)"| a2
+            a1 <--> a3
+            a1 <--> a5
+            a2 <--> a3
+            a2 <--> a5
+            a3 <--> a5
+        end
+    end
+    style paradigm fill:#0a0b14,stroke:#252840,color:#e1e4ed
+    style rnn_way fill:#f59e0b10,stroke:#f59e0b,color:#e1e4ed
+    style tf_way fill:#ec489910,stroke:#ec4899,color:#e1e4ed
+      </pre>
+    </div>
+
+    <div class="insight">
+      <span class="insight-icon">💡
+      <p><strong>核心直觉：</strong>Transformer 用 Self-Attention 替代了循环——每个 token 通过注意力权重
+      直接"看到"序列中的所有其他 token，路径长度 O(1) vs RNN 的 O(n)。
+      这使得长距离依赖的捕获更加容易。代价是计算复杂度从 O(n·d²) 变为 O(n²·d)，
+      对长序列的内存消耗更大（这也是 FlashAttention、Sparse Attention 等优化的研究方向）。</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- Section 6: 对比总结                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="compare">
+    <h2><span class="dot" style="background:var(--accent);color:var(--accent);box-shadow:0 0 10px var(--accent);"></span> 6. 对比总结</h2>
+    <p class="desc">
+      从 RNN 到 Transformer，序列建模经历了从<strong>循环→门控→注意力</strong>的演进。
+      下表从多个维度对比这些架构的核心差异。
+    </p>
+
+    <div class="cmp-table-wrap">
+      <div class="table-wrap">
+<table class="cmp-table">
+        <thead>
+          <tr>
+            <th>特性</th>
+            <th>Vanilla RNN</th>
+            <th>LSTM</th>
+            <th>GRU</th>
+            <th>Bi-RNN</th>
+            <th>Transformer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>提出年份</td>
+            <td>1986</td>
+            <td>1997</td>
+            <td>2014</td>
+            <td>1997</td>
+            <td>2017</td>
+          </tr>
+          <tr>
+            <td>核心机制</td>
+            <td>简单循环</td>
+            <td>三门控 + 记忆单元</td>
+            <td>双门控</td>
+            <td>双向循环</td>
+            <td>Self-Attention</td>
+          </tr>
+          <tr>
+            <td>门数量</td>
+            <td>0</td>
+            <td>3 (遗忘/输入/输出)</td>
+            <td>2 (重置/更新)</td>
+            <td>取决于基础单元</td>
+            <td>0 (注意力权重)</td>
+          </tr>
+          <tr>
+            <td>参数矩阵数</td>
+            <td>2</td>
+            <td>4</td>
+            <td>3</td>
+            <td>基础单元 × 2</td>
+            <td>4 (Q/K/V/O)</td>
+          </tr>
+          <tr>
+            <td>长距离依赖</td>
+            <td class="cross">✗ 弱</td>
+            <td class="chk">✓ 强</td>
+            <td class="chk">✓ 较强</td>
+            <td class="chk">✓ 强 (双向)</td>
+            <td class="chk">✓✓ 最优</td>
+          </tr>
+          <tr>
+            <td>并行计算</td>
+            <td class="cross">✗ 不可</td>
+            <td class="cross">✗ 不可</td>
+            <td class="cross">✗ 不可</td>
+            <td class="cross">✗ 不可</td>
+            <td class="chk">✓ 完全并行</td>
+          </tr>
+          <tr>
+            <td>训练速度</td>
+            <td>中等</td>
+            <td>较慢</td>
+            <td>比 LSTM 快</td>
+            <td>约 2× 慢</td>
+            <td>最快 (GPU 友好)</td>
+          </tr>
+          <tr>
+            <td>未来信息</td>
+            <td class="cross">✗</td>
+            <td class="cross">✗</td>
+            <td class="cross">✗</td>
+            <td class="chk">✓</td>
+            <td class="chk">✓ (非自回归时)</td>
+          </tr>
+          <tr>
+            <td>计算复杂度</td>
+            <td>O(n·d²)</td>
+            <td>O(n·d²)</td>
+            <td>O(n·d²)</td>
+            <td>O(2n·d²)</td>
+            <td>O(n²·d)</td>
+          </tr>
+          <tr>
+            <td>典型应用</td>
+            <td>简单序列任务</td>
+            <td>NLP/语音/时序预测</td>
+            <td>类似 LSTM, 更轻量</td>
+            <td>分类/标注/编码器</td>
+            <td>LLM/翻译/多模态</td>
+          </tr>
+        </tbody>
+      </table>
+</div>
+    </div>
+
+    <div class="insight">
+      <span class="insight-icon">🧭
+      <p><strong>选型建议：</strong>对于<strong>短序列 + 小数据</strong>，LSTM/GRU 依然是不错的选择（参数少、推理快）；
+      对于<strong>需要双向上下文理解</strong>的任务（如文本分类、NER），Bi-LSTM/Bi-GRU 是经典方案；
+      对于<strong>大规模数据 + 长序列</strong>或<strong>生成式 AI</strong>，
+      Transformer 及其变体（Decoder-only GPT、Encoder-Decoder T5）是当前主流选择。
+      现代 LLM 几乎全部采用 Decoder-only Transformer 架构。</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ Footer ═══ -->
+<footer class="page-footer">
+  <p>RNN 循环神经网络家族 — 交互式可视化 &nbsp;|&nbsp;
+    <a href="../index.html">← 返回项目展示</a>
+  </p>
+</footer>
+
+<!-- ═══ KaTeX Render ═══ -->
+<script>
+(function() {
+  // ── RNN Formula ──
+  katex.render(String.raw`
+    \begin{aligned}
+      h_t &= \tanh(W_h \, h_{t-1} + W_x \, x_t + b_h) \quad &\text{隐藏状态更新}\\[4pt]
+      y_t &= W_y \, h_t + b_y \quad &\text{输出投影}
+    \end{aligned}
+  `, document.getElementById('formula-rnn'), { displayMode: true, throwOnError: false });
+
+  // ── LSTM Formulas ──
+  katex.render(String.raw`
+    \begin{aligned}
+      f_t &= \sigma(W_f \cdot [h_{t-1},\, x_t] + b_f) \quad &\text{遗忘门 (Forget Gate)}\\[4pt]
+      i_t &= \sigma(W_i \cdot [h_{t-1},\, x_t] + b_i) \quad &\text{输入门 (Input Gate)}\\[4pt]
+      \tilde{c}_t &= \tanh(W_c \cdot [h_{t-1},\, x_t] + b_c) \quad &\text{候选记忆单元}\\[4pt]
+      c_t &= f_t \odot c_{t-1} + i_t \odot \tilde{c}_t \quad &\text{记忆单元更新}\\[4pt]
+      o_t &= \sigma(W_o \cdot [h_{t-1},\, x_t] + b_o) \quad &\text{输出门 (Output Gate)}\\[4pt]
+      h_t &= o_t \odot \tanh(c_t) \quad &\text{隐藏状态输出}
+    \end{aligned}
+  `, document.getElementById('formula-lstm'), { displayMode: true, throwOnError: false });
+
+  katex.render(String.raw`
+    \begin{aligned}
+      &\text{遗忘门 } f_t: \text{ 决定丢弃多少旧记忆 } c_{t-1} \text{（}0 = \text{完全丢弃，}1 = \text{全部保留）}\\[4pt]
+      &\text{输入门 } i_t: \text{ 决定写入多少新信息 } \tilde{c}_t \text{ 到记忆单元}\\[4pt]
+      &\text{输出门 } o_t: \text{ 决定暴露多少记忆到隐藏状态 } h_t
+    \end{aligned}
+  `, document.getElementById('formula-lstm-gates'), { displayMode: true, throwOnError: false });
+
+  // ── GRU Formulas ──
+  katex.render(String.raw`
+    \begin{aligned}
+      z_t &= \sigma(W_z \cdot [h_{t-1},\, x_t] + b_z) \quad &\text{更新门 (Update Gate)}\\[4pt]
+      r_t &= \sigma(W_r \cdot [h_{t-1},\, x_t] + b_r) \quad &\text{重置门 (Reset Gate)}\\[4pt]
+      \tilde{h}_t &= \tanh(W_h \cdot [r_t \odot h_{t-1},\, x_t] + b_h) \quad &\text{候选隐藏状态}\\[4pt]
+      h_t &= (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t \quad &\text{最终隐藏状态}
+    \end{aligned}
+  `, document.getElementById('formula-gru'), { displayMode: true, throwOnError: false });
+
+  katex.render(String.raw`
+    \begin{aligned}
+      &\text{更新门 } z_t: \text{ 控制新旧信息的混合比例}\\
+      &\qquad z_t \to 1 \text{ 时，} h_t \approx \tilde{h}_t \text{（更多新信息）}\\
+      &\qquad z_t \to 0 \text{ 时，} h_t \approx h_{t-1} \text{（更多旧信息）}\\[4pt]
+      &\text{重置门 } r_t: \text{ 控制历史状态对候选的影响程度}\\
+      &\qquad r_t \to 0 \text{ 时，} \tilde{h}_t \text{ 几乎忽略 } h_{t-1} \text{（更像前馈网络）}
+    \end{aligned}
+  `, document.getElementById('formula-gru-gates'), { displayMode: true, throwOnError: false });
+
+  // ── Bi-RNN Formulas ──
+  katex.render(String.raw`
+    \begin{aligned}
+      \overrightarrow{h_t} &= \operatorname{RNN}_{\text{fwd}}(x_t,\, \overrightarrow{h_{t-1}}) \quad &\text{前向隐藏状态}\\[4pt]
+      \overleftarrow{h_t} &= \operatorname{RNN}_{\text{bwd}}(x_t,\, \overleftarrow{h_{t+1}}) \quad &\text{后向隐藏状态}\\[4pt]
+      h_t &= [\,\overrightarrow{h_t}\,;\,\overleftarrow{h_t}\,] \quad &\text{拼接两个方向的隐藏状态}
+    \end{aligned}
+  `, document.getElementById('formula-birnn'), { displayMode: true, throwOnError: false });
+
+  // ── Attention Formula ──
+  katex.render(String.raw`
+    \begin{aligned}
+      \operatorname{Attention}(Q, K, V) &= \operatorname{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right) V \\[6pt]
+      Q = XW^Q,\quad K = XW^K,\quad V = XW^V &\quad \text{(Self-Attention: Q/K/V 来自同一输入 } X\text{)}
+    \end{aligned}
+  `, document.getElementById('formula-attention'), { displayMode: true, throwOnError: false });
+
+  // ── Multi-Head Attention Formula ──
+  katex.render(String.raw`
+    \begin{aligned}
+      \operatorname{MultiHead}(Q, K, V) &= \operatorname{Concat}(\text{head}_1, \dots, \text{head}_h) \, W^O \\[4pt]
+      \text{其中 } \text{head}_i &= \operatorname{Attention}(QW_i^Q,\, KW_i^K,\, VW_i^V) \\[6pt]
+      \operatorname{FFN}(x) &= \operatorname{ReLU}(xW_1 + b_1)W_2 + b_2 \quad &\text{(Position-wise Feed-Forward)}
+    \end{aligned}
+  `, document.getElementById('formula-mha'), { displayMode: true, throwOnError: false });
+})();
+</script>
+
+<!-- ═══ Mermaid Init ═══ -->
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1e1b4b',
+    primaryTextColor: '#e1e4ed',
+    primaryBorderColor: '#6366f1',
+    lineColor: '#ffffff',
+    secondaryColor: '#16213e',
+    tertiaryColor: '#0f1117',
+    fontSize: '18px',
+  },
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: 'basis',
+    padding: 16,
+  },
+});
+</script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>
+  // ── highlight.js Init ──
+  hljs.highlightAll();
+</script>
+
+</body>
+</html>

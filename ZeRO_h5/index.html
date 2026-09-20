@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZeRO — 零冗余优化器分布式显存优化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #4ade80;
+    --accent2: #22c55e;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --purple: #a78bfa;
+    --red: #f87171;
+    --orange: #fb923c;
+    --yellow: #facc15;
+    --border: #2a3040;
+    --radius: 10px;
+
+    /* Stage colors */
+    --c-optimizer: #f59e0b;
+    --c-gradient: #38bdf8;
+    --c-param: #4ade80;
+    --c-residual: #6b7280;
+    --c-z1: #f59e0b;
+    --c-z2: #38bdf8;
+    --c-z3: #4ade80;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a1d30 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--c-z1), var(--c-z2), var(--c-z3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.yellow { background: var(--c-z1); box-shadow: 0 0 10px var(--c-z1); }
+  .dot.blue   { background: var(--c-z2); box-shadow: 0 0 10px var(--c-z2); }
+  .dot.green  { background: var(--c-z3); box-shadow: 0 0 10px var(--c-z3); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #2a2830; }
+  .btn.active-z1 {
+    background: var(--c-z1); color: #0b0e14; border-color: var(--c-z1);
+    box-shadow: 0 0 12px rgba(245,158,11,0.3);
+  }
+  .btn.active-z2 {
+    background: var(--c-z2); color: #0b0e14; border-color: var(--c-z2);
+    box-shadow: 0 0 12px rgba(56,189,248,0.3);
+  }
+  .btn.active-z3 {
+    background: var(--c-z3); color: #0b0e14; border-color: var(--c-z3);
+    box-shadow: 0 0 12px rgba(74,222,128,0.3);
+  }
+
+  /* ── Stage cards (3-column grid) ── */
+  .stage-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .stage-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stage-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+  .stage-card.z1::before { background: var(--c-z1); }
+  .stage-card.z2::before { background: var(--c-z2); }
+  .stage-card.z3::before { background: var(--c-z3); }
+  .stage-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stage-card .badge {
+    font-size: 14px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  .badge.z1 { background: rgba(245,158,11,0.15); color: var(--c-z1); }
+  .badge.z2 { background: rgba(56,189,248,0.15); color: var(--c-z2); }
+  .badge.z3 { background: rgba(74,222,128,0.15); color: var(--c-z3); }
+  .stage-card ul { color: var(--text2); margin-left: 18px; line-height: 1.8; }
+  .stage-card ul li { margin-bottom: 4px; }
+  .stage-card ul li strong { color: var(--text); }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(74,222,128,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Comparison table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--accent); font-weight: 600; }
+  .cmp-table .warn-cell { color: var(--red); font-weight: 600; }
+
+  /* ── Legend ── */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 16px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 18px; height: 18px; border-radius: 3px; }
+
+  /* ── Preset buttons ── */
+  .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .preset-btn {
+    padding: 6px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .preset-btn:hover { border-color: var(--accent); color: var(--text); }
+  .preset-btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .stage-grid { grid-template-columns: 1fr; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+  }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧩 ZeRO · 零冗余优化器</h1>
+  <p>将优化器状态、梯度、参数分片到不同设备，消除数据并行中的冗余存储，使显存占用随设备数量线性减少</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Problem -->
+<!-- ================================================================ -->
+<div class="section" id="sec-problem">
+  <h2><span class="dot orange"></span> 1. 问题：数据并行的显存冗余</h2>
+  <p class="desc">
+    在标准数据并行 (Data Parallel) 中，每张 GPU 都持有<b>完整的模型</b>（参数、梯度、优化器状态）。
+    以 Adam 优化器训练 7.5B 参数模型为例：fp16 参数占 15GB，fp32 优化器状态（m + v + param32）占 90GB，
+    梯度占 15GB — <b>单卡需要 120GB 显存</b>，而 A100 仅 80GB。即使数据能分 8 份并行计算，
+    显存冗余并不会减少 — 每一张卡都重复存着完全相同的参数/梯度/优化器状态。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 单卡显存分解 (Adam 优化器, Ψ 参数量)</h3>
+    <div id="formula-memory"></div>
+  </div>
+
+  <canvas id="canvasDPMemory" width="1200" height="520"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>模型参数量 <span class="val" id="val-params">7.5B</span></label>
+      <input type="range" id="slider-params" min="0" max="6" value="2" step="1">
+    </div>
+    <div class="slider-group">
+      <label>GPU 数量 N<sub>d</sub> <span class="val" id="val-nd-dp">8</span></label>
+      <input type="range" id="slider-nd-dp" min="2" max="16" value="8" step="2">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-dp"></div>
+
+  <div class="insight">
+    💡 <strong>核心矛盾：</strong>数据并行让计算并行化了，但<strong>显存并没有并行化</strong>。
+    每张卡都在重复存储完全相同的模型状态 — 这是巨大的浪费。
+    ZeRO 的核心思想：<strong>既然大家都存一样的东西，不如每人只存 1/N<sub>d</sub></strong>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: ZeRO Three Stages Overview -->
+<!-- ================================================================ -->
+<div class="section" id="sec-stages">
+  <h2><span class="dot purple"></span> 2. ZeRO 三阶段递进优化</h2>
+  <p class="desc">
+    ZeRO（<b>Ze</b>ro <b>R</b>edundancy <b>O</b>ptimizer）由 Microsoft DeepSpeed 团队提出，
+    将模型状态分为三类：<b style="color:var(--c-z1);">优化器状态</b>、
+    <b style="color:var(--c-z2);">梯度</b>、
+    <b style="color:var(--c-z3);">参数</b>，
+    每个阶段额外分片一类，递进减少显存占用。
+  </p>
+
+  <div class="stage-grid">
+    <!-- ZeRO-1 -->
+    <div class="stage-card z1">
+      <h3 style="color:var(--c-z1);">🔸 ZeRO-1 <span class="badge z1">优化器状态分片</span></h3>
+      <p style="color:var(--text2); margin-bottom:12px;">P<sub>os</sub> — Optimizer State Partitioning</p>
+      <ul>
+        <li>每张卡仍存 <strong>完整参数 + 完整梯度</strong></li>
+        <li>优化器状态切成 N<sub>d</sub> 份，每卡仅持 1/N<sub>d</sub></li>
+        <li>更新时各自更新自己负责的部分</li>
+        <li>显存节省：<strong>~4×</strong>（优化器状态占大头）</li>
+      </ul>
+    </div>
+
+    <!-- ZeRO-2 -->
+    <div class="stage-card z2">
+      <h3 style="color:var(--c-z2);">🔹 ZeRO-2 <span class="badge z2">+ 梯度分片</span></h3>
+      <p style="color:var(--text2); margin-bottom:12px;">P<sub>os+g</sub> — 额外分片梯度</p>
+      <ul>
+        <li>每张卡仍存 <strong>完整参数</strong></li>
+        <li>优化器状态 + 梯度都切成 N<sub>d</sub> 份</li>
+        <li>反向传播后梯度 Reduce-Scatter 到各自持有者</li>
+        <li>显存节省：<strong>~8×</strong></li>
+      </ul>
+    </div>
+
+    <!-- ZeRO-3 -->
+    <div class="stage-card z3">
+      <h3 style="color:var(--c-z3);">🟢 ZeRO-3 <span class="badge z3">+ 参数分片</span></h3>
+      <p style="color:var(--text2); margin-bottom:12px;">P<sub>pos+g+p</sub> — 额外分片参数</p>
+      <ul>
+        <li>三类模型状态 <strong>全部分片</strong></li>
+        <li>前向/反向需要参数时 All-Gather 收集</li>
+        <li>不需要的参数可立即释放</li>
+        <li>显存节省：<strong>与 N<sub>d</sub> 线性相关</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>递进关系：</strong>ZeRO-1 → ZeRO-2 → ZeRO-3 逐步增加分片粒度。
+    通信量也随之递增（ZeRO-1 仅在更新时通信，ZeRO-3 每次前向/反向都需要 All-Gather 参数）。
+    <strong>实践中 ZeRO-2 是性价比最高的选择</strong>，ZeRO-3 用于极端大模型。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: Memory Visualization by Stage -->
+<!-- ================================================================ -->
+<div class="section" id="sec-viz">
+  <h2><span class="dot green"></span> 3. 交互式显存对比 — 切换 ZeRO 阶段</h2>
+  <p class="desc">
+    下方展示 N<sub>d</sub> 张 GPU 在 Data Parallel / ZeRO-1 / ZeRO-2 / ZeRO-3 下的显存分布。
+    每种颜色代表一类模型状态，<b>有颜色的部分 = 该卡实际存储的数据</b>，灰色 = 该数据被分片到其他卡上。
+  </p>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-dp" onclick="setZeROStage('dp')">📦 Data Parallel (基线)</button>
+    <button class="btn active-z1" id="btn-z1" onclick="setZeROStage('z1')">🔸 ZeRO-1</button>
+    <button class="btn" id="btn-z2" onclick="setZeROStage('z2')">🔹 ZeRO-2</button>
+    <button class="btn" id="btn-z3" onclick="setZeROStage('z3')">🟢 ZeRO-3</button>
+  </div>
+
+  <canvas id="canvasZeRO" width="1200" height="520"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>模型参数量 <span class="val" id="val-params-viz">7.5B</span></label>
+      <input type="range" id="slider-params-viz" min="0" max="6" value="2" step="1">
+    </div>
+    <div class="slider-group">
+      <label>GPU 数量 N<sub>d</sub> <span class="val" id="val-nd-viz">8</span></label>
+      <input type="range" id="slider-nd-viz" min="2" max="16" value="8" step="1">
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--c-optimizer);"></div> 优化器状态 (fp32 m+v+param32)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--c-gradient);"></div> 梯度 (fp16)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--c-param);"></div> 参数 (fp16)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--c-residual);"></div> 激活值/临时显存</div>
+  </div>
+
+  <div class="info-row" id="info-zero"></div>
+
+  <div class="insight">
+    💡 <strong>直观理解：</strong>ZeRO-1 率先消除最大的存储浪费（优化器状态占 ~75%），
+    仅这一阶段就能让 7.5B 模型跑在 8 张 V100（32GB）上。
+    再叠加 ZeRO-2/3，显存占用进一步趋近 1/N<sub>d</sub>。
+    如果 N<sub>d</sub>=64，理论上 ZeRO-3 仅需每卡 ~2GB 模型状态。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Communication Patterns -->
+<!-- ================================================================ -->
+<div class="section" id="sec-comm">
+  <h2><span class="dot blue"></span> 4. 通信模式 — 按需聚合，即时释放</h2>
+  <p class="desc">
+    ZeRO 的核心通信原语是 <b>All-Gather</b>（收集完整数据）和 <b>Reduce-Scatter</b>（归约后分散）。
+    不同阶段触发通信的时机不同：<strong>ZeRO-1/2 仅训练步骤边界通信，ZeRO-3 每次前向/反向层都需要通信。</strong>
+  </p>
+
+  <canvas id="canvasComm" width="1200" height="480"></canvas>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-comm-fwd" onclick="setCommStep('fwd')" style="border-color:var(--c-param);">▶ 前向传播 (Forward)</button>
+    <button class="btn active-z2" id="btn-comm-bwd" onclick="setCommStep('bwd')" style="border-color:var(--c-gradient);">◀ 反向传播 (Backward)</button>
+    <button class="btn" id="btn-comm-upd" onclick="setCommStep('upd')" style="border-color:var(--c-optimizer);">↻ 参数更新 (Update)</button>
+  </div>
+
+  <div class="info-row" id="info-comm"></div>
+
+  <div class="insight">
+    💡 <strong>通信 vs 计算重叠：</strong>ZeRO-3 的 All-Gather 可以在计算当前层时预取下一层参数，
+    实现通信与计算的重叠（Pipelining）。这也是为什么 ZeRO-3 的额外通信开销在大多数场景下可被隐藏。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: Memory Formula & Comparison -->
+<!-- ================================================================ -->
+<div class="section" id="sec-formula">
+  <h2><span class="dot yellow"></span> 5. 显存公式与全阶段对比</h2>
+  <p class="desc">
+    ZeRO 的显存占用可以通过以下公式精确描述。对于 Ψ 参数量、N<sub>d</sub> 设备、Adam 优化器
+    （K=12 字节/参数，fp16 模型 + fp32 优化器状态）：
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 每卡模型状态显存 (Adam, fp16 混合精度)</h3>
+    <div id="formula-zero-mem"></div>
+  </div>
+
+  <canvas id="canvasBar" width="1200" height="560"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>模型参数量 <span class="val" id="val-params-bar">7.5B</span></label>
+      <input type="range" id="slider-params-bar" min="0" max="6" value="2" step="1">
+    </div>
+    <div class="slider-group">
+      <label>GPU 数量 N<sub>d</sub> <span class="val" id="val-nd-bar">8</span></label>
+      <input type="range" id="slider-nd-bar" min="2" max="64" value="8" step="1">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>指标</th>
+        <th>Data Parallel</th>
+        <th>ZeRO-1</th>
+        <th>ZeRO-2</th>
+        <th>ZeRO-3</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>优化器状态</td>
+        <td class="warn-cell">完整 KΨ</td>
+        <td class="hl-cell">KΨ / N<sub>d</sub></td>
+        <td class="hl-cell">KΨ / N<sub>d</sub></td>
+        <td class="hl-cell">KΨ / N<sub>d</sub></td>
+      </tr>
+      <tr>
+        <td>梯度</td>
+        <td class="warn-cell">完整 2Ψ</td>
+        <td class="warn-cell">完整 2Ψ</td>
+        <td class="hl-cell">2Ψ / N<sub>d</sub></td>
+        <td class="hl-cell">2Ψ / N<sub>d</sub></td>
+      </tr>
+      <tr>
+        <td>参数 (fp16)</td>
+        <td class="warn-cell">完整 2Ψ</td>
+        <td class="warn-cell">完整 2Ψ</td>
+        <td class="warn-cell">完整 2Ψ</td>
+        <td class="hl-cell">2Ψ / N<sub>d</sub></td>
+      </tr>
+      <tr>
+        <td>单卡模型状态总计</td>
+        <td class="warn-cell">(K+4)Ψ</td>
+        <td>(K/N<sub>d</sub> + 4)Ψ</td>
+        <td>((K+2)/N<sub>d</sub> + 2)Ψ</td>
+        <td class="hl-cell">(K+4)Ψ / N<sub>d</sub></td>
+      </tr>
+      <tr>
+        <td>额外通信量 (前向+反向)</td>
+        <td class="hl-cell">0 (仅 All-Reduce 梯度)</td>
+        <td class="hl-cell">0 (仅 All-Reduce 梯度)</td>
+        <td class="hl-cell">Reduce-Scatter 梯度</td>
+        <td>All-Gather 参数 × 每层</td>
+      </tr>
+      <tr>
+        <td>激活值显存</td>
+        <td>完整</td>
+        <td>完整</td>
+        <td>完整</td>
+        <td>完整 (ZeRO-R 另优化)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>K 值取决于优化器：</strong>Adam 需要 12 bytes/param（fp32 的 param + m + v），
+    SGD 仅需 4 bytes/param。对于 175B GPT-3 级别模型：
+    Data Parallel 需要 <strong>2800 GB</strong>（单卡完全装不下），
+    ZeRO-3 + 64 卡 = 每卡仅 <strong>~44 GB</strong>，轻松装入 A100 (80G)。
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  🧩 ZeRO 零冗余优化器 · 交互可视化 · 基于 Microsoft DeepSpeed (SC 2020) 论文
+</footer>
+
+<script>
+// ==============================
+// KaTeX Render
+// ==============================
+(function() {
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{Mem}_\text{total} &= \underbrace{K\Psi}_{\text{优化器状态}} + \underbrace{2\Psi}_{\text{梯度(fp16)}} + \underbrace{2\Psi}_{\text{参数(fp16)}} + \underbrace{M_\text{act}}_{\text{激活值}} \\[6pt]
+  K &= 12\ \text{bytes/param} \quad (\text{Adam: fp32 param} + m + v) \\[4pt]
+  \text{例: } \Psi &= 7.5\text{B} \implies \text{Mem}_\text{total} \approx 120\ \text{GB}
+  \end{aligned}
+  `, document.getElementById('formula-memory'), { displayMode: true });
+
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{ZeRO-1:}\quad &\text{Mem}_\text{per-GPU} = \frac{K\Psi}{N_d} + 4\Psi + M_\text{act} \\[6pt]
+  \text{ZeRO-2:}\quad &\text{Mem}_\text{per-GPU} = \frac{(K+2)\Psi}{N_d} + 2\Psi + M_\text{act} \\[6pt]
+  \text{ZeRO-3:}\quad &\text{Mem}_\text{per-GPU} = \frac{(K+4)\Psi}{N_d} + M_\text{act} \quad \gets \text{与 } N_d \text{ 成反比!}
+  \end{aligned}
+  `, document.getElementById('formula-zero-mem'), { displayMode: true });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 1 Canvas: DP Memory Redundancy -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasDPMemory');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const paramSizes = [1.5, 3, 7.5, 13, 30, 70, 175]; // billions
+  const paramLabels = ['1.5B', '3B', '7.5B', '13B', '30B', '70B', '175B'];
+
+  function getMemoryBreakdown(paramsB, nd) {
+    const psi = paramsB * 1e9;
+    const optBytes = 12 * psi;  // fp32 param+m+v
+    const gradBytes = 2 * psi;  // fp16
+    const paramBytes = 2 * psi; // fp16
+    const actBytes = psi * 1.5; // rough estimate
+    const total = optBytes + gradBytes + paramBytes + actBytes;
+    return { optBytes, gradBytes, paramBytes, actBytes, total };
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const idx = +document.getElementById('slider-params').value;
+    const nd = +document.getElementById('slider-nd-dp').value;
+    const paramsB = paramSizes[idx];
+    const mem = getMemoryBreakdown(paramsB, nd);
+    const a100Limit = 80 * 1024 * 1024 * 1024; // 80 GB
+
+    const margin = { top: 60, left: 120, right: 300, bottom: 40 };
+    const availW = W - margin.left - margin.right;
+    const availH = H - margin.top - margin.bottom;
+
+    // Draw GPU columns
+    const maxGPUs = Math.min(nd, 8);
+    const colW = Math.min(100, (availW - 40) / maxGPUs);
+    const colGap = 16;
+    const totalColW = maxGPUs * colW + (maxGPUs - 1) * colGap;
+    const startX = margin.left + (availW - totalColW) / 2;
+    const barAreaH = availH - 60;
+    const barTop = margin.top + 20;
+
+    // Scale: height proportional to memory
+    const maxMem = mem.total;
+    const a100H = (a100Limit / maxMem) * barAreaH;
+
+    for (let i = 0; i < maxGPUs; i++) {
+      const x = startX + i * (colW + colGap);
+
+      // GPU outline
+      ctx.strokeStyle = '#3a4058';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, barTop, colW, barAreaH);
+
+      // A100 limit line
+      if (a100H < barAreaH) {
+        const yLimit = barTop + barAreaH - a100H;
+        ctx.strokeStyle = 'rgba(248,113,113,0.5)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(x, yLimit);
+        ctx.lineTo(x + colW, yLimit);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Stack bars
+      const sectionH = (bytes, total) => (bytes / total) * barAreaH;
+      const optH = sectionH(mem.optBytes, maxMem);
+      const gradH = sectionH(mem.gradBytes, maxMem);
+      const paramH = sectionH(mem.paramBytes, maxMem);
+      const actH = sectionH(mem.actBytes, maxMem);
+
+      let cy = barTop + barAreaH;
+
+      // Activation (bottom)
+      cy -= actH;
+      ctx.fillStyle = 'rgba(107,114,128,0.4)';
+      ctx.fillRect(x, cy, colW, actH);
+
+      // Parameters
+      cy -= paramH;
+      ctx.fillStyle = 'rgba(74,222,128,0.6)';
+      ctx.fillRect(x, cy, colW, paramH);
+
+      // Gradients
+      cy -= gradH;
+      ctx.fillStyle = 'rgba(56,189,248,0.6)';
+      ctx.fillRect(x, cy, colW, gradH);
+
+      // Optimizer states
+      cy -= optH;
+      ctx.fillStyle = 'rgba(245,158,11,0.6)';
+      ctx.fillRect(x, cy, colW, optH);
+
+      // GPU label
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('GPU ' + i, x + colW/2, barTop + barAreaH + 24);
+    }
+
+    // A100 line annotation
+    if (a100H < barAreaH) {
+      const yLimit = barTop + barAreaH - a100H;
+      ctx.fillStyle = '#f87171';
+      ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('⚠ A100 80GB 上限', startX + maxGPUs * (colW + colGap) + 20, yLimit + 6);
+    }
+
+    // Right stats
+    const rx = startX + maxGPUs * (colW + colGap) + 20;
+    const stats = [
+      { label: '参数 (fp16)', val: (mem.paramBytes / 1e9).toFixed(1) + ' GB', color: '#4ade80' },
+      { label: '梯度 (fp16)', val: (mem.gradBytes / 1e9).toFixed(1) + ' GB', color: '#38bdf8' },
+      { label: '优化器 (fp32×3)', val: (mem.optBytes / 1e9).toFixed(1) + ' GB', color: '#f59e0b' },
+      { label: '激活值', val: '≈' + (mem.actBytes / 1e9).toFixed(1) + ' GB', color: '#6b7280' },
+      { label: '', val: '', color: ''},
+      { label: '单卡总计', val: (mem.total / 1e9).toFixed(1) + ' GB', color: '#f87171' },
+      { label: N_d + ' 卡总显存', val: (mem.total * nd / 1e9).toFixed(1) + ' GB', color: '#f87171' },
+    ];
+
+    stats.forEach((st, i) => {
+      const y = barTop + i * 44;
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(st.label, rx, y);
+      if (st.val) {
+        ctx.fillStyle = st.color;
+        ctx.font = 'bold 21px "JetBrains Mono", "Fira Code", monospace';
+        ctx.fillText(st.val, rx, y + 20);
+      }
+    });
+
+    updateInfoDP();
+  }
+
+  function updateInfoDP() {
+    const idx = +document.getElementById('slider-params').value;
+    const nd = +document.getElementById('slider-nd-dp').value;
+    const paramsB = paramSizes[idx];
+    const mem = getMemoryBreakdown(paramsB, nd);
+    const a100GB = 80;
+
+    document.getElementById('val-params').textContent = paramLabels[idx];
+    document.getElementById('val-nd-dp').textContent = nd;
+    document.getElementById('info-dp').innerHTML = `
+      <div class="info-card">参数量 <div class="val">${paramLabels[idx]}</div></div>
+      <div class="info-card">单卡总显存 <div class="val" style="color:#f87171">${(mem.total/1e9).toFixed(1)} GB</div></div>
+      <div class="info-card">A100 80GB 能否装下 <div class="val" style="color:${mem.total/1e9 > a100GB ? '#f87171' : '#4ade80'}">${mem.total/1e9 > a100GB ? '❌ 装不下' : '✅ 可以'}</div></div>
+      <div class="info-card">优化器占比 <div class="val" style="color:#f59e0b">${(mem.optBytes/mem.total*100).toFixed(0)}%</div></div>
+    `;
+  }
+
+  document.getElementById('slider-params').addEventListener('input', function() {
+    document.getElementById('slider-params-viz').value = this.value;
+    document.getElementById('slider-params-bar').value = this.value;
+    draw();
+    drawZeROViz();
+    drawBar();
+  });
+  document.getElementById('slider-nd-dp').addEventListener('input', draw);
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 3 Canvas: ZeRO Stage Memory Visualization -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasZeRO');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const paramSizes = [1.5, 3, 7.5, 13, 30, 70, 175];
+  const paramLabels = ['1.5B', '3B', '7.5B', '13B', '30B', '70B', '175B'];
+  let zeroStage = 'z1';
+
+  function getMemoryPerGPU(paramsB, nd, stage) {
+    const psi = paramsB * 1e9;
+    const K = 12; // Adam
+    const actBytes = psi * 1.5;
+    let optBytes, gradBytes, paramBytes;
+
+    switch(stage) {
+      case 'dp':
+        optBytes = K * psi;
+        gradBytes = 2 * psi;
+        paramBytes = 2 * psi;
+        break;
+      case 'z1':
+        optBytes = K * psi / nd;
+        gradBytes = 2 * psi;
+        paramBytes = 2 * psi;
+        break;
+      case 'z2':
+        optBytes = K * psi / nd;
+        gradBytes = 2 * psi / nd;
+        paramBytes = 2 * psi;
+        break;
+      case 'z3':
+        optBytes = K * psi / nd;
+        gradBytes = 2 * psi / nd;
+        paramBytes = 2 * psi / nd;
+        break;
+      default:
+        optBytes = K * psi;
+        gradBytes = 2 * psi;
+        paramBytes = 2 * psi;
+    }
+    return { optBytes, gradBytes, paramBytes, actBytes, total: optBytes + gradBytes + paramBytes + actBytes };
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const idx = +document.getElementById('slider-params-viz').value;
+    const nd = +document.getElementById('slider-nd-viz').value;
+    const paramsB = paramSizes[idx];
+    const memPerGPU = getMemoryPerGPU(paramsB, nd, zeroStage);
+    const memDP = getMemoryPerGPU(paramsB, nd, 'dp');
+
+    const margin = { top: 50, left: 100, right: 280, bottom: 30 };
+    const availW = W - margin.left - margin.right;
+    const availH = H - margin.top - margin.bottom;
+
+    const maxGPUs = Math.min(nd, 8);
+    const colW = Math.min(90, (availW - 40) / maxGPUs);
+    const colGap = 12;
+    const totalColW = maxGPUs * colW + (maxGPUs - 1) * colGap;
+    const startX = margin.left + (availW - totalColW) / 2;
+    const barAreaH = availH - 30;
+    const barTop = margin.top;
+
+    const maxTotal = memDP.total;
+
+    for (let i = 0; i < maxGPUs; i++) {
+      const x = startX + i * (colW + colGap);
+
+      // GPU box
+      ctx.strokeStyle = '#3a4058';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, barTop, colW, barAreaH);
+
+      const sectionH = (bytes) => (bytes / maxTotal) * barAreaH;
+
+      // Shaded areas for sharded components
+      const dpOptH = sectionH(memDP.optBytes);
+      const dpGradH = sectionH(memDP.gradBytes);
+      const dpParamH = sectionH(memDP.paramBytes);
+
+      const curOptH = sectionH(memPerGPU.optBytes);
+      const curGradH = sectionH(memPerGPU.gradBytes);
+      const curParamH = sectionH(memPerGPU.paramBytes);
+      const curActH = sectionH(memPerGPU.actBytes);
+
+      let cy = barTop + barAreaH;
+
+      // Activation
+      cy -= curActH;
+      ctx.fillStyle = 'rgba(107,114,128,0.35)';
+      ctx.fillRect(x, cy, colW, curActH);
+
+      // Parameters
+      cy -= dpParamH;
+      if (curParamH < dpParamH) {
+        // Sharded: draw partial with dashed remainder
+        const filledH = curParamH;
+        const emptyH = dpParamH - curParamH;
+        // Empty (sharded away)
+        ctx.fillStyle = 'rgba(74,222,128,0.08)';
+        ctx.fillRect(x, cy + filledH, colW, emptyH);
+        // Cross-hatch pattern for sharded
+        ctx.strokeStyle = 'rgba(74,222,128,0.15)';
+        ctx.lineWidth = 0.5;
+        for (let ly = cy + filledH; ly < cy + dpParamH; ly += 6) {
+          ctx.beginPath();
+          ctx.moveTo(x, ly);
+          ctx.lineTo(x + colW, ly + 6);
+          ctx.stroke();
+        }
+      }
+      ctx.fillStyle = 'rgba(74,222,128,0.6)';
+      ctx.fillRect(x, cy, curParamH, colW);
+
+      // Gradients
+      cy -= dpGradH;
+      if (curGradH < dpGradH) {
+        const emptyH = dpGradH - curGradH;
+        ctx.fillStyle = 'rgba(56,189,248,0.08)';
+        ctx.fillRect(x, cy + curGradH, colW, emptyH);
+        ctx.strokeStyle = 'rgba(56,189,248,0.15)';
+        ctx.lineWidth = 0.5;
+        for (let ly = cy + curGradH; ly < cy + dpGradH; ly += 6) {
+          ctx.beginPath();
+          ctx.moveTo(x, ly);
+          ctx.lineTo(x + colW, ly + 6);
+          ctx.stroke();
+        }
+      }
+      ctx.fillStyle = 'rgba(56,189,248,0.6)';
+      ctx.fillRect(x, cy, curGradH, colW);
+
+      // Optimizer states
+      cy -= dpOptH;
+      if (curOptH < dpOptH) {
+        const emptyH = dpOptH - curOptH;
+        ctx.fillStyle = 'rgba(245,158,11,0.08)';
+        ctx.fillRect(x, cy + curOptH, colW, emptyH);
+        ctx.strokeStyle = 'rgba(245,158,11,0.15)';
+        ctx.lineWidth = 0.5;
+        for (let ly = cy + curOptH; ly < cy + dpOptH; ly += 6) {
+          ctx.beginPath();
+          ctx.moveTo(x, ly);
+          ctx.lineTo(x + colW, ly + 6);
+          ctx.stroke();
+        }
+      }
+      ctx.fillStyle = 'rgba(245,158,11,0.6)';
+      ctx.fillRect(x, cy, curOptH, colW);
+
+      // GPU label
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('GPU ' + i, x + colW/2, barTop + barAreaH + 20);
+
+      // Shard ownership indicator
+      if (zeroStage !== 'dp') {
+        const ownerSeg = Math.floor(nd / maxGPUs);
+        const mySegments = [];
+        for (let s = 0; s < ownerSeg; s++) {
+          if (s % maxGPUs === i) mySegments.push(s);
+        }
+        if (i < nd % maxGPUs) mySegments.push(Math.floor(nd / maxGPUs) * maxGPUs + i);
+        if (mySegments.length > 0 || i < nd) {
+          ctx.fillStyle = '#facc15';
+          ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+          ctx.fillText('持分片', x + colW/2, barTop + barAreaH + 38);
+        }
+      }
+    }
+
+    // Right info
+    const rx = startX + maxGPUs * (colW + colGap) + 20;
+    const info = [
+      { label: '每卡优化器', val: (memPerGPU.optBytes/1e9).toFixed(1)+' GB', c: '#f59e0b' },
+      { label: '每卡梯度', val: (memPerGPU.gradBytes/1e9).toFixed(1)+' GB', c: '#38bdf8' },
+      { label: '每卡参数', val: (memPerGPU.paramBytes/1e9).toFixed(1)+' GB', c: '#4ade80' },
+      { label: '每卡激活值', val: '≈'+(memPerGPU.actBytes/1e9).toFixed(1)+' GB', c: '#6b7280' },
+      { label: '', val: '', c: '' },
+      { label: '每卡总计', val: (memPerGPU.total/1e9).toFixed(1)+' GB', c: '#4ade80' },
+      { label: 'vs DP 节省', val: ((1-memPerGPU.total/memDP.total)*100).toFixed(0)+'%', c: '#facc15' },
+    ];
+
+    info.forEach((st, i) => {
+      const y = barTop + i * 40;
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '19px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(st.label, rx, y);
+      if (st.val) {
+        ctx.fillStyle = st.c;
+        ctx.font = 'bold 20px "JetBrains Mono", "Fira Code", monospace';
+        ctx.fillText(st.val, rx, y + 18);
+      }
+    });
+
+    updateInfoZeRO();
+  }
+
+  function updateInfoZeRO() {
+    const idx = +document.getElementById('slider-params-viz').value;
+    const nd = +document.getElementById('slider-nd-viz').value;
+    const paramsB = paramSizes[idx];
+    const memP = getMemoryPerGPU(paramsB, nd, zeroStage);
+    const memDP = getMemoryPerGPU(paramsB, nd, 'dp');
+
+    document.getElementById('val-params-viz').textContent = paramLabels[idx];
+    document.getElementById('val-nd-viz').textContent = nd;
+    document.getElementById('info-zero').innerHTML = `
+      <div class="info-card">当前阶段 <div class="val" style="color:${zeroStage==='z1'?'#f59e0b':zeroStage==='z2'?'#38bdf8':'#4ade80'}">${zeroStage==='dp'?'Data Parallel':zeroStage.toUpperCase()}</div></div>
+      <div class="info-card">每卡模型状态 <div class="val" style="color:#4ade80">${(memP.total/1e9).toFixed(1)} GB</div></div>
+      <div class="info-card">DP 基线 <div class="val" style="color:#f87171">${(memDP.total/1e9).toFixed(1)} GB</div></div>
+      <div class="info-card">显存节省 <div class="val" style="color:#facc15">${((1-memP.total/memDP.total)*100).toFixed(0)}% → ${(memDP.total/memP.total).toFixed(1)}×</div></div>
+    `;
+  }
+
+  window.setZeROStage = function(stage) {
+    zeroStage = stage;
+    ['dp','z1','z2','z3'].forEach(s => {
+      const btn = document.getElementById('btn-' + s);
+      btn.className = 'btn';
+    });
+    document.getElementById('btn-' + stage).classList.add('active-' + (stage === 'dp' ? 'z1' : stage));
+    draw();
+  };
+
+  window.drawZeROViz = draw;
+
+  document.getElementById('slider-params-viz').addEventListener('input', function() {
+    document.getElementById('slider-params').value = this.value;
+    document.getElementById('slider-params-bar').value = this.value;
+    draw();
+    // Also redraw section 1
+  });
+  document.getElementById('slider-nd-viz').addEventListener('input', draw);
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4 Canvas: Communication Pattern -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasComm');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  let commStep = 'fwd'; // fwd, bwd, upd
+  const Nd = 4;
+
+  function drawGPUBlock(x, y, w, h, label, color, isActive) {
+    ctx.fillStyle = isActive ? color : 'rgba(255,255,255,0.04)';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = isActive ? color : '#2a3040';
+    ctx.lineWidth = isActive ? 2 : 1;
+    ctx.strokeRect(x, y, w, h);
+    ctx.fillStyle = isActive ? '#0b0e14' : '#8e96a9';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x + w/2, y + h/2 + 5);
+  }
+
+  function drawArrow(x1, y1, x2, y2, color, label) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    // Arrowhead
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 12 * Math.cos(angle - Math.PI/6), y2 - 12 * Math.sin(angle - Math.PI/6));
+    ctx.lineTo(x2 - 12 * Math.cos(angle + Math.PI/6), y2 - 12 * Math.sin(angle + Math.PI/6));
+    ctx.fillStyle = color;
+    ctx.fill();
+    if (label) {
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2 - 10;
+      ctx.fillStyle = color;
+      ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, mx, my);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const margin = { top: 120, left: 60, right: 400, bottom: 30 };
+    const gpuW = 150, gpuH = 60, gap = 30;
+    const totalW = Nd * gpuW + (Nd - 1) * gap;
+    const startX = margin.left + 60;
+    const yLayer = margin.top;
+
+    const paramColors = ['#a78bfa', '#38bdf8', '#4ade80', '#f59e0b'];
+
+    // Draw layers as rows
+    const numLayers = 4;
+    const layerH = 50;
+    const layerGap = 20;
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    const titleMap = { fwd: '前向传播 — All-Gather 收集所需参数 → 计算 → 释放不需要的参数', bwd: '反向传播 — All-Gather 收集所需参数 → 计算梯度 → Reduce-Scatter 分片梯度', upd: '参数更新 — 各卡独立更新自己持有的优化器状态分片 → 无需额外通信' };
+    ctx.fillText(titleMap[commStep], W/2 - 80, margin.top - 60);
+
+    for (let layer = 0; layer < numLayers; layer++) {
+      const y = yLayer + layer * (layerH + layerGap);
+
+      // Layer label
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '17px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('Layer ' + layer, startX - 14, y + layerH/2 + 4);
+
+      for (let g = 0; g < Nd; g++) {
+        const x = startX + g * (gpuW + gap);
+        const ownsParam = (layer % Nd === g);
+        const needsCompute = commStep === 'fwd' || commStep === 'bwd';
+        const isUpdating = commStep === 'upd' && ownsParam;
+
+        if (commStep === 'fwd') {
+          // Forward: All-Gather - all GPUs need all params
+          drawGPUBlock(x, y, gpuW, layerH, 'GPU' + g, paramColors[g % paramColors.length], true);
+          // Draw small indicator showing where param is owned
+          ctx.fillStyle = ownsParam ? paramColors[g % paramColors.length] : 'rgba(255,255,255,0.3)';
+          ctx.beginPath();
+          ctx.arc(x + gpuW - 12, y + 12, 6, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (commStep === 'bwd') {
+          // Backward: compute, then Reduce-Scatter gradient
+          drawGPUBlock(x, y, gpuW, layerH, 'GPU' + g, paramColors[g % paramColors.length], true);
+          if (ownsParam) {
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 14px "Segoe UI", "PingFang SC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('∇持有者', x + gpuW/2, y + layerH + 14);
+          }
+        } else {
+          // Update: only owner updates
+          drawGPUBlock(x, y, gpuW, layerH, 'GPU' + g, paramColors[g % paramColors.length], ownsParam);
+          if (ownsParam) {
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 14px "Segoe UI", "PingFang SC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('更新中', x + gpuW/2, y + layerH + 14);
+          } else {
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('空闲', x + gpuW/2, y + layerH + 14);
+          }
+        }
+      }
+
+      // Arrows for communication patterns
+      if (commStep === 'fwd' && layer < numLayers - 1) {
+        // All-Gather arrows
+        const arrowY = y + layerH + 6;
+        const owner = layer % Nd;
+        for (let g = 0; g < Nd; g++) {
+          if (g !== owner) {
+            const ox = startX + owner * (gpuW + gap) + gpuW/2;
+            const gx = startX + g * (gpuW + gap) + gpuW/2;
+            ctx.strokeStyle = 'rgba(167,139,250,0.4)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(ox, arrowY);
+            ctx.lineTo(gx, arrowY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        }
+      }
+
+      if (commStep === 'bwd' && layer < numLayers - 1) {
+        const arrowY = y + layerH + 6;
+        const owner = layer % Nd;
+        for (let g = 0; g < Nd; g++) {
+          if (g !== owner) {
+            const gx = startX + g * (gpuW + gap) + gpuW/2;
+            const ox = startX + owner * (gpuW + gap) + gpuW/2;
+            ctx.strokeStyle = 'rgba(56,189,248,0.5)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(gx, arrowY);
+            ctx.lineTo(ox, arrowY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        }
+      }
+    }
+
+    // Right side explanation
+    const rx = startX + Nd * (gpuW + gap) + 20;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 21px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+
+    const explanations = {
+      fwd: [
+        { t: '通信原语:', v: 'All-Gather', c: '#a78bfa' },
+        { t: '频率:', v: '每层一次', c: '#8e96a9' },
+        { t: '通信量:', v: '2Ψ (fp16 params)', c: '#f59e0b' },
+        { t: '特点:', v: '可预取下一层重叠', c: '#4ade80' },
+      ],
+      bwd: [
+        { t: '通信原语:', v: 'All-Gather + Reduce-Scatter', c: '#a78bfa' },
+        { t: '频率:', v: '每层一次', c: '#8e96a9' },
+        { t: '通信量:', v: '2Ψ + 2Ψ (params + grads)', c: '#f59e0b' },
+        { t: '特点:', v: '与计算可部分重叠', c: '#4ade80' },
+      ],
+      upd: [
+        { t: '通信原语:', v: '无需通信 (各卡独立)', c: '#4ade80' },
+        { t: '频率:', v: '每步一次', c: '#8e96a9' },
+        { t: '通信量:', v: '0 (仅 All-Gather 更新后参数)', c: '#4ade80' },
+        { t: '特点:', v: 'ZeRO-1/2 仅此处通信', c: '#f59e0b' },
+      ],
+    };
+
+    const expl = explanations[commStep];
+    expl.forEach((e, i) => {
+      const y = yLayer + i * 52;
+      ctx.fillStyle = '#8e96a9';
+      ctx.fillText(e.t, rx, y);
+      ctx.fillStyle = e.c;
+      ctx.font = 'bold 21px "JetBrains Mono", "Fira Code", monospace';
+      ctx.fillText(e.v, rx + 110, y);
+      ctx.font = 'bold 21px "Segoe UI", "PingFang SC", sans-serif';
+    });
+
+    // Stage-specific note
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '19px "Segoe UI", "PingFang SC", sans-serif';
+    const noteY = yLayer + expl.length * 52 + 20;
+    if (commStep === 'fwd' || commStep === 'bwd') {
+      ctx.fillText('⚠ 仅 ZeRO-3 在此阶段需要通信', rx, noteY);
+      ctx.fillText('  ZeRO-1/2 的前向/反向', rx, noteY + 24);
+      ctx.fillText('  与标准 DP 完全相同', rx, noteY + 48);
+    } else {
+      ctx.fillText('ZeRO-1/2/3 都在此阶段', rx, noteY);
+      ctx.fillText('完成优化器状态更新', rx, noteY + 24);
+      ctx.fillText('ZeRO-1: 仅此阶段有额外通信', rx, noteY + 48);
+    }
+
+    updateInfoComm();
+  }
+
+  function updateInfoComm() {
+    document.getElementById('info-comm').innerHTML = `
+      <div class="info-card">当前步骤 <div class="val" style="color:#a78bfa">${commStep==='fwd'?'前向传播':commStep==='bwd'?'反向传播':'参数更新'}</div></div>
+      <div class="info-card">ZeRO-3 通信 <div class="val" style="color:${commStep==='upd'?'#4ade80':'#f59e0b'}">${commStep==='upd'?'无需通信':'All-Gather'}</div></div>
+      <div class="info-card">ZeRO-1/2 通信 <div class="val" style="color:${commStep==='upd'?'#f59e0b':'#4ade80'}">${commStep==='upd'?'Reduce-Scatter 梯度+更新':'无额外通信'}</div></div>
+      <div class="info-card">可重叠性 <div class="val" style="color:#4ade80">${commStep==='upd'?'N/A':'可预取/重叠'}</div></div>
+    `;
+  }
+
+  window.setCommStep = function(step) {
+    commStep = step;
+    ['fwd','bwd','upd'].forEach(s => {
+      document.getElementById('btn-comm-'+s).className = 'btn';
+    });
+    document.getElementById('btn-comm-'+step).classList.add('active-z2');
+    draw();
+  };
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 5 Canvas: Bar Chart Comparison -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasBar');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const paramSizes = [1.5, 3, 7.5, 13, 30, 70, 175];
+  const paramLabels = ['1.5B', '3B', '7.5B', '13B', '30B', '70B', '175B'];
+
+  function calcMem(psi, nd, stage) {
+    const K = 12;
+    const act = psi * 1.5;
+    let m;
+    switch(stage) {
+      case 'dp': m = (K + 4) * psi + act; break;
+      case 'z1': m = (K / nd + 4) * psi + act; break;
+      case 'z2': m = ((K + 2) / nd + 2) * psi + act; break;
+      case 'z3': m = (K + 4) * psi / nd + act; break;
+      default: m = (K + 4) * psi + act;
+    }
+    return m;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const idx = +document.getElementById('slider-params-bar').value;
+    const nd = +document.getElementById('slider-nd-bar').value;
+    const paramsB = paramSizes[idx];
+    const psi = paramsB * 1e9;
+
+    const margin = { top: 50, left: 80, right: 30, bottom: 70 };
+    const availW = W - margin.left - margin.right;
+    const availH = H - margin.top - margin.bottom;
+
+    const stages = [
+      { key: 'dp', label: 'Data\nParallel', color: '#f87171' },
+      { key: 'z1', label: 'ZeRO-1', color: '#f59e0b' },
+      { key: 'z2', label: 'ZeRO-2', color: '#38bdf8' },
+      { key: 'z3', label: 'ZeRO-3', color: '#4ade80' },
+    ];
+
+    const barW = Math.min(120, (availW - 60) / 4);
+    const gap = (availW - 4 * barW) / 5;
+    const a100Limit = 80e9; // 80 GB
+
+    // Find max for scaling
+    const maxMem = calcMem(psi, nd, 'dp');
+    const scale = availH / maxMem;
+
+    stages.forEach((st, i) => {
+      const x = margin.left + gap + i * (barW + gap);
+      const mem = calcMem(psi, nd, st.key);
+      const barH = Math.max(4, mem * scale);
+      const y = margin.top + availH - barH;
+
+      // Bar
+      const grad = ctx.createLinearGradient(x, y, x, margin.top + availH);
+      grad.addColorStop(0, st.color);
+      grad.addColorStop(1, st.color + '44');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, barW, barH);
+      ctx.strokeStyle = st.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, barW, barH);
+
+      // A100 limit line
+      const a100Y = margin.top + availH - a100Limit * scale;
+      if (a100Limit * scale < availH) {
+        ctx.strokeStyle = 'rgba(248,113,113,0.6)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(x - 4, a100Y);
+        ctx.lineTo(x + barW + 4, a100Y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Value
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      const memGB = (mem / 1e9).toFixed(1);
+      ctx.fillText(memGB + ' GB', x + barW/2, y - 8);
+
+      // Label
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 21px "Segoe UI", "PingFang SC", sans-serif';
+      const lines = st.label.split('\n');
+      ctx.fillText(lines[0], x + barW/2, margin.top + availH + 22);
+      if (lines[1]) ctx.fillText(lines[1], x + barW/2, margin.top + availH + 44);
+
+      // Reduction multiplier
+      const dpMem = calcMem(psi, nd, 'dp');
+      const reduction = (dpMem / mem).toFixed(1);
+      if (st.key !== 'dp') {
+        ctx.fillStyle = st.color;
+        ctx.font = 'bold 19px "JetBrains Mono", monospace';
+        ctx.fillText(reduction + '× 节省', x + barW/2, margin.top + availH + 64);
+      }
+    });
+
+    // A100 annotation
+    if (a100Limit * scale < availH) {
+      const a100Y = margin.top + availH - a100Limit * scale;
+      ctx.fillStyle = '#f87171';
+      ctx.font = 'bold 19px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('A100 80GB 上限', margin.left, a100Y - 6);
+    }
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 23px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`每卡模型状态显存 (Ψ=${paramLabels[idx]}, N_d=${nd})`, W/2, margin.top - 14);
+
+    document.getElementById('val-params-bar').textContent = paramLabels[idx];
+    document.getElementById('val-nd-bar').textContent = nd;
+  }
+
+  window.drawBar = draw;
+
+  document.getElementById('slider-params-bar').addEventListener('input', function() {
+    document.getElementById('slider-params').value = this.value;
+    document.getElementById('slider-params-viz').value = this.value;
+    draw();
+    // Trigger redraw of section 1 and 3 canvases
+  });
+  document.getElementById('slider-nd-bar').addEventListener('input', draw);
+
+  draw();
+})();
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP — Model Context Protocol 模型上下文协议</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #06b6d4;
+    --accent2: #22d3ee;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --orange: #f59e0b;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #0f2a33 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.cyan   { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.green  { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+  .dot.pink   { background: var(--pink);   box-shadow: 0 0 10px var(--pink); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+
+    -webkit-appearance: none;
+
+    appearance: none;
+
+    width: 100%;
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+
+    outline: none;
+
+    cursor: pointer;
+
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: transparent;
+
+  }
+
+  input[type=range]::-moz-range-track {
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: var(--border);
+
+    border: none;
+
+  }
+
+  input[type=range]::-moz-range-progress {
+
+    height: 8px;
+
+    border-radius: 4px 0 0 4px;
+
+    background: var(--accent);
+
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+
+    -webkit-appearance: none;
+
+    appearance: none;
+
+    width: 24px; height: 24px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    border: 2px solid var(--accent);
+
+    box-shadow: 0 0 0 4px rgba(6,182,212,0.15), 0 2px 6px rgba(0,0,0,0.25);
+
+    margin-top: -8px;
+
+    transition: box-shadow 0.2s, transform 0.15s;
+
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+
+    box-shadow: 0 0 0 8px rgba(6,182,212,0.2), 0 2px 8px rgba(0,0,0,0.3);
+
+    transform: scale(1.1);
+
+  }
+
+  input[type=range]::-moz-range-thumb {
+
+    width: 24px; height: 24px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    border: 2px solid var(--accent);
+
+    box-shadow: 0 0 0 4px rgba(6,182,212,0.15), 0 2px 6px rgba(0,0,0,0.25);
+
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #1a3038; }
+  .btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(6,182,212,0.3);
+  }
+  .btn.play-btn { background: var(--green); color: #0b0e14; border-color: var(--green); font-weight: 700; }
+  .btn.play-btn:hover { box-shadow: 0 0 14px rgba(74,222,128,0.3); }
+
+  /* ── Tabs ── */
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(6,182,212,0.06), rgba(74,222,128,0.06));
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text2);
+    overflow-x: auto;
+    white-space: pre;
+    margin-bottom: 16px;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .co { color: #8b949e; }
+  .code-block .nm { color: #79c0ff; }
+  .code-block .st { color: #a5d6ff; }
+  .code-block .op { color: #ff7b72; }
+
+  /* ── Mermaid ── */
+  /* ── Legend ── */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 16px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 18px; height: 18px; border-radius: 3px; }
+
+  /* ── Comparison table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--green); font-weight: 600; }
+  .cmp-table .warn-cell { color: var(--red); font-weight: 600; }
+
+  /* ── Primitive cards ── */
+  .primitive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .primitive-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    transition: border-color 0.2s;
+  }
+  .primitive-card:hover { border-color: var(--accent); }
+  .primitive-card .primitive-icon { font-size: 32px; margin-bottom: 10px; }
+  .primitive-card h3 { font-size: 20px; margin-bottom: 8px; color: var(--text); }
+  .primitive-card p { font-size: 16px; color: var(--text2); line-height: 1.7; }
+
+  /* ── Step indicator ── */
+  .step-indicator {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 17px;
+    flex-wrap: wrap;
+    color: var(--text2);
+  }
+  .step-indicator .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .step-indicator .step-num.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0b0e14;
+    box-shadow: 0 0 12px rgba(6,182,212,0.4);
+  }
+  .step-indicator .step-arrow { font-size: 20px; color: var(--text2); }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+    .primitive-grid { grid-template-columns: 1fr; }
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔌 MCP · Model Context Protocol</h1>
+  <p>连接 AI 模型与外部世界的开放协议 — 标准化的 Tool / Resource / Prompt 协议，让 LLM 像 USB-C 一样即插即用任何数据源与工具</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: What is MCP -->
+<!-- ================================================================ -->
+<div class="section" id="sec-overview">
+  <h2><span class="dot cyan"></span> 1. 问题：LLM 的孤岛困境与 MCP 解法</h2>
+  <p class="desc">
+    传统方式下每个 LLM 应用需要<b>逐个适配 API</b>，形成 M×N 集成爆炸。
+    MCP (Model Context Protocol) 是 Anthropic 发布的开源协议，定义<b>标准化的 Client-Server 接口</b>，
+    让任何 MCP Server 都能被任何 MCP Client 发现并使用 — 变 M×N 为 M+N。
+  </p>
+
+  <canvas id="canvasProblem" width="1200" height="460"></canvas>
+
+  <div class="insight">
+    💡 <strong>类比：</strong>MCP 之于 AI 工具集成，如同 USB-C 之于外设连接。
+    在 MCP 之前，每个 AI 应用需要为 GitHub、Slack、数据库等各自写特殊适配器；
+    有了 MCP 后，<strong>只需实现一次 MCP Server</strong>，所有 MCP 客户端都能即插即用。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: Architecture — 3-Layer Model -->
+<!-- ================================================================ -->
+<div class="section" id="sec-architecture">
+  <h2><span class="dot blue"></span> 2. 三层架构：Host → Client → Server</h2>
+  <p class="desc">
+    MCP 采用<b>三层架构</b>：MCP Host（承载 AI 模型的应用）、MCP Client（协议客户端，与 Server 1:1 连接）、
+    MCP Server（暴露 Tools/Resources/Prompts 的服务端）。Host 可管理多个 Client，每个 Client 连接一个 Server。
+    支持<b>本地 (stdio)</b> 和<b>远程 (HTTP SSE)</b> 两种传输方式。
+  </p>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TB
+    subgraph Host["🖥️ MCP Host (Claude Desktop / IDE / 你的应用)"]
+        MODEL["🤖 AI Model<br/>Claude / GPT / ..."]
+        APP["📱 Application Logic<br/>用户界面 · 编排 · 上下文管理"]
+    end
+
+    subgraph ClientLayer[" "]
+        C1["🔌 MCP Client A<br/>stdio transport"]
+        C2["🔌 MCP Client B<br/>HTTP SSE transport"]
+        C3["🔌 MCP Client C<br/>stdio transport"]
+    end
+
+    subgraph ServerLayer[" "]
+        S1["📁 文件系统 Server<br/>Tools: read_file, write_file<br/>Resources: file://..."]
+        S2["🐙 GitHub Server<br/>Tools: create_issue, search_code<br/>Resources: repo://..."]
+        S3["🗄️ 数据库 Server<br/>Tools: query, migrate<br/>Resources: db://schema"]
+    end
+
+    MODEL --> APP
+    APP --> C1 & C2 & C3
+    C1 -- "JSON-RPC over stdio" --> S1
+    C2 -- "JSON-RPC over HTTP" --> S2
+    C3 -- "JSON-RPC over stdio" --> S3
+
+    style Host fill:#0a1628,stroke:#06b6d4,stroke-width:2px,color:#e1e4eb
+    style MODEL fill:#06b6d4,stroke:#06b6d4,color:#0b0e14
+    style APP fill:#155e75,stroke:#06b6d4,color:#e1e4eb
+    style C1 fill:#0e7490,stroke:#22d3ee,color:#e1e4eb
+    style C2 fill:#0e7490,stroke:#22d3ee,color:#e1e4eb
+    style C3 fill:#0e7490,stroke:#22d3ee,color:#e1e4eb
+    style S1 fill:#1e293b,stroke:#4ade80,color:#e1e4eb
+    style S2 fill:#1e293b,stroke:#4ade80,color:#e1e4eb
+    style S3 fill:#1e293b,stroke:#4ade80,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch" style="background:#06b6d4"></span> MCP Host</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:#0e7490"></span> MCP Client</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:#1e293b;border:2px solid #4ade80"></span> MCP Server</div>
+    <div class="legend-item"><span style="color:var(--text2)">── JSON-RPC 通信</span></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>关键设计：</strong>1 Client = 1 Server，<strong>非多路复用</strong>。每个 MCP Server 是独立进程（或远程服务），
+    Client 通过 stdio 或 HTTP 与之通信。Host 可以同时运行多个 Client，给 AI 模型提供来自不同来源的工具和数据。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: Core Primitives — Tools, Resources, Prompts -->
+<!-- ================================================================ -->
+<div class="section" id="sec-primitives">
+  <h2><span class="dot green"></span> 3. 三大核心原语：Tool · Resource · Prompt</h2>
+  <p class="desc">
+    MCP Server 通过三种标准化原语向 AI 模型暴露能力，每种原语在 JSON-RPC 协议中有明确的请求/响应结构。
+  </p>
+
+  <div class="primitive-grid">
+    <div class="primitive-card" style="border-left: 3px solid var(--orange)">
+      <div class="primitive-icon">🔧</div>
+      <h3>Tools 工具</h3>
+      <p>模型<b>可执行</b>的操作。类似函数调用 — 模型决定何时调用、传什么参数，Server 执行并返回结果。<br/>
+      <span style="color:var(--orange)">例: search_code, create_issue, run_query</span></p>
+    </div>
+    <div class="primitive-card" style="border-left: 3px solid var(--green)">
+      <div class="primitive-icon">📦</div>
+      <h3>Resources 资源</h3>
+      <p>模型<b>可读取</b>的结构化数据。类似 REST GET 端点 — 通过 URI 标识，支持 text 和 binary 两种内容类型。<br/>
+      <span style="color:var(--green)">例: file://doc.txt, db://schema/users</span></p>
+    </div>
+    <div class="primitive-card" style="border-left: 3px solid var(--purple)">
+      <div class="primitive-icon">💬</div>
+      <h3>Prompts 提示模板</h3>
+      <p>预定义的<b>交互模板</b>。Server 声明结构化 prompt 列表，用户选择后填充参数，生成标准化的对话起始。<br/>
+      <span style="color:var(--purple)">例: "Summarize this code"、 "Review this PR"</span></p>
+    </div>
+    <div class="primitive-card" style="border-left: 3px solid var(--pink)">
+      <div class="primitive-icon">🧠</div>
+      <h3>Sampling 采样 <span style="font-size:13px;color:var(--text2)">(Server→Client)</span></h3>
+      <p>Server 可<b>反向请求</b> LLM 生成内容。允许工具内部嵌套 AI 推理 — 如代码审查工具调用模型生成 review 意见。<br/>
+      <span style="color:var(--pink)">例: summarize → LLM → embed → store</span></p>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 JSON-RPC 消息格式 (基于 JSON-RPC 2.0)</h3>
+    <div id="formula-jsonrpc"></div>
+  </div>
+
+  <canvas id="canvasPrimitives" width="1200" height="380"></canvas>
+
+  <div class="insight">
+    💡 <strong>双向能力：</strong>前三个原语是 Client→Server 方向（AI 模型调用工具、读取数据、使用模板）；
+    Sampling 是 Server→Client 方向（Server 反向请求模型推理），让 <strong>MCP 支持嵌套的 AI 工作流</strong>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Protocol Lifecycle -->
+<!-- ================================================================ -->
+<div class="section" id="sec-lifecycle">
+  <h2><span class="dot purple"></span> 4. 协议生命周期：Initialize → Message Exchange</h2>
+  <p class="desc">
+    MCP 通信基于 <b>JSON-RPC 2.0</b>。首先进行<b>能力协商</b> (Initialize)，双方声明各自支持的功能；
+    随后进入<b>消息交换</b>阶段，Client 可发送 tool/resource/prompt 相关的 request/notification。
+  </p>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="tab-seq">时序图</button>
+    <button class="tab-btn" data-tab="tab-steps">步骤详解</button>
+    <button class="tab-btn" data-tab="tab-lifecycle-anim">交互动画</button>
+  </div>
+
+  <div id="tab-seq" class="tab-content">
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+sequenceDiagram
+    participant H as 🤖 MCP Host (Claude)
+    participant C as 🔌 MCP Client
+    participant S as 📦 MCP Server
+
+    Note over C,S: ═══ Phase 1: Initialization ═══
+
+    C->>S: initialize (client capabilities)
+    S-->>C: initialize result (server capabilities + instructions)
+    C->>S: notifications/initialized
+
+    Note over C,S: ═══ Phase 2: Message Exchange ═══
+
+    H->>C: 用户: "帮我查天气"
+    C->>S: tools/list
+    S-->>C: [get_weather, get_forecast, ...]
+
+    C->>S: tools/call (name:"get_weather", args:{city:"Beijing"})
+    S-->>C: {content: [{type:"text", text:"北京 22°C 晴"}]}
+
+    C-->>H: Tool Result → Model 生成回答
+    H->>C: "北京当前 22°C，晴朗"
+
+    Note over C,S: ═══ Resources & Prompts ═══
+
+    C->>S: resources/read (uri:"db://schema")
+    S-->>C: {contents: [{uri:"...", text:"CREATE TABLE..."}]}
+
+    C->>S: prompts/get (name:"code_review")
+    S-->>C: {messages: [{role:"user", content:{...}}]}
+    </pre>
+    </div>
+  </div>
+
+  <div id="tab-steps" class="tab-content" style="display:none;">
+    <div class="step-indicator" id="step-indicator">
+      <span class="step-num active" data-step="0">1</span><span class="step-arrow">→</span>
+      <span class="step-num" data-step="1">2</span><span class="step-arrow">→</span>
+      <span class="step-num" data-step="2">3</span><span class="step-arrow">→</span>
+      <span class="step-num" data-step="3">4</span><span class="step-arrow">→</span>
+      <span class="step-num" data-step="4">5</span><span class="step-arrow">→</span>
+      <span class="step-num" data-step="5">6</span>
+      <span style="margin-left:12px;color:var(--text2)" id="step-label">Initialize 请求</span>
+    </div>
+
+    <div class="code-block" id="code-step" style="min-height:200px;">
+    </div>
+
+    <div class="insight" id="insight-step">
+      <strong>Step 1: Initialize (能力协商)</strong> — Client 发送自身能力声明 (协议版本、支持的传输方式)，
+      Server 返回自身能力 (可用的 tools/resources/prompts/sampling) 及服务器指令 (instructions)。
+    </div>
+  </div>
+
+  <div id="tab-lifecycle-anim" class="tab-content" style="display:none;">
+    <canvas id="canvasLifecycle" width="1200" height="500"></canvas>
+    <div class="btn-row">
+      <button class="btn play-btn" id="btn-play-lifecycle">▶ 播放</button>
+      <button class="btn" id="btn-reset-lifecycle">↺ 重置</button>
+      <button class="btn" id="btn-step-lifecycle">→ 单步前进</button>
+    </div>
+    <div class="info-row" id="info-lifecycle"></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>能力协商的核心价值：</strong>Client 和 Server 各自声明功能后，<strong>双方都清楚对方的能力边界</strong>。
+    这意味着 AI 模型能动态发现可用的 Tools 和 Resources（而非硬编码），实现了真正的<b>即插即用</b>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: Transport Layer -->
+<!-- ================================================================ -->
+<div class="section" id="sec-transport">
+  <h2><span class="dot orange"></span> 5. 传输层：stdio vs Streamable HTTP</h2>
+  <p class="desc">
+    MCP 支持两种传输协议，分别适用于不同场景。<b>stdio</b> 适用于本地工具（启动子进程），
+    <b>Streamable HTTP</b> 适用于远程服务（HTTP POST + SSE 事件流）。两者在消息格式上统一使用 JSON-RPC。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>特性</th>
+        <th>stdio (标准输入输出)</th>
+        <th>Streamable HTTP (HTTP + SSE)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>适用场景</td>
+        <td>本地工具 / 命令行程序</td>
+        <td class="hl-cell">远程服务 / 云端 API</td>
+      </tr>
+      <tr>
+        <td>连接方式</td>
+        <td>Client 启动 Server 子进程</td>
+        <td class="hl-cell">HTTP POST 请求 + SSE 流</td>
+      </tr>
+      <tr>
+        <td>发现机制</td>
+        <td>命令行参数指定</td>
+        <td class="hl-cell">URL 端点 + DNS 解析</td>
+      </tr>
+      <tr>
+        <td>安全性</td>
+        <td class="hl-cell">进程隔离 (本地)</td>
+        <td>需要 OAuth / API Key 认证</td>
+      </tr>
+      <tr>
+        <td>延迟</td>
+        <td class="hl-cell">极低 (本地 IPC)</td>
+        <td>受网络条件影响</td>
+      </tr>
+      <tr>
+        <td>部署复杂度</td>
+        <td class="hl-cell">低 (单机)</td>
+        <td>需要部署 + 运维</td>
+      </tr>
+      <tr>
+        <td>多租户支持</td>
+        <td>不支持 (进程级)</td>
+        <td class="hl-cell">支持 (服务端多路复用)</td>
+      </tr>
+      <tr>
+        <td>编程语言要求</td>
+        <td>任何语言 (独立进程)</td>
+        <td class="hl-cell">任何语言 (HTTP 服务)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <canvas id="canvasTransport" width="1200" height="420"></canvas>
+
+  <div class="insight">
+    💡 <strong>选择建议：</strong>本地开发 / 个人工具用 stdio（简单、零配置）；
+    生产环境 / 团队共享用 Streamable HTTP（可扩展、可认证、可监控）。
+    Claude Desktop 目前主要使用 stdio 模式，而 <strong>Anthropic Managed Agents 平台使用 Streamable HTTP</strong> 连接远程 MCP Server。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: MCP vs Function Calling -->
+<!-- ================================================================ -->
+<div class="section" id="sec-comparison">
+  <h2><span class="dot pink"></span> 6. MCP vs 传统 Function Calling — 范式对比</h2>
+  <p class="desc">
+    MCP 不只是 "另一种 function calling 格式"。传统 function calling 是<b>调用侧</b>的协议（模型输出工具调用），
+    而 MCP 是<b>完整的服务端协议</b> — 涵盖工具发现、资源读取、提示模板、认证、传输等。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>传统 Function Calling</th>
+        <th>MCP (Model Context Protocol)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>协议层级</td>
+        <td class="warn-cell">API 调用侧 (模型 → 工具)</td>
+        <td class="hl-cell">完整应用层协议 (Host ↔ Client ↔ Server)</td>
+      </tr>
+      <tr>
+        <td>工具发现</td>
+        <td class="warn-cell">开发者硬编码 tool schema</td>
+        <td class="hl-cell">Server 动态声明 tools/list</td>
+      </tr>
+      <tr>
+        <td>数据类型</td>
+        <td class="warn-cell">仅工具调用</td>
+        <td class="hl-cell">Tools + Resources + Prompts</td>
+      </tr>
+      <tr>
+        <td>认证机制</td>
+        <td class="warn-cell">无标准 (各平台自定)</td>
+        <td class="hl-cell">OAuth 2.0 + API Key (标准化)</td>
+      </tr>
+      <tr>
+        <td>传输协议</td>
+        <td class="warn-cell">耦合于 LLM API</td>
+        <td class="hl-cell">独立传输 (stdio / HTTP)</td>
+      </tr>
+      <tr>
+        <td>反向调用</td>
+        <td class="warn-cell">不支持</td>
+        <td class="hl-cell">Sampling (Server→Client LLM 请求)</td>
+      </tr>
+      <tr>
+        <td>生态系统</td>
+        <td class="warn-cell">封闭 (每个平台自建)</td>
+        <td class="hl-cell">开放 (开源 + 社区 Server 市场)</td>
+      </tr>
+      <tr>
+        <td>提示模板</td>
+        <td class="warn-cell">不支持</td>
+        <td class="hl-cell">prompts/list + prompts/get</td>
+      </tr>
+      <tr>
+        <td>资源读取</td>
+        <td class="warn-cell">无标准</td>
+        <td class="hl-cell">resources/list + resources/read (URI 标识)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <canvas id="canvasCompare" width="1200" height="440"></canvas>
+
+  <div class="insight">
+    💡 <strong>本质差异：</strong>Function Calling 只是 LLM API 的<b>输出格式</b>（"我想调用这个函数，参数是…"）；
+    MCP 是<b>完整的连接协议</b>（"我发现你有这些能力，我要用其中这个，请执行并返回结果"）。
+    这就是为什么 MCP 能构建开放的 <strong>Server 市场</strong> — 任何 MCP Server 实现都能被任何 MCP Client 消费。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 7: Code Example -->
+<!-- ================================================================ -->
+<div class="section" id="sec-example">
+  <h2><span class="dot cyan"></span> 7. 实战示例：天气查询 MCP Server (Python)</h2>
+  <p class="desc">
+    下面展示一个完整的 MCP Server 实现 — 暴露 <b>get_weather</b> 工具和 <b>config://city</b> 资源。
+    Server 通过 stdio 传输与 Client 通信，使用 MCP Python SDK 快速构建。
+  </p>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab2="tab-server">Server 端代码</button>
+    <button class="tab-btn" data-tab2="tab-client">Client 端代码</button>
+    <button class="tab-btn" data-tab2="tab-config">Claude Desktop 配置</button>
+  </div>
+
+  <div id="tab-server" class="tab-content2">
+    <div class="code-block">
+<span class="co"># weather_server.py — MCP Weather Server</span>
+<span class="kw">from</span> mcp.server <span class="kw">import</span> Server, stdio_server
+<span class="kw">from</span> mcp.types <span class="kw">import</span> Tool, TextContent, Resource
+
+<span class="co"># 1. 创建 Server 实例</span>
+<span class="nm">server</span> = <span class="fn">Server</span>(<span class="st">"weather-server"</span>)
+
+<span class="co"># 2. 注册 Tool — get_weather</span>
+<span class="kw">@server.list_tools</span>()
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">handle_list_tools</span>() -> list[Tool]:
+    <span class="kw">return</span> [
+        <span class="fn">Tool</span>(
+            name=<span class="st">"get_weather"</span>,
+            description=<span class="st">"获取指定城市的当前天气"</span>,
+            inputSchema={
+                <span class="st">"type"</span>: <span class="st">"object"</span>,
+                <span class="st">"properties"</span>: {
+                    <span class="st">"city"</span>: {<span class="st">"type"</span>: <span class="st">"string"</span>, <span class="st">"description"</span>: <span class="st">"城市名称"</span>},
+                },
+                <span class="st">"required"</span>: [<span class="st">"city"</span>],
+            },
+        )
+    ]
+
+<span class="kw">@server.call_tool</span>()
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">handle_call_tool</span>(name: str, args: dict):
+    <span class="kw">if</span> name == <span class="st">"get_weather"</span>:
+        <span class="co"># 实际应用中可调用天气 API</span>
+        weather_data = {<span class="st">"北京"</span>: <span class="st">"22°C 晴"</span>, <span class="st">"上海"</span>: <span class="st">"25°C 多云"</span>}
+        city = args[<span class="st">"city"</span>]
+        <span class="kw">return</span> [<span class="fn">TextContent</span>(type=<span class="st">"text"</span>, text=<span class="st">f"{city}: {weather_data.get(city, '暂无数据')}"</span>)]
+
+<span class="co"># 3. 注册 Resource — city 列表</span>
+<span class="kw">@server.list_resources</span>()
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">handle_list_resources</span>():
+    <span class="kw">return</span> [<span class="fn">Resource</span>(uri=<span class="st">"config://supported-cities"</span>, name=<span class="st">"支持的城市列表"</span>)]
+
+<span class="kw">@server.read_resource</span>()
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">handle_read_resource</span>(uri: str):
+    <span class="kw">return</span> [<span class="fn">TextContent</span>(type=<span class="st">"text"</span>, text=<span class="st">"北京, 上海, 广州, 深圳, 杭州"</span>)]
+
+<span class="co"># 4. 启动 (stdio 传输)</span>
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">main</span>():
+    <span class="kw">async with</span> <span class="fn">stdio_server</span>() <span class="kw">as</span> (read_stream, write_stream):
+        <span class="kw">await</span> server.<span class="fn">run</span>(read_stream, write_stream, server.create_initialization_options())
+    </div>
+  </div>
+
+  <div id="tab-client" class="tab-content2" style="display:none;">
+    <div class="code-block">
+<span class="co"># mcp_client.py — MCP Client 使用示例</span>
+<span class="kw">from</span> mcp <span class="kw">import</span> ClientSession, StdioServerParameters
+<span class="kw">from</span> mcp.client.stdio <span class="kw">import</span> stdio_client
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">run</span>():
+    <span class="co"># 1. 启动 MCP Server 子进程 (stdio 模式)</span>
+    server_params = <span class="fn">StdioServerParameters</span>(
+        command=<span class="st">"python"</span>,
+        args=[<span class="st">"weather_server.py"</span>],
+    )
+
+    <span class="kw">async with</span> <span class="fn">stdio_client</span>(server_params) <span class="kw">as</span> (read, write):
+        <span class="kw">async with</span> <span class="fn">ClientSession</span>(read, write) <span class="kw">as</span> session:
+            <span class="co"># 2. 初始化连接 (能力协商)</span>
+            <span class="kw">await</span> session.<span class="fn">initialize</span>()
+
+            <span class="co"># 3. 列出可用工具</span>
+            tools = <span class="kw">await</span> session.<span class="fn">list_tools</span>()
+            <span class="kw">print</span>(<span class="st">f"可用工具: {[t.name for t in tools.tools]}"</span>)
+
+            <span class="co"># 4. 调用工具</span>
+            result = <span class="kw">await</span> session.<span class="fn">call_tool</span>(<span class="st">"get_weather"</span>, {<span class="st">"city"</span>: <span class="st">"北京"</span>})
+            <span class="kw">print</span>(<span class="st">f"查询结果: {result.content[0].text}"</span>)
+
+            <span class="co"># 5. 读取资源</span>
+            resources = <span class="kw">await</span> session.<span class="fn">list_resources</span>()
+            content = <span class="kw">await</span> session.<span class="fn">read_resource</span>(<span class="st">"config://supported-cities"</span>)
+            <span class="kw">print</span>(<span class="st">f"支持的城市: {content.contents[0].text}"</span>)
+    </div>
+  </div>
+
+  <div id="tab-config" class="tab-content2" style="display:none;">
+    <div class="code-block">
+<span class="co"># claude_desktop_config.json</span>
+<span class="co"># 路径: ~/Library/Application Support/Claude/claude_desktop_config.json</span>
+{
+  <span class="st">"mcpServers"</span>: {
+    <span class="st">"weather"</span>: {
+      <span class="st">"command"</span>: <span class="st">"python"</span>,
+      <span class="st">"args"</span>: [<span class="st">"/absolute/path/to/weather_server.py"</span>],
+      <span class="st">"env"</span>: {
+        <span class="st">"API_KEY"</span>: <span class="st">"your-weather-api-key"</span>
+      }
+    },
+    <span class="st">"github"</span>: {
+      <span class="st">"command"</span>: <span class="st">"npx"</span>,
+      <span class="st">"args"</span>: [<span class="st">"-y"</span>, <span class="st">"@modelcontextprotocol/server-github"</span>],
+      <span class="st">"env"</span>: {
+        <span class="st">"GITHUB_PERSONAL_ACCESS_TOKEN"</span>: <span class="st">"your-github-token"</span>
+      }
+    }
+  }
+}
+<span class="co"># 重启 Claude Desktop 后，AI 模型即可自动发现并调用 weather 和 github Server 的工具</span>
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>三步接入：</strong>(1) 实现 MCP Server → (2) 在配置文件中注册 → (3) AI 模型自动发现所有 Tools/Resources。
+    MCP SDK (Python / TypeScript / Kotlin / Java / C# / Go) 封装了 JSON-RPC 细节，开发者只需关注业务逻辑。
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  🔌 MCP · Model Context Protocol 交互可视化 · Created for Learning · 基于 modelcontextprotocol.io 规范
+</footer>
+
+<script>
+// ==============================
+// KaTeX Render
+// ==============================
+(function() {
+  katex.render(String.raw`
+  \begin{aligned}
+  &\textbf{Request (Client} \rightarrow \textbf{Server):} \\
+  &\quad \{\text{"jsonrpc": "2.0"}, \text{"id": 1}, \text{"method": "tools/call"}, \text{"params": \{name: "get\_weather", arguments: \{city: "Beijing"\}\}\} \\[6pt]
+  &\textbf{Response (Server} \rightarrow \textbf{Client):} \\
+  &\quad \{\text{"jsonrpc": "2.0"}, \text{"id": 1}, \text{"result": \{content: [\{type: "text", text: "北京 22°C 晴"\}]\}\}
+  \end{aligned}
+  `, document.getElementById('formula-jsonrpc'), { displayMode: true });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- Mermaid Init -->
+<!-- ================================================================ -->
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      fontSize: '18px',
+      primaryColor: '#06b6d4',
+      primaryTextColor: '#e1e4eb',
+      primaryBorderColor: '#06b6d4',
+      lineColor: '#ffffff',
+      secondaryColor: '#1e293b',
+      tertiaryColor: '#0a1628',
+    }
+  });
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 1 Canvas: Problem → Solution -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasProblem');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // ── LEFT: Without MCP (M×N explosion) ──
+    const lx = 60, ly = 60;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('❌ 无 MCP: M×N 集成爆炸', lx + 340, ly);
+
+    // AI models (left column)
+    const models = ['Claude', 'GPT', 'Gemini', 'Qwen'];
+    const tools_left = ['GitHub', 'Slack', 'Notion', 'Postgres', 'S3', 'Jira'];
+
+    const mdlX = lx + 20, mdlY = ly + 50, mdlW = 100, mdlH = 34;
+    const tlx = lx + 200, tly = ly + 50, tlW = 110, tlH = 26;
+
+    models.forEach((m, i) => {
+      const y = mdlY + i * (mdlH + 14);
+      ctx.fillStyle = '#0e7490';
+      ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 1.5;
+      roundRect(ctx, mdlX, y, mdlW, mdlH, 6);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(m, mdlX + mdlW/2, y + mdlH/2 + 6);
+    });
+
+    tools_left.forEach((t, i) => {
+      const y = tly + i * (tlH + 8);
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#f87171'; ctx.lineWidth = 1;
+      roundRect(ctx, tlx, y, tlW, tlH, 4);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(t, tlx + tlW/2, y + tlH/2 + 5);
+    });
+
+    // Chaotic lines
+    ctx.strokeStyle = 'rgba(248,113,113,0.25)';
+    ctx.lineWidth = 0.8;
+    models.forEach((_, i) => {
+      tools_left.forEach((_, j) => {
+        ctx.beginPath();
+        ctx.moveTo(mdlX + mdlW, mdlY + i*(mdlH+14) + mdlH/2);
+        ctx.lineTo(tlx, tly + j*(tlH+8) + tlH/2);
+        ctx.stroke();
+      });
+    });
+
+    // Count label
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(models.length + ' × ' + tools_left.length + ' = ' + (models.length * tools_left.length) + ' 个适配器', lx + 180, tly + tools_left.length*(tlH+8) + 30);
+
+    // ── RIGHT: With MCP (M+N) ──
+    const rx = 700, ry = 60;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('✅ 有 MCP: M+N 统一接入', rx + 220, ry);
+
+    const r_mdls = ['Claude', 'GPT', 'Gemini', 'Qwen'];
+    const r_tools = ['GitHub', 'Slack', 'Notion', 'Postgres'];
+
+    // MCP layer
+    const mcpx = rx + 40, mcpy = ry + 50, mcpW = 360, mcpH = 40;
+    ctx.fillStyle = 'rgba(6,182,212,0.15)';
+    ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    roundRect(ctx, mcpx, mcpy, mcpW, mcpH, 8);
+    ctx.fill(); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#06b6d4';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔌 MCP 协议层 (统一 Client ↔ Server 接口)', mcpx + mcpW/2, mcpy + mcpH/2 + 6);
+
+    // Models above
+    r_mdls.forEach((m, i) => {
+      const x = mcpx + 20 + i * 88;
+      const y = mcpy - 50;
+      ctx.fillStyle = '#0e7490';
+      ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 1;
+      roundRect(ctx, x, y, 76, 30, 6);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(m, x + 38, y + 20);
+      // connection line down
+      ctx.strokeStyle = 'rgba(6,182,212,0.4)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(x + 38, y + 30);
+      ctx.lineTo(x + 38, mcpy);
+      ctx.stroke();
+    });
+
+    // Tools below
+    r_tools.forEach((t, i) => {
+      const x = mcpx + 20 + i * 88;
+      const y = mcpy + mcpH + 20;
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 1;
+      roundRect(ctx, x, y, 76, 30, 6);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(t, x + 38, y + 20);
+      // connection line up
+      ctx.strokeStyle = 'rgba(74,222,128,0.4)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(x + 38, y);
+      ctx.lineTo(x + 38, mcpy + mcpH);
+      ctx.stroke();
+    });
+
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+    ctx.fillText(r_mdls.length + ' + ' + r_tools.length + ' = ' + (r_mdls.length + r_tools.length) + ' 个适配', mcpx + mcpW/2, mcpy + mcpH + 78);
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 3 Canvas: Primitives Visualization -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasPrimitives');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const items = [
+      { icon: '🔧', label: 'Tools', desc: '模型可执行的操作', color: '#f59e0b', count: 'tools/list → tools/call' },
+      { icon: '📦', label: 'Resources', desc: '模型可读取的数据', color: '#4ade80', count: 'resources/list → resources/read' },
+      { icon: '💬', label: 'Prompts', desc: '预定义的交互模板', color: '#a78bfa', count: 'prompts/list → prompts/get' },
+      { icon: '🧠', label: 'Sampling', desc: 'Server→Client LLM 请求', color: '#f472b6', count: 'sampling/createMessage' },
+    ];
+
+    const startX = 40, startY = 50;
+    const cardW = 260, cardH = 280, gap = 30;
+
+    items.forEach((item, i) => {
+      const x = startX + i * (cardW + gap);
+      const y = startY;
+
+      // Card background
+      ctx.fillStyle = '#151922';
+      ctx.strokeStyle = item.color + '44';
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, x, y, cardW, cardH, 10);
+      ctx.fill(); ctx.stroke();
+
+      // Left accent
+      ctx.fillStyle = item.color;
+      ctx.fillRect(x, y, 4, cardH);
+
+      // Icon
+      ctx.font = '48px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(item.icon, x + cardW/2, y + 70);
+
+      // Label
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(item.label, x + cardW/2, y + 105);
+
+      // Description
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(item.desc, x + cardW/2, y + 132);
+
+      // JSON-RPC route
+      ctx.fillStyle = item.color;
+      ctx.font = '16px "JetBrains Mono", "Fira Code", monospace';
+      ctx.fillText(item.count, x + cardW/2, y + 168);
+
+      // Arrow indicators
+      const dir = item.label === 'Sampling' ? '← Server → Client' : '→ Client → Server';
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(dir, x + cardW/2, y + 196);
+
+      // Small diagram
+      const dy = y + 215;
+      if (item.label !== 'Sampling') {
+        // Client → Server direction
+        ctx.fillStyle = '#0e7490';
+        roundRect(ctx, x + 20, dy, 70, 28, 4); ctx.fill();
+        ctx.fillStyle = '#e1e4eb';
+        ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+        ctx.fillText('Client', x + 55, dy + 19);
+
+        ctx.fillStyle = item.color;
+        ctx.font = '18px sans-serif';
+        ctx.fillText('→', x + 105, dy + 20);
+
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = item.color; ctx.lineWidth = 1;
+        roundRect(ctx, x + 140, dy, 80, 28, 4); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#8e96a9';
+        ctx.fillText('Server', x + 180, dy + 19);
+      } else {
+        // Server → Client
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = item.color; ctx.lineWidth = 1;
+        roundRect(ctx, x + 20, dy, 80, 28, 4); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#8e96a9';
+        ctx.fillText('Server', x + 60, dy + 19);
+
+        ctx.fillStyle = item.color;
+        ctx.font = '18px sans-serif';
+        ctx.fillText('→', x + 115, dy + 20);
+
+        ctx.fillStyle = '#0e7490';
+        roundRect(ctx, x + 140, dy, 70, 28, 4); ctx.fill();
+        ctx.fillStyle = '#e1e4eb';
+        ctx.fillText('Client', x + 175, dy + 19);
+      }
+    });
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Tab Switching -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const tabs = document.querySelectorAll('#sec-lifecycle .tab-btn');
+  const contents = document.querySelectorAll('#sec-lifecycle .tab-content');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.getAttribute('data-tab');
+      contents.forEach(c => c.style.display = c.id === target ? 'block' : 'none');
+    });
+  });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Step-by-step lifecycle -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const steps = [
+    {
+      title: 'Initialize 请求',
+      code: `Client → Server:\n{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {\n  "protocolVersion": "2024-11-05",\n  "capabilities": {"roots": {"listChanged": true}},\n  "clientInfo": {"name": "my-client", "version": "1.0.0"}\n}}`,
+      insight: '<strong>Step 1: Initialize (能力协商)</strong> — Client 发送自身信息(capabilities声明)给 Server，建立连接的基础。'
+    },
+    {
+      title: 'Initialize 响应',
+      code: `Server → Client:\n{"jsonrpc": "2.0", "id": 1, "result": {\n  "protocolVersion": "2024-11-05",\n  "capabilities": {\n    "tools": {},\n    "resources": {"subscribe": true},\n    "prompts": {"listChanged": true}\n  },\n  "serverInfo": {"name": "weather-server", "version": "1.0.0"}\n}}`,
+      insight: '<strong>Step 2: Initialize Result</strong> — Server 返回自身 capabilities，声明可用的原语 (tools/resources/prompts)。AI 模型现在知道这个 Server 能做什么。'
+    },
+    {
+      title: 'Initialized 通知',
+      code: `Client → Server:\n{"jsonrpc": "2.0", "method": "notifications/initialized"}\n\n// 通知 Server 初始化完成，进入消息交换阶段`,
+      insight: '<strong>Step 3: Initialized Notification</strong> — Client 发送通知确认初始化完成（无 id，无需响应）。此后进入自由的消息交换阶段。'
+    },
+    {
+      title: '列出 Tools',
+      code: `Client → Server:\n{"jsonrpc": "2.0", "id": 2, "method": "tools/list"}\n\nServer → Client:\n{"jsonrpc": "2.0", "id": 2, "result": {"tools": [\n  {"name": "get_weather", "description": "查询天气",\n   "inputSchema": {"type": "object", "properties": {...}}}\n]}}`,
+      insight: '<strong>Step 4: tools/list</strong> — AI 模型通过 Client 查询 Server 提供的所有工具列表及参数 Schema。这是动态发现的关键步骤。'
+    },
+    {
+      title: '调用 Tool',
+      code: `Client → Server:\n{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {\n  "name": "get_weather",\n  "arguments": {"city": "Beijing"}\n}}\n\nServer → Client:\n{"jsonrpc": "2.0", "id": 3, "result": {\n  "content": [{"type": "text", "text": "北京 22°C 晴"}]\n}}`,
+      insight: '<strong>Step 5: tools/call</strong> — AI 模型决定调用哪个工具、传什么参数。Server 执行后返回结果。整个过程对模型透明。'
+    },
+    {
+      title: '读取 Resource',
+      code: `Client → Server:\n{"jsonrpc": "2.0", "id": 4, "method": "resources/read", "params": {\n  "uri": "config://supported-cities"\n}}\n\nServer → Client:\n{"jsonrpc": "2.0", "id": 4, "result": {\n  "contents": [{"uri": "config://supported-cities",\n    "text": "北京, 上海, 广州, 深圳, 杭州"}]\n}}`,
+      insight: '<strong>Step 6: resources/read</strong> — AI 模型可以直接通过 URI 读取 Server 暴露的结构化数据，无需额外 HTTP 调用或文件操作。'
+    },
+  ];
+
+  let currentStep = 0;
+
+  function renderStep(i) {
+    const s = steps[i];
+    document.getElementById('code-step').textContent = s.code;
+    document.getElementById('insight-step').innerHTML = s.insight;
+    document.getElementById('step-label').textContent = s.title;
+
+    document.querySelectorAll('#step-indicator .step-num').forEach((el, idx) => {
+      el.classList.toggle('active', idx === i);
+    });
+  }
+
+  document.querySelectorAll('#step-indicator .step-num').forEach(el => {
+    el.addEventListener('click', function() {
+      currentStep = parseInt(this.getAttribute('data-step'));
+      renderStep(currentStep);
+    });
+  });
+
+  renderStep(0);
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4 Canvas: Lifecycle Animation -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasLifecycle');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const phases = [
+    { name: 'Initialize', color: '#06b6d4', desc: 'Client → Server: capabilities' },
+    { name: 'Initialized', color: '#22d3ee', desc: 'Client → Server: notification' },
+    { name: 'tools/list', color: '#f59e0b', desc: '动态发现工具列表' },
+    { name: 'tools/call', color: '#4ade80', desc: '执行工具调用' },
+    { name: 'resources/read', color: '#a78bfa', desc: '读取资源数据' },
+    { name: 'prompts/get', color: '#f472b6', desc: '获取提示模板' },
+  ];
+
+  let currentPhase = 0;
+  let animId = null;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const barH = 54, gap = 8, totalH = phases.length * (barH + gap);
+    const startY = (H - totalH) / 2;
+    const barX = 80, barW = 700;
+
+    phases.forEach((p, i) => {
+      const y = startY + i * (barH + gap);
+      const isActive = i < currentPhase;
+      const isCurrent = i === currentPhase;
+
+      // Bar
+      let alpha = isActive ? 0.9 : (isCurrent ? 0.5 : 0.12);
+      ctx.fillStyle = p.color + Math.round(alpha * 255).toString(16).padStart(2,'0');
+      roundRect(ctx, barX, y, barW, barH, 8);
+      ctx.fill();
+
+      if (isCurrent) {
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 3;
+        roundRect(ctx, barX, y, barW, barH, 8);
+        ctx.stroke();
+        // "now" indicator
+        ctx.fillStyle = p.color;
+        ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('▶ 当前', barX - 12, y + barH/2 + 7);
+      }
+
+      // Phase name
+      ctx.fillStyle = isActive ? '#0b0e14' : (isCurrent ? '#e1e4eb' : '#8e96a9');
+      ctx.font = 'bold 20px "JetBrains Mono", "Fira Code", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(p.name, barX + 20, y + barH/2 + 7);
+
+      // Description
+      ctx.fillStyle = isActive ? '#0b0e14' : (isCurrent ? p.color : '#5a6070');
+      ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(p.desc, barX + 220, y + barH/2 + 7);
+
+      // Checkmark for done
+      if (isActive) {
+        ctx.fillStyle = '#4ade80';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('✓', barX + barW - 20, y + barH/2 + 9);
+      }
+    });
+
+    // Status text
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    const statusY = startY + totalH + 40;
+    if (currentPhase === 0) {
+      ctx.fillText('🔌 连接建立中...', W/2, statusY);
+    } else if (currentPhase < phases.length) {
+      ctx.fillText('⚡ 消息交换 — 已完成 ' + currentPhase + '/' + phases.length + ' 阶段', W/2, statusY);
+    } else {
+      ctx.fillText('✅ 所有阶段完成 — MCP 通道正常运行中', W/2, statusY);
+    }
+
+    updateLifecycleInfo();
+  }
+
+  function updateLifecycleInfo() {
+    document.getElementById('info-lifecycle').innerHTML = `
+      <div class="info-card">当前阶段 <div class="val" style="color:${phases[Math.min(currentPhase, phases.length-1)].color}">${currentPhase < phases.length ? phases[currentPhase].name : '完成'}</div></div>
+      <div class="info-card">完成进度 <div class="val">${currentPhase} / ${phases.length}</div></div>
+      <div class="info-card">通信方式 <div class="val">JSON-RPC 2.0</div></div>
+      <div class="info-card">状态 <div class="val" style="color:${currentPhase >= phases.length ? '#4ade80' : '#f59e0b'}">${currentPhase >= phases.length ? '已就绪' : '进行中'}</div></div>
+    `;
+  }
+
+  function reset() { currentPhase = 0; draw(); }
+  function step() {
+    if (currentPhase < phases.length) { currentPhase++; draw(); }
+  }
+
+  document.getElementById('btn-play-lifecycle').addEventListener('click', function() {
+    if (animId) return;
+    reset();
+    function animate() {
+      if (currentPhase < phases.length) {
+        step();
+        animId = setTimeout(animate, 700);
+      } else { animId = null; }
+    }
+    animate();
+  });
+  document.getElementById('btn-reset-lifecycle').addEventListener('click', reset);
+  document.getElementById('btn-step-lifecycle').addEventListener('click', step);
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 5 Canvas: Transport Comparison -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasTransport');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // ── LEFT: stdio ──
+    const lx = 50, ly = 50;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('📟 stdio (本地进程)', lx + 280, ly);
+
+    // Parent process (Host/Client)
+    const hx = lx + 70, hy = ly + 50, hw = 420, hh = 100;
+    ctx.fillStyle = '#0a1628';
+    ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 2;
+    roundRect(ctx, hx, hy, hw, hh, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🖥️ MCP Host / Client 进程', hx + hw/2, hy + 35);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('启动子进程 · stdin/stdout 管道通信', hx + hw/2, hy + 72);
+
+    // stdin/stdout arrows
+    const arrowY = hy + hh + 10;
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 2;
+    drawArrow(ctx, hx + 100, arrowY + 20, hx + 100, arrowY + 60);
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 17px "JetBrains Mono", monospace';
+    ctx.fillText('stdin (JSON-RPC Request)', hx + 120, arrowY + 45);
+
+    ctx.strokeStyle = '#f59e0b';
+    drawArrow(ctx, hx + 320, arrowY + 60, hx + 320, arrowY + 20);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('stdout (JSON-RPC Response)', hx + 130, arrowY + 82);
+
+    // Child process (Server)
+    const chx = hx + 50, chy = arrowY + 80, chw = 320, chh = 70;
+    ctx.fillStyle = '#1e293b';
+    ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2;
+    roundRect(ctx, chx, chy, chw, chh, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 19px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('📦 MCP Server 子进程', chx + chw/2, chy + 30);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('独立进程 · 语言无关', chx + chw/2, chy + 52);
+
+    // ── RIGHT: Streamable HTTP ──
+    const rx = 620, ry = 50;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🌐 Streamable HTTP (远程服务)', rx + 260, ry);
+
+    // Client
+    const chx2 = rx + 60, chy2 = ry + 50, chw2 = 400, chh2 = 80;
+    ctx.fillStyle = '#0a1628';
+    ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 2;
+    roundRect(ctx, chx2, chy2, chw2, chh2, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 19px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🖥️ MCP Client', chx2 + chw2/2, chy2 + 32);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('HTTP POST 发送请求 · SSE 接收事件流', chx2 + chw2/2, chy2 + 58);
+
+    // Network cloud
+    const ncy = chy2 + chh2 + 15;
+    ctx.fillStyle = 'rgba(6,182,212,0.1)';
+    ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    roundRect(ctx, chx2 + 50, ncy, 300, 40, 20);
+    ctx.fill(); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#06b6d4';
+    ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('☁️ Internet (HTTPS + OAuth)', chx2 + chw2/2, ncy + 27);
+
+    // Server (remote)
+    const shy = ncy + 55, shw2 = 400, shh2 = 80;
+    ctx.fillStyle = '#1e293b';
+    ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2;
+    roundRect(ctx, chx2, shy, shw2, shh2, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 19px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🌍 MCP Server (远程)', chx2 + shw2/2, shy + 32);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('HTTP Server · SSE 事件流 · OAuth 认证', chx2 + shw2/2, shy + 58);
+  }
+
+  function drawArrow(ctx, x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    // arrowhead
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const size = 8;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - size * Math.cos(angle - 0.5), y2 - size * Math.sin(angle - 0.5));
+    ctx.lineTo(x2 - size * Math.cos(angle + 0.5), y2 - size * Math.sin(angle + 0.5));
+    ctx.closePath();
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.fill();
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 6 Canvas: MCP vs Function Calling -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasCompare');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // ── LEFT: Traditional Function Calling ──
+    const lx = 50, ly = 50;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('传统 Function Calling', lx + 240, ly - 10);
+
+    // Stack: App → LLM API → Tools (tight coupling)
+    const layers = [
+      { label: 'Application Code', color: '#1e293b', desc: '硬编码 tool schema + 路由逻辑' },
+      { label: 'LLM API', color: '#0e7490', desc: '返回 tool_use block + 参数' },
+      { label: 'Tool Implementation', color: '#155e75', desc: '直接调用 · 耦合于 API 格式' },
+    ];
+
+    layers.forEach((l, i) => {
+      const y = ly + i * 90;
+      ctx.fillStyle = l.color;
+      ctx.strokeStyle = '#f87171'; ctx.lineWidth = 1;
+      roundRect(ctx, lx, y, 480, 75, 8);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(l.label, lx + 16, y + 28);
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(l.desc, lx + 16, y + 54);
+    });
+
+    // Tight coupling markers
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(lx + 500, ly + 37);
+    ctx.lineTo(lx + 500, ly + 90);
+    ctx.moveTo(lx + 500, ly + 127);
+    ctx.lineTo(lx + 500, ly + 180);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('紧耦合', lx + 540, ly + 135);
+
+    // ── RIGHT: MCP ──
+    const rx = 670, ry = 50;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('MCP 协议', rx + 240, ry - 10);
+
+    const rLayers = [
+      { label: 'MCP Host (LLM App)', color: '#0a1628', desc: '通过 MCP Client 与 Server 通信' },
+      { label: 'MCP Client (协议层)', color: '#0e7490', desc: 'JSON-RPC · 能力协商 · 传输抽象' },
+      { label: 'MCP Server (工具层)', color: '#1e293b', desc: '独立部署 · 可复用 · 可发现' },
+    ];
+
+    rLayers.forEach((l, i) => {
+      const y = ry + i * 90;
+      ctx.fillStyle = l.color;
+      ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 1;
+      roundRect(ctx, rx, y, 480, 75, 8);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(l.label, rx + 16, y + 28);
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(l.desc, rx + 16, y + 54);
+    });
+
+    // Decoupled markers
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([2, 6]);
+    ctx.beginPath();
+    ctx.moveTo(rx + 500, ry + 37);
+    ctx.lineTo(rx + 500, ry + 90);
+    ctx.moveTo(rx + 500, ry + 127);
+    ctx.lineTo(rx + 500, ry + 180);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('松耦合', rx + 540, ry + 135);
+
+    // Bottom labels
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('硬编码 M×N 集成 · 无标准发现 · 耦合 API', lx + 240, ly + 285);
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText('动态发现 M+N · 标准化协议 · 解耦传输', rx + 240, ry + 285);
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 7: Tab Switching for Code Examples -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const tabs = document.querySelectorAll('#sec-example .tab-btn');
+  const contents = document.querySelectorAll('#sec-example .tab-content2');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.getAttribute('data-tab2');
+      contents.forEach(c => c.style.display = c.id === target ? 'block' : 'none');
+    });
+  });
+})();
+</script>
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlashAttention — IO-Aware 精确注意力机制</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #f59e0b;
+    --accent2: #fbbf24;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a1d30 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.yellow { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.green  { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.cyan   { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(245,158,11,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(245,158,11,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(245,158,11,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(245,158,11,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #2a2830; }
+  .btn.active {
+    background: var(--accent);
+    color: #0f1219;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(245,158,11,0.3);
+  }
+  .btn.play-btn { background: var(--green); color: #0b0e14; border-color: var(--green); font-weight: 700; }
+  .btn.play-btn:hover { box-shadow: 0 0 14px rgba(74,222,128,0.3); }
+
+  /* ── Tabs ── */
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text2);
+    overflow-x: auto;
+    white-space: pre;
+    margin-bottom: 16px;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .co { color: #8b949e; }
+  .code-block .nm { color: #79c0ff; }
+  .code-block .op { color: #ff7b72; }
+  .code-block .hl { background: rgba(245,158,11,0.15); border-left: 2px solid var(--accent); display: inline-block; padding-left: 6px; margin-left: -6px; }
+
+  /* ── Mermaid ── */
+  /* ── Legend ── */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 16px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 18px; height: 18px; border-radius: 3px; }
+
+  /* ── Comparison table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--green); font-weight: 600; }
+  .cmp-table .warn-cell { color: var(--red); font-weight: 600; }
+
+  /* ── Step indicator ── */
+  .step-indicator {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 17px;
+    flex-wrap: wrap;
+    color: var(--text2);
+  }
+  .step-indicator .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .step-indicator .step-num.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0b0e14;
+    box-shadow: 0 0 12px rgba(245,158,11,0.4);
+  }
+  .step-indicator .step-arrow { font-size: 20px; color: var(--text2); }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ FlashAttention · IO-Aware 精确注意力</h1>
+  <p>通过分块计算 + 在线 Softmax + Kernel Fusion，将标准注意力的 HBM 读写从 O(N²d) 降至 O(N²d²/M)，实现 2-4× 加速与显存节省</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Problem — Standard Attention -->
+<!-- ================================================================ -->
+<div class="section" id="sec-standard">
+  <h2><span class="dot yellow"></span> 1. 问题：标准注意力的显存瓶颈</h2>
+  <p class="desc">
+    标准 attention 计算 <b>S = QKᵀ ∈ R<sup>N×N</sup></b>，必须在 HBM 中存储完整的 N×N 注意力矩阵，
+    然后进行 softmax 并乘 V。当序列长度 N 较大（≥2K）时，<b>O(N²) 的显存开销成为核心瓶颈</b>。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 标准 Attention</h3>
+    <div id="formula-standard"></div>
+  </div>
+
+  <canvas id="canvasMemory" width="1200" height="550"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>序列长度 N <span class="val" id="val-N">128</span></label>
+      <input type="range" id="slider-N" min="64" max="2048" value="128" step="64">
+    </div>
+    <div class="slider-group">
+      <label>头维度 d <span class="val" id="val-d-std">64</span></label>
+      <input type="range" id="slider-d-std" min="16" max="128" value="64" step="16">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-std"></div>
+
+  <div class="insight">
+    💡 <strong>核心瓶颈：</strong>中间矩阵 S = QKᵀ 大小为 N×N，以 fp16 计，N=4096 时 <strong>仅这一项就占用 32 MB</strong>。
+    实际训练中 batch_size × num_heads 会让这个数字放大多倍。FlashAttention 的目标：<strong>不把这个矩阵写入 HBM</strong>。
+  </div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, sans-serif' }}}%%
+flowchart TB
+    subgraph gpu["🖥 GPU 内存层次结构"]
+        direction TB
+        hbm["HBM 高带宽显存
+容量: 40-80 GB | 带宽: ~1.5-2.0 TB/s
+存储 Q,K,V,O,dQ,dK,dV 完整矩阵
+延迟高 (~数百 cycles)"]
+        l2["L2 Cache
+容量: ~40 MB | 带宽: ~4 TB/s
+缓存频繁访问的数据块"]
+        sram["⭐ SRAM 片上存储
+容量: ~192 KB/SM | 带宽: ~19 TB/s
+FlashAttention 核心: S_ij 分块在此计算
+延迟极低 (~20 cycles)"]
+        reg["Registers 寄存器
+容量: ~256 KB/SM | 带宽: ~40 TB/s
+标量临时变量 (m_i, l_i)"]
+        hbm -->|"加载分块 Q_i,K_j,V_j"| l2
+        l2 -->|"分块传输"| sram
+        sram -->|"标量读写"| reg
+        sram -->|"写回最终 O_i"| l2
+        l2 -->|"持久化"| hbm
+    end
+    style gpu fill:#0b0e14,stroke:#2a3040,color:#e1e4eb
+    style hbm fill:#f8717122,stroke:#f87171,color:#f87171
+    style l2 fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+    style sram fill:#4ade8022,stroke:#4ade80,color:#4ade80
+    style reg fill:#38bdf822,stroke:#38bdf8,color:#38bdf8
+    </pre>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: Tiling — 分块策略
+<!-- ================================================================ -->
+<div class="section" id="sec-tiling">
+  <h2><span class="dot blue"></span> 2. 分块策略 (Tiling) — 让计算留在 SRAM</h2>
+  <p class="desc">
+    核心思想：<b>将 Q 分成 T<sub>r</sub> 个块，K/V 分成 T<sub>c</sub> 个块</b>，
+    每次只将一个 Q 块与所有 K/V 块依次处理。计算在高速 SRAM (on-chip) 中完成，
+    只把最终结果写回 HBM，<strong>中间注意力矩阵从不完整写入 HBM</strong>。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 分块表示</h3>
+    <div id="formula-tiling"></div>
+  </div>
+
+  <canvas id="canvasTiling" width="1200" height="610"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>序列长度 N <span class="val" id="val-N-tile">128</span></label>
+      <input type="range" id="slider-N-tile" min="64" max="1024" value="128" step="64">
+    </div>
+    <div class="slider-group">
+      <label>Q 块大小 B<sub>r</sub>  <span class="val" id="val-Br">32</span></label>
+      <input type="range" id="slider-Br" min="16" max="128" value="32" step="16">
+    </div>
+    <div class="slider-group">
+      <label>K/V 块大小 B<sub>c</sub>  <span class="val" id="val-Bc">32</span></label>
+      <input type="range" id="slider-Bc" min="16" max="128" value="32" step="16">
+    </div>
+    <div class="slider-group">
+      <label>当前 Q 块索引 <span class="val" id="val-qblock">1</span></label>
+      <input type="range" id="slider-qblock" min="0" max="3" value="1" step="1">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-tile"></div>
+
+  <div class="insight">
+    💡 <strong>SRAM vs HBM：</strong>A100 GPU 中，HBM 带宽 ~1.5-2.0 TB/s 但延迟高；SRAM 每 SM 仅 ~192KB 但速度极快（~19 TB/s）。
+    FlashAttention 将注意力矩阵 S 的读写从 O(N²) 降为分块访问，<strong>每个 S 分块仅在 SRAM 中短暂存在</strong>。
+  </div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, sans-serif' }}}%%
+sequenceDiagram
+    participant HBM as HBM 显存
+    participant SRAM as SRAM 片上
+    Note over HBM,SRAM: 外层循环: i = 0 → T_r-1 (遍历 Q 块)
+    HBM->>SRAM: ① 加载 Q_i (B_r × d)
+    Note over SRAM: 初始化 O_i=0, m_i=-∞, l_i=0
+    loop 内层循环: j = 0 → T_c-1 (遍历 K,V 块)
+        HBM->>SRAM: ② 加载 K_j, V_j (B_c × d)
+        Note over SRAM: ③ S_ij = Q_i × K_j^T (B_r × B_c)
+        Note over SRAM: ④ Online Softmax: 更新 m_i, l_i
+        Note over SRAM: ⑤ O_i += P_ij × V_j (增量累加)
+    end
+    Note over SRAM: ⑥ 最终归一化: O_i = O_i / l_i
+    SRAM->>HBM: ⑦ 写回 O_i (B_r × d)
+    SRAM->>HBM: ⑧ 保存 m_i, l_i (给反向传播用)
+    </pre>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: Online Softmax -->
+<!-- ================================================================ -->
+<div class="section" id="sec-online-softmax">
+  <h2><span class="dot green"></span> 3. 在线 Softmax — 逐块数值稳定计算</h2>
+  <p class="desc">
+    标准 softmax 需要三次遍历（max → exp → sum → normalize）。
+    在线 softmax 通过 <b>维护 running max 和 running sum</b>，
+    在每块到达时动态 "修正" 之前的累计值，实现<b>单次遍历完成 softmax</b>。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 在线 Softmax 递推公式</h3>
+    <div id="formula-online-softmax"></div>
+  </div>
+
+  <canvas id="canvasOnlineSoftmax" width="1200" height="630"></canvas>
+
+  <div class="btn-row">
+    <button class="btn play-btn" id="btn-play-softmax">▶ 播放演示</button>
+    <button class="btn" id="btn-reset-softmax">↺ 重置</button>
+    <button class="btn" id="btn-step-softmax">→ 单步前进</button>
+  </div>
+
+  <div class="info-row" id="info-online"></div>
+
+  <div class="insight">
+    💡 <strong>关键技巧：</strong>当新的最大分数 m<sub>new</sub> 比旧的 m<sub>old</sub> 大时，之前的 exp 值需要 "缩小"：
+    <strong>P<sub>old</sub> · exp(m<sub>old</sub> − m<sub>new</sub>)</strong>。
+    这正是数值稳定的 softmax 实现中减 max 的增量版本。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Forward Pass Algorithm -->
+<!-- ================================================================ -->
+<div class="section" id="sec-algorithm">
+  <h2><span class="dot purple"></span> 4. 前向传播：完整算法流程</h2>
+  <p class="desc">
+    FlashAttention 前向传播将上述分块与在线 softmax 结合，逐块计算 O = softmax(QKᵀ/√d)V。
+    每个 Q 块遍历所有 K/V 块，在 SRAM 中完成整个 softmax + 加权求和。
+  </p>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="tab-pseudocode">伪代码</button>
+    <button class="tab-btn" data-tab="tab-flow">流程动画</button>
+  </div>
+
+  <div id="tab-pseudocode" class="tab-content">
+    <div class="code-block">
+<span class="co">// FlashAttention Forward Pass</span>
+<span class="kw">for</span> i = <span class="nm">1</span> <span class="kw">to</span> T<sub>r</sub>:                          <span class="co">// Q 块循环 (外层)</span>
+    <span class="kw">load</span> Q<sub>i</sub> from HBM → SRAM              <span class="co">// Q[i*B_r : (i+1)*B_r, :]</span>
+    O<sub>i</sub> = (<span class="nm">0</span>)<sub>B_r×d</sub>
+    ℓ<sub>i</sub> = m<sub>i</sub> = (<span class="nm">−∞</span>)<sub>B_r</sub>
+
+    <span class="kw">for</span> j = <span class="nm">1</span> <span class="kw">to</span> T<sub>c</sub>:                      <span class="co">// K/V 块循环 (内层)</span>
+        <span class="kw">load</span> K<sub>j</sub>, V<sub>j</sub> from HBM → SRAM
+        S<sub>ij</sub> = Q<sub>i</sub> K<sub>j</sub><sup>T</sup>                       <span class="co">// [B_r × B_c] on-chip</span>
+        m̃<sub>ij</sub> = rowmax(S<sub>ij</sub>)
+        P̃<sub>ij</sub> = exp(S<sub>ij</sub> − m̃<sub>ij</sub>)          <span class="co">// safe exp</span>
+        ℓ̃<sub>ij</sub> = rowsum(P̃<sub>ij</sub>)
+
+        m<sub>i</sub><sup>new</sup> = max(m<sub>i</sub>, m̃<sub>ij</sub>)            <span class="co">// 更新 running max</span>
+        ℓ<sub>i</sub><sup>new</sup> = e<sup>(m<sub>i</sub>−m<sub>i</sub><sup>new</sup>)</sup> ℓ<sub>i</sub> + e<sup>(m̃<sub>ij</sub>−m<sub>i</sub><sup>new</sup>)</sup> ℓ̃<sub>ij</sub>  <span class="co">// 修正旧的 sum</span>
+
+        O<sub>i</sub> = diag(e<sup>(m<sub>i</sub>−m<sub>i</sub><sup>new</sup>)</sup>) O<sub>i</sub> + e<sup>(m̃<sub>ij</sub>−m<sub>i</sub><sup>new</sup>)</sup> P̃<sub>ij</sub> V<sub>j</sub>
+
+        m<sub>i</sub> = m<sub>i</sub><sup>new</sup>
+        ℓ<sub>i</sub> = ℓ<sub>i</sub><sup>new</sup>
+
+    O<sub>i</sub> = diag(ℓ<sub>i</sub><sup>−1</sup>) O<sub>i</sub>            <span class="co">// 最终归一化</span>
+    <span class="kw">write</span> O<sub>i</sub> → HBM
+    <span class="kw">write</span> m<sub>i</sub>, ℓ<sub>i</sub> → HBM              <span class="co">// 保存给 backward</span>
+<span class="kw">end</span>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, sans-serif' }}}%%
+flowchart TB
+    subgraph algo["FlashAttention 前向算法流程"]
+        direction TB
+        start["开始: Q,K,V ∈ R^(N×d)"]
+        split["将 Q 分为 T_r 块
+将 K,V 分为 T_c 块"]
+        outer["外层循环: for i in 0..T_r-1"]
+        init["初始化 O_i=0, m_i=-∞, l_i=0"]
+        inner["内层循环: for j in 0..T_c-1"]
+        load["从 HBM 加载 K_j, V_j"]
+        compute["在 SRAM 中计算:
+S_ij = Q_i × K_j^T"]
+        online["在线 Softmax:
+更新 m_i, l_i, O_i"]
+        more_kv{"j < T_c-1 ?"}
+        finalize["最终归一化: O_i = O_i / l_i"]
+        write["写回 O_i 到 HBM"]
+        more_q{"i < T_r-1 ?"}
+        done["完成: 输出 O ∈ R^(N×d)"]
+        
+        start --> split --> outer --> init --> inner --> load --> compute --> online --> more_kv
+        more_kv -->|是, j++| inner
+        more_kv -->|否| finalize --> write --> more_q
+        more_q -->|是, i++| outer
+        more_q -->|否| done
+    end
+    style algo fill:#0b0e14,stroke:#2a3040,color:#e1e4eb
+    style start fill:#38bdf822,stroke:#38bdf8,color:#e1e4eb
+    style done fill:#4ade8022,stroke:#4ade80,color:#4ade80
+    style compute fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+    style online fill:#a78bfa22,stroke:#a78bfa,color:#a78bfa
+    style load fill:#22d3ee22,stroke:#22d3ee,color:#22d3ee
+      </pre>
+    </div>
+  </div>
+
+  <div id="tab-flow" class="tab-content" style="display:none;">
+    <canvas id="canvasFlow" width="1200" height="670"></canvas>
+    <div class="btn-row">
+      <button class="btn play-btn" id="btn-play-flow">▶ 播放</button>
+      <button class="btn" id="btn-reset-flow">↺ 重置</button>
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>两个嵌套循环 = 两层 tiling：</strong>外层遍历 Q 块、内层遍历 K/V 块。
+    每个 Q 块完成后，它的输出 O<sub>i</sub> 就确定了，可以立即写回 HBM。
+    中间矩阵 S<sub>ij</sub> 只在 SRAM 中存在，<b>立刻被消费并丢弃</b>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: Backward Pass — Recomputation -->
+<!-- ================================================================ -->
+<div class="section" id="sec-backward">
+  <h2><span class="dot cyan"></span> 5. 反向传播：重计算代替存储</h2>
+  <p class="desc">
+    因为前向没有保存完整的 S = QKᵀ 矩阵，反向传播时必须 <b>重新计算 S<sub>ij</sub></b>。
+    但利用前向保存的 m<sub>i</sub> 和 ℓ<sub>i</sub>（每 Q 块仅需 B<sub>r</sub> 个 float），
+    可以直接重建 softmax 归一化的 P = diag(ℓ<sup>−1</sup>) exp(S − m)，无需再遍历 max/sum。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 重计算公式 (给定 dO, Q, K, V, m, ℓ)</h3>
+    <div id="formula-backward"></div>
+  </div>
+
+  <canvas id="canvasBackward" width="1200" height="550"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>序列长度 N <span class="val" id="val-N-bwd">128</span></label>
+      <input type="range" id="slider-N-bwd" min="64" max="2048" value="128" step="64">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-bwd"></div>
+
+  <div class="insight">
+    💡 <strong>内存节省的本质：</strong>标准注意力需存储 N×N 矩阵用于反向（fp16: N²×2 bytes）。
+    FlashAttention 仅需存储每 Q-block 的 m 和 ℓ（总共 N×2 floats）。
+    <strong>N=4096 时：128MB vs 32KB</strong> — 相差 4000 倍。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: IO Complexity & Summary -->
+<!-- ================================================================ -->
+<div class="section" id="sec-comparison">
+  <h2><span class="dot yellow"></span> 6. IO 复杂度对比与总结</h2>
+  <p class="desc">
+    FlashAttention 通过分块计算将 HBM 读写量从 O(Nd+N²) 降至 O(N²d²M<sup>−1</sup>)。
+    当 SRAM 大小 M = 100KB、d=64 时，<strong>标准 Attention 的 HBM 读写 ≈ FlashAttention 的 4-8 倍</strong>。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>指标</th>
+        <th>标准 Attention</th>
+        <th>FlashAttention</th>
+        <th>FlashAttention-2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>HBM 读写</td>
+        <td class="warn-cell">O(Nd + N²)</td>
+        <td class="hl-cell">O(N²d² / M)</td>
+        <td class="hl-cell">O(N²d² / M)</td>
+      </tr>
+      <tr>
+        <td>SRAM 需求</td>
+        <td class="warn-cell">O(N² + Nd)</td>
+        <td class="hl-cell">O(M) ≤ SRAM 容量</td>
+        <td class="hl-cell">O(M) ≤ SRAM 容量</td>
+      </tr>
+      <tr>
+        <td>中间矩阵 S 存储</td>
+        <td class="warn-cell">N×N 完整存储 HBM</td>
+        <td class="hl-cell">分块暂存 SRAM</td>
+        <td class="hl-cell">分块暂存 SRAM</td>
+      </tr>
+      <tr>
+        <td>反向 S 获取方式</td>
+        <td class="warn-cell">读取存储的 S</td>
+        <td class="hl-cell">重计算 S (用 m,ℓ)</td>
+        <td class="hl-cell">重计算 S (用 m,ℓ)</td>
+      </tr>
+      <tr>
+        <td>外层循环</td>
+        <td>—</td>
+        <td>Q 块 (T<sub>r</sub>)</td>
+        <td class="hl-cell">K/V 块 (T<sub>c</sub>)</td>
+      </tr>
+      <tr>
+        <td>数值精度</td>
+        <td>fp16/fp32</td>
+        <td>fp16/fp32 (精确)</td>
+        <td>fp16/fp32 (精确)</td>
+      </tr>
+      <tr>
+        <td>相对加速</td>
+        <td class="warn-cell">1×</td>
+        <td class="hl-cell">2-4×</td>
+        <td class="hl-cell">3-7×</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, sans-serif' }}}%%
+flowchart LR
+    subgraph io["IO 复杂度对比 (N=2048, d=64, M=100KB)"]
+        direction TB
+        subgraph standard["标准 Attention"]
+            s1["HBM 读写: O(Nd + N²)
+≈ 4.2M + 4.2M = 8.4M"]
+            s2["存储 S 矩阵: N×N = 4.2M 元素"]
+            s3["反向: 读取已存储的 S
+≈ 4.2M 次 HBM 读取"]
+        end
+        subgraph flash["FlashAttention"]
+            f1["HBM 读写: O(N²d²/M)
+≈ 4.2M×(64²/102400) ≈ 168K"]
+            f2["存储 S 矩阵: 分块暂存 SRAM
+仅存 m_i,l_i ≈ 4K 元素"]
+            f3["反向: 用 m_i,l_i 重计算 S
+≈ 168K HBM 读写"]
+        end
+        standard -->|"IO 减少
+~50×"| flash
+    end
+    style io fill:#0b0e14,stroke:#2a3040,color:#e1e4eb
+    style standard fill:#f8717122,stroke:#f87171,color:#e1e4eb
+    style flash fill:#4ade8022,stroke:#4ade80,color:#4ade80
+    style s1 fill:#f8717115,stroke:#f87171,color:#e1e4eb
+    style s2 fill:#f8717115,stroke:#f87171,color:#e1e4eb
+    style s3 fill:#f8717115,stroke:#f87171,color:#e1e4eb
+    style f1 fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    style f2 fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    style f3 fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    </pre>
+  </div>
+
+  <canvas id="canvasBar" width="1200" height="510"></canvas>
+
+  <div class="insight">
+    💡 <strong>FlashAttention-2 的改进：</strong>将外层循环从 Q 块改为 K/V 块，减少了线程块之间的同步开销；
+    并在 K/V 块维度上做更细粒度的并行化，进一步提升 GPU 利用率。
+    <strong>现在几乎所有 LLM 训练框架（PyTorch、JAX、vLLM、Megatron-LM）都默认使用 FlashAttention。</strong>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  ⚡ FlashAttention 交互可视化 · Created for Learning · 基于 Tri Dao et al. 论文 (NeurIPS 2022)
+</footer>
+
+<script>
+// ==============================
+// KaTeX Render
+// ==============================
+(function() {
+  // Standard attention
+  katex.render(String.raw`
+  \begin{aligned}
+  \mathbf{S} &= \frac{\mathbf{QK}^\top}{\sqrt{d}} \in \mathbb{R}^{N \times N} \\[4pt]
+  \mathbf{P} &= \operatorname{softmax}(\mathbf{S})_{\text{row-wise}} \\[4pt]
+  \mathbf{O} &= \mathbf{PV} \in \mathbb{R}^{N \times d}
+  \end{aligned}
+  `, document.getElementById('formula-standard'), { displayMode: true });
+
+  // Tiling
+  katex.render(String.raw`
+  \mathbf{Q} = \begin{bmatrix}\mathbf{Q}_1 \\ \vdots \\ \mathbf{Q}_{T_r}\end{bmatrix}\!,
+  \; \mathbf{K} = \begin{bmatrix}\mathbf{K}_1 \\ \vdots \\ \mathbf{K}_{T_c}\end{bmatrix}\!,
+  \; \mathbf{V} = \begin{bmatrix}\mathbf{V}_1 \\ \vdots \\ \mathbf{V}_{T_c}\end{bmatrix}
+  \qquad
+  \mathbf{O}_i = \sum_{j=1}^{T_c} \operatorname{softmax}\!\left(\frac{\mathbf{Q}_i\mathbf{K}_j^\top}{\sqrt{d}}\right) \mathbf{V}_j
+  `, document.getElementById('formula-tiling'), { displayMode: true });
+
+  // Online softmax
+  katex.render(String.raw`
+  \begin{aligned}
+  m^{(0)} &= -\infty,\quad \ell^{(0)} = \mathbf{0} \\[4pt]
+  m^{(j)} &= \max(m^{(j-1)},\; \operatorname{rowmax}(\mathbf{S}_{ij})) \\[4pt]
+  \ell^{(j)} &= e^{m^{(j-1)} - m^{(j)}} \cdot \ell^{(j-1)} \;+\; e^{\operatorname{rowmax}(\mathbf{S}_{ij}) - m^{(j)}} \cdot \operatorname{rowsum}(e^{\mathbf{S}_{ij} - \operatorname{rowmax}(\mathbf{S}_{ij})})
+  \end{aligned}
+  `, document.getElementById('formula-online-softmax'), { displayMode: true });
+
+  // Backward
+  katex.render(String.raw`
+  \begin{aligned}
+  \mathbf{P}_{ij} &= \operatorname{diag}(\ell_i^{-1}) \cdot \exp(\mathbf{S}_{ij} - m_i) \quad \gets \text{用保存的 } m_i, \ell_i \text{ 重建} \\[4pt]
+  d\mathbf{V}_j &\mathrel{+}= \mathbf{P}_{ij}^\top d\mathbf{O}_i \\[4pt]
+  d\mathbf{S}_{ij} &= \mathbf{P}_{ij} \odot (d\mathbf{O}_i \mathbf{V}_j^\top - \operatorname{diag}(d\mathbf{O}_i \mathbf{O}_i^\top)) \\[4pt]
+  d\mathbf{Q}_i &\mathrel{+}= \frac{d\mathbf{S}_{ij}}{\sqrt{d}} \mathbf{K}_j,\qquad d\mathbf{K}_j \mathrel{+}= \frac{d\mathbf{S}_{ij}^\top}{\sqrt{d}} \mathbf{Q}_i
+  \end{aligned}
+  `, document.getElementById('formula-backward'), { displayMode: true });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 1 Canvas: Memory Bottleneck -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasMemory');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const N = +document.getElementById('slider-N').value;
+    const d = +document.getElementById('slider-d-std').value;
+
+    // Draw attention matrix as heatmap
+    const margin = { top: 50, left: 80, right: 260, bottom: 30 };
+      const pw = W - margin.left - margin.right;
+      const ph = H - margin.top - margin.bottom;
+      
+      const visN = Math.min(N, 128); // Cap for visualization performance
+      const blockSize = Math.max(1, Math.floor(Math.min(pw, ph) / visN));
+      const displayPx = visN * blockSize;
+      const x0 = margin.left + (pw - displayPx) / 2;
+      const y0 = margin.top + (ph - displayPx) / 2;
+
+      // Heatmap grid (Visualized up to visN)
+      for (let r = 0; r < visN; r++) {
+        for (let c = 0; c < visN; c++) {
+          const val = Math.exp(-Math.abs(r - c) * 0.02) * (0.5 + 0.5 * Math.random());
+          const hue = 240 - val * 200; // blue to red
+          const sat = 70;
+          const light = 20 + val * 50;
+          ctx.fillStyle = `hsl(${hue}, ${sat}%, ${light}%)`;
+          ctx.fillRect(x0 + c * blockSize, y0 + r * blockSize, blockSize + 0.5, blockSize + 0.5);
+        }
+      }    // Labels
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+
+    ctx.fillStyle = '#f87171'; ctx.fillText('N=' + N, x0 + displayPx/2, y0 - 14);
+
+    // Right side: memory stats
+    const bytes = N * N * 2; // fp16
+    const mb = (bytes / (1024*1024)).toFixed(1);
+    const gb = (bytes / (1024*1024*1024)).toFixed(2);
+    const stats = [
+      { label: 'S 矩阵元素', value: (N*N).toLocaleString() },
+      { label: 'fp16 显存', value: mb + ' MB' },
+      { label: '', value: gb + ' GB' },
+      { label: 'd='+d, value: '' },
+      { label: 'Q/K/V 显存', value: (3*N*d*2/(1024*1024)).toFixed(1)+' MB' },
+      { label: 'S / QKV 比值', value: ((N*N)/(3*N*d)).toFixed(1)+'×' },
+    ];
+    const rx = x0 + displayPx + 20;
+    stats.forEach((st, i) => {
+      const y = y0 + 24 + i * 52;
+      ctx.fillStyle = '#8e96a9';
+      ctx.textAlign = 'left';
+      ctx.font = '22px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(st.label, rx, y);
+      ctx.fillStyle = st.label.includes('S / QKV') && parseFloat(st.value) > 5 ? '#f87171' : '#e1e4eb';
+      ctx.font = 'bold 24px "JetBrains Mono", "Fira Code", monospace';
+      ctx.fillText(st.value, rx, y + 22);
+    });
+
+    // Annotation: bottleneck arrow
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    const btmX = x0 + displayPx/2;
+    const btmY = y0 + displayPx + 10;
+    ctx.beginPath(); ctx.moveTo(btmX, btmY); ctx.lineTo(btmX, btmY + 40); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('⚠ O(N²) 显存瓶颈', btmX, btmY + 58);
+  }
+
+  document.getElementById('slider-N').addEventListener('input', function() {
+    document.getElementById('val-N').textContent = this.value;
+    updateInfoStd();
+    draw();
+  });
+  document.getElementById('slider-d-std').addEventListener('input', function() {
+    document.getElementById('val-d-std').textContent = this.value;
+    updateInfoStd();
+    draw();
+  });
+
+  function updateInfoStd() {
+    const N = +document.getElementById('slider-N').value;
+    const d = +document.getElementById('slider-d-std').value;
+    const sMem = (N*N*2/(1024*1024)).toFixed(1);
+    const qkvMem = (3*N*d*2/(1024*1024)).toFixed(1);
+    const ratio = (N*N/(3*N*d)).toFixed(1);
+    document.getElementById('info-std').innerHTML = `
+      <div class="info-card">S 矩阵 <div class="val" style="color:#f87171">${(N*N).toLocaleString()} 元素</div></div>
+      <div class="info-card">S 显存 (fp16) <div class="val" style="color:#f87171">${sMem} MB</div></div>
+      <div class="info-card">Q+K+V 显存 <div class="val">${qkvMem} MB</div></div>
+      <div class="info-card">S / QKV 比值 <div class="val" style="color:${ratio>5?'#f87171':'#4ade80'}">${ratio}×</div></div>
+    `;
+  }
+  updateInfoStd();
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 2 Canvas: Tiling -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasTiling');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const N = +document.getElementById('slider-N-tile').value;
+    const Br = +document.getElementById('slider-Br').value;
+    const Bc = +document.getElementById('slider-Bc').value;
+    const qi = +document.getElementById('slider-qblock').value;
+
+    const margin = { top: 30, left: 140, right: 30, bottom: 30 };
+    const availW = W - margin.left - margin.right;
+    const availH = H - margin.top - margin.bottom;
+
+    // Three matrices: Q (tall thin), K^T (thin wide), S (square)
+    const gap = 24;
+    const totalW = availW;
+
+    // S matrix scaling
+    const scale = Math.min((availW - 400) / N, availH / N);
+
+    // S matrix: use full width for the attention matrix
+    const sW = N * scale;
+    const sH = N * scale;
+    const sX = margin.left;
+    const sY = margin.top;
+
+    // Draw S matrix
+    // Background
+    ctx.fillStyle = '#151922';
+    ctx.fillRect(sX, sY, sW, sH);
+
+    // Highlight current Q-block rows
+    const qStart = Math.min(qi * Br, N);
+    const qEnd = Math.min(qStart + Br, N);
+
+    // Draw all K-block columns with subtle grid
+    const T_c = Math.ceil(N / Bc);
+    for (let j = 0; j < T_c; j++) {
+      const cStart = j * Bc;
+      const cEnd = Math.min(cStart + Bc, N);
+      const cX = sX + cStart * scale;
+      const cW = (cEnd - cStart) * scale;
+
+      // Column block highlight
+      ctx.fillStyle = (j % 2 === 0) ? 'rgba(56,189,248,0.04)' : 'rgba(34,211,238,0.04)';
+      ctx.fillRect(cX, sY, cW, sH);
+
+      // K block label
+      ctx.fillStyle = 'rgba(56,189,248,0.3)';
+      ctx.font = '20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      if (Bc > 64) {
+        ctx.fillText('K'+j, cX + cW/2, sY - 8);
+      }
+    }
+
+    // Draw row blocks
+    const T_r = Math.ceil(N / Br);
+    for (let i = 0; i < T_r; i++) {
+      const rStart = i * Br;
+      const rEnd = Math.min(rStart + Br, N);
+      const rY = sY + rStart * scale;
+      const rH = (rEnd - rStart) * scale;
+
+      ctx.fillStyle = (i === qi) ? 'rgba(245,158,11,0.15)' : 'rgba(167,139,250,0.04)';
+      ctx.fillRect(sX, rY, sW, rH);
+    }
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= T_r; i++) {
+      const y = sY + i * Br * scale;
+      ctx.beginPath(); ctx.moveTo(sX, Math.min(y, sY+sH)); ctx.lineTo(sX+sW, Math.min(y, sY+sH)); ctx.stroke();
+    }
+    for (let j = 0; j <= T_c; j++) {
+      const x = sX + j * Bc * scale;
+      ctx.beginPath(); ctx.moveTo(Math.min(x, sX+sW), sY); ctx.lineTo(Math.min(x, sX+sW), sY+sH); ctx.stroke();
+    }
+
+    // Active block highlight
+    for (let j = 0; j < T_c; j++) {
+      const cStart = j * Bc;
+      const cEnd = Math.min(cStart + Bc, N);
+      const cX = sX + cStart * scale;
+      const cW = (cEnd - cStart) * scale;
+      const rY = sY + qStart * scale;
+      const rH = (qEnd - qStart) * scale;
+
+      ctx.fillStyle = 'rgba(245,158,11,0.35)';
+      ctx.fillRect(cX, rY, cW, rH);
+      ctx.strokeStyle = 'rgba(245,158,11,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(cX, rY, cW, rH);
+    }
+
+    // Labels
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('S = QKᵀ (N×N) — 仅需在 SRAM 中逐块计算', sX + sW/2, sY - 10);
+
+    // Q-block arrow from left
+    ctx.fillStyle = '#f59e0b';
+    ctx.textAlign = 'right';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    const qLabelX = sX - 10;
+    const qLabelY = sY + qStart*scale + (qEnd-qStart)*scale/2;
+    ctx.fillText('Q'+qi + ' →', qLabelX, qLabelY + 5);
+
+    // Highlight the active rows
+    ctx.fillStyle = 'rgba(245,158,11,0.3)';
+    const highlightY = sY + qStart * scale;
+    const highlightH = (qEnd - qStart) * scale;
+    ctx.fillRect(sX - 6, highlightY, 6, highlightH);
+
+    // Labels on the right
+    ctx.fillStyle = '#8e96a9';
+    ctx.textAlign = 'left';
+    ctx.font = '21px "Segoe UI", "PingFang SC", sans-serif';
+    const rx = sX + sW + 16;
+    ctx.fillText('Q 块 ' + qi + '/' + (T_r-1), rx, sY + 20);
+    ctx.fillText('Q 块 大小: ' + Br + ' × d', rx, sY + 42);
+    ctx.fillText('K/V 块 数量: ' + T_c, rx, sY + 64);
+    ctx.fillText('SRAM 每次: Bᵣ×Bc=', rx, sY + 86);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('  (' + Br + '×' + Bc + ') S 分块', rx, sY + 106);
+
+    document.getElementById('val-N-tile').textContent = N;
+    document.getElementById('val-Br').textContent = Br;
+    document.getElementById('val-Bc').textContent = Bc;
+    document.getElementById('val-qblock').textContent = qi;
+
+    // Info row
+    const Tr = Math.ceil(N / Br);
+    const Tc = Math.ceil(N / Bc);
+    const sramBytes = Br * Bc * 2; // fp16
+    const hbmIfStored = N * N * 2;
+    document.getElementById('info-tile').innerHTML = `
+      <div class="info-card">Q 块数量 (Tᵣ) <div class="val">${Tr}</div></div>
+      <div class="info-card">K/V 块数量 (Tc) <div class="val">${Tc}</div></div>
+      <div class="info-card">每 S 分块大小 <div class="val" style="color:#4ade80">${(sramBytes/1024).toFixed(1)} KB</div></div>
+      <div class="info-card">完整 S 矩阵 <div class="val" style="color:#f87171">${(hbmIfStored/(1024*1024)).toFixed(1)} MB</div></div>
+    `;
+  }
+
+  document.getElementById('slider-N-tile').addEventListener('input', function() {
+    const N = +this.value;
+    const maxQ = Math.max(0, Math.floor(N / (+document.getElementById('slider-Br').value)) - 1);
+    document.getElementById('slider-qblock').max = maxQ;
+    if (+document.getElementById('slider-qblock').value > maxQ) {
+      document.getElementById('slider-qblock').value = Math.max(0, Math.floor(maxQ/2));
+    }
+    draw();
+  });
+  document.getElementById('slider-Br').addEventListener('input', function() {
+    const N = +document.getElementById('slider-N-tile').value;
+    const maxQ = Math.max(0, Math.floor(N / (+this.value)) - 1);
+    document.getElementById('slider-qblock').max = maxQ;
+    if (+document.getElementById('slider-qblock').value > maxQ) {
+      document.getElementById('slider-qblock').value = Math.max(0, Math.floor(maxQ/2));
+    }
+    draw();
+  });
+  document.getElementById('slider-Bc').addEventListener('input', draw);
+  document.getElementById('slider-qblock').addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 3 Canvas: Online Softmax -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasOnlineSoftmax');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const N = 20;  // fixed small N for readability
+  const totalBlocks = 5;
+  let currentBlock = 0;
+  let mOld = new Array(N).fill(-Infinity);
+  let lOld = new Array(N).fill(0);
+  let allS = [];
+  let animId = null;
+
+  // Generate synthetic scores
+  function generateScores() {
+    allS = [];
+    for (let b = 0; b < totalBlocks; b++) {
+      const block = [];
+      for (let r = 0; r < N; r++) {
+        block[r] = [];
+        for (let c = 0; c < 4; c++) {
+          // Random scores with some structure
+          block[r][c] = (Math.random() * 6 - 1) + (b * 0.8);
+        }
+      }
+      allS.push(block);
+    }
+  }
+
+  function reset() {
+    currentBlock = 0;
+    mOld = new Array(N).fill(-Infinity);
+    lOld = new Array(N).fill(0);
+    generateScores();
+    draw();
+  }
+
+  function step() {
+    if (currentBlock < totalBlocks) {
+      currentBlock++;
+      draw();
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const margin = { top: 40, left: 30, right: 350, bottom: 30 };
+    const cellW = 42, cellH = 28;
+    const blockGap = 8;
+
+    // Calculate running softmax state
+    let m = [...mOld];
+    let l = [...lOld];
+    let processedS = [];
+
+    for (let b = 0; b < currentBlock; b++) {
+      const S = allS[b];
+      processedS.push({ S, m: [...m], l: [...l] });
+
+      const blockMax = S.map(row => Math.max(...row));
+      const mNew = m.map((oldMax, i) => Math.max(oldMax, blockMax[i]));
+
+      // exp(S - blockMax)
+      const Ptilde = S.map((row, i) => row.map(v => Math.exp(v - blockMax[i])));
+      const ltilde = Ptilde.map(row => row.reduce((a,b) => a+b, 0));
+
+      // Rescale old l
+      const lNew = m.map((oldM, i) => {
+        const oldTerm = l[i] * Math.exp(oldM - mNew[i]);
+        const newTerm = ltilde[i] * Math.exp(blockMax[i] - mNew[i]);
+        return oldTerm + newTerm;
+      });
+
+      m = mNew;
+      l = lNew;
+    }
+
+    // Draw the blocks
+    const maxRows = Math.min(N, 12);
+    const startY = margin.top + 20;
+
+    // Draw each processed block
+    for (let b = 0; b < totalBlocks; b++) {
+      const x = margin.left + b * (cellW * 4 + blockGap + 2);
+      const isActive = b < currentBlock;
+      const isCurrent = b === currentBlock - 1;
+
+      // Draw cells
+      for (let r = 0; r < maxRows; r++) {
+        for (let c = 0; c < 4; c++) {
+          let val = allS[b] ? allS[b][r][c] : 0;
+          const v = Math.max(0, Math.min(1, (val + 2) / 8));
+          const hue = isActive ? 40 + v * 30 : 220;
+          const sat = isActive ? '80%' : '40%';
+          const light = isActive ? (15 + v * 45) + '%' : '15%';
+          ctx.fillStyle = isCurrent ? `hsl(35, 90%, ${18 + v * 50}%)` : `hsl(${hue}, ${sat}, ${light})`;
+          ctx.fillRect(x + c * cellW, startY + r * cellH, cellW - 1, cellH - 1);
+          if (isActive && maxRows <= 12) {
+            ctx.fillStyle = '#0b0e14';
+            ctx.font = '16px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(val.toFixed(1), x + c*cellW + cellW/2, startY + r*cellH + cellH/2 + 6);
+          }
+        }
+      }
+
+      // Block header
+      ctx.fillStyle = isCurrent ? '#f59e0b' : (isActive ? '#4ade80' : '#8e96a9');
+      ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText((isActive ? '✓ ' : '') + 'S' + b, x + cellW*2, startY - 8);
+
+      if (!isActive) {
+        ctx.fillStyle = 'rgba(11,14,20,0.5)';
+        ctx.fillRect(x, startY, cellW*4, maxRows*cellH);
+      }
+
+      // Highlight current block
+      if (isCurrent) {
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x - 2, startY - 2, cellW*4 + 4, maxRows*cellH + 4);
+      }
+    }
+
+    // Right side: running state
+    const rx = margin.left + totalBlocks * (cellW * 4 + blockGap + 2) + 40;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 23px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('Running State (row 0):', rx, startY);
+
+    ctx.font = '22px "JetBrains Mono", "Fira Code", monospace';
+    const displayRow = 0;
+    ctx.fillStyle = '#8e96a9';
+    ctx.fillText('m = ' + (m[displayRow] === -Infinity ? '-∞' : m[displayRow].toFixed(3)), rx, startY + 28);
+    ctx.fillText('ℓ = ' + l[displayRow].toFixed(3), rx, startY + 50);
+
+    // Softmax values for row 0
+    if (currentBlock > 0) {
+      // Compute current softmax for row displayRow
+      let softmaxVals = [];
+      for (let b = 0; b < currentBlock; b++) {
+        const S = allS[b];
+        for (let c = 0; c < 4; c++) {
+          const s = S[displayRow][c];
+          softmaxVals.push({ val: Math.exp(s - m[displayRow]) / l[displayRow], s });
+        }
+      }
+      ctx.fillText('P (softmax):', rx, startY + 80);
+      softmaxVals.forEach((sv, i) => {
+        ctx.fillStyle = `hsl(${35 + sv.val * 100}, 80%, ${30 + sv.val * 40}%)`;
+        ctx.fillText(sv.val.toFixed(3), rx + (i % 4) * 70, startY + 102 + Math.floor(i/4)*22);
+      });
+    }
+
+    // Formula annotation
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '21px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('m_new = max(m_old, rowmax(Sᵢⱼ))', rx, startY + 160);
+    ctx.fillText('ℓ_new = exp(m_old−m_new)·ℓ_old', rx, startY + 184);
+    ctx.fillText('  + exp(m̃−m_new)·ℓ̃', rx, startY + 204);
+
+    updateInfoOnline();
+  }
+
+  function updateInfoOnline() {
+    document.getElementById('info-online').innerHTML = `
+      <div class="info-card">已处理块数 <div class="val" style="color:#4ade80">${currentBlock} / ${totalBlocks}</div></div>
+      <div class="info-card">每块大小 <div class="val">${N} × 4</div></div>
+      <div class="info-card">每次重缩放 <div class="val" style="color:#f59e0b">max 更新时</div></div>
+      <div class="info-card">累计遍历 <div class="val">仅 1 次</div></div>
+    `;
+  }
+
+  document.getElementById('btn-play-softmax').addEventListener('click', function() {
+    if (animId) return;
+    reset();
+    function animate() {
+      if (currentBlock < totalBlocks) {
+        step();
+        animId = setTimeout(animate, 800);
+      } else {
+        animId = null;
+      }
+    }
+    animate();
+  });
+  document.getElementById('btn-reset-softmax').addEventListener('click', reset);
+  document.getElementById('btn-step-softmax').addEventListener('click', step);
+
+  generateScores();
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Flow Animation -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasFlow');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  let qi = 0, kj = 0;
+  let animId = null;
+  const Tr = 4, Tc = 6;
+  const N = 1024, d = 64;
+  const Br = Math.floor(N / Tr), Bc = Math.floor(N / Tc);
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const margin = { top: 30, left: 30, right: 30, bottom: 30 };
+    // Layout: Q-blocks left, S blocks center, K/V blocks right
+    const qX = margin.left + 10;
+    const qW = 80;
+    const sX = qX + qW + 30;
+    const sW = W - sX - 220;
+    const kvX = sX + sW + 24;
+    const kvW = 160;
+
+    // Q blocks (vertical)
+    const qBlockH = Math.min((H - margin.top - margin.bottom - 40) / Tr, 50);
+    const qStartY = margin.top + (H - margin.top - margin.bottom - Tr * qBlockH) / 2;
+
+    for (let i = 0; i < Tr; i++) {
+      const y = qStartY + i * qBlockH;
+      const isActive = i === qi;
+      ctx.fillStyle = isActive ? 'rgba(245,158,11,0.4)' : 'rgba(167,139,250,0.15)';
+      ctx.fillRect(qX, y, qW, qBlockH - 4);
+      ctx.strokeStyle = isActive ? '#f59e0b' : '#2a3040';
+      ctx.lineWidth = isActive ? 2 : 1;
+      ctx.strokeRect(qX, y, qW, qBlockH - 4);
+      ctx.fillStyle = isActive ? '#f59e0b' : '#8e96a9';
+      ctx.font = 'bold 20px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Q' + i, qX + qW/2, y + qBlockH/2 + 4);
+    }
+    // Label
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Q (N×d)', qX + qW/2, qStartY - 14);
+
+    // S matrix center - show as grid of blocks
+    const sBlockH = (H - margin.top - margin.bottom - 40) / Tr;
+    const sBlockW = sW / Tc;
+    const sStartY = margin.top + (H - margin.top - margin.bottom - Tr * sBlockH) / 2;
+
+    for (let i = 0; i < Tr; i++) {
+      for (let j = 0; j < Tc; j++) {
+        const x = sX + j * sBlockW;
+        const y = sStartY + i * sBlockH;
+        const isActive = (i === qi) && (j === kj);
+        const isCurrentRow = i === qi;
+
+        ctx.fillStyle = isActive ? 'rgba(245,158,11,0.5)' :
+                        isCurrentRow ? 'rgba(56,189,248,0.12)' :
+                        'rgba(255,255,255,0.03)';
+        ctx.fillRect(x + 1, y + 1, sBlockW - 2, sBlockH - 2);
+
+        if (isActive) {
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(x + 1, y + 1, sBlockW - 2, sBlockH - 2);
+          // Arrow from Q
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 3]);
+          ctx.beginPath();
+          ctx.moveTo(qX + qW, qStartY + qi * qBlockH + qBlockH/2);
+          ctx.lineTo(x, y + sBlockH/2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          // Arrow from K/V
+          ctx.beginPath();
+          ctx.moveTo(x + sBlockW, y + sBlockH/2);
+          ctx.lineTo(kvX, sStartY + j * sBlockH + sBlockH/2);
+          ctx.stroke();
+        }
+        if (isCurrentRow && j < kj) {
+          // Mark as computed
+          ctx.fillStyle = 'rgba(74,222,128,0.25)';
+          ctx.fillRect(x + 1, y + 1, sBlockW - 2, sBlockH - 2);
+          ctx.fillStyle = '#4ade80';
+          ctx.font = '24px "Segoe UI", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('✓', x + sBlockW/2, y + sBlockH/2 + 6);
+        }
+
+        if (i === qi && j === kj) {
+          ctx.fillStyle = '#0b0e14';
+          ctx.font = 'bold 19px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('S['+i+','+j+']', x + sBlockW/2, y + sBlockH/2 + 4);
+        }
+      }
+    }
+    ctx.fillStyle = '#e1e4eb';
+    ctx.textAlign = 'center';
+    ctx.fillText('S = QᵢKⱼᵀ (Bᵣ×Bc) — 仅存 SRAM', sX + sW/2, sStartY - 14);
+
+    // K/V blocks (vertical right side)
+    const kvBlockH = Math.min((H - margin.top - margin.bottom - 40) / Tc, 36);
+    const kvStartY = margin.top + (H - margin.top - margin.bottom - Tc * kvBlockH) / 2;
+
+    for (let j = 0; j < Tc; j++) {
+      const y = kvStartY + j * kvBlockH;
+      const isActive = j === kj;
+      ctx.fillStyle = isActive ? 'rgba(34,211,238,0.4)' : 'rgba(56,189,248,0.12)';
+      ctx.fillRect(kvX, y, kvW, kvBlockH - 3);
+      ctx.strokeStyle = isActive ? '#22d3ee' : '#2a3040';
+      ctx.lineWidth = isActive ? 2 : 1;
+      ctx.strokeRect(kvX, y, kvW, kvBlockH - 3);
+      ctx.fillStyle = isActive ? '#22d3ee' : '#8e96a9';
+      ctx.font = 'bold 19px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('K'+j+' / V'+j, kvX + kvW/2, y + kvBlockH/2 + 4);
+    }
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('K, V (N×d)', kvX + kvW/2, kvStartY - 14);
+
+    // Status text
+    ctx.fillStyle = '#8e96a9';
+    ctx.textAlign = 'left';
+    ctx.font = '21px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('外层: Q' + qi + '  内层: K' + kj + '/V' + kj, 20, H - 16);
+    ctx.fillText('O' + qi + ' += softmax(S['+qi+','+kj+']) · V' + kj, 300, H - 16);
+  }
+
+  function reset() {
+    qi = 0; kj = 0;
+    draw();
+  }
+
+  function advance() {
+    kj++;
+    if (kj >= Tc) { kj = 0; qi++; }
+    if (qi >= Tr) { qi = 0; kj = 0; }
+    draw();
+  }
+
+  document.getElementById('btn-play-flow').addEventListener('click', function() {
+    if (animId) return;
+    reset();
+    function animate() {
+      advance();
+      if (qi < Tr || kj > 0) {
+        animId = setTimeout(animate, 600);
+      } else {
+        // full cycle done
+        qi = 0; kj = 0;
+        animId = setTimeout(animate, 2000);
+      }
+    }
+    animate();
+  });
+  document.getElementById('btn-reset-flow').addEventListener('click', reset);
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- Tab switching -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const tabs = document.querySelectorAll('#sec-algorithm .tab-btn');
+  const contents = document.querySelectorAll('#sec-algorithm .tab-content');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.getAttribute('data-tab');
+      contents.forEach(c => c.style.display = c.id === target ? 'block' : 'none');
+    });
+  });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 5 Canvas: Backward Recomputation -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasBackward');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const N = +document.getElementById('slider-N-bwd').value;
+
+    const margin = { top: 50, left: 50, right: 280, bottom: 20 };
+    const pw = W - margin.left - margin.right;
+    const ph = H - margin.top - margin.bottom;
+
+    // Two bars: standard vs FlashAttention memory for backward
+    const barW = Math.min(pw * 0.55, 500);
+    const barH = 50;
+    const barX = margin.left + (pw - barW) / 2;
+
+    // Standard: stores N×N
+    const stdBytes = N * N * 2;
+    const stdMB = stdBytes / (1024*1024);
+    // FA: stores N (m) + N (l) = 2N floats
+    const faBytes = 2 * N * 4; // fp32
+    const faKB = faBytes / 1024;
+
+    const maxBytes = N * N * 2;
+    const stdWidth = barW;
+    const faWidth = Math.max(20, barW * faBytes / maxBytes);
+
+    const y1 = margin.top + 20;
+    const y2 = y1 + barH + 60;
+
+    // Standard
+    ctx.fillStyle = '#f87171';
+    ctx.fillRect(barX, y1, stdWidth, barH);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 23px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('标准 Attention: 存储完整 S 矩阵 = ' + stdMB.toFixed(1) + ' MB (fp16)', barX + stdWidth/2, y1 + barH/2 + 6);
+
+    // FA
+    ctx.fillStyle = '#4ade80';
+    ctx.fillRect(barX, y2, faWidth, barH);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 23px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('FlashAttention: 存储 m + ℓ = ' + (faKB < 1024 ? faKB.toFixed(1) + ' KB' : (faKB/1024).toFixed(2) + ' MB'), barX + 100, y2 + barH/2 + 6);
+
+    // Arrows showing recomputation
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(barX + faWidth + 10, y2 + barH/2);
+    ctx.lineTo(barX + faWidth + 80, y2 + barH/2);
+    ctx.lineTo(barX + faWidth + 80, y1 + barH/2);
+    ctx.lineTo(barX + stdWidth, y1 + barH/2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('重计算 Sᵢⱼ = Qᵢ Kⱼᵀ', barX + faWidth + 84, y1 + barH/2 + 6);
+
+    // Ratio
+    const ratio = (stdMB * 1024 / faKB).toFixed(0);
+    ctx.fillStyle = '#e1e4eb';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 25px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('内存比: ' + ratio + ' : 1', barX + barW/2, y2 + barH + 40);
+
+    document.getElementById('val-N-bwd').textContent = N;
+    document.getElementById('info-bwd').innerHTML = `
+      <div class="info-card">标准反向存储 <div class="val" style="color:#f87171">${stdMB.toFixed(1)} MB</div></div>
+      <div class="info-card">FA 反向存储 <div class="val" style="color:#4ade80">${(faKB<1024?faKB.toFixed(1)+' KB':(faKB/1024).toFixed(2)+' MB')}</div></div>
+      <div class="info-card">节省倍数 <div class="val" style="color:#f59e0b">${ratio}×</div></div>
+      <div class="info-card">重计算代价 <div class="val" style="color:#8e96a9">1 次额外 S 计算</div></div>
+    `;
+  }
+
+  document.getElementById('slider-N-bwd').addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 6 Canvas: IO Comparison Bar Chart -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasBar');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const N = 2048;
+    const d = 64;
+    const M = 100 * 1024; // 100KB SRAM
+
+    const stdHBM = N * d + N * N;
+    const faHBM = N * N * d * d / M;
+
+    // Normalize for display
+    const maxHBM = stdHBM;
+    const stdNorm = 1;
+    const faNorm = Math.max(0.05, faHBM / stdHBM);
+    const fa2Norm = Math.max(0.03, faHBM * 0.7 / stdHBM);
+
+    const margin = { top: 40, left: 60, right: 30, bottom: 60 };
+    const bw = W - margin.left - margin.right;
+    const bh = H - margin.top - margin.bottom;
+    const barW = Math.min(140, bw / 3.5);
+    const gap = (bw - 3 * barW) / 4;
+    const bars = [
+      { label: '标准 Attention', val: stdNorm, color: '#f87171', raw: stdHBM },
+      { label: 'FlashAttention', val: faNorm, color: '#4ade80', raw: faHBM },
+      { label: 'FlashAttn-2', val: fa2Norm, color: '#38bdf8', raw: faHBM * 0.7 },
+    ];
+
+    bars.forEach((bar, i) => {
+      const x = margin.left + gap + i * (barW + gap);
+      const h = bar.val * bh;
+      const y = margin.top + bh - h;
+
+      // Bar
+      const grad = ctx.createLinearGradient(x, y, x, margin.top + bh);
+      grad.addColorStop(0, bar.color);
+      grad.addColorStop(1, bar.color + '44');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, barW, h);
+      ctx.strokeStyle = bar.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, barW, h);
+
+      // Label
+      ctx.fillStyle = '#e1e4eb';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 23px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(bar.label, x + barW/2, margin.top + bh + 22);
+
+      // Value
+      const hbmVal = bar.raw > 1e8 ? (bar.raw/1e9).toFixed(2) + 'B' :
+                     bar.raw > 1e5 ? (bar.raw/1e6).toFixed(1) + 'M' :
+                     bar.raw.toFixed(0);
+      ctx.fillText((bar.val*100).toFixed(1) + '%', x + barW/2, y - 10);
+      ctx.font = '21px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#8e96a9';
+      ctx.fillText('≈ ' + hbmVal + ' elems', x + barW/2, margin.top + bh + 44);
+    });
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('HBM 读写量相对对比 (N='+N+', d='+d+', M=100KB)', W/2, margin.top - 10);
+
+    // Speedup annotation
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 25px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('加速 ' + (1/faNorm).toFixed(1) + '×', margin.left + gap + barW/2 + barW + gap + barW + gap, margin.top + bh/2);
+  }
+
+  draw();
+})();
+</script>
+
+
+<!-- ═══ Mermaid Init ═══ -->
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1e1b4b',
+    primaryTextColor: '#e1e4eb',
+    primaryBorderColor: '#6366f1',
+    lineColor: '#ffffff',
+    secondaryColor: '#16213e',
+    tertiaryColor: '#0b0e14',
+    fontSize: '18px',
+    noteBkgColor: '#1e2332',
+    noteTextColor: '#e1e4eb',
+    noteBorderColor: '#f59e0b',
+    sequenceNumberColor: '#f59e0b',
+  },
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: 'basis',
+    padding: 18,
+  },
+  sequence: {
+    useMaxWidth: true,
+    boxMargin: 10,
+    mirrorActors: false,
+  },
+});
+</script>
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

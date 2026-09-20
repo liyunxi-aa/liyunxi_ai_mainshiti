@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LightGBM — 直方图算法、GOSS、EFB 与 Leaf-wise 生长交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222634;
+    --text: #e1e4eb;
+    --text2: #9ca3b4;
+    --green: #4ade80;
+      --accent: #4ade80;
+    --blue: #4ea8f6;
+    --orange: #f59342;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --yellow: #facc15;
+    --cyan: #22d3ee;
+    --pink: #f472b6;
+    --lgb-green: #00c896;
+    --border: #2d3148;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1f1a 0%, #1a2d28 30%, #0f1f1a 60%, #1a2220 100%);
+    border-bottom: 1px solid rgba(0,200,150,0.2);
+    padding: 40px 32px 32px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--lgb-green), var(--cyan), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header p { color: var(--text2); font-size: 18px; }
+
+  .container { max-width: 1500px; margin: 0 auto; padding: 24px 20px; }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot.hist { background: var(--lgb-green); box-shadow: 0 0 8px var(--lgb-green); }
+  .dot.goss { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .dot.efb { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+  .dot.leaf { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+  .dot.compare { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+  .dot.formula { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+
+  .section .desc { color: var(--text2); font-size: 18px; margin-bottom: 20px; line-height: 1.8; }
+
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px; color: var(--text2); margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.1em; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 17px;
+    color: var(--text2);
+  }
+  .slider-group label .val {
+    font-weight: 600; color: var(--text);
+    font-family: 'Courier New', monospace; font-size: 17px;
+    min-width: 48px; text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .s-green::-webkit-slider-thumb { background: var(--lgb-green); }
+  .s-orange::-webkit-slider-thumb { background: var(--orange); }
+  .s-purple::-webkit-slider-thumb { background: var(--purple); }
+  .s-blue::-webkit-slider-thumb { background: var(--blue); }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2); border-radius: 6px; padding: 10px 14px;
+    font-size: 17px; color: var(--text2); font-family: 'Courier New', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+  .info-card .v-green { color: var(--lgb-green); }
+  .info-card .v-blue { color: var(--blue); }
+  .info-card .v-orange { color: var(--orange); }
+  .info-card .v-purple { color: var(--purple); }
+  .info-card .v-cyan { color: var(--cyan); }
+
+  .insight {
+    background: linear-gradient(135deg, rgba(0,200,150,0.08), rgba(34,211,238,0.08));
+    border: 1px solid rgba(0,200,150,0.2);
+    border-radius: 8px; padding: 14px 18px; margin-top: 16px;
+    font-size: 17px; color: var(--text2); line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); cursor: pointer;
+    font-size: 17px; font-weight: 600; transition: all .2s;
+  }
+  .btn:hover { border-color: var(--lgb-green); background: #2a2d3a; }
+  .btn.active { border-color: var(--lgb-green); background: rgba(0,200,150,0.2); color: var(--lgb-green); }
+
+  .compare-table {
+    width: 100%; border-collapse: collapse; font-size: 17px;
+    margin: 16px 0;
+  }
+  .compare-table th, .compare-table td {
+    padding: 14px 18px; text-align: left; border: 1px solid var(--border);
+  }
+  .compare-table th {
+    background: var(--surface2); color: var(--text); font-weight: 700;
+    font-size: 18px;
+  }
+  .compare-table td { color: var(--text2); }
+  .compare-table td:first-child { font-weight: 700; color: var(--text); }
+  .compare-table .hl-green { color: var(--lgb-green); }
+  .compare-table .hl-orange { color: var(--orange); }
+  .compare-table .hl-blue { color: var(--blue); }
+
+  /* GOSS visualization */
+  .goss-bar {
+    display: flex; gap: 2px; align-items: flex-end;
+    height: 160px; margin: 12px 0; flex-wrap: nowrap;
+  }
+  .goss-bar .bar {
+    flex: 1; min-width: 3px; border-radius: 2px 2px 0 0;
+    transition: opacity 0.3s, background 0.3s;
+  }
+  .bar.kept { opacity: 1; }
+  .bar.sampled { opacity: 0.5; }
+  .bar.dropped { opacity: 0.1; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 16px; color: var(--text2); margin: 8px 0 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* Mermaid wrap */
+  /* Two-col layout for comparison */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) {
+    .two-col { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 16px; }
+    .sliders { grid-template-columns: 1fr; }
+  }
+
+  .highlight-box {
+    background: var(--surface2);
+    border: 1px solid rgba(0,200,150,0.3);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 17px;
+    line-height: 1.8;
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌿 LightGBM · 轻量级梯度提升机</h1>
+  <p>Histogram 直方图算法 · GOSS 单边梯度采样 · EFB 互斥特征捆绑 · Leaf-wise 生长 — 交互式可视化</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Overview & Histogram -->
+<!-- ================================================================ -->
+<div class="section" id="histogram-section">
+  <h2><span class="dot hist"></span> 一、Histogram 直方图算法 — 连续特征离散化</h2>
+  <p class="desc">
+    LightGBM 最基础但关键的创新是<b>直方图算法</b>：将连续特征值离散化为 K 个 bin（通常 K=255），
+    构建特征直方图，<b>无需遍历每个样本</b>即可找到最佳分裂点。这比 XGBoost 的 pre-sorted 算法
+    <b>内存占用降低约 8×</b>，训练速度提升 <b>3-10×</b>。此外，直方图做差加速：父节点直方图 =
+    叶节点直方图之和，只需计算较小叶，另一叶由减法得到。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 直方图分裂增益公式（近似 Split Finding）</h3>
+    <div id="formula-histogram"></div>
+  </div>
+
+  <canvas id="histogramCanvas" width="1500" height="520"></canvas>
+
+  <div class="info-row" id="hist-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>Bin 数量 K <span class="val" id="val-bins">128</span></label>
+      <input type="range" class="s-green" id="slider-bins" min="16" max="255" value="128" step="16">
+    </div>
+    <div class="slider-group">
+      <label>样本数 N <span class="val" id="val-n">500</span></label>
+      <input type="range" class="s-green" id="slider-n" min="100" max="1000" value="500" step="50">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>看上方直方图——连续特征（灰点）被映射为 K 个离散 bin（绿色柱），
+    每个 bin 存储梯度之和 G 与样本计数 H。K 越小 → 内存越省、训练越快，但精度略有损失。
+    K=255 在实践中几乎无损精度，且能通过<b>直方图做差</b>进一步加速（父 - 左 = 右）。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: GOSS — Gradient-based One-Side Sampling -->
+<!-- ================================================================ -->
+<div class="section" id="goss-section">
+  <h2><span class="dot goss"></span> 二、GOSS — 基于梯度的单边采样</h2>
+  <p class="desc">
+    GOSS 是 LightGBM 的<b>数据采样</b>策略。核心观察：梯度大的样本对信息增益贡献更大。
+    GOSS <b>保留所有大梯度样本</b>（top-a%），对剩余小梯度样本<b>随机采样 b%</b>，
+    并对采样的小梯度样本<b>乘以权重 (1-a)/b</b> 以修正分布偏移。相比均匀采样，GOSS 在相同采样率下
+    能<b>更精准地估计分裂增益</b>，几乎没有精度损失。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 GOSS 采样后的方差增益估计</h3>
+    <div id="formula-goss"></div>
+  </div>
+
+  <canvas id="gossCanvas" width="1500" height="480"></canvas>
+
+  <div class="info-row" id="goss-info"></div>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-goss-resample" onclick="resampleGOSS()">🔄 重新采样</button>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>大梯度保留比例 a <span class="val" id="val-a">0.20</span></label>
+      <input type="range" class="s-orange" id="slider-a" min="0.05" max="0.5" value="0.2" step="0.05">
+    </div>
+    <div class="slider-group">
+      <label>小梯度采样比例 b <span class="val" id="val-b">0.20</span></label>
+      <input type="range" class="s-orange" id="slider-b-goss" min="0.05" max="0.5" value="0.2" step="0.05">
+    </div>
+    <div class="slider-group">
+      <label>总样本数 N <span class="val" id="val-ngoss">500</span></label>
+      <input type="range" class="s-orange" id="slider-ngoss" min="200" max="1000" value="500" step="50">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>左侧排序后的梯度分布——高梯度样本（橙色）全部保留，
+    低梯度样本中随机采样一小部分（紫色），被丢弃的样本（深灰）几乎是"已被模型学好"的简单样本。
+    采样后的数据分布与原始分布近似，但数据量大幅减少。这就是 GOSS 的<b>"学习好的不学，集中火力攻克难点"</b>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: EFB — Exclusive Feature Bundling -->
+<!-- ================================================================ -->
+<div class="section" id="efb-section">
+  <h2><span class="dot efb"></span> 三、EFB — 互斥特征捆绑</h2>
+  <p class="desc">
+    高维稀疏数据（如 One-Hot 编码后的类别特征）中，许多特征之间是<b>互斥的</b>（不会同时取非零值）。
+    EFB 将这些互斥特征<b>捆绑成一个特征</b>，从而大幅减少特征维度。这一过程分为两步：
+    ① <b>图着色算法</b>确定哪些特征可以捆绑（NP-hard 问题，贪心近似）；
+    ② <b>合并互斥特征</b>，通过偏移量保证不同特征的值不会重叠。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 特征捆绑 — Bin Ranges 与偏移量</h3>
+    <div id="formula-efb"></div>
+  </div>
+
+  <!-- Mermaid: feature bundling graph coloring -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme':'dark','themeVariables': {'primaryColor':'#00c896','primaryTextColor':'#fff','primaryBorderColor':'#00c896','lineColor': '#ffffff','secondaryColor':'#a855f7','tertiaryColor':'#f59342','fontSize':'17px'}}}%%
+flowchart TD
+    A["📊 原始特征空间<br/>高维稀疏 One-Hot"] --> B["🔍 计算特征冲突率<br/>conflict(f_i, f_j) ≤ γ"]
+    B --> C["🎨 图着色贪心算法<br/>冲突图 G=(V,E), E=高冲突"]
+    C --> D["📦 捆绑分组<br/>Bundle_1, Bundle_2, …"]
+    D --> E["➕ 合并特征<br/>offset = Σ bin_range(prev)"]
+    E --> F["⚡ 降维后训练<br/>特征数: 10000 → ~500"]
+    </pre>
+  </div>
+
+  <canvas id="efbCanvas" width="1500" height="480"></canvas>
+
+  <div class="info-row" id="efb-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>原始特征数 <span class="val" id="val-efb-feats">500</span></label>
+      <input type="range" class="s-purple" id="slider-efb-feats" min="100" max="800" value="500" step="50">
+    </div>
+    <div class="slider-group">
+      <label>最大冲突率 γ <span class="val" id="val-gamma">0.10</span></label>
+      <input type="range" class="s-purple" id="slider-gamma" min="0" max="0.3" value="0.1" step="0.02">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>EFB 利用了高维稀疏数据的结构性——"互斥"意味着不同特征很少同时非零（如 One-Hot 特征）。
+    通过图着色将互斥特征打包，可以将特征数量压缩 <b>10-20×</b>，极大加速训练且几乎无损。
+    这是 LightGBM 在类别特征处理上比 XGBoost 快得多的核心原因之一。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Leaf-wise Tree Growth -->
+<!-- ================================================================ -->
+<div class="section" id="leaf-section">
+  <h2><span class="dot leaf"></span> 四、Leaf-wise 生长策略 — 最大增益优先分裂</h2>
+  <p class="desc">
+    XGBoost 默认使用 <b>Level-wise</b>（按层生长），每层所有节点同时分裂，控制树平衡。
+    LightGBM 采用 <b>Leaf-wise</b>（按叶生长），每次选择<b>分裂增益最大的叶节点</b>进行分裂。
+    在相同分裂次数下，Leaf-wise 误差更低、收敛更快；但容易长出过深的树。
+    LightGBM 通过 <b>max_depth</b> 参数控制树深度来防止过拟合。
+  </p>
+
+  <div class="two-col">
+    <div class="highlight-box">
+      <h3 style="color:var(--cyan); margin-bottom:10px;">🌲 Leaf-wise（LightGBM）</h3>
+      <p style="color:var(--text2);">
+        每次选择 <b>ΔLoss 最大的叶</b> 分裂<br>
+        → 相同叶数下<b>损失更低</b><br>
+        → 收敛更快，模型更精确<br>
+        → 需要 max_depth 防过拟合
+      </p>
+    </div>
+    <div class="highlight-box">
+      <h3 style="color:var(--blue); margin-bottom:10px;">🌳 Level-wise（XGBoost）</h3>
+      <p style="color:var(--text2);">
+        同一层<b>所有节点同时分裂</b><br>
+        → 树结构更加<b>平衡</b><br>
+        → 天然不易过拟合<br>
+        → 但分裂了许多增益低的节点
+      </p>
+    </div>
+  </div>
+
+  <canvas id="leafWiseCanvas" width="1500" height="550"></canvas>
+
+  <div class="info-row" id="leaf-info"></div>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-leaf-step" onclick="stepLeafWise()">⏭ 下一步分裂</button>
+    <button class="btn" id="btn-leaf-reset" onclick="resetLeafWise()">🔄 重置</button>
+    <button class="btn" id="btn-leaf-auto" onclick="toggleLeafAuto()">▶ 自动演示</button>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>最大深度 <span class="val" id="val-maxdepth">5</span></label>
+      <input type="range" class="s-blue" id="slider-maxdepth" min="2" max="6" value="5" step="1">
+    </div>
+    <div class="slider-group">
+      <label>最大叶子数 <span class="val" id="val-maxleaves">10</span></label>
+      <input type="range" class="s-blue" id="slider-maxleaves" min="3" max="20" value="10" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>Leaf-wise 像"A* 搜索"——优先分裂最有希望的叶节点。不做无谓的分裂，
+    每步都是"当前最优"。代价是可能长成不规则的深树，但实践中 max_depth 约束就够了。
+    这就是 LightGBM 比 XGBoost 更快收敛的关键原因之一。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: LightGBM vs XGBoost Comparison -->
+<!-- ================================================================ -->
+<div class="section" id="compare-section">
+  <h2><span class="dot compare"></span> 五、LightGBM vs XGBoost — 全面对比</h2>
+  <p class="desc">
+    两者都是 Gradient Boosting 的极致工程化实现。XGBoost 定义了 GBDT 的工程标杆，
+    LightGBM 在此基础上通过算法创新进一步<b>降低时间复杂度</b>和<b>内存占用</b>。
+  </p>
+
+  <table class="compare-table">
+    <thead>
+      <tr><th>维度</th><th style="color:var(--lgb-green);">LightGBM</th><th style="color:var(--orange);">XGBoost</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>分裂点查找</td><td class="hl-green">Histogram（直方图近似）</td><td class="hl-orange">Pre-sorted + 分位点 sketch（近似）</td></tr>
+      <tr><td>树生长策略</td><td class="hl-green">Leaf-wise（按叶生长）</td><td class="hl-orange">Level-wise（按层生长）</td></tr>
+      <tr><td>数据采样</td><td class="hl-green">GOSS（梯度单边采样）</td><td class="hl-orange">Uniform subsample（均匀采样）</td></tr>
+      <tr><td>特征降维</td><td class="hl-green">EFB（互斥特征捆绑）</td><td class="hl-orange">无（仅列采样）</td></tr>
+      <tr><td>类别特征</td><td class="hl-green">原生支持 categorical_feature</td><td class="hl-orange">需手动 One-Hot / 编码</td></tr>
+      <tr><td>内存占用</td><td class="hl-green">更低（~1/8）</td><td class="hl-orange">较高</td></tr>
+      <tr><td>训练速度</td><td class="hl-green">更快（3-10×）</td><td class="hl-orange">较慢</td></tr>
+      <tr><td>小数据表现</td><td class="hl-orange">可能过拟合（需调参）</td><td class="hl-green">更稳健</td></tr>
+      <tr><td>分布式训练</td><td class="hl-green">原生 feature-parallel / data-parallel</td><td class="hl-green">支持（较成熟）</td></tr>
+      <tr><td>正则化项</td><td>L1/L2（叶权重）</td><td>L1/L2（叶权重+复杂度）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula-block">
+    <h3>📐 两者目标函数对比</h3>
+    <div id="formula-compare"></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>选型建议：</strong>大数据集（N > 10K 或特征 > 1000）优先 LightGBM，训练速度快得多；
+    小数据集用 XGBoost 更稳健，不容易过拟合；类别特征多的场景 LightGBM 优势明显；
+    对训练速度不敏感但需要极致精度的场景，XGBoost 的预排序精确分裂仍有微弱优势。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: Core Math Derivation -->
+<!-- ================================================================ -->
+<div class="section" id="math-section">
+  <h2><span class="dot formula"></span> 六、LightGBM 核心数学推导</h2>
+  <p class="desc">
+    LightGBM 继承了 GBDT 的加法模型和梯度提升框架，但在分裂增益计算上做了直方图近似。
+    以下是完整的数学推导链路 —— 从加法模型假设到直方图近似分裂增益。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 1. 加法模型与梯度提升框架</h3>
+    <div id="formula-additive"></div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 2. 二阶泰勒展开逼近损失函数</h3>
+    <div id="formula-taylor"></div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 3. 叶节点最优权重与分裂增益（直方图近似）</h3>
+    <div id="formula-split"></div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 4. 直方图做差加速</h3>
+    <div id="formula-hist-diff"></div>
+  </div>
+</div>
+
+</div>
+
+<!-- ═══ Footer ═══ -->
+<footer class="header" style="margin-top: 24px; text-align: center; padding: 24px;">
+  <p style="color: var(--text2); font-size: 16px;">🌿 LightGBM · A Highly Efficient Gradient Boosting Decision Tree — 2017 Microsoft Research</p>
+</footer>
+
+<!-- === scripts === -->
+<script>
+// ── KaTeX rendering ──
+(function renderAllKatex() {
+  var formulas = {
+    'formula-histogram': String.raw`
+      \begin{aligned}
+      \text{Gain}_{\text{hist}}(d, j) &= \frac{1}{2}\left[
+        \frac{(\sum_{i \in L} g_i)^2}{\sum_{i \in L} h_i + \lambda}
+        + \frac{(\sum_{i \in R} g_i)^2}{\sum_{i \in R} h_i + \lambda}
+        - \frac{(\sum_{i \in P} g_i)^2}{\sum_{i \in P} h_i + \lambda}
+      \right] - \gamma \\[8pt]
+      \text{其中 } \sum_{i \in L} g_i &\approx \sum_{k \le j} G_k,\quad \sum_{i \in R} g_i \approx \sum_{k > j} G_k,\quad G_k = \sum_{i \in \text{bin}_k} g_i \\[6pt]
+      g_i &= \frac{\partial \ell(y_i, \hat{y}^{(t-1)})}{\partial \hat{y}^{(t-1)}},\quad h_i = \frac{\partial^2 \ell}{\partial (\hat{y}^{(t-1)})^2}
+      \end{aligned}
+    `,
+    'formula-goss': String.raw`
+      \begin{aligned}
+      \tilde{V}_j(d) &= \frac{1}{n}\left[
+        \frac{(\sum_{i \in A_l} g_i + \frac{1-a}{b}\sum_{i \in B_l} g_i)^2}{n_l^j(d)}
+        + \frac{(\sum_{i \in A_r} g_i + \frac{1-a}{b}\sum_{i \in B_r} g_i)^2}{n_r^j(d)}
+      \right] \\[8pt]
+      A &= \{i: |g_i| \ge \text{top-a\%}\}\text{（所有大梯度样本）} \\
+      B &= \text{RandomSample}(\{i: |g_i| < \text{top-a\%}\}, b \times N_{\text{small}})\text{（随机采样小梯度）} \\
+      w &= \frac{1-a}{b}\text{（小梯度样本权重，修正分布偏移）}
+      \end{aligned}
+    `,
+    'formula-efb': String.raw`
+      \begin{aligned}
+      \text{冲突率: }&\ \text{conflict}(f_i, f_j) = \frac{|\{(x_k, x_l) \mid f_i[k] \neq 0 \land f_j[k] \neq 0\}|}{N} \le \gamma \\[8pt]
+      \text{特征合并: }&\ \text{bundle}[k] = f_1[k] + \text{offset}(f_2) \cdot \mathbb{1}_{f_2[k] \neq 0} + \cdots \\[6pt]
+      \text{offset}(f_m) &= \sum_{t=1}^{m-1} (\text{bin}_t.\max + 1) \\[6pt]
+      \gamma &\to 0 \Rightarrow \text{严格互斥（无碰撞）};\quad \gamma > 0 \Rightarrow \text{允许少量冲突}
+      \end{aligned}
+    `,
+    'formula-compare': String.raw`
+      \begin{aligned}
+      \text{LightGBM: } \mathcal{L}^{(t)} &= \sum_{i=1}^{n} \left[ g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \frac{\lambda}{2}\sum_{j=1}^{T} w_j^2 + \gamma T \\[8pt]
+      \text{XGBoost: } \mathcal{L}^{(t)} &= \sum_{i=1}^{n} \left[ g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \frac{\lambda}{2}\sum_{j=1}^{T} w_j^2 + \gamma T \\[6pt]
+      \text{区别不在目标函数形式，而在: }&(1)\text{ 如何高效找到分裂点（直方图 vs pre-sorted）} \\
+      &(2)\text{ 树如何生长（leaf-wise vs level-wise）} \\
+      &(3)\text{ 如何采样数据（GOSS vs uniform）}
+      \end{aligned}
+    `,
+    'formula-additive': String.raw`
+      \begin{aligned}
+      \hat{y}_i^{(0)} &= f_0(x_i) = \arg\min_{c} \sum_{i} \ell(y_i, c)\quad\text{（初始常数预测）} \\[6pt]
+      \hat{y}_i^{(t)} &= \hat{y}_i^{(t-1)} + \eta \cdot f_t(x_i)\quad\text{（第 t 轮：在上一轮基础上加一棵新树）} \\[6pt]
+      f_t(x) &= w_{q(x)} \in \mathbb{R}^T,\quad q: \mathbb{R}^d \to \{1,\dots,T\}\text{（树结构映射）}
+      \end{aligned}
+    `,
+    'formula-taylor': String.raw`
+      \begin{aligned}
+      \mathcal{L}^{(t)} &= \sum_{i=1}^{n} \ell\left(y_i, \hat{y}_i^{(t-1)} + f_t(x_i)\right) + \Omega(f_t) \\[6pt]
+      &\approx \sum_{i=1}^{n} \left[ \ell(y_i, \hat{y}^{(t-1)}) + g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \Omega(f_t) \\[6pt]
+      g_i &= \frac{\partial \ell}{\partial \hat{y}^{(t-1)}},\quad h_i = \frac{\partial^2 \ell}{\partial (\hat{y}^{(t-1)})^2}
+      \end{aligned}
+    `,
+    'formula-split': String.raw`
+      \begin{aligned}
+      w_j^* &= -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i + \lambda}\quad\text{（叶节点 j 的最优权重）} \\[8pt]
+      \text{Gain}_{\text{split}} &= \frac{1}{2}\left[
+        \frac{(\sum_{i \in I_L} g_i)^2}{\sum_{i \in I_L} h_i + \lambda}
+        + \frac{(\sum_{i \in I_R} g_i)^2}{\sum_{i \in I_R} h_i + \lambda}
+        - \frac{(\sum_{i \in I} g_i)^2}{\sum_{i \in I} h_i + \lambda}
+      \right] - \gamma \\[8pt]
+      \sum_{i \in I_L} g_i &\approx \sum_{k=1}^{j} G_k,\quad G_k = \sum_{i \in \text{bin}_k} g_i\quad\text{（直方图近似）}
+      \end{aligned}
+    `,
+    'formula-hist-diff': String.raw`
+      \begin{aligned}
+      \text{Hist}_{\text{right}} &= \text{Hist}_{\text{parent}} - \text{Hist}_{\text{left}} \\[6pt]
+      (G_R, H_R) &= (G_P - G_L,\ H_P - H_L) \\[6pt]
+      &\Downarrow \\[4pt]
+      \text{计算复杂度: } &\text{只需构造较小叶的直方图，另一个做减法！}\\[4pt]
+      \text{加速比例: } &\frac{2 \times \text{bin}}{1.5 \times \text{bin}} \approx 33\%\text{ 更快}
+      \end{aligned}
+    `
+  };
+  for (var id in formulas) {
+    var el = document.getElementById(id);
+    if (el) { katex.render(formulas[id], el, { displayMode: true, throwOnError: false }); }
+  }
+})();
+</script>
+
+<script>
+// ═══════════════════════════════════════════════
+// SECTION 1: Histogram Algorithm Visualization
+// ═══════════════════════════════════════════════
+(function() {
+  var canvas = document.getElementById('histogramCanvas');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var margin = { top: 40, right: 30, bottom: 60, left: 70 };
+  var pw = W - margin.left - margin.right;
+  var ph = H - margin.top - margin.bottom;
+
+  function getParams() {
+    var K = +document.getElementById('slider-bins').value;
+    var N = +document.getElementById('slider-n').value;
+    return { K: K, N: N };
+  }
+
+  function drawHistogram() {
+    var p = getParams();
+    document.getElementById('val-bins').textContent = p.K;
+    document.getElementById('val-n').textContent = p.N;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Generate data: mixture of Gaussians
+    var data = [];
+    for (var i = 0; i < p.N; i++) {
+      var val;
+      var r = Math.random();
+      if (r < 0.35) val = -8 + Math.random() * 4;        // first cluster
+      else if (r < 0.7) val = -1 + Math.random() * 6;     // second cluster
+      else val = 6 + Math.random() * 5;                    // third cluster
+      data.push(val);
+    }
+
+    // Build histogram bins
+    var minV = -10, maxV = 14;
+    var binW = (maxV - minV) / p.K;
+    var hist = new Array(p.K).fill(0);
+    data.forEach(function(v) {
+      var idx = Math.floor((v - minV) / binW);
+      if (idx >= 0 && idx < p.K) hist[idx]++;
+    });
+
+    var maxCount = Math.max.apply(null, hist);
+
+    // Draw axes
+    ctx.strokeStyle = '#4a4d5e';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(margin.left, margin.top);
+    ctx.lineTo(margin.left, margin.top + ph);
+    ctx.lineTo(margin.left + pw, margin.top + ph);
+    ctx.stroke();
+
+    // Y axis labels
+    ctx.fillStyle = '#9ca3b4';
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'right';
+    for (var y = 0; y <= 4; y++) {
+      var val = Math.round(maxCount * y / 4);
+      var yPos = margin.top + ph - (y / 4) * ph;
+      ctx.fillText(val, margin.left - 8, yPos + 5);
+      ctx.strokeStyle = '#2d3148';
+      ctx.beginPath();
+      ctx.moveTo(margin.left, yPos);
+      ctx.lineTo(margin.left + pw, yPos);
+      ctx.stroke();
+    }
+
+    // X axis labels
+    ctx.textAlign = 'center';
+    ctx.fillText('特征值', margin.left + pw / 2, margin.top + ph + 45);
+
+    // Draw bars
+    for (var i = 0; i < p.K; i++) {
+      var x = margin.left + (i / p.K) * pw;
+      var barW = Math.max(1, pw / p.K - 1);
+      var barH = (hist[i] / maxCount) * ph;
+      var y = margin.top + ph - barH;
+
+      // Gradient color: green for higher bars
+      var ratio = hist[i] / maxCount;
+      var r = Math.floor(0 * (1 - ratio) + 0 * ratio);
+      var g = Math.floor(180 * (1 - ratio) + 220 * ratio);
+      var b = Math.floor(140 * (1 - ratio) + 170 * ratio);
+      ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.8)';
+      ctx.fillRect(x + 0.5, y, barW, barH);
+    }
+
+    // Mark key bins with annotations
+    var marks = [Math.floor(p.K * 0.25), Math.floor(p.K * 0.5), Math.floor(p.K * 0.75)];
+    marks.forEach(function(idx) {
+      var bx = margin.left + (idx / p.K) * pw + pw / p.K / 2;
+      var by = margin.top + ph - (hist[idx] / maxCount) * ph;
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.arc(bx, by - 6, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Update info cards
+    var totalSamples = hist.reduce(function(a, b) { return a + b; }, 0);
+    var nonEmpty = hist.filter(function(v) { return v > 0; }).length;
+    document.getElementById('hist-info').innerHTML =
+      '<div class="info-card">📊 总样本数 <span class="val v-green">' + p.N + '</span></div>' +
+      '<div class="info-card">📦 Bin 总数 <span class="val v-green">' + p.K + '</span></div>' +
+      '<div class="info-card">📈 非空 Bin <span class="val v-blue">' + nonEmpty + '</span></div>' +
+      '<div class="info-card">💾 内存节省 <span class="val v-green">~' + Math.round((1 - p.K / p.N) * 100) + '%</span></div>' +
+      '<div class="info-card">⚡ 分裂点候选 <span class="val v-cyan">≤ ' + (p.K - 1) + '</span></div>' +
+      '<div class="info-card">🔢 压缩比 N/K <span class="val v-orange">' + (p.N / p.K).toFixed(1) + '</span></div>';
+  }
+
+  document.getElementById('slider-bins').addEventListener('input', drawHistogram);
+  document.getElementById('slider-n').addEventListener('input', drawHistogram);
+  drawHistogram();
+})();
+
+// ═══════════════════════════════════════════════
+// SECTION 2: GOSS Interactive Visualization
+// ═══════════════════════════════════════════════
+(function() {
+  var canvas = document.getElementById('gossCanvas');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var margin = { top: 40, right: 30, bottom: 50, left: 70 };
+  var pw = W - margin.left - margin.right;
+  var ph = H - margin.top - margin.bottom;
+
+  var currentData = [];
+
+  function generateGradients(N) {
+    // Gradient magnitude follows a power-law distribution (few large, many small)
+    var grads = [];
+    for (var i = 0; i < N; i++) {
+      // Use exponential distribution for gradient magnitudes
+      var g = -Math.log(Math.random() + 0.001) * 2;
+      g = Math.min(g, 15);
+      grads.push({ absGrad: g, sign: Math.random() > 0.5 ? 1 : -1 });
+    }
+    // Sort by gradient magnitude descending
+    grads.sort(function(a, b) { return b.absGrad - a.absGrad; });
+    return grads;
+  }
+
+  function drawGOSS() {
+    var a = +document.getElementById('slider-a').value;
+    var b = +document.getElementById('slider-b-goss').value;
+    var N = +document.getElementById('slider-ngoss').value;
+    document.getElementById('val-a').textContent = a.toFixed(2);
+    document.getElementById('val-b').textContent = b.toFixed(2);
+    document.getElementById('val-ngoss').textContent = N;
+
+    if (currentData.length !== N) currentData = generateGradients(N);
+
+    ctx.clearRect(0, 0, W, H);
+
+    var topN = Math.floor(N * a);
+    var smallN = N - topN;
+    var sampledN = Math.floor(smallN * b);
+
+    // Draw sorted gradient bars
+    var maxG = currentData[0].absGrad;
+    var barW = Math.max(1, pw / N - 1);
+
+    for (var i = 0; i < N; i++) {
+      var x = margin.left + (i / N) * pw;
+      var barH = (currentData[i].absGrad / maxG) * ph;
+      var y = margin.top + ph - barH;
+
+      var isTop = i < topN;
+      var isSampled = !isTop && (i - topN < sampledN || (i - topN) / smallN < b);
+
+      if (isTop) {
+        // Large gradient: kept (orange)
+        ctx.fillStyle = 'rgba(245,147,66,0.85)';
+      } else if (i - topN < sampledN) {
+        // Small gradient, sampled (purple)
+        ctx.fillStyle = 'rgba(168,85,247,0.6)';
+      } else {
+        // Small gradient, dropped (dark gray)
+        ctx.fillStyle = 'rgba(45,49,72,0.4)';
+      }
+      ctx.fillRect(x + 0.5, y, barW, barH);
+    }
+
+    // Labels
+    ctx.fillStyle = '#9ca3b4';
+    ctx.font = '17px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('大梯度 (全部保留)', margin.left + 10, margin.top - 10);
+    ctx.fillStyle = '#f59342';
+    ctx.fillRect(margin.left, margin.top - 20, 14, 14);
+
+    ctx.fillStyle = '#a855f7';
+    ctx.fillRect(margin.left + 180, margin.top - 20, 14, 14);
+    ctx.fillStyle = '#9ca3b4';
+    ctx.fillText('小梯度采样', margin.left + 198, margin.top - 9);
+
+    ctx.fillStyle = '#2d3148';
+    ctx.fillRect(margin.left + 340, margin.top - 20, 14, 14);
+    ctx.fillStyle = '#9ca3b4';
+    ctx.fillText('丢弃', margin.left + 358, margin.top - 9);
+
+    // Divider line
+    var divX = margin.left + (topN / N) * pw;
+    ctx.strokeStyle = 'rgba(245,147,66,0.4)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(divX, margin.top);
+    ctx.lineTo(divX, margin.top + ph);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // axes
+    ctx.strokeStyle = '#4a4d5e';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(margin.left, margin.top);
+    ctx.lineTo(margin.left, margin.top + ph);
+    ctx.lineTo(margin.left + pw, margin.top + ph);
+    ctx.stroke();
+    ctx.fillStyle = '#9ca3b4';
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('样本 (按梯度降序排列)', margin.left + pw / 2, margin.top + ph + 40);
+
+    // info
+    var totalKept = topN + sampledN;
+    var totalRatio = (totalKept / N * 100).toFixed(1);
+    document.getElementById('goss-info').innerHTML =
+      '<div class="info-card">🔝 大梯度保留 <span class="val v-orange">' + topN + '</span> (' + (a*100).toFixed(0) + '%)</div>' +
+      '<div class="info-card">🎲 小梯度采样 <span class="val v-purple">' + sampledN + '</span> (' + (b*100).toFixed(0) + '%)</div>' +
+      '<div class="info-card">🗑️ 丢弃 <span class="val" style="color:#4a4d5e;">' + (N - topN - sampledN) + '</span></div>' +
+      '<div class="info-card">📊 总保留 <span class="val v-green">' + totalKept + '</span> (' + totalRatio + '%)</div>' +
+      '<div class="info-card">⚖️ 小梯度权重 <span class="val v-cyan">' + ((1-a)/b).toFixed(2) + '×</span></div>' +
+      '<div class="info-card">🔢 原始样本数 <span class="val v-blue">' + N + '</span></div>';
+  }
+
+  document.getElementById('slider-a').addEventListener('input', drawGOSS);
+  document.getElementById('slider-b-goss').addEventListener('input', drawGOSS);
+  document.getElementById('slider-ngoss').addEventListener('input', function() { currentData = []; drawGOSS(); });
+  document.getElementById('btn-goss-resample').addEventListener('click', function() { currentData = []; drawGOSS(); });
+  drawGOSS();
+})();
+
+function resampleGOSS() { currentData = []; /* trigger via event */ }
+
+// ═══════════════════════════════════════════════
+// SECTION 3: EFB Visualization
+// ═══════════════════════════════════════════════
+(function() {
+  var canvas = document.getElementById('efbCanvas');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var margin = { top: 40, right: 30, bottom: 60, left: 80 };
+  var pw = W - margin.left - margin.right;
+  var ph = H - margin.top - margin.bottom;
+
+  function drawEFB() {
+    var nFeats = +document.getElementById('slider-efb-feats').value;
+    var gamma = +document.getElementById('slider-gamma').value;
+    document.getElementById('val-efb-feats').textContent = nFeats;
+    document.getElementById('val-gamma').textContent = gamma.toFixed(2);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Simulate sparse feature matrix and bundling
+    // Generate bundles via greedy graph coloring simulation
+    var sparsity = 0.95; // each feature is non-zero in ~5% of samples
+    var nSamples = 100;
+
+    // Generate feature patterns
+    var featPatterns = [];
+    for (var f = 0; f < nFeats; f++) {
+      var pattern = [];
+      var nonZero = 0;
+      for (var s = 0; s < nSamples; s++) {
+        var active = Math.random() > sparsity;
+        pattern.push(active);
+        if (active) nonZero++;
+      }
+      featPatterns.push({ idx: f, pattern: pattern, nonZero: nonZero });
+    }
+
+    // Greedy bundling: sort by non-zero count, then group
+    // Simplified: group features that have low overlap
+    var bundles = [];
+    var assigned = new Array(nFeats).fill(false);
+
+    for (var f = 0; f < nFeats; f++) {
+      if (assigned[f]) continue;
+      var bundle = [f];
+      assigned[f] = true;
+      for (var g = f + 1; g < nFeats; g++) {
+        if (assigned[g]) continue;
+        // Check conflict rate with all features already in bundle
+        var canAdd = true;
+        for (var bi = 0; bi < bundle.length && canAdd; bi++) {
+          var conflicts = 0;
+          for (var s = 0; s < nSamples; s++) {
+            if (featPatterns[bundle[bi]].pattern[s] && featPatterns[g].pattern[s]) conflicts++;
+          }
+          if (conflicts / nSamples > gamma) canAdd = false;
+        }
+        if (canAdd) {
+          bundle.push(g);
+          assigned[g] = true;
+        }
+      }
+      bundles.push(bundle);
+    }
+
+    // Draw original features (top) vs bundles (bottom)
+    var origH = ph * 0.45;
+    var bundH = ph * 0.35;
+    var origTop = margin.top;
+    var bundTop = margin.top + origH + 20;
+
+    // Title
+    ctx.fillStyle = '#9ca3b4';
+    ctx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('原始特征矩阵 (' + nFeats + ' 个特征 × ' + nSamples + ' 样本)', margin.left, origTop - 12);
+
+    // Draw original feature matrix (only show first 100 features if too many)
+    var showFeats = Math.min(nFeats, 150);
+    var cellH = Math.min(origH / showFeats, 8);
+    var cellW = pw / nSamples;
+    var drawH = cellH * showFeats;
+
+    // Draw sparsity pattern
+    for (var f = 0; f < showFeats; f++) {
+      for (var s = 0; s < nSamples; s++) {
+        var fx = margin.left + s * cellW;
+        var fy = origTop + f * cellH;
+        if (featPatterns[f] && featPatterns[f].pattern[s]) {
+          ctx.fillStyle = 'rgba(0,200,150,0.7)';
+        } else {
+          ctx.fillStyle = 'rgba(26,29,39,0.8)';
+        }
+        ctx.fillRect(fx, fy, cellW - 0.5, cellH - 0.5);
+      }
+    }
+
+    // Draw bundles (bottom)
+    ctx.fillStyle = '#a855f7';
+    ctx.textAlign = 'left';
+    ctx.fillText('EFB 捆绑后 (' + bundles.length + ' 个 bundle, γ=' + gamma.toFixed(2) + ')', margin.left, bundTop - 12);
+
+    var bundCellH = Math.min(bundH / bundles.length, 20);
+    var bundDrawH = bundCellH * Math.min(bundles.length, 30);
+    var showBundles = Math.min(bundles.length, 30);
+
+    for (var bi = 0; bi < showBundles; bi++) {
+      // Each bundle gets a different hue
+      var hue = (bi * 360 / bundles.length) % 360;
+      for (var s = 0; s < nSamples; s++) {
+        var bx = margin.left + s * cellW;
+        var byBund = bundTop + bi * bundCellH;
+        // Check if any feature in this bundle is active
+        var anyActive = false;
+        for (var fi = 0; fi < bundles[bi].length && !anyActive; fi++) {
+          if (featPatterns[bundles[bi][fi]] && featPatterns[bundles[bi][fi]].pattern[s]) anyActive = true;
+        }
+        ctx.fillStyle = anyActive ? 'hsla(' + hue + ',70%,60%,0.8)' : 'rgba(26,29,39,0.8)';
+        ctx.fillRect(bx, byBund, cellW - 0.5, bundCellH - 0.5);
+      }
+    }
+
+    // axes
+    ctx.fillStyle = '#9ca3b4';
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(nSamples + ' 个数据点 →', margin.left + pw / 2, margin.top + origH + bundH + 48);
+
+    var avgBundleSize = (nFeats / bundles.length).toFixed(1);
+    document.getElementById('efb-info').innerHTML =
+      '<div class="info-card">📊 原始特征数 <span class="val v-blue">' + nFeats + '</span></div>' +
+      '<div class="info-card">📦 Bundle 数 <span class="val v-purple">' + bundles.length + '</span></div>' +
+      '<div class="info-card">📐 压缩比 <span class="val v-green">' + (nFeats / bundles.length).toFixed(1) + '×</span></div>' +
+      '<div class="info-card">📏 平均 Bundle 大小 <span class="val v-cyan">' + avgBundleSize + ' feats</span></div>' +
+      '<div class="info-card">🎯 冲突阈值 γ <span class="val v-orange">' + gamma.toFixed(2) + '</span></div>' +
+      '<div class="info-card">💾 维度缩减 <span class="val v-green">' + Math.round((1 - bundles.length / nFeats) * 100) + '%</span></div>';
+  }
+
+  document.getElementById('slider-efb-feats').addEventListener('input', drawEFB);
+  document.getElementById('slider-gamma').addEventListener('input', drawEFB);
+  drawEFB();
+})();
+
+// ═══════════════════════════════════════════════
+// SECTION 4: Leaf-wise Tree Growth Visualization
+// ═══════════════════════════════════════════════
+(function() {
+  var canvas = document.getElementById('leafWiseCanvas');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  var nodes = [];
+  var nodeIdCounter = 0;
+  var autoTimer = null;
+  var autoRunning = false;
+
+  function createNode(depth, gain) {
+    return { id: nodeIdCounter++, depth: depth, gain: gain, left: null, right: null, isLeaf: true, x: 0, y: 0 };
+  }
+
+  function resetLeafWise() {
+    nodes = [];
+    nodeIdCounter = 0;
+    var root = createNode(0, 10);
+    nodes.push(root);
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; autoRunning = false; }
+    document.getElementById('btn-leaf-auto').textContent = '▶ 自动演示';
+    drawLeafWise();
+  }
+
+  function stepLeafWise() {
+    var maxDepth = +document.getElementById('slider-maxdepth').value;
+    var maxLeaves = +document.getElementById('slider-maxleaves').value;
+
+    // Find leaf with max gain
+    var bestLeaf = null;
+    var bestIdx = -1;
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].isLeaf && nodes[i].depth < maxDepth && nodes.length < maxLeaves) {
+        if (!bestLeaf || nodes[i].gain > bestLeaf.gain) {
+          bestLeaf = nodes[i];
+          bestIdx = i;
+        }
+      }
+    }
+
+    if (!bestLeaf) return;
+
+    // Split it
+    bestLeaf.isLeaf = false;
+    var newGain1 = bestLeaf.gain * (0.4 + Math.random() * 0.5); // children have diminished gain
+    var newGain2 = bestLeaf.gain * (0.3 + Math.random() * 0.5);
+    var left = createNode(bestLeaf.depth + 1, newGain1);
+    var right = createNode(bestLeaf.depth + 1, newGain2);
+    bestLeaf.left = left;
+    bestLeaf.right = right;
+    nodes.push(left, right);
+
+    drawLeafWise();
+  }
+
+  function toggleLeafAuto() {
+    if (autoRunning) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+      autoRunning = false;
+      document.getElementById('btn-leaf-auto').textContent = '▶ 自动演示';
+    } else {
+      autoRunning = true;
+      document.getElementById('btn-leaf-auto').textContent = '⏸ 暂停';
+      autoTimer = setInterval(function() {
+        var maxDepth = +document.getElementById('slider-maxdepth').value;
+        var maxLeaves = +document.getElementById('slider-maxleaves').value;
+        var hasRoom = false;
+        for (var i = 0; i < nodes.length; i++) {
+          if (nodes[i].isLeaf && nodes[i].depth < maxDepth && nodes.length < maxLeaves) {
+            hasRoom = true; break;
+          }
+        }
+        if (!hasRoom) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+          autoRunning = false;
+          document.getElementById('btn-leaf-auto').textContent = '▶ 自动演示';
+          return;
+        }
+        stepLeafWise();
+      }, 600);
+    }
+  }
+
+  function drawLeafWise() {
+    ctx.clearRect(0, 0, W, H);
+
+    var marginX = 60, marginY = 40;
+    var treeW = W - 2 * marginX;
+    var treeH = H - 2 * marginY;
+
+    // Assign positions to nodes via BFS
+    if (nodes.length === 0) return;
+
+    // Find max depth
+    var maxDepth = 0;
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].depth > maxDepth) maxDepth = nodes[i].depth;
+    }
+
+    // Group nodes by depth
+    var depthGroups = {};
+    for (var d = 0; d <= maxDepth; d++) depthGroups[d] = [];
+    for (var i = 0; i < nodes.length; i++) {
+      depthGroups[nodes[i].depth].push(nodes[i]);
+    }
+
+    // Assign x,y with proper spacing
+    var dy = Math.min(treeH / (maxDepth + 1), 100);
+    for (var d = 0; d <= maxDepth; d++) {
+      var group = depthGroups[d];
+      var dx = treeW / (group.length + 1);
+      for (var j = 0; j < group.length; j++) {
+        // Try to place children under parent
+        group[j].y = marginY + d * dy + 30;
+        group[j].x = marginX + dx * (j + 1);
+      }
+    }
+
+    // Draw edges
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i].isLeaf && nodes[i].left) {
+        ctx.strokeStyle = 'rgba(78,168,246,0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x, nodes[i].y + 18);
+        ctx.lineTo(nodes[i].left.x, nodes[i].left.y - 18);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(245,147,66,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x, nodes[i].y + 18);
+        ctx.lineTo(nodes[i].right.x, nodes[i].right.y - 18);
+        ctx.stroke();
+      }
+    }
+
+    // Draw nodes
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      var radius = n.isLeaf ? 16 : 20;
+
+      if (n.isLeaf) {
+        // Gradient from gain: high gain = bright, low = dim
+        var alpha = 0.4 + 0.6 * (n.id === 0 ? 1 : Math.min(n.gain / 10, 1));
+        var grad = ctx.createRadialGradient(n.x, n.y, radius * 0.3, n.x, n.y, radius);
+        grad.addColorStop(0, 'rgba(0,200,150,' + alpha + ')');
+        grad.addColorStop(1, 'rgba(0,200,150,0.3)');
+        ctx.fillStyle = grad;
+      } else {
+        var grad2 = ctx.createRadialGradient(n.x, n.y, radius * 0.3, n.x, n.y, radius);
+        grad2.addColorStop(0, 'rgba(78,168,246,0.8)');
+        grad2.addColorStop(1, 'rgba(78,168,246,0.4)');
+        ctx.fillStyle = grad2;
+      }
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Border
+      ctx.strokeStyle = n.isLeaf ? 'rgba(0,200,150,0.6)' : 'rgba(78,168,246,0.6)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Text: gain value or "split"
+      ctx.fillStyle = '#fff';
+      ctx.font = n.isLeaf ? '15px monospace' : '14px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      if (n.isLeaf) {
+        ctx.fillText((n.gain).toFixed(2), n.x, n.y);
+      } else {
+        ctx.fillText('SP', n.x, n.y);
+      }
+
+      // Depth label
+      if (n.depth === 0) {
+        ctx.fillStyle = '#9ca3b4';
+        ctx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Root', n.x, n.y - 26);
+      }
+    }
+
+    // Labels
+    ctx.fillStyle = '#4ea8f6';
+    ctx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('🔵 已分裂节点', marginX, H - 20);
+    ctx.fillStyle = '#00c896';
+    ctx.fillText('🟢 叶子节点（显示增益值）', marginX + 160, H - 20);
+    ctx.fillStyle = '#9ca3b4';
+    ctx.fillText('← 左侧（较低分裂阈值） → 右侧（较高分裂阈值）', marginX + 380, H - 20);
+
+    // Zoom scale line
+    var depthLabelY = marginY + 20;
+    for (var d = 0; d <= maxDepth; d++) {
+      ctx.fillStyle = '#4a4d5e';
+      ctx.font = '16px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('Depth ' + d, marginX - 10, marginY + d * Math.min(treeH / (maxDepth + 1), 100) + 30);
+    }
+
+    // Info cards
+    var leafCount = nodes.filter(function(n) { return n.isLeaf; }).length;
+    var maxGainLeaf = nodes.filter(function(n) { return n.isLeaf; }).reduce(function(max, n) { return n.gain > max ? n.gain : max; }, 0);
+    document.getElementById('leaf-info').innerHTML =
+      '<div class="info-card">🌿 总叶节点 <span class="val v-green">' + leafCount + '</span></div>' +
+      '<div class="info-card">🌳 总节点 <span class="val v-blue">' + nodes.length + '</span></div>' +
+      '<div class="info-card">📏 最大深度 <span class="val v-cyan">' + maxDepth + '</span></div>' +
+      '<div class="info-card">📈 最大叶增益 <span class="val v-orange">' + maxGainLeaf.toFixed(2) + '</span></div>' +
+      '<div class="info-card">🔄 分裂次数 <span class="val v-purple">' + (nodes.length - leafCount) + '</span></div>';
+  }
+
+  document.getElementById('btn-leaf-step').addEventListener('click', stepLeafWise);
+  document.getElementById('btn-leaf-reset').addEventListener('click', resetLeafWise);
+  document.getElementById('btn-leaf-auto').addEventListener('click', toggleLeafAuto);
+  document.getElementById('slider-maxdepth').addEventListener('input', function() {
+    document.getElementById('val-maxdepth').textContent = this.value;
+    drawLeafWise();
+  });
+  document.getElementById('slider-maxleaves').addEventListener('input', function() {
+    document.getElementById('val-maxleaves').textContent = this.value;
+    drawLeafWise();
+  });
+
+  resetLeafWise();
+})();
+</script>
+
+<!-- Mermaid CDN -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+</script>
+<script>
+
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

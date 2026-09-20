@@ -1,0 +1,2257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LlamaIndex 数据框架 — RAG 检索增强生成引擎</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #8b5cf6;
+    --accent2: #a78bfa;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #c084fc;
+    --pink: #f472b6;
+    --orange: #f59e0b;
+    --amber: #fbbf24;
+    --lime: #a3e635;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a1630 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--pink), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.purple  { background: var(--accent);  box-shadow: 0 0 10px var(--accent); }
+  .dot.blue    { background: var(--blue);    box-shadow: 0 0 10px var(--blue); }
+  .dot.cyan    { background: var(--cyan);    box-shadow: 0 0 10px var(--cyan); }
+  .dot.green   { background: var(--green);   box-shadow: 0 0 10px var(--green); }
+  .dot.pink    { background: var(--pink);    box-shadow: 0 0 10px var(--pink); }
+  .dot.orange  { background: var(--orange);  box-shadow: 0 0 10px var(--orange); }
+  .dot.amber   { background: var(--amber);   box-shadow: 0 0 10px var(--amber); }
+  .dot.lime    { background: var(--lime);    box-shadow: 0 0 10px var(--lime); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Mermaid ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(139,92,246,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(139,92,246,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(139,92,246,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #1d1935; }
+  .btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(139,92,246,0.3);
+  }
+  .btn.play-btn { background: var(--green); color: #0b0e14; border-color: var(--green); font-weight: 700; }
+  .btn.play-btn:hover { box-shadow: 0 0 14px rgba(74,222,128,0.3); }
+
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .tab-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .tab-content.active {
+    display: block;
+    opacity: 1;
+  }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  .insight {
+    background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(139,92,246,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--green); font-weight: 600; }
+  .cmp-table .warn-cell { color: var(--red); font-weight: 600; }
+
+  .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  /* ── Index type cards ── */
+  .index-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .index-type-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    transition: border-color 0.2s;
+    border-left: 3px solid var(--accent);
+  }
+  .index-type-card:hover { border-color: var(--accent); }
+  .index-type-card .idx-icon { font-size: 32px; margin-bottom: 10px; }
+  .index-type-card h3 { font-size: 20px; margin-bottom: 8px; color: var(--text); }
+  .index-type-card p { font-size: 16px; color: var(--text2); line-height: 1.7; }
+  .index-type-card .idx-tag {
+    display: inline-block;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-top: 8px;
+    background: rgba(139,92,246,0.15);
+    color: var(--accent);
+  }
+
+  /* ── Pipeline step visualization ── */
+  .pipeline-viz {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px 16px;
+    overflow-x: auto;
+    flex-wrap: wrap;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .pipe-step {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 140px;
+    transition: all 0.3s;
+  }
+  .pipe-step:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 16px rgba(139,92,246,0.2);
+  }
+  .pipe-step .pipe-icon { font-size: 28px; margin-bottom: 6px; }
+  .pipe-step .pipe-name { font-size: 16px; font-weight: 600; color: var(--text); }
+  .pipe-step .pipe-desc { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .pipe-arrow {
+    font-size: 24px;
+    color: var(--accent);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  /* ── Code block ── */
+  .code-block {
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+    .grid-2col, .grid-3col, .grid-4col { grid-template-columns: 1fr; }
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* ── highlight.js code blocks ── */
+  .hljs {
+    background: #0d1117 !important;
+    border-radius: 10px;
+    padding: 18px 22px !important;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  pre code.hljs {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="header">
+  <h1>🦙 LlamaIndex · 数据框架</h1>
+  <p>将 LLM 连接到私有数据的桥梁——从数据摄取、索引构建到高级 RAG 检索与 Agent 推理，一站式构建 LLM 数据应用</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Overview -->
+<!-- ================================================================ -->
+<div class="section" id="sec-overview">
+  <h2><span class="dot purple"></span> 1. LlamaIndex 概述 — LLM 与数据之间的桥梁</h2>
+  <p class="desc">
+    <b>LlamaIndex</b>（前称 GPT Index）是一个专门为 <b>LLM 数据连接</b> 而设计的数据框架。
+    它的核心使命是解决 LLM 的 <b>知识截止日期</b> 和 <b>幻觉</b> 问题——
+    通过将外部数据（文档、数据库、API）构建为结构化 <b>索引</b>，让 LLM 能高效检索并基于真实数据回答。
+  </p>
+
+  <!-- Mermaid: High-Level Architecture -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#8b5cf6', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#8b5cf6', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    subgraph "📁 外部数据源"
+        D1["📄 文档<br/>PDF/Word/Markdown"]
+        D2["🗄️ 数据库<br/>SQL/NoSQL"]
+        D3["🌐 API<br/>REST/GraphQL"]
+        D4["💬 聊天记录<br/>Slack/Discord"]
+    end
+
+    subgraph "🦙 LlamaIndex"
+        direction TB
+        ING["📥 数据摄取<br/>Load → Parse → Chunk"]
+        IDX["📇 索引构建<br/>Vector/Summary/Tree/KG"]
+        RET["🔍 检索<br/>Top-K / Routing / Fusion"]
+        QE["⚡ 查询引擎<br/>Response Synthesis"]
+    end
+
+    subgraph "🤖 LLM & 输出"
+        LLM["🧠 LLM<br/>GPT / Claude / Gemini"]
+        OUT["✅ 增强回答<br/>含来源引用"]
+    end
+
+    D1 & D2 & D3 & D4 --> ING
+    ING --> IDX
+    IDX --> RET
+    RET --> QE
+    QE --> LLM
+    LLM --> OUT
+
+    style ING fill:#1a1630,stroke:#8b5cf6,stroke-width:2px,color:#e1e4eb
+    style IDX fill:#1a1630,stroke:#a78bfa,stroke-width:2px,color:#e1e4eb
+    style RET fill:#1a1630,stroke:#c084fc,stroke-width:2px,color:#e1e4eb
+    style QE fill:#1a1630,stroke:#f472b6,stroke-width:2px,color:#e1e4eb
+    style LLM fill:#151922,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style OUT fill:#151922,stroke:#4ade80,stroke-width:2px,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 RAG 核心流程 (LlamaIndex 视角)</h3>
+    <div id="formula-rag"></div>
+  </div>
+
+  <div class="grid-3col">
+    <div class="info-card" style="text-align:center">
+      <div style="font-size:38px;margin-bottom:8px;">📥</div>
+      <div class="val" style="font-size:18px;">数据摄取（Ingestion）</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);">160+ 数据连接器，自动解析分块</div>
+    </div>
+    <div class="info-card" style="text-align:center">
+      <div style="font-size:38px;margin-bottom:8px;">📇</div>
+      <div class="val" style="font-size:18px;">索引构建（Indexing）</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);">5 种索引类型，适配不同查询模式</div>
+    </div>
+    <div class="info-card" style="text-align:center">
+      <div style="font-size:38px;margin-bottom:8px;">🔍</div>
+      <div class="val" style="font-size:18px;">检索增强（Retrieval）</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);">高级检索策略 + 重排序 + 路由</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>LlamaIndex vs LangChain：</strong>LlamaIndex 专注于 <b>数据索引与检索</b>（RAG 是其核心设计目标），
+    而 LangChain 是通用 LLM 应用框架（Chain、Agent、Memory 等更广泛抽象）。
+    LlamaIndex 提供了更丰富的数据连接器、更细粒度的索引控制、更高级的检索策略。
+    两者可以互补使用——LlamaIndex 做数据层，LangChain 做编排层。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: Data Ingestion Pipeline -->
+<!-- ================================================================ -->
+<div class="section" id="sec-ingestion">
+  <h2><span class="dot blue"></span> 2. 数据摄取管道 — Load → Parse → Chunk → Embed</h2>
+  <p class="desc">
+    数据摄取（Ingestion）是将原始数据转化为可索引 <b>Node</b> 的完整管道。
+    LlamaIndex 提供了 <b>160+ 数据连接器</b>（LlamaHub），支持文件、数据库、API、SaaS 应用等。
+    管道分四步：<b>加载（Load）→ 解析（Parse）→ 分块（Chunk）→ 嵌入（Embed）</b>。
+  </p>
+
+  <!-- Pipeline Visualization -->
+  <div class="pipeline-viz">
+    <div class="pipe-step">
+      <div class="pipe-icon">📄</div>
+      <div class="pipe-name">SimpleDirectoryReader</div>
+      <div class="pipe-desc">加载文件目录<br/>支持 PDF/Word/MD</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">🔧</div>
+      <div class="pipe-name">IngestionPipeline</div>
+      <div class="pipe-desc">解析 & 清洗<br/>Markdown/HTML 解析</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">✂️</div>
+      <div class="pipe-name">SentenceSplitter</div>
+      <div class="pipe-desc">智能分块<br/>chunk_size + overlap</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">🧮</div>
+      <div class="pipe-name">Embedding Model</div>
+      <div class="pipe-desc">向量嵌入<br/>OpenAI/Cohere/BGE</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">💾</div>
+      <div class="pipe-name">VectorStoreIndex</div>
+      <div class="pipe-desc">存储索引<br/>可供查询</div>
+    </div>
+  </div>
+
+  <!-- Mermaid: Detailed Ingestion Pipeline -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#38bdf8', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#38bdf8', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    A["📁 数据源<br/>LlamaHub 160+ 连接器"] --> B["📖 Reader<br/>SimpleDirectoryReader<br/>PDF/Word/Markdown/Notion"]
+    B --> C["📝 Document<br/>{text, metadata, doc_id}"]
+    C --> D["🔧 Transformations<br/>• SentenceSplitter<br/>• MetadataExtractor<br/>• TextCleaner"]
+    D --> E["📋 Node 列表<br/>{text, embedding,<br/>metadata, relationships}"]
+    E --> F["🧮 Embedding<br/>• OpenAI Ada-002<br/>• Cohere Embed<br/>• BGE / BAAI<br/>• Jina AI"]
+    F --> G["💾 Index<br/>Vector Store Index"]
+
+    style A fill:#1a1630,stroke:#8b5cf6,stroke-width:2px,color:#e1e4eb
+    style B fill:#151922,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style C fill:#151922,stroke:#4ade80,stroke-width:2px,color:#e1e4eb
+    style D fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style E fill:#151922,stroke:#a78bfa,stroke-width:2px,color:#e1e4eb
+    style F fill:#1a2530,stroke:#f472b6,stroke-width:2px,color:#e1e4eb
+    style G fill:#1d1935,stroke:#8b5cf6,stroke-width:3px,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 分块策略（Chunking Strategy）</h3>
+    <div id="formula-chunking"></div>
+  </div>
+
+  <!-- Chunking interactive canvas -->
+  <canvas id="canvasChunking" width="1200" height="380"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>Chunk Size <span class="val" id="valChunkSize">512</label>
+      <input type="range" id="sliderChunkSize" min="128" max="2048" value="512" step="64">
+    </div>
+    <div class="slider-group">
+      <label>Chunk Overlap <span class="val" id="valChunkOverlap">64</label>
+      <input type="range" id="sliderChunkOverlap" min="0" max="512" value="64" step="16">
+    </div>
+    <div class="slider-group">
+      <label>文档长度 (字符) <span class="val" id="valDocLen">3000</label>
+      <input type="range" id="sliderDocLen" min="1000" max="10000" value="3000" step="500">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>分块策略是关键设计决策：</strong>chunk_size 太大 → 检索精度下降（噪音多）；chunk_size 太小 → 上下文碎片化（丢失语义）。
+    overlap 保证跨块边界的语义连续性。LlamaIndex 的 <b>SentenceSplitter</b> 按句子边界智能分割，
+    比固定字符数切割保留了更多语义完整性。对于代码，推荐使用 <b>CodeSplitter</b>（按 AST 分割）。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: Index Types -->
+<!-- ================================================================ -->
+<div class="section" id="sec-indexes">
+  <h2><span class="dot cyan"></span> 3. 五种索引类型 — 为不同查询模式选择最优索引</h2>
+  <p class="desc">
+    LlamaIndex 的核心创新在于提供了 <b>多种索引类型</b>，每种针对不同的查询模式优化。
+    选择合适的索引类型是 RAG 系统设计的<b>第一个关键决策</b>。
+  </p>
+
+  <div class="index-type-grid">
+    <div class="index-type-card" style="border-left-color: var(--accent)">
+      <div class="idx-icon">🧮</div>
+      <h3>Vector Store Index</h3>
+      <p>将每个 Node 嵌入为向量，通过语义相似度检索。最常用、最通用的索引类型，适合语义搜索场景。</p>
+      <span class="idx-tag">默认推荐
+    </div>
+    <div class="index-type-card" style="border-left-color: var(--blue)">
+      <div class="idx-icon">📋</div>
+      <h3>Summary Index</h3>
+      <p>为每个 Node 生成摘要，检索时使用 LLM 基于摘要选择相关 Node。适合需要全局理解的查询。</p>
+      <span class="idx-tag">摘要驱动
+    </div>
+    <div class="index-type-card" style="border-left-color: var(--green)">
+      <div class="idx-icon">🌳</div>
+      <h3>Tree Index</h3>
+      <p>构建树状索引结构，自顶向下遍历。适合需要对大量文档进行层次化查询的场景。</p>
+      <span class="idx-tag">层次检索
+    </div>
+    <div class="index-type-card" style="border-left-color: var(--orange)">
+      <div class="idx-icon">🔑</div>
+      <h3>Keyword Table Index</h3>
+      <p>提取关键词 → Node 映射表，基于关键词匹配检索。适合精确匹配和术语查询场景。</p>
+      <span class="idx-tag">关键词匹配
+    </div>
+    <div class="index-type-card" style="border-left-color: var(--pink)">
+      <div class="idx-icon">🕸️</div>
+      <h3>Knowledge Graph Index</h3>
+      <p>从文本中抽取实体和关系构建知识图谱。适合需要推理实体间关系的复杂查询。</p>
+      <span class="idx-tag">关系推理
+    </div>
+    <div class="index-type-card" style="border-left-color: var(--lime)">
+      <div class="idx-icon">🔀</div>
+      <h3>ComposableGraph</h3>
+      <p>组合多个索引为一个图，支持跨索引查询。适合多数据源、多索引类型的复杂场景。</p>
+      <span class="idx-tag">高级组合
+    </div>
+  </div>
+
+  <!-- Canvas: Index comparison radar -->
+  <canvas id="canvasIndexCompare" width="1200" height="450"></canvas>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr><th>索引类型</th><th>检索方式</th><th>最适场景</th><th>构建成本</th><th>查询速度</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Vector Store</b></td>
+        <td>向量相似度（cosine/dot）</td>
+        <td class="hl-cell">通用语义搜索、FAQ</td>
+        <td>中（需 Embedding）</td>
+        <td>快</td>
+      </tr>
+      <tr>
+        <td><b>Summary</b></td>
+        <td>LLM 基于摘要选择 Node</td>
+        <td>文档摘要查询、全局理解</td>
+        <td class="warn-cell">高（需 LLM 生成摘要）</td>
+        <td>慢</td>
+      </tr>
+      <tr>
+        <td><b>Tree</b></td>
+        <td>自顶向下树遍历</td>
+        <td>大量文档分类检索</td>
+        <td>中</td>
+        <td>中</td>
+      </tr>
+      <tr>
+        <td><b>Keyword Table</b></td>
+        <td>关键词 → Node 映射</td>
+        <td>术语查询、精确匹配</td>
+        <td class="hl-cell">低</td>
+        <td class="hl-cell">极快</td>
+      </tr>
+      <tr>
+        <td><b>Knowledge Graph</b></td>
+        <td>实体关系图遍历</td>
+        <td>关系推理、多跳问答</td>
+        <td class="warn-cell">高（需 NER + 关系抽取）</td>
+        <td>中</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>选型建议：</strong>① 99% 的 RAG 场景从 <b>VectorStoreIndex</b> 开始；
+    ② 需要精确术语匹配时，追加 <b>Keyword Table Index</b> 做混合检索；
+    ③ 涉及实体间关系推理（如"谁投资了谁"）→ <b>KnowledgeGraphIndex</b>；
+    ④ 多数据源/多粒度查询 → <b>ComposableGraph</b> 组合多个索引。
+    LlamaIndex 支持索引的<b>增量更新</b>——添加/删除 Node 无需重建整个索引。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Retrieval Strategies -->
+<!-- ================================================================ -->
+<div class="section" id="sec-retrieval">
+  <h2><span class="dot green"></span> 4. 检索策略 — 从简单 Top-K 到高级融合路由</h2>
+  <p class="desc">
+    检索（Retrieval）是 RAG 的核心环节。LlamaIndex 提供了从基础到高级的多层次检索策略，
+    包括<b>Top-K 相似度检索</b>、<b>混合检索</b>、<b>递归检索</b>、<b>查询路由</b>和<b>多策略融合</b>。
+  </p>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="tab-topk">🎯 Top-K 检索</button>
+    <button class="tab-btn" data-tab="tab-hybrid">🔀 混合检索</button>
+    <button class="tab-btn" data-tab="tab-recursive">🔄 递归检索</button>
+    <button class="tab-btn" data-tab="tab-router">🚦 查询路由</button>
+    <button class="tab-btn" data-tab="tab-fusion">🎪 多策略融合</button>
+  </div>
+
+  <!-- Top-K -->
+  <div id="tab-topk" class="tab-content active">
+    <p class="desc">
+      <b>Top-K 相似度检索</b>是最基础的检索策略：将用户查询转换为 Embedding，计算与索引中所有 Node 的相似度，
+      返回最相似的 K 个 Node。LlamaIndex 支持 <b>cosine</b>、<b>dot product</b>、<b>Euclidean</b> 三种相似度度量。
+    </p>
+    <canvas id="canvasTopK" width="1200" height="400"></canvas>
+    <div class="sliders">
+      <div class="slider-group">
+        <label>Top-K <span class="val" id="valTopK">5</label>
+        <input type="range" id="sliderTopK" min="1" max="20" value="5" step="1">
+      </div>
+      <div class="slider-group">
+        <label>Similarity Threshold <span class="val" id="valSimThresh">0.65</label>
+        <input type="range" id="sliderSimThresh" min="0.3" max="0.95" value="0.65" step="0.05">
+      </div>
+    </div>
+    <div class="insight">
+      💡 <strong>Top-K 不是越大越好：</strong>K 太小 → 遗漏关键上下文；K 太大 → 引入噪音、浪费 Token。
+      实践中 K=3~10 是常见范围。LlamaIndex 的 <b>similarity_cutoff</b> 参数可以过滤低相关度 Node，
+      避免无关上下文污染 LLM 回答。同时支持 <b>similarity_top_k</b> + <b>similarity_cutoff</b> 的组合使用。
+    </div>
+  </div>
+
+  <!-- 混合检索 -->
+  <div id="tab-hybrid" class="tab-content">
+    <p class="desc">
+      <b>混合检索（Hybrid Search）</b>结合<b>语义搜索</b>（向量相似度）和<b>关键词搜索</b>（BM25），
+      通过<b>倒数排名融合（RRF）</b>合并两种检索结果，兼顾语义相关性和精确匹配。
+    </p>
+
+    <!-- Mermaid: Hybrid Search Flow -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#4ade80', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#4ade80', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    Q["🔍 用户查询<br/>'Transformer 注意力机制的优势'"] --> SEM["🧮 语义检索<br/>Vector Store<br/>Top-20 by cosine"]
+    Q --> KW["🔑 关键词检索<br/>BM25 / Keyword Table<br/>Top-20 by BM25 score"]
+
+    SEM --> RRF["🎪 RRF 融合<br/>score(d) = Σ 1/(k + rank_i(d))<br/>k=60 (经典常数)"]
+    KW --> RRF
+
+    RRF --> FINAL["✅ 最终 Top-K<br/>语义 + 精确 双重覆盖<br/>返回混合排序结果"]
+
+    style Q fill:#1d1935,stroke:#8b5cf6,stroke-width:3px,color:#e1e4eb
+    style SEM fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style KW fill:#1a2530,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+    style RRF fill:#2d1a30,stroke:#f472b6,stroke-width:2px,color:#e1e4eb
+    style FINAL fill:#1a2d25,stroke:#4ade80,stroke-width:3px,color:#e1e4eb
+      </pre>
+    </div>
+
+    <div class="formula-block">
+      <h3>📐 倒数排名融合（RRF）</h3>
+      <div id="formula-rrf"></div>
+    </div>
+
+    <div class="insight">
+      💡 <strong>为什么需要混合检索？</strong>纯向量检索擅长语义相似但弱于精确匹配（如产品型号"RTX-4090"），
+      关键词检索擅长精确匹配但理解不了同义表达。混合检索取长补短。
+      LlamaIndex 的 <b>HybridFusionRetriever</b> 自动组合向量检索和 BM25 检索并通过 RRF 融合排序。
+    </div>
+  </div>
+
+  <!-- 递归检索 -->
+  <div id="tab-recursive" class="tab-content">
+    <p class="desc">
+      <b>递归检索（Recursive Retrieval）</b>：先从文档摘要/元数据中检索，确定相关文档后再在文档内部精细检索。
+      适合文档数量极大的场景——先用粗粒度的 Summary Index 定位文档，再用 Vector Store 在文档内检索。
+    </p>
+
+    <!-- Mermaid: Recursive Retrieval -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#a78bfa', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#a78bfa', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    Q["🔍 用户查询"] --> S1["📋 第一层：Summary Index<br/>检索相关文档<br/>从 10000 篇中选 Top-5 篇"]
+    S1 --> S2["🧮 第二层：Vector Store Index<br/>在选中的 5 篇文档中<br/>精细检索相关段落"]
+    S2 --> OUT["✅ 返回精确上下文<br/>两层漏斗过滤<br/>10000→5→Top-10 Nodes"]
+
+    style Q fill:#1d1935,stroke:#8b5cf6,stroke-width:3px,color:#e1e4eb
+    style S1 fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style S2 fill:#2d2510,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+    style OUT fill:#1a2d25,stroke:#4ade80,stroke-width:3px,color:#e1e4eb
+      </pre>
+    </div>
+
+    <div class="insight">
+      💡 <strong>递归检索 = 两级漏斗：</strong>第一级快速过滤大量文档（用摘要/元数据），第二级精细检索。
+      这种方法在 <b>企业级文档库（10万+文档）</b>中非常有效——避免对全量文档做向量检索。
+      LlamaIndex 的 <b>RecursiveRetriever</b> 支持任意深度的递归（node → sub-node → sub-sub-node）。
+    </div>
+  </div>
+
+  <!-- 查询路由 -->
+  <div id="tab-router" class="tab-content">
+    <p class="desc">
+      <b>查询路由（Query Routing）</b>：根据查询的<b>意图和类型</b>，将查询动态路由到最合适的索引或检索器。
+      例如：事实查询 → 关键词索引、分析性问题 → Summary Index、比较类问题 → Vector Store。
+    </p>
+
+    <!-- Mermaid: Query Router -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#f472b6', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#f472b6', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    Q["🔍 用户查询"] --> RTR["🚦 RouterQueryEngine<br/>LLM 分析查询意图<br/>选择最佳索引/检索器"]
+
+    RTR -->|"事实/定义查询"| KW["🔑 Keyword Table Index<br/>精确术语匹配"]
+    RTR -->|"分析/综合查询"| SM["📋 Summary Index<br/>摘要驱动检索"]
+    RTR -->|"语义/比较查询"| VS["🧮 Vector Store Index<br/>语义相似度"]
+    RTR -->|"关系推理查询"| KG["🕸️ Knowledge Graph<br/>实体关系遍历"]
+
+    KW --> FUSE["🔗 SubQuestionQueryEngine<br/>汇总多源结果"]
+    SM --> FUSE
+    VS --> FUSE
+    KG --> FUSE
+
+    FUSE --> OUT["✅ 综合回答<br/>含多源引用"]
+
+    style Q fill:#1d1935,stroke:#8b5cf6,stroke-width:3px,color:#e1e4eb
+    style RTR fill:#2d1a30,stroke:#f472b6,stroke-width:3px,color:#e1e4eb
+    style KW fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style SM fill:#1a2d25,stroke:#4ade80,stroke-width:2px,color:#e1e4eb
+    style VS fill:#2d2510,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+    style KG fill:#1d1935,stroke:#a78bfa,stroke-width:2px,color:#e1e4eb
+    style FUSE fill:#1a1d30,stroke:#c084fc,stroke-width:2px,color:#e1e4eb
+    style OUT fill:#1a2d25,stroke:#4ade80,stroke-width:3px,color:#e1e4eb
+      </pre>
+    </div>
+
+    <div class="insight">
+      💡 <strong>路由 = 让查询找对人：</strong>不是所有问题都适合向量检索。"什么是 BERT？"→ 关键词匹配更精确；
+      "分析 BERT 在情感分析中的优势"→ 语义检索更合适。LlamaIndex 的 <b>RouterQueryEngine</b> 使用 LLM
+      分析查询并选择一个或多个索引执行查询，并具有 <b>selector</b> 回调机制可自定义路由策略。
+    </div>
+  </div>
+
+  <!-- 多策略融合 -->
+  <div id="tab-fusion" class="tab-content">
+    <p class="desc">
+      <b>多策略融合（Fusion Retrieval）</b>：并行执行多种检索策略，然后通过排名融合（RRF）或
+      分数融合（加权求和）合并结果。与混合检索不同，融合可以在<b>任意数量的异构检索器</b>之间进行。
+    </p>
+
+    <canvas id="canvasFusion" width="1200" height="380"></canvas>
+
+    <div class="insight">
+      💡 <strong>融合 > 单策略：</strong>多种检索器从不同角度理解查询，融合结果比单一策略更鲁棒。
+      LlamaIndex 的 <b>QueryFusionRetriever</b> 支持并行执行任意数量的检索器并融合结果。
+      实践中常用的组合：向量检索 + BM25 + 基于 LLM 的查询改写检索。
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: Query Engine -->
+<!-- ================================================================ -->
+<div class="section" id="sec-query-engine">
+  <h2><span class="dot pink"></span> 5. 查询引擎 — 从检索到回答的完整管线</h2>
+  <p class="desc">
+    <b>Query Engine</b> 是 LlamaIndex 面向用户的顶层接口。它封装了<b>检索（Retriever）+ 后处理（Postprocessor）+ 回答合成（Response Synthesizer）</b>
+    的完整管线，提供统一的 `.query()` 接口，让用户像对话一样查询数据。
+  </p>
+
+  <!-- Mermaid: Query Engine Pipeline -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#f472b6', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#f472b6', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart LR
+    Q["💬 用户查询<br/>query('Transformer 的注意力机制?')"] --> RET["🔍 Retriever<br/>从索引检索相关 Node<br/>retrieve(query) → [Node1, Node2, ...]"]
+    RET --> POST["🔧 Postprocessor<br/>• SimilarityPostprocessor<br/>• KeywordNodePostprocessor<br/>• MetadataReplacement<br/>• CohereRerank"]
+    POST --> SYNTH["⚡ Response Synthesizer<br/>将 Node 列表 + 查询<br/>组装为 Prompt → LLM → 回答"]
+    SYNTH --> OUT["✅ 最终回答<br/>含引用来源<br/>source_nodes 可追溯"]
+
+    style Q fill:#1d1935,stroke:#8b5cf6,stroke-width:3px,color:#e1e4eb
+    style RET fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style POST fill:#2d2510,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+    style SYNTH fill:#2d1a30,stroke:#f472b6,stroke-width:2px,color:#e1e4eb
+    style OUT fill:#1a2d25,stroke:#4ade80,stroke-width:3px,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab2="tab-synthesis">🧩 回答合成模式</button>
+    <button class="tab-btn" data-tab2="tab-postprocess">🔧 后处理节点</button>
+    <button class="tab-btn" data-tab2="tab-streaming">🌊 流式输出</button>
+  </div>
+
+  <div id="tab-synthesis" class="tab-content2 active">
+    <h3 style="color:var(--text);font-size:19px;margin-bottom:14px;">🧩 Response Synthesizer — 三种回答合成模式</h3>
+    <div class="table-wrap">
+<table class="cmp-table">
+      <thead><tr><th>模式</th><th>行为</th><th>适用场景</th><th>Token 消耗</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>compact</b>（默认）</td>
+          <td>将检索到的 Node 尽量打包进一个 LLM 调用</td>
+          <td class="hl-cell">大多数场景，上下文窗口够用</td>
+          <td>低</td>
+        </tr>
+        <tr>
+          <td><b>refine</b></td>
+          <td>对第一个 Node 生成初始回答，用后续 Node 逐步优化</td>
+          <td>Node 数量多、需要逐步精炼</td>
+          <td class="warn-cell">高（多次 LLM 调用）</td>
+        </tr>
+        <tr>
+          <td><b>tree_summarize</b></td>
+          <td>对 Node 分组递归摘要，最终合并为单个回答</td>
+          <td>大量 Node、内容重复性高</td>
+          <td class="warn-cell">高（log N 层 LLM 调用）</td>
+        </tr>
+      </tbody>
+    </table>
+</div>
+
+    <!-- Mermaid: Response Synthesis modes -->
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#f472b6', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#f472b6', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    subgraph "compact 模式"
+        C1["Nodes[1..N]"] --> C2["💬 单次 Prompt<br/>{query + N nodes}"]
+        C2 --> C3["✅ 一次 LLM 调用返回回答"]
+    end
+
+    subgraph "refine 模式"
+        R1["Node 1"] --> R2["💬 初始回答"]
+        R2 --> R3["+ Node 2 → 精炼"]
+        R3 --> R4["+ Node 3 → 精炼"]
+        R4 --> R5["✅ 最终精确回答"]
+    end
+
+    subgraph "tree_summarize 模式"
+        T1["Nodes 1-2"] --> T2["📝 摘要 A"]
+        T3["Nodes 3-4"] --> T4["📝 摘要 B"]
+        T5["..."] --> T6["📝 摘要 C"]
+        T2 --> T7["💬 最终合并"]
+        T4 --> T7
+        T6 --> T7
+        T7 --> T8["✅ 综合回答"]
+    end
+
+    style C1 fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style R1 fill:#1a2d25,stroke:#4ade80,stroke-width:2px,color:#e1e4eb
+    style T1 fill:#2d2510,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+      </pre>
+    </div>
+
+    <div class="insight">
+      💡 <strong>选择建议：</strong>① Node 数量少（≤10）→ <b>compact</b>（默认，最快最省）；
+      ② Node 数量多且内容互补、需要逐步集成 → <b>refine</b>；
+      ③ Node 极多且内容重复性高 → <b>tree_summarize</b>。
+      生产环境中，<b>compact</b> 覆盖 80% 场景，<b>refine</b> 适合对质量要求极高的场景。
+    </div>
+  </div>
+
+  <div id="tab-postprocess" class="tab-content2">
+    <h3 style="color:var(--text);font-size:19px;margin-bottom:14px;">🔧 Node Postprocessors（检索后处理）</h3>
+    <div class="table-wrap">
+<table class="cmp-table">
+      <thead><tr><th>后处理器</th><th>功能</th><th>典型参数</th></tr></thead>
+      <tbody>
+        <tr><td><b>SimilarityPostprocessor</b></td><td>过滤相似度低于阈值的 Node</td><td>similarity_cutoff=0.7</td></tr>
+        <tr><td><b>KeywordNodePostprocessor</b></td><td>保留包含特定关键词的 Node</td><td>required_keywords, exclude_keywords</td></tr>
+        <tr><td><b>MetadataReplacementPostprocessor</b></td><td>将 Node 文本替换为最近的父文档上下文</td><td>target_metadata_key="window"</td></tr>
+        <tr><td><b>CohereRerank</b></td><td>使用 Cohere Rerank API 对 Node 重排序</td><td>top_n=10, model="rerank-v3"</td></tr>
+        <tr><td><b>SentenceTransformerRerank</b></td><td>使用 Cross-Encoder 模型本地重排序</td><td>model="BAAI/bge-reranker-base"</td></tr>
+        <tr><td><b>LongContextReorder</b></td><td>将最相关 Node 放在上下文首尾</td><td>—</td></tr>
+        <tr><td><b>SentenceEmbeddingOptimizer</b></td><td>移除与查询不相关的句子</td><td>percentile_cutoff=0.5</td></tr>
+      </tbody>
+    </table>
+</div>
+
+    <div class="insight">
+      💡 <strong>后处理管线的力量：</strong>检索只是第一步——后处理决定了最终进入 LLM 的上下文质量。
+      建议管线：<b>检索 → Similarity 过滤 → CohereRerank 重排 → MetadataReplacement 丰富上下文 → 送入 LLM</b>。
+      每个后处理器都可以按需组合，形成定制的检索后处理管线。
+    </div>
+  </div>
+
+  <div id="tab-streaming" class="tab-content2">
+    <h3 style="color:var(--text);font-size:19px;margin-bottom:14px;">🌊 流式输出与异步查询</h3>
+    <p class="desc">
+      LlamaIndex 支持<b>同步</b>、<b>异步</b>和<b>流式</b>三种查询模式。流式输出在 RAG 场景中尤为重要——
+      用户无需等待完整回答生成，可以逐 token 看到结果。
+    </p>
+
+    <div class="code-block">
+<pre><code class="language-python">
+# ===== LlamaIndex 流式查询 =====
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+
+# 构建索引
+docs = SimpleDirectoryReader("./data").load_data()
+index = VectorStoreIndex.from_documents(docs)
+
+# 构建查询引擎
+engine = index.as_query_engine(streaming=True)
+
+# 流式查询
+response = engine.query("总结文档内容")
+for token in response.response_gen:
+    print(token, end="", flush=True)
+</code></pre>
+</div>
+
+    <div class="insight">
+      💡 <strong>异步查询的价值：</strong>在生产环境中，使用 <b>aquery()</b> 异步查询可以并发处理多个用户请求，
+      大幅提升吞吐量。配合 <b>streaming=True</b>，用户体验显著改善——类似 ChatGPT 的逐字输出效果。
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: Advanced Features -->
+<!-- ================================================================ -->
+<div class="section" id="sec-advanced">
+  <h2><span class="dot orange"></span> 6. 高级特性 — Agent · 查询变换 · 多模态</h2>
+  <p class="desc">
+    LlamaIndex 不仅提供基础 RAG 能力，还包含一系列高级特性：<b>Agent（工具调用推理）</b>、
+    <b>查询变换（Query Transformation）</b>、<b>多模态索引</b>、<b>回调系统</b>和<b>评估框架</b>。
+  </p>
+
+  <!-- Mermaid: LlamaIndex Agent -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#f59e0b', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#f59e0b', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    Q["👤 用户：'对比 Q3 营收和 Q4 预测，用图表展示'"] --> AG["🤖 LlamaIndex Agent<br/>LLM + Tool Use 推理循环"]
+
+    AG -->|"query('Q3 营收')"| T1["🔍 QueryEngineTool<br/>财务报告索引"]
+    T1 -->|"Q3 营收 = $5.2M"| AG
+
+    AG -->|"query('Q4 预测')"| T2["🔍 QueryEngineTool<br/>市场预测索引"]
+    T2 -->|"Q4 预测 = $6.8M"| AG
+
+    AG -->|"plot(x=['Q3','Q4'], y=[5.2,6.8])"| T3["📊 VisualizationTool<br/>Python 代码执行"]
+    T3 -->|"图片 URL"| AG
+
+    AG --> OUT["✅ 综合分析 + 趋势图<br/>引用来源: [财务报告, 市场预测]"]
+
+    style Q fill:#1d1935,stroke:#8b5cf6,stroke-width:3px,color:#e1e4eb
+    style AG fill:#2d2510,stroke:#f59e0b,stroke-width:3px,color:#e1e4eb
+    style T1 fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style T2 fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style T3 fill:#2d1a30,stroke:#f472b6,stroke-width:2px,color:#e1e4eb
+    style OUT fill:#1a2d25,stroke:#4ade80,stroke-width:3px,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="grid-2col">
+    <div>
+      <h3 style="color:var(--text);font-size:19px;margin-bottom:12px;">🔄 查询变换（Query Transform）</h3>
+      <div class="table-wrap">
+<table class="cmp-table">
+        <thead><tr><th>变换器</th><th>功能</th></tr></thead>
+        <tbody>
+          <tr><td><b>HyDE</b></td><td>先生成假设文档，再检索（缩小语义 gap）</td></tr>
+          <tr><td><b>Multi-Step Query</b></td><td>将复杂查询分解为多步子查询</td></tr>
+          <tr><td><b>Query Rewriting</b></td><td>用 LLM 改写模糊查询为精确查询</td></tr>
+          <tr><td><b>Sub-Question</b></td><td>将一个复杂问题拆解为多个独立子问题</td></tr>
+          <tr><td><b>Step-Back</b></td><td>先生成抽象"回退问题"再具体查询</td></tr>
+        </tbody>
+      </table>
+</div>
+    </div>
+    <div>
+      <h3 style="color:var(--text);font-size:19px;margin-bottom:12px;">📊 评估框架（Evaluation）</h3>
+      <div class="table-wrap">
+<table class="cmp-table">
+        <thead><tr><th>评估维度</th><th>指标</th></tr></thead>
+        <tbody>
+          <tr><td><b>检索质量</b></td><td>Hit Rate, MRR, NDCG</td></tr>
+          <tr><td><b>回答质量</b></td><td>Faithfulness（忠实度）</td></tr>
+          <tr><td><b>回答相关性</b></td><td>Relevancy（与查询相关度）</td></tr>
+          <tr><td><b>上下文精确度</b></td><td>Precision @ K</td></tr>
+          <tr><td><b>上下文召回率</b></td><td>Recall @ K</td></tr>
+        </tbody>
+      </table>
+</div>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 Agent 推理循环（ReAct 模式）</h3>
+    <div id="formula-agent"></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>LlamaIndex Agent = RAG + Tool Use：</strong>当用户问题不能通过单一检索回答时（需要多步推理、数据计算、图表生成），
+    LlamaIndex Agent 可以将多个 <b>QueryEngineTool</b> 作为工具注册给 LLM，让 LLM 自主决定调用哪些工具、
+    按什么顺序调用、如何组合结果。<b>OpenAIAgent</b> 和 <b>ReActAgent</b> 是两种主要的 Agent 实现。
+    特别地，<b>QueryEngineTool</b> 让任何索引都能被封装为 Agent 工具——这是 LlamaIndex Agent 的核心设计哲学。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 7: LlamaIndex vs LangChain vs Haystack -->
+<!-- ================================================================ -->
+<div class="section" id="sec-comparison">
+  <h2><span class="dot lime"></span> 7. 框架对比 — LlamaIndex · LangChain · Haystack</h2>
+  <p class="desc">
+    三个主流的 LLM 应用框架各有所长。选择取决于你的核心需求：<b>数据检索？通用编排？生产部署？</b>
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>🦙 LlamaIndex</th>
+        <th>⛓️ LangChain</th>
+        <th>🌾 Haystack</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>核心定位</b></td>
+        <td class="hl-cell">数据索引与 RAG</td>
+        <td>通用 LLM 应用框架</td>
+        <td>生产级 NLP 管道</td>
+      </tr>
+      <tr>
+        <td><b>索引类型</b></td>
+        <td class="hl-cell">5+ 种（Vector/Summary/Tree/KW/KG）</td>
+        <td class="warn-cell">主要 Vector Store</td>
+        <td>主要 Vector Store + BM25</td>
+      </tr>
+      <tr>
+        <td><b>数据连接器</b></td>
+        <td class="hl-cell">160+ (LlamaHub)</td>
+        <td>100+ (LangChain Hub)</td>
+        <td>有限（依赖自定义）</td>
+      </tr>
+      <tr>
+        <td><b>检索策略</b></td>
+        <td class="hl-cell">Top-K, 混合, 递归, 路由, 融合</td>
+        <td>基础 Top-K + Ensemble</td>
+        <td>Pipeline-based 检索</td>
+      </tr>
+      <tr>
+        <td><b>查询变换</b></td>
+        <td class="hl-cell">HyDE, Sub-Question, Step-Back, Multi-Step</td>
+        <td>有限的 Query Rewriting</td>
+        <td>基础</td>
+      </tr>
+      <tr>
+        <td><b>Agent 支持</b></td>
+        <td>OpenAI/ReAct Agent + QueryEngineTool</td>
+        <td class="hl-cell">丰富的 Agent 类型 + 工具生态</td>
+        <td>基础 Agent 支持</td>
+      </tr>
+      <tr>
+        <td><b>评估框架</b></td>
+        <td class="hl-cell">内置 Faithfulness/Relevancy/MRR</td>
+        <td>LangSmith (外部平台)</td>
+        <td>内置 Eval 管道</td>
+      </tr>
+      <tr>
+        <td><b>流式输出</b></td>
+        <td class="hl-cell">同步/异步/流式 全支持</td>
+        <td class="hl-cell">LCEL 原生流式</td>
+        <td>支持</td>
+      </tr>
+      <tr>
+        <td><b>多模态</b></td>
+        <td class="hl-cell">图片/表格/代码索引支持</td>
+        <td>Document Loaders 支持</td>
+        <td>有限</td>
+      </tr>
+      <tr>
+        <td><b>学习曲线</b></td>
+        <td class="hl-cell">中等（专注数据场景）</td>
+        <td>较高（抽象层多）</td>
+        <td>中等（Pipeline 概念清晰）</td>
+      </tr>
+      <tr>
+        <td><b>最佳场景</b></td>
+        <td class="hl-cell">复杂 RAG、多源数据检索</td>
+        <td>通用 LLM 应用、复杂 Agent</td>
+        <td>生产级搜索、QA 系统</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <canvas id="canvasFrameworkCompare" width="1200" height="420"></canvas>
+
+  <div class="insight">
+    💡 <strong>选择建议：</strong>① 核心需求是<b>高质量 RAG</b>（复杂索引、高级检索）→ <b>LlamaIndex</b>；
+    ② 需要<b>通用 LLM 应用开发</b>（Chain、Agent、多模态）→ <b>LangChain</b>；
+    ③ 需要<b>生产级搜索/QA 管道</b>（企业部署、性能优化）→ <b>Haystack</b>。
+    实践中，<b>LlamaIndex + LangChain 是常见的互补组合</b>——用 LlamaIndex 构建数据层，
+    用 LangChain 做上层编排和 Agent 管理。两者通过 <code>LlamaIndexTool</code> 桥接。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 8: Hands-on Code -->
+<!-- ================================================================ -->
+<div class="section" id="sec-code">
+  <h2><span class="dot blue"></span> 8. 实战代码 — 从零构建 RAG 系统</h2>
+  <p class="desc">
+    用最少的代码搭建一个完整的 RAG 问答系统。只需三步：加载数据 → 构建索引 → 查询。
+  </p>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab3="tab-basic">🍃 基础 RAG</button>
+    <button class="tab-btn" data-tab3="tab-advanced-rag">🚀 高级 RAG</button>
+    <button class="tab-btn" data-tab3="tab-agent-code">🤖 Agent RAG</button>
+  </div>
+
+  <div id="tab-basic" class="tab-content3 active">
+    <div class="code-block">
+<pre><code class="language-python">
+# ===== 基础 RAG：30 行代码 =====
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+
+# 1. 加载文档（LlamaHub 160+ 连接器）
+documents = SimpleDirectoryReader("./data").load_data()
+
+# 2. 构建索引（自动分块 + 嵌入 + 存储）
+index = VectorStoreIndex.from_documents(documents)
+
+# 3. 创建查询引擎
+query_engine = index.as_query_engine()
+
+# 4. 查询
+response = query_engine.query("文档的主要内容是什么？")
+print(response)
+
+# 5. 查看引用来源
+for node in response.source_nodes:
+    print(f"来源: {node.metadata['file_name']}, 相似度: {node.score:.3f}")
+    print(f"内容: {node.text[:200]}...")
+</code></pre>
+</div>
+  </div>
+
+  <div id="tab-advanced-rag" class="tab-content3">
+    <div class="code-block">
+<pre><code class="language-python">
+# ===== 高级 RAG：混合检索 + 重排序 + 元数据过滤 =====
+from llama_index.core import VectorStoreIndex
+from llama_index.core.retrievers import VectorIndexRetriever, KeywordTableIndexRetriever
+from llama_index.core.postprocessor import SimilarityPostprocessor, CohereRerank
+
+# 构建多个索引
+vector_index = VectorStoreIndex.from_documents(documents)
+keyword_index = KeywordTableIndex.from_documents(documents)
+
+# 创建检索器
+vector_retriever = VectorIndexRetriever(index=vector_index, similarity_top_k=10)
+kw_retriever = KeywordTableIndexRetriever(index=keyword_index, num_chunks_per_query=10)
+
+# 混合检索 + RRF 融合
+from llama_index.core.retrievers import QueryFusionRetriever
+fusion_retriever = QueryFusionRetriever(
+    retrievers=[vector_retriever, kw_retriever],
+    mode="reciprocal_rerank",  # RRF 融合模式
+    similarity_top_k=5,
+)
+
+# 检索后处理管线
+postprocessors = [
+    SimilarityPostprocessor(similarity_cutoff=0.7),  # 低分过滤
+    CohereRerank(api_key="...", top_n=5),              # 重排序
+]
+
+# 组装查询引擎
+from llama_index.core import RetrieverQueryEngine
+query_engine = RetrieverQueryEngine(
+    retriever=fusion_retriever,
+    node_postprocessors=postprocessors,
+    response_mode="compact",
+)
+response = query_engine.query("复杂查询...")
+</code></pre>
+</div>
+  </div>
+
+  <div id="tab-agent-code" class="tab-content3">
+    <div class="code-block">
+<pre><code class="language-python">
+# ===== Agent RAG：将索引封装为工具，让 LLM 自主推理 =====
+from llama_index.core import VectorStoreIndex
+from llama_index.core.agent import ReActAgent
+from llama_index.core.tools import QueryEngineTool, ToolMetadata
+
+# 为不同数据源构建独立索引
+finance_index = VectorStoreIndex.from_documents(finance_docs)
+product_index = VectorStoreIndex.from_documents(product_docs)
+code_index = VectorStoreIndex.from_documents(code_docs)
+
+# 将索引封装为 Agent 工具
+finance_tool = QueryEngineTool(
+    query_engine=finance_index.as_query_engine(),
+    metadata=ToolMetadata(
+        name="finance_reports",
+        description="查询公司财务报告和营收数据",
+    ),
+)
+product_tool = QueryEngineTool(
+    query_engine=product_index.as_query_engine(),
+    metadata=ToolMetadata(
+        name="product_docs",
+        description="查询产品文档和功能说明",
+    ),
+)
+
+# 创建 Agent
+agent = ReActAgent.from_tools(
+    tools=[finance_tool, product_tool],
+    verbose=True,  # 打印推理过程
+)
+
+# Agent 自主决定调用哪些工具
+response = agent.chat(
+    "Q3 财务表现如何？这与产品路线图的一致性怎么样？"
+)
+print(response)
+</code></pre>
+</div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>开发路径：</strong>① 从 <b>基础 RAG</b>（30 行代码）快速启动原型验证；
+    ② 发现检索质量不足 → 引入 <b>混合检索 + 重排序</b>（高级 RAG）；
+    ③ 需求变为多步推理/跨源查询 → <b>Agent RAG</b>（封装索引为工具）。
+    这个渐进式路径让团队可以快速迭代，在每个阶段选择合适的复杂度。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 9: Best Practices -->
+<!-- ================================================================ -->
+<div class="section" id="sec-best-practices">
+  <h2><span class="dot amber"></span> 9. 最佳实践与性能优化</h2>
+  <p class="desc">
+    构建生产级 RAG 系统需要关注索引更新、缓存策略、成本控制和响应延迟等多个维度。
+  </p>
+
+  <div class="grid-3col">
+    <div class="info-card">
+      <div style="font-size:32px;margin-bottom:6px;">🔄</div>
+      <div class="val" style="font-size:17px;">增量索引更新</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);line-height:1.6;">
+        使用 <b>insert()</b> / <b>delete()</b> 增量更新索引，避免全量重建。配合 <b>doc_id</b> 追踪文档变更，实现实时数据同步。
+      </div>
+    </div>
+    <div class="info-card">
+      <div style="font-size:32px;margin-bottom:6px;">⚡</div>
+      <div class="val" style="font-size:17px;">嵌入缓存</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);line-height:1.6;">
+        LlamaIndex 内置 <b>IngestionCache</b> 避免重复 Embedding。修改单个文档时只重新嵌入该文档，其余文档复用缓存。
+      </div>
+    </div>
+    <div class="info-card">
+      <div style="font-size:32px;margin-bottom:6px;">💰</div>
+      <div class="val" style="font-size:17px;">成本控制</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);line-height:1.6;">
+        使用 <b>similarity_cutoff</b> 过滤低分 Node，减少 Token 消耗。用小型模型做检索、大型模型做回答合成。
+      </div>
+    </div>
+    <div class="info-card">
+      <div style="font-size:32px;margin-bottom:6px;">📏</div>
+      <div class="val" style="font-size:17px;">分块调优</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);line-height:1.6;">
+        chunk_size 和 overlap 需要根据文档类型调优。文本用 512-1024 tokens，代码用 AST 分割，表格保持整行。
+      </div>
+    </div>
+    <div class="info-card">
+      <div style="font-size:32px;margin-bottom:6px;">🪜</div>
+      <div class="val" style="font-size:17px;">渐进式 RAG</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);line-height:1.6;">
+        基础 RAG → 混合检索 → 重排序 → 查询变换 → Agent。每个阶段评估指标，仅在需要时增加复杂度。
+      </div>
+    </div>
+    <div class="info-card">
+      <div style="font-size:32px;margin-bottom:6px;">📊</div>
+      <div class="val" style="font-size:17px;">持续评估</div>
+      <div style="font-size:15px;margin-top:4px;color:var(--text2);line-height:1.6;">
+        使用 LlamaIndex 内置评估器持续监控 <b>Faithfulness</b> 和 <b>Relevancy</b>。建立评估数据集，每次变更后回归测试。
+      </div>
+    </div>
+  </div>
+
+  <div class="insight" style="margin-top:20px;">
+    💡 <strong>生产部署检查清单：</strong>① 索引持久化（<b>StorageContext</b> 保存到磁盘/云存储）；
+    ② 嵌入模型选择（中文用 BGE，英文用 OpenAI Ada-002，多语言用 Cohere）；
+    ③ 向量数据库选型（小规模用 ChromaDB/FAISS，大规模用 Pinecone/Weaviate/Milvus）；
+    ④ 监控与日志（记录查询延迟、Token 消耗、检索命中率）；
+    ⑤ 安全控制（元数据过滤实现文档级权限控制）。
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  🦙 LlamaIndex 数据框架交互可视化 · Created for Learning · RAG 检索增强生成技术 (2024-2026)
+</footer>
+
+<!-- ================================================================ -->
+<!-- KaTeX Rendering -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{RAG} &= \text{Retrieve} \to \text{Augment} \to \text{Generate} \\[4pt]
+  \text{Query}(q) &\xrightarrow{\text{Embed}} \mathbf{q} \in \mathbb{R}^d \\[4pt]
+  \text{Retrieve}(\mathbf{q}) &= \operatorname{TopK}_{i}\big(\operatorname{sim}(\mathbf{q}, \mathbf{d}_i)\big) \quad \text{从索引中取最相关的 K 个 Node} \\[4pt]
+  \text{Augment}(q, \{n_k\}) &= \text{Prompt: } \text{"基于以下上下文回答...} \{n_1, \ldots, n_K\} \text{ ...回答: } q" \\[4pt]
+  \text{Generate}(\text{prompt}) &\xrightarrow{\text{LLM}} \text{Answer（含来源引用）}
+  \end{aligned}
+  `, document.getElementById('formula-rag'), { displayMode: true });
+
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{Num Chunks} &\approx \left\lceil\frac{\text{Doc Length}}{\text{Chunk Size} - \text{Overlap}}\right\rceil \\[4pt]
+  \text{chunk}_i &= \text{text}[i \cdot (\text{chunk\_size} - \text{overlap}) : i \cdot (\text{chunk\_size} - \text{overlap}) + \text{chunk\_size}] \\[4pt]
+  \text{SentenceSplitter} &: \text{在句子边界处分割，确保 chunk 在语义上完整} \\[4pt]
+  \text{Metadata} &: \text{每个 chunk 保留 } \langle \text{file\_name}, \text{page\_number}, \text{chunk\_index} \rangle
+  \end{aligned}
+  `, document.getElementById('formula-chunking'), { displayMode: true });
+
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{RRFscore}(d) &= \sum_{r \in R} \frac{1}{k + \text{rank}_r(d)} \\[4pt]
+  \text{其中 } R &= \{\text{向量检索}, \text{BM25 检索}, \ldots\} \quad \text{（多个检索器集合）} \\[4pt]
+  k &= 60 \quad \text{（经典常数，平滑排名影响）} \\[4pt]
+  \text{Final Ranking} &= \operatorname{argsort}(\text{RRFscore}) \quad \text{按 RRF 分数降序排列}
+  \end{aligned}
+  `, document.getElementById('formula-rrf'), { displayMode: true });
+
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{Agent} &= \langle \text{LLM}, \mathcal{T}, \text{Prompt} \rangle \quad \text{ReAct Agent} \\[4pt]
+  \mathcal{T} &= \{\text{tool}_1, \ldots, \text{tool}_n\} \quad \text{每个 tool = QueryEngineTool(索引)} \\[4pt]
+  \text{ReAct 循环} &: \quad \text{Thought} \to \text{Action} \to \text{Observation} \to \text{Thought} \to \cdots \\[4pt]
+  \text{Action} &\in \{\text{tool\_call}(\text{name}, \text{args}), \text{final\_answer}(\text{text})\} \\[4pt]
+  \text{Observation} &= \text{tool\_result} \quad \text{（工具返回的检索结果）}
+  \end{aligned}
+  `, document.getElementById('formula-agent'), { displayMode: true });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 2 Canvas: Chunking Visualization -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasChunking');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  let chunkSize = 512, chunkOverlap = 64, docLen = 3000;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const marginL = 60, marginR = 60, barY = 100, barH = 40;
+    const barW = W - marginL - marginR;
+
+    // Document bar (full length)
+    ctx.fillStyle = '#151922';
+    ctx.strokeStyle = '#2a3040';
+    ctx.lineWidth = 1;
+    roundRect(ctx, marginL, barY, barW, barH, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`📄 原始文档 (${docLen} 字符)`, marginL, barY - 12);
+
+    // Compute chunks
+    const effectiveStep = chunkSize - chunkOverlap;
+    let chunks = [];
+    let pos = 0;
+    while (pos < docLen) {
+      const end = Math.min(pos + chunkSize, docLen);
+      chunks.push({ start: pos, end: end });
+      pos += effectiveStep;
+      if (effectiveStep <= 0) break;
+    }
+
+    // Draw chunks as colored blocks below
+    const colors = ['#8b5cf6', '#38bdf8', '#4ade80', '#f59e0b', '#f472b6', '#a78bfa', '#22d3ee', '#c084fc'];
+    chunks.forEach((c, i) => {
+      const scale = barW / docLen;
+      const cx = marginL + c.start * scale;
+      const cw = (c.end - c.start) * scale;
+      const cy = barY + barH + 40 + i * 56;
+
+      // Chunk block
+      ctx.fillStyle = colors[i % colors.length] + '22';
+      ctx.strokeStyle = colors[i % colors.length];
+      ctx.lineWidth = 2;
+      roundRect(ctx, cx, cy, Math.max(cw, 4), 40, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Label
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 14px "JetBrains Mono", "Fira Code", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Chunk ${i + 1}`, cx + cw / 2, cy + 17);
+
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '12px "JetBrains Mono", "Fira Code", monospace';
+      ctx.fillText(`[${c.start}:${c.end}] (${c.end - c.start} 字符)`, cx + cw / 2, cy + 33);
+
+      // Draw connection line
+      ctx.strokeStyle = colors[i % colors.length] + '44';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx + cw / 2, barY + barH);
+      ctx.lineTo(cx + cw / 2, cy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Highlight overlap
+      if (i > 0) {
+        const prevEnd = chunks[i - 1].end;
+        if (c.start < prevEnd) {
+          const overlapStart = marginL + c.start * scale;
+          const overlapEnd = marginL + prevEnd * scale;
+          const overlapW = overlapEnd - overlapStart;
+          ctx.fillStyle = 'rgba(248,113,113,0.2)';
+          ctx.fillRect(overlapStart, barY, overlapW, barH);
+          ctx.fillStyle = '#f87171';
+          ctx.font = '11px "Segoe UI", "PingFang SC", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`overlap ${prevEnd - c.start}`, overlapStart + overlapW / 2, barY + barH / 2 + 4);
+        }
+      }
+    });
+
+    // Stats
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    const statsY = barY + barH + 40 + chunks.length * 56 + 30;
+    ctx.fillText(`${chunks.length} 个 Chunks | 步长: ${effectiveStep} 字符 | Overlap: ${chunkOverlap} 字符`, W / 2, statsY);
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  document.getElementById('sliderChunkSize').addEventListener('input', function() {
+    chunkSize = parseInt(this.value);
+    document.getElementById('valChunkSize').textContent = chunkSize;
+    updatePct(this);
+    draw();
+  });
+  document.getElementById('sliderChunkOverlap').addEventListener('input', function() {
+    chunkOverlap = parseInt(this.value);
+    document.getElementById('valChunkOverlap').textContent = chunkOverlap;
+    updatePct(this);
+    draw();
+  });
+  document.getElementById('sliderDocLen').addEventListener('input', function() {
+    docLen = parseInt(this.value);
+    document.getElementById('valDocLen').textContent = docLen;
+    updatePct(this);
+    draw();
+  });
+
+  function updatePct(s) {
+    s.style.setProperty('--pct', ((s.value - s.min) / (s.max - s.min) * 100) + '%');
+  }
+  draw();
+  // Init slider pcts
+  document.querySelectorAll('input[type=range]').forEach(s => {
+    s.style.setProperty('--pct', ((s.value - s.min) / (s.max - s.min) * 100) + '%');
+  });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 3 Canvas: Index Comparison Radar -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasIndexCompare');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const indexes = [
+    { name: 'Vector Store', color: '#8b5cf6', scores: [5, 5, 4, 5, 5], desc: '通用性最佳' },
+    { name: 'Summary', color: '#38bdf8', scores: [3, 5, 3, 2, 4], desc: '摘要驱动' },
+    { name: 'Tree', color: '#4ade80', scores: [4, 3, 5, 3, 3], desc: '层次最优' },
+    { name: 'Keyword Table', color: '#f59e0b', scores: [2, 1, 1, 5, 2], desc: '精确匹配强' },
+    { name: 'Knowledge Graph', color: '#f472b6', scores: [3, 4, 3, 2, 5], desc: '关系推理强' },
+  ];
+  const dims = ['语义搜索', '全局理解', '大规模扩展', '精确匹配', '关系推理'];
+  const n = dims.length;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = 350, cy = H / 2, r = 170;
+    const angleStep = (Math.PI * 2) / n;
+
+    // Grid circles
+    for (let lvl = 1; lvl <= 5; lvl++) {
+      const lr = r * lvl / 5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, lr, 0, Math.PI * 2);
+      ctx.strokeStyle = '#2a3040';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    // Axis lines & labels
+    dims.forEach((d, i) => {
+      const angle = -Math.PI / 2 + i * angleStep;
+      const ex = cx + r * Math.cos(angle);
+      const ey = cy + r * Math.sin(angle);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(ex, ey);
+      ctx.strokeStyle = '#2a3040';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      const lx = cx + (r + 40) * Math.cos(angle);
+      const ly = cy + (r + 40) * Math.sin(angle);
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(d, lx, ly + 5);
+    });
+
+    // Index polygons
+    indexes.forEach((idx) => {
+      ctx.beginPath();
+      idx.scores.forEach((score, i) => {
+        const angle = -Math.PI / 2 + i * angleStep;
+        const px = cx + (r * score / 5) * Math.cos(angle);
+        const py = cy + (r * score / 5) * Math.sin(angle);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.closePath();
+      ctx.fillStyle = idx.color + '15';
+      ctx.fill();
+      ctx.strokeStyle = idx.color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Dots
+      idx.scores.forEach((score, i) => {
+        const angle = -Math.PI / 2 + i * angleStep;
+        const px = cx + (r * score / 5) * Math.cos(angle);
+        const py = cy + (r * score / 5) * Math.sin(angle);
+        ctx.beginPath();
+        ctx.arc(px, py, 4, 0, Math.PI * 2);
+        ctx.fillStyle = idx.color;
+        ctx.fill();
+      });
+    });
+
+    // Legend & Description
+    const legendX = 720, legendY = 40;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('索引能力雷达图', legendX, legendY);
+
+    indexes.forEach((idx, i) => {
+      const ly = legendY + 30 + i * 38;
+      ctx.fillStyle = idx.color;
+      ctx.fillRect(legendX, ly, 16, 16);
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(idx.name, legendX + 24, ly + 13);
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(idx.desc, legendX + 200, ly + 13);
+    });
+
+    // Usage recommendation
+    const recY = legendY + 30 + indexes.length * 38 + 30;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('💡 选型速查', legendX, recY);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('默认 → Vector Store | 精确术语 → Keyword | 关系 → KG', legendX, recY + 28);
+    ctx.fillText('大量文档 → Summary / Tree | 多源复合 → ComposableGraph', legendX, recY + 52);
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4 Canvas: Top-K Retrieval Interactive -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasTopK');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  let topK = 5, simThreshold = 0.65;
+
+  // Simulated nodes with similarity scores
+  const allNodes = [
+    { id: 1, text: 'Transformer 架构详解...', score: 0.92, color: '#4ade80' },
+    { id: 2, text: '注意力机制的历史发展...', score: 0.87, color: '#4ade80' },
+    { id: 3, text: 'Multi-Head Attention 原理...', score: 0.83, color: '#38bdf8' },
+    { id: 4, text: '自注意力计算过程...', score: 0.78, color: '#38bdf8' },
+    { id: 5, text: '位置编码方案对比...', score: 0.72, color: '#38bdf8' },
+    { id: 6, text: '残差连接与层归一化...', score: 0.68, color: '#f59e0b' },
+    { id: 7, text: 'BERT 预训练任务...', score: 0.61, color: '#f59e0b' },
+    { id: 8, text: 'GPT 自回归生成...', score: 0.55, color: '#f87171' },
+    { id: 9, text: 'CNN 卷积网络结构...', score: 0.42, color: '#f87171' },
+    { id: 10, text: 'LSTM 长短期记忆...', score: 0.35, color: '#f87171' },
+    { id: 11, text: 'SVM 支持向量机...', score: 0.28, color: '#f87171' },
+    { id: 12, text: 'K-Means 聚类算法...', score: 0.15, color: '#f87171' },
+  ];
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Query at top
+    ctx.fillStyle = '#1d1935';
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 2;
+    roundRect(ctx, 40, 20, 500, 52, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('🔍 查询: "Transformer 自注意力机制原理"', 60, 53);
+
+    // Threshold line
+    const barStartX = 40, barStartY = 100, barW = 700, barH = 28, barGap = 10;
+
+    // Draw threshold indicator
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    const threshX = barStartX + (1 - simThreshold) * barW;
+    ctx.beginPath();
+    ctx.moveTo(threshX, barStartY - 10);
+    ctx.lineTo(threshX, barStartY + allNodes.length * (barH + barGap) + 20);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 15px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`similarity_cutoff = ${simThreshold.toFixed(2)}`, threshX, barStartY - 16);
+
+    // Sort nodes by score
+    const sorted = [...allNodes].sort((a, b) => b.score - a.score);
+
+    sorted.forEach((node, i) => {
+      const y = barStartY + i * (barH + barGap);
+      const barFullW = node.score * barW;
+      const isRetrieved = i < topK && node.score >= simThreshold;
+      const isAboveThreshold = node.score >= simThreshold;
+
+      // Bar background
+      ctx.fillStyle = '#151922';
+      roundRect(ctx, barStartX, y, barW, barH, 4);
+      ctx.fill();
+
+      // Bar fill
+      ctx.fillStyle = isRetrieved ? node.color : (isAboveThreshold ? node.color + '44' : node.color + '22');
+      roundRect(ctx, barStartX, y, barFullW, barH, 4);
+      ctx.fill();
+
+      // Border highlight for retrieved
+      if (isRetrieved) {
+        ctx.strokeStyle = node.color;
+        ctx.lineWidth = 2;
+        roundRect(ctx, barStartX, y, barFullW, barH, 4);
+        ctx.stroke();
+      }
+
+      // Text
+      ctx.fillStyle = isRetrieved ? '#fff' : '#8e96a9';
+      ctx.font = '15px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Node ${node.id}: ${node.text}`, barStartX + 10, y + barH / 2 + 5);
+
+      // Score
+      ctx.fillStyle = node.color;
+      ctx.font = 'bold 14px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(node.score.toFixed(2), barStartX + barFullW - 8, y + barH / 2 + 5);
+
+      // Retrieved marker
+      if (isRetrieved) {
+        ctx.fillStyle = '#4ade80';
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('✓', barStartX + barW + 12, y + barH / 2 + 6);
+      }
+    });
+
+    // Legend
+    const legendY = barStartY + allNodes.length * (barH + barGap) + 30;
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Top-${topK} 检索 (≥ ${simThreshold.toFixed(2)}) → 返回 ${sorted.filter((n, i) => i < topK && n.score >= simThreshold).length} 个 Node`, 40, legendY + 20);
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  document.getElementById('sliderTopK').addEventListener('input', function() {
+    topK = parseInt(this.value);
+    document.getElementById('valTopK').textContent = topK;
+    updatePct(this);
+    draw();
+  });
+  document.getElementById('sliderSimThresh').addEventListener('input', function() {
+    simThreshold = parseFloat(this.value);
+    document.getElementById('valSimThresh').textContent = simThreshold.toFixed(2);
+    updatePct(this);
+    draw();
+  });
+
+  function updatePct(s) {
+    s.style.setProperty('--pct', ((s.value - s.min) / (s.max - s.min) * 100) + '%');
+  }
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4 Canvas: Fusion Retrieval Visualization -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasFusion');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const retrievers = [
+      { name: '🧮 向量检索', color: '#8b5cf6', results: ['Node A (0.92)', 'Node C (0.85)', 'Node E (0.78)', 'Node B (0.72)', 'Node D (0.65)'] },
+      { name: '🔑 BM25 检索', color: '#f59e0b', results: ['Node B (18.2)', 'Node A (15.7)', 'Node F (13.1)', 'Node C (11.5)', 'Node G (9.8)'] },
+      { name: '🤖 LLM 改写检索', color: '#38bdf8', results: ['Node E (0.88)', 'Node A (0.81)', 'Node H (0.76)', 'Node C (0.71)', 'Node B (0.68)'] },
+    ];
+
+    const retW = 340, retH = 190;
+    const startX = 40, startY = 50;
+    const gap = 30;
+
+    retrievers.forEach((ret, i) => {
+      const x = startX + i * (retW + gap);
+      const y = startY;
+
+      // Card
+      ctx.fillStyle = '#151922';
+      ctx.strokeStyle = ret.color + '44';
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, x, y, retW, retH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      // Header
+      ctx.fillStyle = ret.color;
+      ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(ret.name, x + 14, y + 32);
+
+      // Results
+      ret.results.forEach((r, j) => {
+        const ry = y + 54 + j * 26;
+        ctx.fillStyle = '#8e96a9';
+        ctx.font = '16px "JetBrains Mono", "Fira Code", monospace';
+        ctx.fillText(`${j + 1}. ${r}`, x + 14, ry + 12);
+      });
+    });
+
+    // FUSION arrow
+    const fusionY = startY + retH + 30;
+    const fusionX = startX + (retrievers.length * (retW + gap) - gap) / 2;
+
+    // RRF box
+    ctx.fillStyle = '#2d1a30';
+    ctx.strokeStyle = '#f472b6';
+    ctx.lineWidth = 2.5;
+    roundRect(ctx, fusionX - 200, fusionY - 10, 400, 48, 10);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#f472b6';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🎪 RRF 融合排序 → 综合 Top-5', fusionX, fusionY + 20);
+
+    // Final result
+    const finalY = fusionY + 60;
+    const finalResults = ['1. Node A (综合最佳)', '2. Node C', '3. Node B', '4. Node E', '5. Node F'];
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('✅ 最终融合结果', fusionX, finalY + 20);
+    finalResults.forEach((r, j) => {
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '15px "JetBrains Mono", "Fira Code", monospace';
+      ctx.fillText(r, fusionX, finalY + 44 + j * 22);
+    });
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 7 Canvas: Framework Comparison -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasFrameworkCompare');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const frameworks = [
+      { name: '🦙 LlamaIndex', color: '#8b5cf6', scores: [5, 5, 5, 3, 5, 4, 5], tag: '数据索引与 RAG 专精' },
+      { name: '⛓️ LangChain', color: '#38bdf8', scores: [4, 3, 2, 5, 3, 5, 4], tag: '通用 LLM 应用框架' },
+      { name: '🌾 Haystack', color: '#4ade80', scores: [3, 4, 3, 2, 3, 3, 4], tag: '生产级 NLP 管道' },
+    ];
+
+    const dims = ['索引多样性', '检索策略', '数据连接器', 'Agent 能力', '评估框架', '社区生态', '流式/异步'];
+    const barH = 32, barGap = 10, groupGap = 16;
+    const startX = 220, startY = 50;
+    const maxBarW = 680;
+
+    // Y axis labels
+    dims.forEach((d, i) => {
+      const y = startY + i * (frameworks.length * (barH + barGap) + groupGap) + frameworks.length * (barH + barGap) / 2;
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(d, startX - 16, y + 5);
+    });
+
+    // Grid lines
+    for (let v = 1; v <= 5; v++) {
+      const gx = startX + (v / 5) * maxBarW;
+      ctx.beginPath();
+      ctx.moveTo(gx, startY - 10);
+      ctx.lineTo(gx, startY + dims.length * (frameworks.length * (barH + barGap) + groupGap) - groupGap);
+      ctx.strokeStyle = '#2a3040';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '12px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(v, gx, startY - 14);
+    }
+
+    // Bars
+    frameworks.forEach((fw, fi) => {
+      dims.forEach((d, di) => {
+        const groupY = startY + di * (frameworks.length * (barH + barGap) + groupGap);
+        const y = groupY + fi * (barH + barGap);
+        const score = fw.scores[di];
+        const bw = (score / 5) * maxBarW;
+
+        ctx.fillStyle = fw.color + '33';
+        roundRect(ctx, startX, y, bw, barH, 4);
+        ctx.fill();
+
+        // Score text
+        ctx.fillStyle = fw.color;
+        ctx.font = 'bold 14px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('★'.repeat(score) + '☆'.repeat(5 - score), startX + bw - 8, y + barH / 2 + 5);
+      });
+    });
+
+    // Legend
+    const legendY = startY + dims.length * (frameworks.length * (barH + barGap) + groupGap) + 10;
+    frameworks.forEach((fw, i) => {
+      const lx = startX + i * 280;
+      ctx.fillStyle = fw.color;
+      ctx.fillRect(lx, legendY, 18, 18);
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(fw.name, lx + 26, legendY + 15);
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(fw.tag, lx + 26, legendY + 35);
+    });
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('框架能力对比矩阵 (5-point scale)', W / 2, 30);
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- Tab Switching -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  function setupTabs(sectionId, attr) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    const tabs = section.querySelectorAll('.tab-btn');
+    const contents = section.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        const target = this.getAttribute(attr);
+        contents.forEach(c => {
+          if (c.id === target) {
+            c.classList.add('active');
+          } else {
+            c.classList.remove('active');
+          }
+        });
+      });
+    });
+  }
+
+  // Section 4 tabs (data-tab)
+  const sec4 = document.getElementById('sec-retrieval');
+  sec4.querySelectorAll('.tab-btn').forEach(tab => {
+    tab.addEventListener('click', function() {
+      sec4.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.getAttribute('data-tab');
+      sec4.querySelectorAll('.tab-content').forEach(c => {
+        if (c.id === target) c.classList.add('active');
+        else c.classList.remove('active');
+      });
+    });
+  });
+
+  // Section 5 tabs (data-tab2)
+  const sec5 = document.getElementById('sec-query-engine');
+  sec5.querySelectorAll('.tab-btn').forEach(tab => {
+    tab.addEventListener('click', function() {
+      sec5.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.getAttribute('data-tab2');
+      sec5.querySelectorAll('.tab-content2').forEach(c => {
+        if (c.id === target) c.classList.add('active');
+        else c.classList.remove('active');
+      });
+    });
+  });
+
+  // Section 8 tabs (data-tab3)
+  const sec8 = document.getElementById('sec-code');
+  sec8.querySelectorAll('.tab-btn').forEach(tab => {
+    tab.addEventListener('click', function() {
+      sec8.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.getAttribute('data-tab3');
+      sec8.querySelectorAll('.tab-content3').forEach(c => {
+        if (c.id === target) c.classList.add('active');
+        else c.classList.remove('active');
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- Mermaid Init -->
+<!-- ================================================================ -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      fontSize: '18px',
+    },
+  });
+</script>
+
+<!-- Slider progress fill -->
+<script>
+(function() {
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+    s.addEventListener('input', function() {
+      var pct = (this.value - this.min) / (this.max - this.min) * 100;
+      this.style.setProperty('--pct', pct + '%');
+    });
+  });
+})();
+</script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>
+  // ── highlight.js Init ──
+  hljs.highlightAll();
+</script>
+
+</body>
+</html>

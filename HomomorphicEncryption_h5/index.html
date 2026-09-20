@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>同态加密 · Homomorphic Encryption — 从 PHE 到 FHE 全解析</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #a855f7;
+    --accent2: #c084fc;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --violet: #8b5cf6;
+    --indigo: #6366f1;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #161025 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.purple { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.indigo { background: var(--indigo); box-shadow: 0 0 10px var(--indigo); }
+  .dot.blue  { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.green { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+  .dot.cyan  { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+  .dot.red   { background: var(--red);    box-shadow: 0 0 10px var(--red); }
+  .dot.pink  { background: var(--pink);   box-shadow: 0 0 10px var(--pink); }
+  .dot.violet { background: var(--violet); box-shadow: 0 0 10px var(--violet); }
+  .dot.amber { background: #fbbf24; box-shadow: 0 0 10px #fbbf24; }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+  .section h3 {
+    font-size: 1.4rem;
+    margin: 20px 0 10px;
+    color: var(--text);
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px; border-radius: 4px; background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px; border-radius: 4px; background: var(--border); border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px; border-radius: 4px 0 0 4px; background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(168,85,247,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px; transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(168,85,247,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(168,85,247,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text); cursor: pointer;
+    font-size: 16px; font-weight: 600;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #1a1628; }
+  .btn.active {
+    background: var(--accent); color: #0b0e14;
+    border-color: var(--accent); box-shadow: 0 0 12px rgba(168,85,247,0.3);
+  }
+  .btn.play-btn { background: var(--green); color: #0b0e14; border-color: var(--green); font-weight: 700; }
+  .btn.play-btn:hover { box-shadow: 0 0 14px rgba(74,222,128,0.3); }
+
+  /* ── Tabs ── */
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px; border-radius: 20px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text2); cursor: pointer;
+    font-size: 15px; font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent); color: #0b0e14;
+    border-color: var(--accent); font-weight: 600;
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(168,85,247,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text2);
+    overflow-x: auto;
+    white-space: pre;
+    margin-bottom: 16px;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .co { color: #8b949e; }
+  .code-block .nm { color: #79c0ff; }
+  .code-block .op { color: #ff7b72; }
+  .code-block .str { color: #a5d6ff; }
+
+  /* ── Mermaid wrap ── */
+  /* ── Tables ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+  .cmp-table th, .cmp-table td {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .cmp-table td { color: var(--text2); }
+  .hl-cell { color: var(--green) !important; font-weight: 600; }
+  .warn-cell { color: var(--red) !important; }
+
+  /* ── Grid 2-col ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── Flow step ── */
+  .flow-steps {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .flow-step {
+    flex: 1;
+    min-width: 180px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .flow-step .step-num {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .flow-step .step-label {
+    font-size: 17px;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .flow-step .step-desc {
+    font-size: 16px;
+    color: var(--text2);
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔐 同态加密 · Homomorphic Encryption</h1>
+  <p>从 RSA 乘性同态到 Gentry 全同态蓝图，再到 CKKS/TFHE 现代方案——在不解密的情况下对密文做任意计算。</p>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: Overview -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-overview">
+  <h2><span class="dot purple"></span> 1. 什么是同态加密</h2>
+  <p class="desc">
+    同态加密（Homomorphic Encryption, <strong>HE</strong>）允许直接在密文上执行运算，解密后得到的结果与在明文上执行相同运算的结果一致。
+    它的核心特性是：<strong>Enc(m₁) ⊗ Enc(m₂) = Enc(m₁ ⊕ m₂)</strong>，其中 ⊗ 是密文空间的运算，⊕ 是明文空间的运算。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 同态加密的形式化定义</h3>
+    <div id="formula-he-def"></div>
+  </div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart LR
+    subgraph plain["明文空间"]
+        m1["m₁"]
+        m2["m₂"]
+        result["m₁ ∘ m₂"]
+    end
+    subgraph cipher["密文空间 (同态)"]
+        c1["Enc(m₁)"]
+        c2["Enc(m₂)"]
+        cresult["Eval(∘, c₁, c₂) = Enc(m₁ ∘ m₂)"]
+    end
+    m1 -->|"Encrypt"| c1
+    m2 -->|"Encrypt"| c2
+    m1 -->|"∘"| result
+    c1 -->|"Eval(∘)"| cresult
+    c2 -->|"Eval(∘)"| cresult
+    cresult -->|"Decrypt"| result
+    style plain fill:#4ade8015,stroke:#4ade80,color:#4ade80
+    style cipher fill:#a855f715,stroke:#a855f7,color:#a855f7
+    style m1 fill:#4ade8010,stroke:#4ade80,color:#e1e4eb
+    style m2 fill:#4ade8010,stroke:#4ade80,color:#e1e4eb
+    style result fill:#fbbf2415,stroke:#fbbf24,color:#e1e4eb
+    style c1 fill:#a855f710,stroke:#a855f7,color:#e1e4eb
+    style c2 fill:#a855f710,stroke:#a855f7,color:#e1e4eb
+    style cresult fill:#a855f715,stroke:#8b5cf6,color:#e1e4eb
+    </pre>
+  </div>
+
+  <h3>📊 三种同态加密类型</h3>
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr><th>类型</th><th>支持的运算</th><th>典型方案</th><th>效率</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>PHE</strong><br/>部分同态</td>
+        <td>单一运算<br/>(加法 <em>或</em> 乘法)</td>
+        <td>RSA (乘), Paillier (加), ElGamal (乘)</td>
+        <td class="hl-cell">极高</td>
+      </tr>
+      <tr>
+        <td><strong>SWHE</strong><br/>类同态</td>
+        <td>有限次混合运算<br/>(受噪声限制)</td>
+        <td>BGV, BFV (leveled HE)</td>
+        <td class="hl-cell">较高</td>
+      </tr>
+      <tr>
+        <td><strong>FHE</strong><br/>全同态</td>
+        <td>任意次数任意运算<br/>(自举突破噪声限制)</td>
+        <td>Gentry 09, FHEW, TFHE, CKKS</td>
+        <td>较低 (2024 年实用化)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>核心张力——噪声 vs 计算深度：</strong>所有基于格的 HE 方案都在密文中嵌入噪声。
+    每次运算（尤其是乘法）会使噪声指数增长；当噪声超过阈值时解密失败。
+    <strong>Bootstrapping（自举）</strong> 是同态地执行解密电路，将噪声"刷新"回初始水平，从而实现无限深度计算。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: Mathematical Foundation -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-math">
+  <h2><span class="dot indigo"></span> 2. 数学基础 — LWE 与 RLWE</h2>
+  <p class="desc">
+    现代 HE 方案的安全基础是 <strong>LWE（Learning With Errors）</strong> 及其环变体 <strong>RLWE（Ring-LWE）</strong>——
+    给定随机矩阵 A 和含噪声的内积 b = As + e，恢复秘密向量 s 在计算上不可行（量子计算机也无法高效求解）。
+  </p>
+
+  <div class="grid-2">
+    <div>
+      <div class="formula-block">
+        <h3>📐 LWE 问题</h3>
+        <div id="formula-lwe"></div>
+      </div>
+      <p class="desc" style="margin-top:8px;">LWE 的困难性可<strong>归约到格上最坏情况的困难问题</strong>（如 GapSVP），这是 Regev 2005 年的核心成果。</p>
+    </div>
+    <div>
+      <div class="formula-block">
+        <h3>📐 RLWE 问题</h3>
+        <div id="formula-rlwe"></div>
+      </div>
+      <p class="desc" style="margin-top:8px;">RLWE 将矩阵换为多项式环，利用 NTT（数论变换）将计算复杂度从 O(n²) 降至 O(n log n)。</p>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 基于 RLWE 的对称同态加密（最简方案）</h3>
+    <div id="formula-basic-he"></div>
+  </div>
+
+  <canvas id="canvasNoise" width="1400" height="380"></canvas>
+
+  <div class="insight">
+    💡 <strong>噪声增长是关键瓶颈：</strong>加法使噪声 + 噪声（线性增长），乘法使噪声 × 噪声（指数增长）。
+    因此 <strong>乘法深度</strong> 决定了方案是 PHE、SWHE 还是需要 Bootstrapping 的 FHE。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: PHE — 部分同态加密 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-phe">
+  <h2><span class="dot blue"></span> 3. PHE 部分同态加密 — 经典方案</h2>
+  <p class="desc">
+    在 FHE 出现之前，已有多个公钥密码系统天然支持单一同态运算。
+    尽管只能做加法<em>或</em>乘法，这些方案在电子投票、隐私保护数据聚合等场景中已得到广泛应用。
+  </p>
+
+  <div class="grid-2">
+    <div>
+      <h3>🔐 RSA — 乘性同态</h3>
+      <div class="formula-block">
+        <div id="formula-rsa"></div>
+      </div>
+      <div class="code-block">
+<span class="co">// RSA 乘性同态</span>
+<span class="fn">Enc</span>(m₁) = m₁ᵉ mod N
+<span class="fn">Enc</span>(m₂) = m₂ᵉ mod N
+<span class="fn">Eval</span>: Enc(m₁)×Enc(m₂) = (m₁m₂)ᵉ mod N
+                = <span class="fn">Enc</span>(m₁ × m₂) ✓
+<span class="co">// 注意：RSA 不支持加法同态</span>
+      </div>
+    </div>
+    <div>
+      <h3>🔐 Paillier — 加性同态</h3>
+      <div class="formula-block">
+        <div id="formula-paillier"></div>
+      </div>
+      <div class="code-block">
+<span class="co">// Paillier 加性同态</span>
+<span class="fn">Enc</span>(m₁) = gᵐ¹ r₁ⁿ mod N²
+<span class="fn">Enc</span>(m₂) = gᵐ² r₂ⁿ mod N²
+<span class="fn">Eval</span>: Enc(m₁)×Enc(m₂) = gᵐ¹⁺ᵐ²(r₁r₂)ⁿ mod N²
+                = <span class="fn">Enc</span>(m₁ + m₂) ✓
+<span class="co">// 标量乘法: Enc(m)ᵏ = Enc(k×m)</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>⚖️ PHE 方案对比</h3>
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr><th>方案</th><th>同态运算</th><th>安全基础</th><th>密文膨胀率</th><th>典型应用</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>RSA</td><td>乘法 mod N</td><td>大数分解</td><td>1×</td><td>盲签名（电子投票）</td>
+      </tr>
+      <tr>
+        <td>ElGamal</td><td>乘法</td><td>离散对数 (DDH)</td><td>2×</td><td>电子投票、门限解密</td>
+      </tr>
+      <tr>
+        <td>Paillier</td><td>加法（+ 标量乘法）</td><td>合数剩余 (DCR)</td><td>2×</td><td>隐私聚合、联邦学习</td>
+      </tr>
+      <tr>
+        <td>Goldwasser-Micali</td><td>XOR (加法 mod 2)</td><td>二次剩余</td><td>数百×</td><td>理论基石（首个语义安全方案）</td>
+      </tr>
+      <tr>
+        <td>Benaloh</td><td>加法 mod n</td><td>高次剩余</td><td>n×</td><td>电子投票（小模数）</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>PHE 虽有限但非常实用：</strong>Paillier 加密在联邦学习（Secure Aggregation）中广泛使用——各方上传 Enc(gradient)，
+    服务器聚合得到 Enc(sum)，解密后分发平均梯度。整个过程服务器<strong>从未见过任何单独的梯度</strong>。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: BFV / BGV — Leveled HE -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-bfv-bgv">
+  <h2><span class="dot violet"></span> 4. BFV / BGV — Leveled 全同态方案</h2>
+  <p class="desc">
+    <strong>BFV (Brakerski-Fan-Vercauteren)</strong> 和 <strong>BGV (Brakerski-Gentry-Vaikuntanathan)</strong> 是第二代 HE 方案，
+    支持<strong>有限深度的混合加乘运算</strong>。它们基于 RLWE，将明文编码为多项式环 R_t = ℤ_t[x]/(xⁿ + 1) 中的元素。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 BFV 方案核心结构</h3>
+    <div id="formula-bfv"></div>
+  </div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TB
+    subgraph bfv["BFV 方案结构"]
+        setup["Setup(λ): 选择 n, q (密文模数), t (明文模数, t << q)"]
+        sk["SecretKey: s ∈ R₂ (稀疏小系数多项式)"]
+        pk["PublicKey: (p₀, p₁) = (-(a·s + e), a) mod q"]
+        enc["Enc(m ∈ R_t): 编码 Δ=⌊q/t⌋, c = (c₀, c₁)"]
+        dec["Dec(c): ⌊t/q · (c₀ + c₁·s)⌉ mod t"]
+    end
+    subgraph ops["同态运算"]
+        add["Add(c, c'): 分量加法 → 噪声+噪声"]
+        mul["Mul(c, c'): 张量积 + 重线性化 → 噪声²"]
+        rlk["Relinearization: 压缩 3 分量 → 2 分量"]
+    end
+    setup --> sk --> pk --> enc
+    enc --> add
+    enc --> mul
+    mul --> rlk
+    add --> dec
+    rlk --> dec
+    style bfv fill:#0b0e14,stroke:#8b5cf6,color:#e1e4eb
+    style ops fill:#0b0e14,stroke:#22d3ee,color:#e1e4eb
+    style setup fill:#8b5cf615,stroke:#8b5cf6,color:#e1e4eb
+    style sk fill:#8b5cf615,stroke:#8b5cf6,color:#e1e4eb
+    style pk fill:#8b5cf615,stroke:#8b5cf6,color:#e1e4eb
+    style enc fill:#a855f715,stroke:#a855f7,color:#e1e4eb
+    style dec fill:#a855f715,stroke:#a855f7,color:#e1e4eb
+    style add fill:#22d3ee15,stroke:#22d3ee,color:#e1e4eb
+    style mul fill:#22d3ee15,stroke:#22d3ee,color:#e1e4eb
+    style rlk fill:#22d3ee15,stroke:#22d3ee,color:#e1e4eb
+    </pre>
+  </div>
+
+  <h3>🔑 关键技术与噪声管理</h3>
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr><th>技术</th><th>作用</th><th>噪声影响</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Relinearization（重线性化）</td><td>乘法后压缩密文大小 (3→2 个环元素)</td><td class="warn-cell">引入额外噪声</td></tr>
+      <tr><td>Modulus Switching（模数切换）</td><td>缩小模数 q→q' 以降低噪声（BGV）</td><td class="hl-cell">按比例降低噪声</td></tr>
+      <tr><td>Scale Invariance（尺度不变性）</td><td>BFV 使用缩放因子 Δ 而非模数切换</td><td>缩放因子管理</td></tr>
+      <tr><td>CRT/RNS 表示</td><td>用中国剩余定理分解大模数，加速计算</td><td>—</td></tr>
+      <tr><td>NTT（数论变换）</td><td>多项式乘法的 O(n log n) 实现</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>BGV vs BFV 的本质区别：</strong>BGV 通过逐步降低模数 q 来管理噪声（模数切换），而 BFV 保持 q 不变，在乘法后缩放。
+    实际性能差异取决于电路深度：浅电路 BFV 更优（无模数切换开销），深电路 BGV 优势明显。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: FHE — Bootstrapping -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-fhe">
+  <h2><span class="dot green"></span> 5. FHE — 全同态加密与 Bootstrapping</h2>
+  <p class="desc">
+    <strong>Craig Gentry 2009 年博士论文</strong>首次构造了全同态加密方案，核心创新是 <strong>Bootstrapping（自举）</strong>——
+    同态地执行自身的解密电路，将噪声重置到初始水平，从而支持无限深度计算。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 Gentry's Bootstrapping 定理</h3>
+    <div id="formula-bootstrapping"></div>
+  </div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-label">加密计算</div>
+      <div class="step-desc">密文 c = Enc(m) 逐层计算，噪声从 η₀ 增长到 η_max</div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-label">噪声逼近阈值</div>
+      <div class="step-desc">当 noise > q/(4t) 时解密即将失败</div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-label">Bootstrapping</div>
+      <div class="step-desc">同态计算 Dec(c, Enc(sk)) → Enc(m) 噪声 = η₀</div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-label">继续计算</div>
+      <div class="step-desc">噪声重置后继续下一层计算</div>
+    </div>
+  </div>
+
+  <h3>🔄 交互式噪声增长模拟</h3>
+  <p class="desc">拖动滑块观察多层电路计算中噪声的增长曲线。每层乘法使噪声倍增；Bootstrapping 将噪声重置。</p>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>初始噪声水平 <span class="val" id="val-noise-init">5</span></label>
+      <input type="range" id="slider-noise-init" min="1" max="15" value="5" step="1">
+    </div>
+    <div class="slider-group">
+      <label>乘法层数 <span class="val" id="val-layers">6</span></label>
+      <input type="range" id="slider-layers" min="2" max="20" value="6" step="1">
+    </div>
+    <div class="slider-group">
+      <label>Bootstrapping 间隔 <span class="val" id="val-bts">3</span></label>
+      <input type="range" id="slider-bts" min="1" max="10" value="3" step="1">
+    </div>
+  </div>
+  <canvas id="canvasBootstrapping" width="1400" height="450"></canvas>
+  <div class="info-row" id="info-bts">
+    <div class="info-card">噪声峰值 <div class="val" id="noise-peak">—</div></div>
+    <div class="info-card">Bootstrapping 次数 <div class="val" id="bts-count">—</div></div>
+    <div class="info-card">是否可解密 <div class="val" id="bts-possible">✓</div></div>
+    <div class="info-card">总计算开销 <div class="val" id="bts-overhead">—</div></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>Bootstrapping 的代价：</strong>一次 Bootstrapping 约等于 100-1000 次普通乘法（在 TFHE 中优化到 ~10ms）。
+    现代 FHE 编译器的核心优化就是<strong>最小化 Bootstrapping 次数</strong>——通过调度计算顺序、合并操作、选择最优参数。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 6: CKKS — 近似算术 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-ckks">
+  <h2><span class="dot cyan"></span> 6. CKKS — 近似同态加密（浮点数）</h2>
+  <p class="desc">
+    <strong>CKKS (Cheon-Kim-Kim-Song, 2017)</strong> 专为<strong>近似实数运算</strong>设计，是机器学习推理中最常用的 HE 方案。
+    与 BFV/BGV 的精确整数运算不同，CKKS 将明文视为带有<strong>噪声的浮点数</strong>——这恰好契合了神经网络的低精度容忍特性。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 CKKS 编码与解码</h3>
+    <div id="formula-ckks"></div>
+  </div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart LR
+    subgraph encode["CKKS 编码"]
+        z1["z ∈ ℂ^(N/2)<br/>复数向量"]
+        z2["π⁻¹: ℂ^(N/2) → ℝ[x]/(xⁿ+1)<br/>正则嵌入逆"]
+        z3["Δ× 缩放因子<br/>(如 Δ=2⁴⁰)"]
+        z4["⌊·⌉ 取整<br/>→ R_q 明文多项式"]
+    end
+    subgraph compute["同态计算"]
+        c1["加/乘/旋转<br/>（噪声随乘积累）"]
+        c2["重缩放 (Rescaling)<br/>Δ 模数管理"]
+    end
+    z1 --> z2 --> z3 --> z4 --> c1 --> c2
+    style encode fill:#22d3ee15,stroke:#22d3ee,color:#e1e4eb
+    style compute fill:#a855f715,stroke:#a855f7,color:#e1e4eb
+    </pre>
+  </div>
+
+  <h3>🎯 CKKS 的 SIMD 特性</h3>
+  <p class="desc">CKKS 天然支持 <strong>SIMD（单指令多数据）</strong>：一个密文可打包 N/2 个浮点数，一次密文乘法 = N/2 路并行的实数乘法。</p>
+
+  <div class="code-block">
+<span class="co">// CKKS SIMD: 一个密文 = 最多 16,384 个 slots (N=32,768)</span>
+<span class="fn">encoder</span>.<span class="nm">encode</span>([1.0, 2.0, 3.0, ..., 4096.0], scale: 2^40)
+    → 明文多项式 p₁(x)
+<span class="fn">encoder</span>.<span class="nm">encode</span>([0.5, 1.5, 2.5, ..., 4095.5], scale: 2^40)
+    → 明文多项式 p₂(x)
+<span class="fn">evaluator</span>.<span class="nm">multiply</span>(ct₁, ct₂) → ct₃
+
+<span class="fn">decrypt</span>(ct₃) → [0.5, 3.0, 7.5, ...]  <span class="co">// elem-wise 乘法!</span>
+
+<span class="co">// 旋转操作 (Rotation): 循环移位 1 位</span>
+<span class="fn">evaluator</span>.<span class="nm">rotate</span>(ct, 1) → ct'
+<span class="fn">decrypt</span>(ct') → [2.0, 3.0, 4.0, ..., 4096.0, 1.0]
+  </div>
+
+  <div class="insight">
+    💡 <strong>为什么 CKKS 是 ML 推理首选：</strong>神经网络天然容忍低精度（fp16/int8），CKKS 的近似误差（~2⁻³⁰）远小于量化误差。
+    SIMD 并行使得一层卷积/全连接 = 几次密文乘加，理论吞吐可达 <strong>百万次加密操作/秒</strong>（在 GPU 加速下）。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 7: TFHE — 快速自举 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-tfhe">
+  <h2><span class="dot pink"></span> 7. TFHE — 超快 Bootstrapping（每门 ~10ms）</h2>
+  <p class="desc">
+    <strong>TFHE (Chillotti et al., 2016-2020)</strong> 将 Bootstrapping 优化到了极致——<strong>每次逻辑门计算后进行自举</strong>，
+    并且将可编程自举（<strong>PBS, Programmable Bootstrapping</strong>）同时用作查表运算，实现任意函数的同态计算。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 TFHE 的 TLWE 密文与门自举</h3>
+    <div id="formula-tfhe"></div>
+  </div>
+
+  <h3>⚡ TFHE vs CKKS vs BGV/BFV 对比</h3>
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr><th>特性</th><th>TFHE</th><th>CKKS</th><th>BGV / BFV</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>数据类型</td><td class="hl-cell">布尔/小整数</td><td>浮点数 (复数)</td><td>整数 mod t</td></tr>
+      <tr><td>Bootstrapping 速度</td><td class="hl-cell">~10ms/门</td><td>~秒级</td><td>~秒级</td></tr>
+      <tr><td>自举频率</td><td class="hl-cell">每次门操作</td><td>每层 ~10 次乘法</td><td>每层 ~10 次乘法</td></tr>
+      <tr><td>SIMD</td><td>有限</td><td class="hl-cell">N/2 slots</td><td>N slots (系数打包)</td></tr>
+      <tr><td>最佳场景</td><td class="hl-cell">任意逻辑/比较/查找表</td><td>ML 推理 / 统计</td><td>计数/求和/PSI</td></tr>
+      <tr><td>密文大小</td><td>~几 KB</td><td>~百 KB - MB</td><td>~百 KB - MB</td></tr>
+      <tr><td>开源库</td><td><a href="https://github.com/tfhe/tfhe" target="_blank">tfhe</a>, <a href="https://github.com/zama-ai/concrete" target="_blank">Concrete</a></td><td><a href="https://github.com/microsoft/SEAL" target="_blank">SEAL</a>, <a href="https://github.com/openfheorg/openfhe-development" target="_blank">OpenFHE</a>, <a href="https://github.com/homenc/HElib" target="_blank">HElib</a></td><td><a href="https://github.com/microsoft/SEAL" target="_blank">SEAL</a>, <a href="https://github.com/openfheorg/openfhe-development" target="_blank">OpenFHE</a></td></tr>
+    </tbody>
+  </table>
+</div>
+
+  <canvas id="canvasTFHE" width="1400" height="320"></canvas>
+
+  <div class="insight">
+    💡 <strong>PBS（Programmable Bootstrapping）革命：</strong>TFHE 的自举不仅刷新噪声，还同时计算一个任意单变量函数 f(x)。
+    这使得同态 ReLU、Sigmoid、比较（x > 0）等非线性操作在"免费"的噪声刷新中完成。Zama 的 Concrete 框架将 TFHE 编译为与明文代码几乎相同的 Python API。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 8: Applications -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-apps">
+  <h2><span class="dot red"></span> 8. 应用场景与生态</h2>
+  <p class="desc">
+    同态加密正在从学术走向工业落地，特别是在<strong>隐私保护的机器学习</strong>、<strong>安全数据外包</strong>和<strong>区块链隐私层</strong>中发挥关键作用。
+  </p>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TB
+    subgraph apps["同态加密应用场景"]
+        ml["🤖 隐私保护 ML<br/>· 加密的模型推理<br/>· 加密数据训练<br/>· 联邦学习安全聚合"]
+        db["🗄️ 加密数据库查询<br/>· 加密 SQL 查询<br/>· 私有信息检索 (PIR)<br/>· 加密 DNA 匹配"]
+        bc["⛓️ 区块链隐私<br/>· 机密交易<br/>· 加密状态机<br/>· 盲拍/密封投标"]
+        gov["🏛️ 合规与监管<br/>· 加密数据分析<br/>· 多方联合风控<br/>· GDPR 合规计算"]
+    end
+    style apps fill:#0b0e14,stroke:#2a3040,color:#e1e4eb
+    style ml fill:#4ade8015,stroke:#4ade80,color:#e1e4eb
+    style db fill:#38bdf815,stroke:#38bdf8,color:#e1e4eb
+    style bc fill:#a855f715,stroke:#a855f7,color:#e1e4eb
+    style gov fill:#fbbf2415,stroke:#fbbf24,color:#e1e4eb
+    </pre>
+  </div>
+
+  <h3>🏭 工业界主要 HE 库</h3>
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr><th>库</th><th>维护方</th><th>支持方案</th><th>特点</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="https://github.com/microsoft/SEAL" target="_blank">Microsoft SEAL</a></td><td>Microsoft</td><td>BFV, CKKS</td><td>最广泛使用的 HE 库，文档完善</td></tr>
+      <tr><td><a href="https://github.com/openfheorg/openfhe-development" target="_blank">OpenFHE</a></td><td>社区 (Duality → OpenFHE)</td><td>BFV, BGV, CKKS, TFHE, FHEW</td><td>统一框架，支持所有主流方案</td></tr>
+      <tr><td><a href="https://github.com/homenc/HElib" target="_blank">HElib</a></td><td>IBM</td><td>BGV, CKKS</td><td>最早的开源 FHE 库</td></tr>
+      <tr><td><a href="https://github.com/zama-ai/concrete" target="_blank">Concrete / Concrete-ML</a></td><td>Zama</td><td>TFHE</td><td>Python 优先，自动编译 ML 模型到 FHE</td></tr>
+      <tr><td><a href="https://github.com/tfhe/tfhe" target="_blank">TFHE (original)</a></td><td>学术</td><td>TFHE</td><td>TFHE 参考实现</td></tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>2024-2025 趋势：</strong>硬件事务加速（Intel HEXL, NVIDIA  GPU FHE）、编译器自动优化（Concrete, HECO）、
+    以及 <strong>FHE + ZKP + MPC 混合方案</strong> 正在成为隐私计算的主流范式。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 9: Summary -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-summary">
+  <h2><span class="dot amber"></span> 9. 方案选型指南与总结</h2>
+  <p class="desc">
+    选择合适的 HE 方案取决于数据类型、计算深度、性能需求。
+  </p>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TD
+    start["需要同态计算?"]
+    q1{"只需要加 OR 乘?"}
+    q2{"是整数运算?"}
+    q3{"需要 > 10 层乘法?"}
+    q4{"需要非线性 (比较/ReLU)?"}
+    paillier["Paillier / ElGamal<br/>(PHE, 极低开销)"]
+    bfv["BFV<br/>(整数算术, Leveled)"]
+    ckks["CKKS<br/>(浮点/SIMD, ML推理)"]
+    tfhe["TFHE / Concrete<br/>(逻辑/任意函数)"]
+    hybrid["CKKS + TFHE 混合<br/>(线性用 CKKS, 非线性用 TFHE)"]
+
+    start --> q1
+    q1 -->|是| paillier
+    q1 -->|否, 需要全同态| q2
+    q2 -->|是| q3
+    q2 -->|否, 浮点数| ckks
+    q3 -->|否| bfv
+    q3 -->|是| q4
+    q4 -->|否| ckks
+    q4 -->|是| tfhe
+    tfhe -.->|"大规模 ML + 非线性"| hybrid
+
+    style start fill:#a855f720,stroke:#a855f7,color:#e1e4eb
+    style paillier fill:#4ade8020,stroke:#4ade80,color:#4ade80
+    style bfv fill:#38bdf820,stroke:#38bdf8,color:#38bdf8
+    style ckks fill:#22d3ee20,stroke:#22d3ee,color:#22d3ee
+    style tfhe fill:#f472b620,stroke:#f472b6,color:#f472b6
+    style hybrid fill:#fbbf2420,stroke:#fbbf24,color:#fbbf24
+    </pre>
+  </div>
+
+  <canvas id="canvasSummary" width="1400" height="400"></canvas>
+
+  <div class="insight">
+    💡 <strong>核心洞见：</strong>同态加密本质上是一种 <strong>用计算换取隐私</strong> 的技术。
+    密文计算比明文慢 1000-1,000,000 倍，但在"数据永远不离开加密状态"的隐私保证面前，这个代价在许多场景中是值得的。
+    随着硬件加速和算法优化，HE 正在从"可能"走向"实用"。
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  🔐 Homomorphic Encryption 全解析 · Created for Learning · 基于 Gentry 2009, BGV/BFV, CKKS 2017, TFHE 2016-2020
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- KaTeX Render -->
+<script>
+(function() {
+  // HE定义
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{KeyGen}(1^\lambda) \to (pk, sk, evk) \quad &&\text{密钥生成（含计算密钥 evk）} \\[4pt]
+  &\text{Enc}(pk, m) \to c \quad &&\text{加密：明文 } m \in \mathcal{M} \to \text{密文 } c \\[4pt]
+  &\text{Dec}(sk, c) \to m \quad &&\text{解密：恢复明文} \\[4pt]
+  &\text{Eval}(evk, \circ, c_1, c_2) \to c_{\circ} \quad &&\text{同态求值：} \text{Dec}(c_{\circ}) = m_1 \circ m_2
+  \end{aligned}
+  `, document.getElementById('formula-he-def'), { displayMode: true });
+
+  // LWE
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{给定: } (\mathbf{A}, \mathbf{b} = \mathbf{A}\mathbf{s} + \mathbf{e} \bmod q) \\
+  &\mathbf{A} \in \mathbb{Z}_q^{m \times n}, \quad \mathbf{s} \in \mathbb{Z}_q^n \text{ (秘密向量)}, \quad \mathbf{e} \gets \chi^m \text{ (小噪声)} \\
+  &\text{目标: 从 } (\mathbf{A}, \mathbf{b}) \text{ 中恢复 } \mathbf{s} \text{ (计算上不可行)}
+  \end{aligned}
+  `, document.getElementById('formula-lwe'), { displayMode: true });
+
+  // RLWE
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{给定: } (a, b = a \cdot s + e) \in R_q^2 \\
+  &R_q = \mathbb{Z}_q[x]/(x^n + 1), \quad s, e \gets \chi \text{ (小系数分布)} \\
+  &\text{目标: 区分 } (a, b) \text{ 与均匀随机分布}
+  \end{aligned}
+  `, document.getElementById('formula-rlwe'), { displayMode: true });
+
+  // Basic HE scheme
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{Enc}(m \in \{0,1\}): \quad c = (a, b = a \cdot s + e + \lfloor q/2 \rfloor \cdot m \bmod q) \\
+  &\text{Dec}(c): \quad b - a \cdot s = \lfloor q/2 \rfloor \cdot m + e \implies m = \left\lfloor \frac{b - a \cdot s}{q/2} \right\rceil \bmod 2 \\[4pt]
+  &\text{Eval·Add}(c, c'): \quad c_{\text{add}} = (a + a', b + b') \quad \text{噪声 } e_{\text{add}} = e + e' \\[4pt]
+  &\text{Eval·Mul}(c, c'): \quad c_{\text{mul}} \text{ 需重线性化，噪声 } e_{\text{mul}} \approx e \cdot e' \text{ (指数增长!)}
+  \end{aligned}
+  `, document.getElementById('formula-basic-he'), { displayMode: true });
+
+  // RSA homomorphic
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{KeyGen: } N = pq, \quad (e, d) \text{ s.t. } ed \equiv 1 \pmod{\phi(N)} \\
+  &\text{Enc}(m) = m^e \bmod N \qquad \text{Dec}(c) = c^d = m \bmod N \\[4pt]
+  &\text{Hom: } \text{Enc}(m_1) \cdot \text{Enc}(m_2) = m_1^e m_2^e = (m_1 m_2)^e = \text{Enc}(m_1 \cdot m_2)
+  \end{aligned}
+  `, document.getElementById('formula-rsa'), { displayMode: true });
+
+  // Paillier
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{KeyGen: } N = pq, \quad \lambda = \text{lcm}(p-1, q-1), \quad g = N+1 \\
+  &\text{Enc}(m) = g^m \cdot r^N \bmod N^2, \quad r \gets \mathbb{Z}_N^* \text{ (随机数)} \\
+  &\text{Dec}(c) = \frac{L(c^\lambda \bmod N^2)}{L(g^\lambda \bmod N^2)} \bmod N, \quad L(x) = \frac{x-1}{N}
+  \end{aligned}
+  `, document.getElementById('formula-paillier'), { displayMode: true });
+
+  // BFV
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{Plain: } m \in R_t = \mathbb{Z}_t[x]/(x^n+1), \quad \text{Cipher: } (c_0, c_1) \in R_q^2, \quad q \gg t \\[4pt]
+  &\text{Enc: } c = (c_0, c_1) = (p_0 \cdot u + e_1 + \Delta \cdot m,\; p_1 \cdot u + e_2), \quad \Delta = \lfloor q/t \rfloor \\[4pt]
+  &\text{Dec: } m = \lfloor t/q \cdot (c_0 + c_1 \cdot s) \rceil \bmod t \\[4pt]
+  &\text{Mul: } c_{\text{mul}} = (c_0 c_0', c_0 c_1' + c_1 c_0', c_1 c_1') \xrightarrow{\text{重线性化}} (c_0'', c_1'')
+  \end{aligned}
+  `, document.getElementById('formula-bfv'), { displayMode: true });
+
+  // Bootstrapping
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{假设方案 } \mathcal{E} \text{ 能同态计算自身解密电路 + 1 次额外 NAND} \\
+  &\text{则 } \mathcal{E} \text{ 可转换为全同态方案: } \mathcal{E}_{\text{FHE}} \\[4pt]
+  &\text{Bootstrap}(\overline{sk}, \overline{c}): \quad \text{同态计算 } \text{Dec}_{sk}(c) \text{ 得到 } \text{Enc}_{pk_2}(m) \text{ (新鲜噪声)}
+  \end{aligned}
+  `, document.getElementById('formula-bootstrapping'), { displayMode: true });
+
+  // CKKS
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{Encode: } \mathbf{z} \in \mathbb{C}^{n/2} \xrightarrow{\pi^{-1}} m \in \mathbb{R}[x]/(x^n+1) \xrightarrow{\times \Delta} \lfloor \Delta \cdot m \rceil \in R_q \\[4pt]
+  &\text{Decode: } c \xrightarrow{\text{Dec}} \Delta \cdot m + e \xrightarrow{/\Delta} m + e/\Delta \xrightarrow{\pi} \mathbf{z} + \varepsilon \\[4pt]
+  &\text{Rescaling: 乘法后 } \Delta^2 \to \text{除以 } \Delta \to \Delta \text{ (控制规模增长)}
+  \end{aligned}
+  `, document.getElementById('formula-ckks'), { displayMode: true });
+
+  // TFHE
+  katex.render(String.raw`
+  \begin{aligned}
+  &\text{TLWE 密文: } c = (a_1, \ldots, a_n, b) \in \mathbb{T}^{n+1}, \quad b = \sum a_i s_i + \mu + e \pmod{1} \\
+  &\text{自举 = 同态 Dec + 可编程查表: } \text{Bootstrap}(c, f) \to c' \text{ s.t. } \text{Dec}(c') = f(\text{Dec}(c))
+  \end{aligned}
+  `, document.getElementById('formula-tfhe'), { displayMode: true });
+})();
+</script>
+
+<!-- ═══ Section 2: Noise Growth Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasNoise');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const m = { top: 40, left: 80, right: 30, bottom: 50 };
+    const pw = W - m.left - m.right;
+    const ph = H - m.top - m.bottom;
+
+    // Simulate noise growth over operations
+    const ops = ['Enc', 'Add', 'Mul', 'Add', 'Mul', 'Add', 'Mul', 'Add'];
+    let noise = 2; // initial noise
+    const noiseLevels = [noise];
+    const threshold = 200; // noise threshold for correct decryption
+
+    ops.forEach(op => {
+      if (op === 'Add') noise += noise * 0.3;
+      else if (op === 'Mul') noise *= 2.5;
+      noiseLevels.push(noise);
+    });
+
+    // Draw threshold line
+    const thresholdY = m.top + ph - (threshold / (threshold * 2)) * ph;
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(m.left, thresholdY);
+    ctx.lineTo(m.left + pw, thresholdY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('⟵ 解密阈值', m.left - 6, thresholdY + 6);
+
+    // Draw bars
+    const barW = Math.min(90, pw / noiseLevels.length - 10);
+    const maxNoise = Math.max(threshold * 1.2, ...noiseLevels);
+
+    noiseLevels.forEach((n, i) => {
+      const x = m.left + i * (pw / noiseLevels.length) + 4;
+      const bh = Math.min((n / maxNoise) * ph, ph);
+      const y = m.top + ph - bh;
+
+      // Color: green when safe, yellow approaching, red beyond
+      const ratio = n / threshold;
+      let color;
+      if (ratio < 0.5) color = '#4ade80';
+      else if (ratio < 0.9) color = '#fbbf24';
+      else if (ratio < 1.0) color = '#fb923c';
+      else color = '#f87171';
+
+      const grad = ctx.createLinearGradient(x, y, x, m.top + ph);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, color + '22');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, barW, bh);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x, y, barW, bh);
+
+      // Label
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      const label = i === 0 ? 'Init' : ops[i - 1];
+      ctx.fillText(label, x + barW / 2, m.top + ph + 22);
+
+      // Noise value
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '17px "JetBrains Mono", monospace';
+      ctx.fillText(n.toFixed(0), x + barW / 2, y - 6);
+    });
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('噪声增长曲线 — 加法线性增长 vs 乘法指数增长', W / 2, m.top - 8);
+
+    // Legend
+    ctx.fillStyle = '#4ade80';
+    ctx.textAlign = 'left';
+    ctx.font = '18px "Segoe UI", sans-serif';
+    ctx.fillText('🟢 安全区', m.left, H - 8);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillText('🟡 临界区', m.left + 130, H - 8);
+    ctx.fillStyle = '#f87171';
+    ctx.fillText('🔴 解密失败', m.left + 260, H - 8);
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ═══ Section 5: Bootstrapping Simulation ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasBootstrapping');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    const noiseInit = +document.getElementById('slider-noise-init').value;
+    const layers = +document.getElementById('slider-layers').value;
+    const btsInterval = +document.getElementById('slider-bts').value;
+
+    document.getElementById('val-noise-init').textContent = noiseInit;
+    document.getElementById('val-layers').textContent = layers;
+    document.getElementById('val-bts').textContent = btsInterval;
+
+    ctx.clearRect(0, 0, W, H);
+    const m = { top: 40, left: 70, right: 30, bottom: 50 };
+    const pw = W - m.left - m.right;
+    const ph = H - m.top - m.bottom;
+
+    const threshold = 100;
+    let noise = noiseInit;
+    const points = [{ layer: 0, noise }];
+    let btsCount = 0;
+
+    for (let i = 1; i <= layers; i++) {
+      noise *= 2.0; // multiplicative growth per layer
+      points.push({ layer: i, noise });
+      if (i % btsInterval === 0 && i < layers) {
+        noise = noiseInit; // bootstrapping resets
+        btsCount++;
+        points.push({ layer: i + 0.5, noise, bootstrapped: true });
+      }
+    }
+
+    const maxNoise = Math.max(threshold * 1.3, ...points.map(p => p.noise));
+    const thresholdY = m.top + ph - (threshold / maxNoise) * ph;
+    const decryptable = Math.max(...points.map(p => p.noise)) < threshold;
+
+    // Fill area under curve
+    ctx.fillStyle = 'rgba(168,85,247,0.08)';
+    ctx.beginPath();
+    ctx.moveTo(m.left, m.top + ph);
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i];
+      const x = m.left + (p.layer / layers) * pw;
+      const y = m.top + ph - (Math.min(p.noise, maxNoise) / maxNoise) * ph;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(m.left + pw, m.top + ph);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw threshold
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(m.left, thresholdY);
+    ctx.lineTo(m.left + pw, thresholdY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('解密阈值', m.left - 6, thresholdY + 5);
+
+    // Draw curve
+    ctx.strokeStyle = '#c084fc';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    let firstPoint = true;
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i];
+      const x = m.left + (p.layer / layers) * pw;
+      const y = m.top + ph - (Math.min(p.noise, maxNoise) / maxNoise) * ph;
+      if (firstPoint) { ctx.moveTo(x, y); firstPoint = false; }
+      else { ctx.lineTo(x, y); }
+    }
+    ctx.stroke();
+
+    // Draw bootstrapping points
+    points.forEach(p => {
+      if (p.bootstrapped) {
+        const x = m.left + (p.layer / layers) * pw;
+        const y = m.top + ph - (Math.min(p.noise, maxNoise) / maxNoise) * ph;
+        // Green flash at reset
+        ctx.fillStyle = '#4ade80';
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4ade80';
+        ctx.font = 'bold 16px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚡BTS', x, y - 14);
+      }
+    });
+
+    // Axes labels
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '17px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('电路层数 (乘法)', m.left + pw / 2, H - 8);
+    ctx.save();
+    ctx.translate(14, m.top + ph / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('噪声水平', 0, 0);
+    ctx.restore();
+
+    // Info
+    document.getElementById('noise-peak').textContent = Math.max(...points.map(p => p.noise)).toFixed(1);
+    document.getElementById('bts-count').textContent = btsCount;
+    document.getElementById('bts-possible').textContent = decryptable ? '✓ 可解密' : '✗ 解密失败';
+    document.getElementById('bts-possible').style.color = decryptable ? '#4ade80' : '#f87171';
+    const overhead = btsCount > 0 ? (btsCount * 150).toFixed(0) + '×' : '1×';
+    document.getElementById('bts-overhead').textContent = overhead;
+  }
+
+  document.getElementById('slider-noise-init').addEventListener('input', draw);
+  document.getElementById('slider-layers').addEventListener('input', draw);
+  document.getElementById('slider-bts').addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+<!-- ═══ Section 7: TFHE Gate Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasTFHE');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const m = { top: 40, left: 40, right: 40, bottom: 30 };
+
+    // Show TFHE gate bootstrapping cycle
+    const gates = [
+      { name: 'AND', in1: 0, in2: 0, out: 0, x: 0.08 },
+      { name: 'XOR', in1: 0, in2: 1, out: 1, x: 0.22 },
+      { name: 'AND', in1: 1, in2: 0, out: 0, x: 0.36 },
+      { name: 'NOT', in1: 1, in2: null, out: 0, x: 0.50 },
+      { name: 'OR', in1: 1, in2: 1, out: 1, x: 0.64 },
+      { name: 'NAND', in1: 1, in2: 1, out: 0, x: 0.78 },
+      { name: 'XOR', in1: 1, in2: 1, out: 0, x: 0.92 },
+    ];
+
+    const cy = H * 0.52;
+
+    // Draw circuit line
+    ctx.strokeStyle = '#2a3040';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(m.left, cy);
+    ctx.lineTo(W - m.right, cy);
+    ctx.stroke();
+
+    gates.forEach((g, i) => {
+      const cx = m.left + g.x * (W - m.left - m.right);
+      const radius = 28;
+
+      // Gate circle
+      let color;
+      if (g.name === 'AND' || g.name === 'NAND') color = '#a78bfa';
+      else if (g.name === 'XOR') color = '#f472b6';
+      else if (g.name === 'NOT') color = '#38bdf8';
+      else color = '#fb923c';
+
+      ctx.fillStyle = color + '22';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Gate name
+      ctx.fillStyle = color;
+      ctx.font = 'bold 20px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(g.name, cx, cy);
+
+      // Bootstrap marker (green ring)
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius + 5, 0, Math.PI * 2);
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Input labels (above)
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '17px "Segoe UI", sans-serif';
+      if (g.in2 !== null) {
+        ctx.fillText('in₁=' + g.in1 + ' in₂=' + g.in2, cx, cy - 42);
+      } else {
+        ctx.fillText('in=' + g.in1, cx, cy - 42);
+      }
+      // Output label (below)
+      ctx.fillStyle = '#4ade80';
+      ctx.font = 'bold 18px "Segoe UI", sans-serif';
+      ctx.fillText('out=' + g.out, cx, cy + 46);
+    });
+
+    // Annotations
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('每个逻辑门 = 一次 Bootstrapping (~10ms)', m.left, H - 6);
+    ctx.fillText('虚线绿环 = 噪声刷新 + 查表', m.left + 420, H - 6);
+
+    // Top title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 23px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('TFHE: 基于门的 FHE — 每个逻辑门后自动自举', W/2, m.top - 8);
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ═══ Section 9: Summary / Performance Comparison Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasSummary');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const m = { top: 40, left: 180, right: 40, bottom: 60 };
+
+    const schemes = [
+      { name: 'Paillier\n(PHE)', overhead: 10, color: '#4ade80', latency: 0.001 },
+      { name: 'BFV\n(Leveled)', overhead: 500, color: '#38bdf8', latency: 0.05 },
+      { name: 'CKKS\n(Approx)', overhead: 2000, color: '#22d3ee', latency: 0.2 },
+      { name: 'TFHE\n(Gate)', overhead: 50000, color: '#f472b6', latency: 5 },
+      { name: 'FHE (Gentry\n2009)', overhead: 1000000, color: '#fbbf24', latency: 100 },
+    ];
+
+    const barW = (W - m.left - m.right) / schemes.length - 20;
+    const maxOverhead = 1000000;
+
+    schemes.forEach((s, i) => {
+      const x = m.left + i * ((W - m.left - m.right) / schemes.length) + 10;
+      const logVal = Math.log10(s.overhead) / Math.log10(maxOverhead);
+      const bh = logVal * (H - m.top - m.bottom);
+      const y = m.top + (H - m.top - m.bottom) - bh;
+
+      const grad = ctx.createLinearGradient(x, y, x, m.top + H - m.top - m.bottom);
+      grad.addColorStop(0, s.color);
+      grad.addColorStop(1, s.color + '33');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, barW, bh);
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, barW, bh);
+
+      // Label
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 19px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(s.name, x + barW/2, m.top + H - m.top - m.bottom + 24);
+
+      // Overhead
+      const ohStr = s.overhead >= 1000 ? (s.overhead/1000).toFixed(0) + 'K×' : s.overhead + '×';
+      ctx.fillStyle = s.color;
+      ctx.font = 'bold 18px "JetBrains Mono", monospace';
+      ctx.fillText(ohStr, x + barW/2, y - 6);
+
+      // Latency
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '17px "JetBrains Mono", monospace';
+      ctx.fillText(s.latency + 's/op', x + barW/2, m.top + H - m.top - m.bottom + 46);
+    });
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('各方案计算开销对比 (log 刻度, 相对明文)', W/2, m.top - 8);
+
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "Segoe UI", sans-serif';
+    ctx.fillText('越低越好 | 开销 = 密文计算时间 / 明文计算时间', W/2, H - 8);
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ═══ Mermaid Init ═══ -->
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1e1b4b',
+    primaryTextColor: '#e1e4eb',
+    primaryBorderColor: '#6366f1',
+    lineColor: '#ffffff',
+    secondaryColor: '#16213e',
+    tertiaryColor: '#0b0e14',
+    fontSize: '18px',
+    noteBkgColor: '#1e2332',
+    noteTextColor: '#e1e4eb',
+    noteBorderColor: '#a855f7',
+    sequenceNumberColor: '#a855f7',
+  },
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: 'basis',
+    padding: 18,
+  },
+  sequence: {
+    useMaxWidth: true,
+    boxMargin: 10,
+    mirrorActors: false,
+  },
+});
+</script>
+
+<!-- ═══ Slider progress fill ═══ -->
+<script>
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

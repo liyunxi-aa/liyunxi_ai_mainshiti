@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>强化学习 — Q-Learning · Bellman 方程 · Grid World 交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #161822;
+    --surface2: #1d1f2e;
+    --text: #e1e4ed;
+    --text2: #8b8fa8;
+    --accent: #22d3ee;
+    --accent2: #06b6d4;
+    --blue: #4ea8f6;
+    --lightblue: #7dd3fc;
+    --red: #e94560;
+    --gold: #f0c040;
+    --green: #4ade80;
+    --green2: #22c55e;
+    --orange: #f59342;
+    --teal: #2dd4bf;
+    --pink: #f472b6;
+    --purple: #a78bfa;
+    --border: #252840;
+    --radius: 14px;
+
+    --cell-empty: #1a1d2e;
+    --cell-wall: #374151;
+    --cell-start: #4ade80;
+    --cell-goal: #f0c040;
+    --cell-agent: #22d3ee;
+    --cell-qhigh: #1e5060;
+    --cell-qlow: #1a1d2e;
+    --grid-line: rgba(255,255,255,0.06);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #0f1722 0%, #161f38 40%, #121b2e 70%, #0f1722 100%);
+    border-bottom: 2px solid var(--border);
+    padding: 28px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(34,211,238,0.06) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(240,192,64,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 29px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--teal), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .header p { color: var(--text2); font-size: 17px; position: relative; }
+
+  /* ── Main ── */
+  .main {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ── Section ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    overflow-x: auto;
+  }
+  .section h2 {
+    font-size: 22px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot.cyan { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .dot.blue { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+  .dot.gold { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+  .section .desc {
+    color: var(--text2);
+    font-size: 17px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Viz Row ── */
+  .viz-row {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1100px) { .viz-row { grid-template-columns: 1fr; } }
+
+  .canvas-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 500px;
+  }
+  canvas { display: block; }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 4px; }
+  .control-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .control-group label .val {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 42px;
+    text-align: right;
+  }
+  select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 16px;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b8fa8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(34,211,238,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(34,211,238,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(34,211,238,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(34,211,238,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #252840; }
+  .btn.accent { background: var(--accent); color: #0f1117; border-color: var(--accent); font-weight: 700; }
+  .btn.accent:hover { background: #67e8f9; }
+  .btn.warn { background: var(--orange); color: #0f1117; border-color: var(--orange); font-weight: 700; }
+  .btn.warn:hover { background: #f7a86a; }
+  .btn.danger { background: var(--red); color: #fff; border-color: var(--red); }
+  .btn.danger:hover { background: #f05060; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn:disabled:hover { border-color: var(--border); background: var(--surface2); }
+
+  /* ── Tool selector ── */
+  .tool-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .tool-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    flex: 1;
+    text-align: center;
+  }
+  .tool-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tool-btn.active { border-color: var(--accent); background: rgba(34,211,238,0.15); color: var(--accent); font-weight: 600; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .swatch.sw-start { background: var(--cell-start); }
+  .swatch.sw-goal { background: var(--cell-goal); }
+  .swatch.sw-wall { background: var(--cell-wall); }
+  .swatch.sw-agent { background: var(--cell-agent); }
+  .swatch.sw-qhigh { background: var(--cell-qhigh); }
+  .swatch.sw-qlow { background: var(--cell-qlow); }
+
+  /* ── Info cards ── */
+  .info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .info-card .val {
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .info-card .val.gold { background: linear-gradient(135deg, var(--gold), var(--orange)); -webkit-background-clip: text; background-clip: text; }
+  .info-card .val.green { background: linear-gradient(135deg, var(--green), var(--teal)); -webkit-background-clip: text; background-clip: text; }
+  .info-card .label { font-size: 16px; color: var(--text2); margin-top: 2px; }
+
+  /* ── Chart ── */
+  .chart-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Algorithm pseudocode ── */
+  .algo-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .algo-steps .algo-line {
+    padding: 8px 14px;
+    border-radius: 6px;
+    background: var(--surface2);
+    border-left: 3px solid var(--border);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 16px;
+    transition: all 0.3s;
+  }
+  .algo-steps .algo-line.highlight {
+    border-left-color: var(--accent);
+    color: var(--text);
+    background: rgba(34,211,238,0.08);
+  }
+
+  /* ── Q-table ── */
+  .qtable-wrap {
+    overflow-x: auto;
+    margin-top: 12px;
+  }
+  .qtable {
+    border-collapse: collapse;
+    font-size: 16px;
+    width: 100%;
+    min-width: 500px;
+  }
+  .qtable th {
+    background: var(--surface2);
+    padding: 8px 12px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    font-size: 16px;
+  }
+  .qtable td {
+    padding: 6px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 16px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  .qtable td.max-q { color: var(--accent); font-weight: 700; }
+
+  /* ── Compare table ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-top: 12px;
+    min-width: 600px;
+  }
+  .compare-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    font-size: 16px;
+  }
+  .compare-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 16px;
+  }
+  .compare-table tr:hover td { background: rgba(34,211,238,0.04); }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, #1a1a30, #1a2030);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 16px;
+    color: #c8ccd8;
+    line-height: 1.8;
+  }
+  .insight strong { color: var(--gold); }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 16px; }
+    .viz-row { grid-template-columns: 1fr; }
+    .compare-table { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🤖 强化学习 · 交互式可视化</h1>
+  <p>MDP · Bellman 方程 · Q-Learning · DQN — 在 Grid World 中直观体验 Agent 如何从试错中学习最优策略</p>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: MDP 概述 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <h2><span class="dot cyan"></span> 一、马尔可夫决策过程 (MDP)</h2>
+  <p class="desc">
+    强化学习的数学基础是<b>马尔可夫决策过程 (MDP)</b>——一个由五元组 <b>(S, A, P, R, γ)</b> 定义的框架。
+    Agent 在环境中通过<b>试错 (Trial-and-Error)</b> 学习：观察状态 <b>s</b>，执行动作 <b>a</b>，获得奖励 <b>r</b>，并转移到新状态 <b>s'</b>。
+    目标是找到<b>最优策略 π*</b> 以最大化累计折扣奖励。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 MDP 五元组定义</h3>
+    <div id="formula-mdp"></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;">
+    <div class="formula-block">
+      <h3>🎯 价值函数 V(s)</h3>
+      <div id="formula-v"></div>
+    </div>
+    <div class="formula-block">
+      <h3>🎯 动作价值函数 Q(s,a)</h3>
+      <div id="formula-q"></div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>💡 核心直觉：</strong>V(s) 衡量"站在状态 s 上有多好"，而 Q(s,a) 衡量"在状态 s 执行动作 a 有多好"。
+    Q 函数比 V 函数多了一个动作维度——这正是 <strong>Q-Learning</strong> 能够直接从中提取最优策略（贪心选取最大 Q 值的动作）的关键原因。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: Bellman 方程 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <h2><span class="dot blue"></span> 二、Bellman 方程 — 递归分解的核心</h2>
+  <p class="desc">
+    强化学习的核心数学工具是 <b>Bellman 方程</b>，它将一个状态的价值<b>递归分解</b>为即时奖励加上后继状态的折扣价值。
+    Bellman 最优方程进一步给出了最优价值函数必须满足的条件，这是 <b>Q-Learning</b> 和 <b>Value Iteration</b> 的理论基础。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 Bellman 期望方程 → Bellman 最优方程</h3>
+    <div id="formula-bellman"></div>
+  </div>
+
+  <div class="formula-block" style="margin-top:16px;">
+    <h3>⚡ TD 更新规则 — Q-Learning 的核心</h3>
+    <div id="formula-td"></div>
+  </div>
+
+  <div class="insight">
+    <strong>💡 核心直觉：</strong>TD 误差 <strong>δ = r + γ·max Q(s',a') − Q(s,a)</strong> 衡量"实际收到的比你预期的多多少"。
+    如果 δ > 0（惊喜），提高 Q(s,a)；如果 δ < 0（失望），降低 Q(s,a)。
+    这就是 Agent 从<b>试错</b>中学习的基本机制——与人类从"预期偏差"中学习的方式高度一致。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: Q-Learning 算法 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <h2><span class="dot green"></span> 三、Q-Learning 算法</h2>
+  <p class="desc">
+    <b>Q-Learning</b> 是最经典的 <b>无模型 (Model-Free)</b>、<b>离策略 (Off-Policy)</b> 强化学习算法。
+    它直接学习最优 Q 函数 Q*(s,a)，而不需要知道环境的状态转移概率 P(s'|s,a)。
+    通过 <b>ε-贪心策略</b> 平衡探索与利用，Q-Learning 在表格型（离散状态/动作）问题上保证收敛到最优策略。
+  </p>
+
+  <div class="algo-steps">
+    <div class="algo-line"><b>Algorithm:</b> Tabular Q-Learning</div>
+    <div class="algo-line">1. 初始化 Q(s,a) ← 0 for all s ∈ S, a ∈ A</div>
+    <div class="algo-line">2. <b>for</b> episode = 1, 2, ..., M <b>do</b>:</div>
+    <div class="algo-line">3. &nbsp;&nbsp;s ← 初始状态 (agent 回到起点)</div>
+    <div class="algo-line">4. &nbsp;&nbsp;<b>while</b> s 不是终止状态 <b>do</b>:</div>
+    <div class="algo-line highlight">5. &nbsp;&nbsp;&nbsp;&nbsp;a ← ε-贪心选择: 以概率ε随机选择，否则选 argmax_a Q(s,a)</div>
+    <div class="algo-line highlight">6. &nbsp;&nbsp;&nbsp;&nbsp;执行动作 a，观察奖励 r 和新状态 s'</div>
+    <div class="algo-line highlight">7. &nbsp;&nbsp;&nbsp;&nbsp;Q(s,a) ← Q(s,a) + α [ r + γ·max_a' Q(s',a') − Q(s,a) ]</div>
+    <div class="algo-line">8. &nbsp;&nbsp;&nbsp;&nbsp;s ← s'</div>
+    <div class="algo-line">9. &nbsp;&nbsp;<b>end while</b></div>
+    <div class="algo-line">10. <b>end for</b></div>
+  </div>
+
+  <div class="insight" style="margin-top:16px;">
+    <strong>💡 Off-Policy 的含义：</strong>Q-Learning 用<b>行为策略</b>（ε-贪心）来探索环境收集数据，
+    但更新时直接用 <strong>max_a' Q(s',a')</strong>（即最优贪心策略的估计）作为目标——它"在学习最优策略，即使自己并不按照该策略行动"。
+    这与 SARSA 的 On-Policy 形成鲜明对比，后者使用实际执行的动作 a' 来更新。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: Grid World 交互式演示 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="main-viz">
+  <h2><span class="dot gold"></span> 四、Grid World 交互式演示</h2>
+  <p class="desc">
+    点击网格<b>放置/移除墙壁</b>（障碍物）。Agent 从 <span style="color:var(--green)">🟢 起点</span> 出发，目标是 <span style="color:var(--gold)">🟡 终点</span>。
+    调整参数后点击 <b>"开始训练"</b>，观察 Agent 如何通过 Q-Learning 从试错中学会避开障碍、找到最优路径。
+    <b>Q 值热力图</b> 将显示每个格子各方向动作的 Q 值强度。
+  </p>
+
+  <div class="legend">
+    <span><span class="swatch sw-start"></span> 起点 (S)</span>
+    <span><span class="swatch sw-goal"></span> 终点 (G)</span>
+    <span><span class="swatch sw-wall"></span> 墙壁/障碍</span>
+    <span><span class="swatch sw-agent"></span> Agent</span>
+    <span><span class="swatch sw-qhigh"></span> Q 值高</span>
+    <span><span class="swatch sw-qlow"></span> Q 值低</span>
+  </div>
+
+  <div class="viz-row">
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="mainCanvas"></canvas>
+    </div>
+    <div class="controls">
+      <div class="tool-row">
+        <button class="tool-btn active" data-tool="wall">🧱 放置墙壁</button>
+        <button class="tool-btn" data-tool="erase">🧹 擦除墙壁</button>
+        <button class="tool-btn" data-tool="start">🟢 移动起点</button>
+        <button class="tool-btn" data-tool="goal">🟡 移动终点</button>
+      </div>
+
+      <div class="control-group">
+        <label>📐 学习率 α (Learning Rate) <span class="val" id="lrVal">0.50</span></label>
+        <input type="range" id="lrSlider" min="0.05" max="1.0" value="0.5" step="0.05">
+      </div>
+
+      <div class="control-group">
+        <label>🔮 折扣因子 γ (Discount) <span class="val" id="gammaVal">0.90</span></label>
+        <input type="range" id="gammaSlider" min="0.5" max="0.99" value="0.9" step="0.01">
+      </div>
+
+      <div class="control-group">
+        <label>🎲 探索率 ε (Epsilon) <span class="val" id="epVal">0.30</span></label>
+        <input type="range" id="epSlider" min="0" max="1.0" value="0.3" step="0.05">
+      </div>
+
+      <div class="control-group">
+        <label>⚡ 训练速度 <span class="val" id="speedVal">50</span> ms/步</label>
+        <input type="range" id="speedSlider" min="5" max="200" value="50" step="5">
+      </div>
+
+      <div class="control-group">
+        <label>🎯 训练回合数 <span class="val" id="episodesVal">200</span></label>
+        <input type="range" id="episodesSlider" min="10" max="1000" value="200" step="10">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn accent" id="btnTrain">▶ 开始训练</button>
+        <button class="btn warn" id="btnPause" disabled>⏸ 暂停</button>
+        <button class="btn" id="btnStepEpisode">⏭ 单回合</button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="btnShowPath">👣 显示最优路径</button>
+        <button class="btn" id="btnShowQTable">📋 显示 Q 表</button>
+        <button class="btn danger" id="btnReset">🔄 重置训练</button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="btnClearWalls">🧹 清除墙壁</button>
+        <button class="btn" id="btnRandomWalls">🎲 随机障碍</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Stats & Chart ── -->
+  <div class="info-cards" style="margin-top:20px;">
+    <div class="info-card"><div class="val" id="statEpisode">0</div><div class="label">训练回合</div></div>
+    <div class="info-card"><div class="val green" id="statSteps">0</div><div class="label">本回合步数</div></div>
+    <div class="info-card"><div class="val gold" id="statReward">0</div><div class="label">本回合总奖励</div></div>
+    <div class="info-card"><div class="val" id="statSuccess">0%</div><div class="label">成功率 (近10回合)</div></div>
+    <div class="info-card"><div class="val gold" id="statAvgReward">0</div><div class="label">平均奖励 (近50回合)</div></div>
+    <div class="info-card"><div class="val" id="statStatus">就绪</div><div class="label">状态</div></div>
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="rewardChart" width="900" height="220"></canvas>
+  </div>
+
+  <!-- Q-Table display -->
+  <div class="qtable-wrap" id="qtableSection" style="display:none; margin-top:20px;">
+    <h3 style="font-size:18px;margin-bottom:8px;color:var(--text);">📋 Q 表 — Agent 位置 (2,2) 的四方向 Q 值</h3>
+    <div id="qtableContainer"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: Exploration vs Exploitation -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <h2><span class="dot orange"></span> 五、探索 vs 利用 — ε-贪心策略</h2>
+  <p class="desc">
+    强化学习的核心困境：Agent 应该<b>探索 (Explore)</b> 未知的状态-动作组合以发现更好的策略，
+    还是<b>利用 (Exploit)</b> 当前已知的最优动作以最大化即时奖励？
+    最常见的折中方案是 <b>ε-贪心 (ε-Greedy)</b> 策略：
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 ε-贪心策略定义</h3>
+    <div id="formula-eps"></div>
+  </div>
+
+  <div style="overflow-x:auto; margin-top:16px;">
+    <table class="compare-table">
+      <thead>
+        <tr><th>策略</th><th>探索方式</th><th>优点</th><th>缺点</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--accent);font-weight:700;">ε-贪心</td>
+          <td>以 ε 概率随机选择动作</td>
+          <td>简单、保证收敛 (ε→0)</td>
+          <td>随机探索效率低</td>
+        </tr>
+        <tr>
+          <td style="color:var(--accent);font-weight:700;">ε-衰减</td>
+          <td>ε 随时间指数/线性衰减</td>
+          <td>早期多探索，后期多利用</td>
+          <td>需要调衰减速率</td>
+        </tr>
+        <tr>
+          <td style="color:var(--purple);font-weight:700;">UCB (上置信界)</td>
+          <td>选 a 最大化 Q(s,a) + c·√(ln t / N(s,a))</td>
+          <td>原则性探索，按不确定性加权</td>
+          <td>需要记录访问次数</td>
+        </tr>
+        <tr>
+          <td style="color:var(--purple);font-weight:700;">Boltzmann (Softmax)</td>
+          <td>按 exp(Q(s,a)/τ) 概率采样</td>
+          <td>平滑概率分布，温度 τ 控制</td>
+          <td>温度 τ 难以调节</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight">
+    <strong>💡 关键洞察：</strong>如果 ε 恒为 0（从不探索），Q-Learning 可能永远找不到最优策略——
+    因为它只会重复已知的路径，从不尝试可能更好的替代方案。
+    但 ε 太大则 Agent 的行为近乎随机，无法有效利用已学到的知识。
+    在实践中，<strong>ε 衰减</strong>（从高探索率开始，逐渐降低）是最常用的策略。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 6: DQN 概述 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <h2><span class="dot purple"></span> 六、从表格 Q-Learning 到深度 Q 网络 (DQN)</h2>
+  <p class="desc">
+    当状态空间变得巨大（例如 Atari 游戏的像素画面）或连续时，表格 Q-Learning 不再可行。
+    <b>Deep Q-Network (DQN)</b> 使用深度神经网络来<b>近似 Q 函数</b> Q(s,a; θ)，由 DeepMind 在 2013/2015 年提出，
+    标志着现代深度强化学习的开端。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 DQN 损失函数</h3>
+    <div id="formula-dqn"></div>
+  </div>
+
+  <div class="formula-block" style="margin-top:16px;">
+    <h3>🔧 DQN 两大核心创新</h3>
+    <div id="formula-dqn-innov"></div>
+  </div>
+
+  <div style="overflow-x:auto; margin-top:16px;">
+    <table class="compare-table">
+      <thead>
+        <tr><th>维度</th><th>表格 Q-Learning</th><th>Deep Q-Network (DQN)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Q 函数表示</td><td>表格 (|S| × |A| 矩阵)</td><td>深度神经网络 Q(s,a;θ)</td></tr>
+        <tr><td>状态空间</td><td>离散、小规模</td><td>可处理高维/连续状态（图像等）</td></tr>
+        <tr><td>泛化能力</td><td>无 — 每个 (s,a) 独立学习</td><td>有 — 相似状态共享特征表示</td></tr>
+        <tr><td>训练稳定性</td><td>天然稳定</td><td>需 Experience Replay + Target Network</td></tr>
+        <tr><td>收敛保证</td><td>表格型保证收敛</td><td>非线性逼近下无理论保证</td></tr>
+        <tr><td>代表应用</td><td>小迷宫、简单游戏</td><td>Atari 游戏、机器人控制、推荐系统</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:16px;">
+    <h3 style="font-size:18px;color:var(--text);margin-bottom:12px;">🔗 强化学习算法演进</h3>
+    <div class="algo-steps">
+      <div class="algo-line">1. Q-Learning (1989) — 表格型，离策略，TD 学习</div>
+      <div class="algo-line">2. SARSA (1994) — 表格型，在策略，更保守（考虑探索风险）</div>
+      <div class="algo-line highlight">3. DQN (2013/2015) — 深度网络 + Experience Replay + Target Network → Atari 人类水平</div>
+      <div class="algo-line">4. Double DQN (2016) — 解耦动作选择与评估，缓解 Q 值高估</div>
+      <div class="algo-line">5. Dueling DQN (2016) — 分离 V(s) 与 Advantage(s,a)，提升学习效率</div>
+      <div class="algo-line">6. A3C / A2C (2016) — Actor-Critic 架构，并行训练</div>
+      <div class="algo-line highlight">7. PPO (2017) — 信任区域策略优化，约束策略更新幅度 → 最广泛使用的 RL 算法之一</div>
+      <div class="algo-line">8. SAC (2018) — 最大熵 RL，离线策略 Actor-Critic → SOTA 样本效率</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>💡 核心教训：</strong>DQN 的成功不在于算法本身多么复杂，而在于解决了<b>深度神经网络与 RL 结合时的两个根本挑战</b>：
+    ① 样本之间高度相关（Experience Replay 打破相关性）；② 目标值随网络更新不断变化（Target Network 稳定目标）。
+    这两个技巧至今仍是绝大多数深度 RL 算法的标配。
+  </div>
+</div>
+
+</div><!-- .main -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// KaTeX 公式渲染
+// ═══════════════════════════════════════════════════════════════
+(function() {
+  const formulas = {
+    'formula-mdp': String.raw`\begin{aligned}
+\text{MDP} &= (\mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma) \\[4pt]
+\mathcal{S} &: \text{状态空间 (State Space)} \\
+\mathcal{A} &: \text{动作空间 (Action Space)} \\
+\mathcal{P}(s'|s,a) &: \text{状态转移概率} \\
+\mathcal{R}(s,a,s') &: \text{奖励函数} \\
+\gamma \in [0,1) &: \text{折扣因子 (Discount Factor)} \\[4pt]
+\text{目标: } &\pi^* = \arg\max_\pi \mathbb{E}\!\left[\sum_{t=0}^{\infty} \gamma^t R_t \mid \pi\right]
+\end{aligned}`,
+
+    'formula-v': String.raw`\begin{aligned}
+V^\pi(s) &= \mathbb{E}_\pi\!\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \mid S_t = s\right] \\[4pt]
+&= \sum_a \pi(a|s) \sum_{s'} \mathcal{P}(s'|s,a)\!\left[\mathcal{R}(s,a,s') + \gamma V^\pi(s')\right]
+\end{aligned}`,
+
+    'formula-q': String.raw`\begin{aligned}
+Q^\pi(s,a) &= \mathbb{E}_\pi\!\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \mid S_t = s, A_t = a\right] \\[4pt]
+&= \sum_{s'} \mathcal{P}(s'|s,a)\!\left[\mathcal{R}(s,a,s') + \gamma \sum_{a'} \pi(a'|s') Q^\pi(s',a')\right]
+\end{aligned}`,
+
+    'formula-bellman': String.raw`\begin{aligned}
+\text{Bellman 期望方程:}&\quad V^\pi(s) = \sum_a \pi(a|s) \sum_{s'} \mathcal{P}(s'|s,a)[\mathcal{R}(s,a,s') + \gamma V^\pi(s')] \\[8pt]
+\text{Bellman 最优方程:}&\quad V^*(s) = \max_a \sum_{s'} \mathcal{P}(s'|s,a)[\mathcal{R}(s,a,s') + \gamma V^*(s')] \\[4pt]
+&\quad Q^*(s,a) = \sum_{s'} \mathcal{P}(s'|s,a)[\mathcal{R}(s,a,s') + \gamma \max_{a'} Q^*(s',a')]
+\end{aligned}`,
+
+    'formula-td': String.raw`\begin{aligned}
+\text{TD 误差:}&\quad \delta_t = R_{t+1} + \gamma \max_{a'} Q(S_{t+1}, a') - Q(S_t, A_t) \\[6pt]
+\text{Q 值更新:}&\quad Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \cdot \delta_t \\[4pt]
+\text{即:}&\quad Q(s,a) \leftarrow Q(s,a) + \alpha\!\left[r + \gamma \max_{a'} Q(s',a') - Q(s,a)\right] \\[6pt]
+\text{其中:}&\quad \alpha \in (0,1] \text{ 学习率, 控制新信息覆盖旧信息的程度}
+\end{aligned}`,
+
+    'formula-eps': String.raw`\begin{aligned}
+\pi(a|s) = \begin{cases}
+1 - \varepsilon + \frac{\varepsilon}{|\mathcal{A}|} & \text{if } a = \arg\max_{a'} Q(s,a') \quad (\text{利用 — 选最优}) \\[8pt]
+\frac{\varepsilon}{|\mathcal{A}|} & \text{otherwise} \quad (\text{探索 — 随机选})
+\end{cases}
+\end{aligned}`,
+
+    'formula-dqn': String.raw`\begin{aligned}
+\mathcal{L}(\theta) &= \mathbb{E}_{(s,a,r,s') \sim \mathcal{D}}\!\left[\left(r + \gamma \max_{a'} Q(s',a'; \theta^-) - Q(s,a; \theta)\right)^2\right] \\[6pt]
+\theta &: \text{在线网络参数 (Online Network)} \\
+\theta^- &: \text{目标网络参数 (Target Network, 定期从 } \theta \text{ 复制)} \\
+\mathcal{D} &: \text{经验回放缓冲区 (Experience Replay Buffer)}
+\end{aligned}`,
+
+    'formula-dqn-innov': String.raw`\begin{aligned}
+\text{① Experience Replay (经验回放):}&\quad \text{将 } (s,a,r,s') \text{ 存入缓冲区 } \mathcal{D}\text{，随机采样小批量训练} \\
+&\quad \text{→ 打破样本时间相关性，提高数据利用率} \\[8pt]
+\text{② Target Network (目标网络):}&\quad \text{用单独的目标网络 } \theta^- \text{ 计算 TD 目标} \\
+&\quad \text{→ 目标网络每 } C \text{ 步从在线网络复制: } \theta^- \leftarrow \theta \\
+&\quad \text{→ 稳定训练目标，防止"追移动靶"}
+\end{aligned}`
+  };
+
+  for (const [id, formula] of Object.entries(formulas)) {
+    const el = document.getElementById(id);
+    if (el) {
+      katex.render(formula, el, { displayMode: true, throwOnError: false });
+    }
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// Grid World + Q-Learning 交互引擎
+// ═══════════════════════════════════════════════════════════════
+(function() {
+  // ── DOM refs ──
+  const canvas = document.getElementById('mainCanvas');
+  const ctx = canvas.getContext('2d');
+  const rewardChart = document.getElementById('rewardChart');
+  const chartCtx = rewardChart.getContext('2d');
+  const canvasWrap = document.getElementById('canvasWrap');
+
+  // ── Grid config ──
+  const GRID = 10;
+  const CELL = 52;
+  const PAD = 6;
+  const OFFSET = 36;
+  const CW = GRID * CELL + OFFSET * 2;
+  const CH = GRID * CELL + OFFSET * 2;
+
+  canvas.width = CW;
+  canvas.height = CH;
+  canvas.style.width = Math.min(CW, 900) + 'px';
+  canvas.style.height = Math.min(CH, 600) + 'px';
+
+  // ── Directions: 0=up, 1=right, 2=down, 3=left ──
+  const DIRS = [
+    { dr: -1, dc: 0, label: '↑', name: 'Up' },
+    { dr: 0, dc: 1, label: '→', name: 'Right' },
+    { dr: 1, dc: 0, label: '↓', name: 'Down' },
+    { dr: 0, dc: -1, label: '←', name: 'Left' }
+  ];
+
+  // ── World state ──
+  let walls = new Set();
+  let startR = 0, startC = 0;
+  let goalR = GRID - 1, goalC = GRID - 1;
+
+  // ── Q-Learning state ──
+  // Q[r][c][a] — 3D array
+  let Q = [];
+  function initQ() {
+    Q = [];
+    for (let r = 0; r < GRID; r++) {
+      Q[r] = [];
+      for (let c = 0; c < GRID; c++) {
+        Q[r][c] = [0, 0, 0, 0];
+      }
+    }
+  }
+  initQ();
+
+  let agentR = startR, agentC = startC;
+  let episode = 0;
+  let stepInEpisode = 0;
+  let totalRewardEpisode = 0;
+  let rewardHistory = [];       // per-episode total reward
+  let successHistory = [];      // 1=reached goal, 0=not
+  let training = false;
+  let paused = false;
+  let animTimer = null;
+  let currentTool = 'wall';
+
+  // ── Parameters ──
+  function getAlpha() { return parseFloat(document.getElementById('lrSlider').value); }
+  function getGamma() { return parseFloat(document.getElementById('gammaSlider').value); }
+  function getEpsilon() { return parseFloat(document.getElementById('epSlider').value); }
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+  function getMaxEpisodes() { return parseInt(document.getElementById('episodesSlider').value); }
+
+  // ── Helpers ──
+  function wallKey(r, c) { return r + ',' + c; }
+  function isWall(r, c) { return walls.has(wallKey(r, c)); }
+  function isGoal(r, c) { return r === goalR && c === goalC; }
+  function isStart(r, c) { return r === startR && c === startC; }
+  function inBounds(r, c) { return r >= 0 && r < GRID && c >= 0 && c < GRID; }
+  function isTerminal(r, c) { return isGoal(r, c); }
+
+  function bestAction(r, c) {
+    let best = 0, bestVal = Q[r][c][0];
+    for (let a = 1; a < 4; a++) {
+      if (Q[r][c][a] > bestVal) { bestVal = Q[r][c][a]; best = a; }
+    }
+    return best;
+  }
+
+  function maxQ(r, c) {
+    return Math.max(...Q[r][c]);
+  }
+
+  function epsilonGreedy(r, c) {
+    if (Math.random() < getEpsilon()) {
+      return Math.floor(Math.random() * 4);
+    }
+    return bestAction(r, c);
+  }
+
+  // ── Step ──
+  function step(r, c, a) {
+    const d = DIRS[a];
+    let nr = r + d.dr, nc = c + d.dc;
+    // Bump into wall or boundary → stay + penalty
+    if (!inBounds(nr, nc) || isWall(nr, nc)) {
+      return { r: r, c: c, reward: -1.0, done: false };
+    }
+    if (isGoal(nr, nc)) {
+      return { r: nr, c: nc, reward: 10.0, done: true };
+    }
+    return { r: nr, c: nc, reward: -0.1, done: false };
+  }
+
+  function qLearnStep(r, c) {
+    const a = epsilonGreedy(r, c);
+    const { r: nr, c: nc, reward: rew, done } = step(r, c, a);
+    // TD update
+    const tdTarget = rew + (done ? 0 : getGamma() * maxQ(nr, nc));
+    const tdError = tdTarget - Q[r][c][a];
+    Q[r][c][a] += getAlpha() * tdError;
+    return { nr, nc, rew, done, a };
+  }
+
+  // ── Run one episode ──
+  function runEpisode() {
+    let r = startR, c = startC;
+    let steps = 0;
+    let totalR = 0;
+    let done = false;
+    agentR = r; agentC = c;
+
+    function innerStep() {
+      if (done || steps >= GRID * GRID * 4) {
+        // Episode done
+        rewardHistory.push(totalR);
+        successHistory.push(done ? 1 : 0);
+        episode++;
+        updateStats(done);
+        drawAll();
+        drawRewardChart();
+
+        if (training && !paused && episode < getMaxEpisodes()) {
+          animTimer = setTimeout(() => runEpisode(), getSpeed());
+        } else {
+          stopTraining();
+        }
+        return;
+      }
+
+      const { nr, nc, rew, done: d, a } = qLearnStep(r, c);
+      steps++;
+      totalR += rew;
+      r = nr; c = nc;
+      agentR = r; agentC = c;
+      done = d;
+      stepInEpisode = steps;
+      totalRewardEpisode = totalR;
+
+      drawAll();
+      updateStats(false);
+
+      if (training && !paused) {
+        animTimer = setTimeout(innerStep, getSpeed());
+      }
+    }
+
+    innerStep();
+  }
+
+  // ── Training controls ──
+  function startTraining() {
+    if (training) return;
+    training = true;
+    paused = false;
+    document.getElementById('btnTrain').textContent = '⏸ 训练中...';
+    document.getElementById('btnTrain').disabled = true;
+    document.getElementById('btnPause').disabled = false;
+    document.getElementById('btnStepEpisode').disabled = true;
+    document.getElementById('statStatus').textContent = '训练中';
+    runEpisode();
+  }
+
+  function stopTraining() {
+    training = false;
+    paused = false;
+    if (animTimer) clearTimeout(animTimer);
+    animTimer = null;
+    document.getElementById('btnTrain').textContent = '▶ 开始训练';
+    document.getElementById('btnTrain').disabled = false;
+    document.getElementById('btnPause').disabled = true;
+    document.getElementById('btnPause').textContent = '⏸ 暂停';
+    document.getElementById('btnStepEpisode').disabled = false;
+    document.getElementById('statStatus').textContent = episode > 0 ? '已停止' : '就绪';
+  }
+
+  function togglePause() {
+    if (!training) return;
+    paused = !paused;
+    const btn = document.getElementById('btnPause');
+    if (paused) {
+      btn.textContent = '▶ 继续';
+      if (animTimer) clearTimeout(animTimer);
+      animTimer = null;
+      document.getElementById('statStatus').textContent = '已暂停';
+    } else {
+      btn.textContent = '⏸ 暂停';
+      document.getElementById('statStatus').textContent = '训练中';
+      // Resume from current agent position
+      const r = agentR, c = agentC;
+      if (isTerminal(r, c)) {
+        runEpisode();
+      } else {
+        // Continue current episode step by step
+        let cr = r, cc = c;
+        let cdone = false;
+        let csteps = stepInEpisode;
+        let ctotalR = totalRewardEpisode;
+        function contStep() {
+          if (cdone || csteps >= GRID * GRID * 4) {
+            rewardHistory.push(ctotalR);
+            successHistory.push(cdone ? 1 : 0);
+            episode++;
+            updateStats(cdone);
+            drawAll();
+            drawRewardChart();
+            if (training && !paused && episode < getMaxEpisodes()) {
+              animTimer = setTimeout(() => runEpisode(), getSpeed());
+            } else {
+              stopTraining();
+            }
+            return;
+          }
+          const { nr, nc, rew, done: d } = qLearnStep(cr, cc);
+          csteps++; ctotalR += rew; cr = nr; cc = nc; cdone = d;
+          agentR = cr; agentC = cc;
+          stepInEpisode = csteps;
+          totalRewardEpisode = ctotalR;
+          drawAll();
+          updateStats(false);
+          if (training && !paused) {
+            animTimer = setTimeout(contStep, getSpeed());
+          }
+        }
+        animTimer = setTimeout(contStep, getSpeed());
+      }
+    }
+  }
+
+  function resetTraining() {
+    stopTraining();
+    initQ();
+    agentR = startR; agentC = startC;
+    episode = 0;
+    stepInEpisode = 0;
+    totalRewardEpisode = 0;
+    rewardHistory = [];
+    successHistory = [];
+    updateStats(false);
+    drawAll();
+    drawRewardChart();
+  }
+
+  function runOneEpisode() {
+    if (training) return;
+    initQ();  // Fresh start for demo
+    agentR = startR; agentC = startC;
+    episode = 0;
+    stepInEpisode = 0;
+    totalRewardEpisode = 0;
+    rewardHistory = [];
+    successHistory = [];
+    training = true;  // temporarily
+    document.getElementById('statStatus').textContent = '执行中';
+    runEpisode();
+    // runEpisode will call stopTraining when done
+  }
+
+  // ── Drawing ──
+  function drawAll() {
+    ctx.clearRect(0, 0, CW, CH);
+
+    // Grid cells
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        const x = OFFSET + c * CELL + PAD;
+        const y = OFFSET + r * CELL + PAD;
+        const s = CELL - PAD * 2;
+
+        // Background
+        if (isWall(r, c)) {
+          ctx.fillStyle = '#374151';
+          ctx.fillRect(x - PAD, y - PAD, CELL, CELL);
+        } else {
+          // Q-value heatmap — show max Q brightness
+          const mq = maxQ(r, c);
+          if (mq > 0) {
+            const intensity = Math.min(1, mq / 12);
+            const rr = Math.round(26 + intensity * 50);
+            const gg = Math.round(26 + intensity * 90);
+            const bb = Math.round(46 + intensity * 130);
+            ctx.fillStyle = `rgb(${rr},${gg},${bb})`;
+          } else if (mq < 0) {
+            const intensity = Math.min(1, -mq / 5);
+            const rr = Math.round(46 + intensity * 20);
+            const gg = Math.round(26 - intensity * 8);
+            const bb = Math.round(26 - intensity * 8);
+            ctx.fillStyle = `rgb(${rr},${gg},${bb})`;
+          } else {
+            ctx.fillStyle = '#1a1d2e';
+          }
+          ctx.fillRect(x - PAD, y - PAD, CELL, CELL);
+        }
+
+        // Grid line
+        ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x - PAD, y - PAD, CELL, CELL);
+
+        // Start marker
+        if (isStart(r, c) && !isWall(r, c)) {
+          ctx.fillStyle = '#4ade80';
+          ctx.fillRect(x - PAD, y - PAD, CELL, CELL);
+          // Draw S
+          ctx.fillStyle = '#0f1117';
+          ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('S', x + s / 2, y + s / 2);
+        }
+
+        // Goal marker
+        if (isGoal(r, c) && !isWall(r, c)) {
+          ctx.fillStyle = '#f0c040';
+          ctx.fillRect(x - PAD, y - PAD, CELL, CELL);
+          ctx.fillStyle = '#0f1117';
+          ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('G', x + s / 2, y + s / 2);
+        }
+
+        // Q arrows
+        if (!isWall(r, c) && !isStart(r, c) && !isGoal(r, c)) {
+          const cx = x + s / 2, cy = y + s / 2;
+          const arrowLen = s * 0.28;
+          const vals = Q[r][c];
+          const maxA = bestAction(r, c);
+          for (let a = 0; a < 4; a++) {
+            const alpha = 0.2 + 0.6 * (a === maxA ? 1 : Math.max(0, vals[a] / Math.max(0.01, vals[maxA])));
+            if (vals[a] <= 0 && a !== maxA) continue; // skip very low values except best
+            const angle = [-Math.PI/2, 0, Math.PI/2, Math.PI][a];
+            const ax = cx + Math.cos(angle) * arrowLen;
+            const ay = cy + Math.sin(angle) * arrowLen;
+            ctx.strokeStyle = `rgba(34,211,238,${alpha.toFixed(2)})`;
+            ctx.lineWidth = a === maxA ? 2.5 : 1.2;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(ax, ay);
+            ctx.stroke();
+            // Arrowhead
+            const headLen = 5;
+            const headAngle = Math.PI / 6;
+            ctx.fillStyle = `rgba(34,211,238,${alpha.toFixed(2)})`;
+            ctx.beginPath();
+            ctx.moveTo(ax, ay);
+            ctx.lineTo(
+              ax - headLen * Math.cos(angle - headAngle),
+              ay - headLen * Math.sin(angle - headAngle)
+            );
+            ctx.lineTo(
+              ax - headLen * Math.cos(angle + headAngle),
+              ay - headLen * Math.sin(angle + headAngle)
+            );
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+
+        // Agent
+        if (r === agentR && c === agentC && !isWall(r, c)) {
+          ctx.fillStyle = '#22d3ee';
+          ctx.beginPath();
+          ctx.arc(x + s / 2, y + s / 2, s * 0.32, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Row/col labels
+    ctx.fillStyle = '#8b8fa8';
+    ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let r = 0; r < GRID; r++) {
+      ctx.fillText(r, OFFSET / 2, OFFSET + r * CELL + CELL / 2);
+    }
+    for (let c = 0; c < GRID; c++) {
+      ctx.fillText(c, OFFSET + c * CELL + CELL / 2, OFFSET / 2);
+    }
+  }
+
+  function drawRewardChart() {
+    const w = rewardChart.width, h = rewardChart.height;
+    chartCtx.clearRect(0, 0, w, h);
+
+    const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+    const pw = w - margin.left - margin.right;
+    const ph = h - margin.top - margin.bottom;
+
+    // Background
+    chartCtx.fillStyle = '#0f1117';
+    chartCtx.fillRect(0, 0, w, h);
+
+    // Title
+    chartCtx.fillStyle = '#8b8fa8';
+    chartCtx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+    chartCtx.textAlign = 'center';
+    chartCtx.fillText('📈 每回合总奖励 (Episode Reward)', w / 2, 16);
+
+    if (rewardHistory.length === 0) {
+      chartCtx.fillStyle = '#8b8fa8';
+      chartCtx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+      chartCtx.fillText('点击"开始训练"查看奖励曲线', w / 2, h / 2);
+      return;
+    }
+
+    // Axes
+    chartCtx.strokeStyle = '#252840';
+    chartCtx.lineWidth = 1;
+    chartCtx.beginPath();
+    chartCtx.moveTo(margin.left, margin.top);
+    chartCtx.lineTo(margin.left, h - margin.bottom);
+    chartCtx.lineTo(w - margin.right, h - margin.bottom);
+    chartCtx.stroke();
+
+    // Y axis labels
+    const allRewards = rewardHistory;
+    let minR = Math.min(0, ...allRewards);
+    let maxR = Math.max(10, ...allRewards);
+    const yRange = maxR - minR || 1;
+
+    chartCtx.fillStyle = '#8b8fa8';
+    chartCtx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+    chartCtx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+      const val = minR + (yRange / 4) * i;
+      const y = h - margin.bottom - (val - minR) / yRange * ph;
+      chartCtx.fillText(val.toFixed(1), margin.left - 8, y + 4);
+      chartCtx.strokeStyle = 'rgba(255,255,255,0.04)';
+      chartCtx.beginPath();
+      chartCtx.moveTo(margin.left, y);
+      chartCtx.lineTo(w - margin.right, y);
+      chartCtx.stroke();
+    }
+
+    // X axis labels
+    chartCtx.textAlign = 'center';
+    const n = rewardHistory.length;
+    const xTicks = 5;
+    for (let i = 0; i <= xTicks; i++) {
+      const ep = Math.round((n - 1) * i / xTicks);
+      const x = margin.left + (ep / Math.max(1, n - 1)) * pw;
+      chartCtx.fillText(String(ep), x, h - margin.bottom + 18);
+    }
+    chartCtx.fillText('回合', w / 2, h - 4);
+
+    // Reward line
+    chartCtx.strokeStyle = '#22d3ee';
+    chartCtx.lineWidth = 1.5;
+    chartCtx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = margin.left + (i / Math.max(1, n - 1)) * pw;
+      const y = h - margin.bottom - ((rewardHistory[i] - minR) / yRange) * ph;
+      if (i === 0) chartCtx.moveTo(x, y);
+      else chartCtx.lineTo(x, y);
+    }
+    chartCtx.stroke();
+
+    // SMA line (window 20)
+    if (n >= 5) {
+      const windowSize = Math.min(20, Math.floor(n / 3));
+      chartCtx.strokeStyle = '#f0c040';
+      chartCtx.lineWidth = 2;
+      chartCtx.setLineDash([6, 3]);
+      chartCtx.beginPath();
+      let started = false;
+      for (let i = windowSize - 1; i < n; i++) {
+        let sum = 0;
+        for (let j = i - windowSize + 1; j <= i; j++) sum += rewardHistory[j];
+        const avg = sum / windowSize;
+        const x = margin.left + (i / Math.max(1, n - 1)) * pw;
+        const y = h - margin.bottom - ((avg - minR) / yRange) * ph;
+        if (!started) { chartCtx.moveTo(x, y); started = true; }
+        else chartCtx.lineTo(x, y);
+      }
+      chartCtx.stroke();
+      chartCtx.setLineDash([]);
+    }
+
+    // Legend
+    chartCtx.fillStyle = '#22d3ee';
+    chartCtx.fillRect(w - margin.right - 180, margin.top + 4, 14, 3);
+    chartCtx.fillStyle = '#8b8fa8';
+    chartCtx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+    chartCtx.textAlign = 'left';
+    chartCtx.fillText('每回合奖励', w - margin.right - 160, margin.top + 8);
+
+    if (n >= 5) {
+      chartCtx.strokeStyle = '#f0c040';
+      chartCtx.lineWidth = 2;
+      chartCtx.setLineDash([6, 3]);
+      chartCtx.beginPath();
+      chartCtx.moveTo(w - margin.right - 180, margin.top + 20);
+      chartCtx.lineTo(w - margin.right - 166, margin.top + 20);
+      chartCtx.stroke();
+      chartCtx.setLineDash([]);
+      chartCtx.fillText('滑动平均 (' + Math.min(20, Math.floor(n/3)) + '回合)', w - margin.right - 160, margin.top + 24);
+    }
+  }
+
+  function updateStats(reachedGoal) {
+    document.getElementById('statEpisode').textContent = episode;
+    document.getElementById('statSteps').textContent = stepInEpisode;
+    document.getElementById('statReward').textContent = totalRewardEpisode.toFixed(1);
+
+    // Success rate — last 10
+    const last10 = successHistory.slice(-10);
+    const succRate = last10.length > 0 ? Math.round(last10.filter(x => x === 1).length / last10.length * 100) : 0;
+    document.getElementById('statSuccess').textContent = succRate + '%';
+
+    // Avg reward — last 50
+    const last50 = rewardHistory.slice(-50);
+    const avgR = last50.length > 0 ? (last50.reduce((a, b) => a + b, 0) / last50.length).toFixed(1) : '0';
+    document.getElementById('statAvgReward').textContent = avgR;
+
+    if (reachedGoal) {
+      document.getElementById('statStatus').textContent = '到达目标! 🎉';
+    }
+  }
+
+  // ── Show Q table for a specific cell ──
+  function showQTable() {
+    const r = agentR, c = agentC;
+    const vals = Q[r][c];
+    const maxA = bestAction(r, c);
+    const dirNames = ['↑ Up', '→ Right', '↓ Down', '← Left'];
+
+    const container = document.getElementById('qtableContainer');
+    const gridR = Math.floor((GRID - 1) / 2), gridC = Math.floor((GRID - 1) / 2);
+    const midVals = Q[gridR] ? Q[gridR][gridC] : [0,0,0,0];
+
+    let html = '<table class="qtable"><thead><tr><th>位置</th>';
+    for (let a = 0; a < 4; a++) html += '<th>' + dirNames[a] + '</th>';
+    html += '<th>最优动作</th></tr></thead><tbody>';
+
+    // Show a few key positions
+    const positions = [
+      { r: startR, c: startC, label: '起点 S' },
+      { r: agentR, c: agentC, label: 'Agent 当前位置' },
+      { r: goalR, c: goalC, label: '终点 G' }
+    ];
+    // Add some intermediate positions
+    for (let rr = 0; rr < GRID; rr += 3) {
+      for (let cc = 0; cc < GRID; cc += 3) {
+        if (rr === startR && cc === startC) continue;
+        if (rr === goalR && cc === goalC) continue;
+        if (rr === agentR && cc === agentC) continue;
+        if (isWall(rr, cc)) continue;
+        positions.push({ r: rr, c: cc, label: '位置 (' + rr + ',' + cc + ')' });
+        if (positions.length >= 12) break;
+      }
+      if (positions.length >= 12) break;
+    }
+
+    for (const pos of positions.slice(0, 12)) {
+      const qvals = Q[pos.r][pos.c];
+      const bestA = bestAction(pos.r, pos.c);
+      html += '<tr><td style="color:var(--text);">' + pos.label + '</td>';
+      for (let a = 0; a < 4; a++) {
+        const cls = a === bestA ? 'max-q' : '';
+        html += '<td class="' + cls + '">' + qvals[a].toFixed(2) + '</td>';
+      }
+      html += '<td style="color:var(--accent);font-weight:700;">' + dirNames[bestA] + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    container.innerHTML = html;
+    const section = document.getElementById('qtableSection');
+    section.style.display = section.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // ── Show optimal path ──
+  function showOptimalPath() {
+    // Run greedy policy from start to goal, highlight path
+    let r = startR, c = startC;
+    const path = [];
+    const visited = new Set();
+    for (let i = 0; i < GRID * GRID; i++) {
+      if (isGoal(r, c)) break;
+      const key = wallKey(r, c);
+      if (visited.has(key)) break;
+      visited.add(key);
+      path.push({ r, c });
+      const a = bestAction(r, c);
+      const d = DIRS[a];
+      let nr = r + d.dr, nc = c + d.dc;
+      if (!inBounds(nr, nc) || isWall(nr, nc)) break;
+      r = nr; c = nc;
+    }
+    path.push({ r, c });
+
+    // Flash the path by redrawing with highlights
+    const origDraw = drawAll;
+    const flashPath = () => {
+      drawAll();
+      // Overlay path
+      for (let i = 0; i < path.length; i++) {
+        const { r: pr, c: pc } = path[i];
+        if (isStart(pr, pc) || isGoal(pr, pc)) continue;
+        const x = OFFSET + pc * CELL + PAD;
+        const y = OFFSET + pr * CELL + PAD;
+        const s = CELL - PAD * 2;
+        ctx.fillStyle = 'rgba(240,192,64,0.35)';
+        ctx.fillRect(x - PAD, y - PAD, CELL, CELL);
+        ctx.fillStyle = '#f0c040';
+        ctx.font = 'bold 14px "Segoe UI", "PingFang SC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('●', x + s / 2, y + s / 2);
+        // Connect lines
+        if (i < path.length - 1) {
+          const nx = OFFSET + path[i+1].c * CELL + PAD + s / 2;
+          const ny = OFFSET + path[i+1].r * CELL + PAD + s / 2;
+          ctx.strokeStyle = 'rgba(240,192,64,0.7)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(x + s / 2, y + s / 2);
+          ctx.lineTo(nx, ny);
+          ctx.stroke();
+        }
+      }
+    };
+    flashPath();
+
+    // Restore normal drawing after 2s
+    setTimeout(drawAll, 2500);
+  }
+
+  // ── Grid interaction ──
+  function getCell(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CW / rect.width;
+    const scaleY = CH / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    const c = Math.floor((mx - OFFSET) / CELL);
+    const r = Math.floor((my - OFFSET) / CELL);
+    if (!inBounds(r, c)) return null;
+    return { r, c };
+  }
+
+  canvas.addEventListener('click', function(e) {
+    if (training) return;
+    const cell = getCell(e);
+    if (!cell) return;
+    const { r, c } = cell;
+
+    if (currentTool === 'wall') {
+      if (isStart(r, c) || isGoal(r, c)) return;
+      if (isWall(r, c)) {
+        walls.delete(wallKey(r, c));
+      } else {
+        walls.add(wallKey(r, c));
+      }
+      // Reset Q when environment changes
+      initQ();
+      episode = 0; stepInEpisode = 0; totalRewardEpisode = 0;
+      rewardHistory = []; successHistory = [];
+      agentR = startR; agentC = startC;
+      updateStats(false);
+      drawRewardChart();
+    } else if (currentTool === 'erase') {
+      walls.delete(wallKey(r, c));
+      initQ();
+      episode = 0; stepInEpisode = 0; totalRewardEpisode = 0;
+      rewardHistory = []; successHistory = [];
+      agentR = startR; agentC = startC;
+      updateStats(false);
+      drawRewardChart();
+    } else if (currentTool === 'start') {
+      if (isGoal(r, c) || isWall(r, c)) return;
+      startR = r; startC = c;
+      agentR = r; agentC = c;
+      initQ();
+      episode = 0; stepInEpisode = 0; totalRewardEpisode = 0;
+      rewardHistory = []; successHistory = [];
+      updateStats(false);
+      drawRewardChart();
+    } else if (currentTool === 'goal') {
+      if (isStart(r, c) || isWall(r, c)) return;
+      goalR = r; goalC = c;
+      initQ();
+      episode = 0; stepInEpisode = 0; totalRewardEpisode = 0;
+      rewardHistory = []; successHistory = [];
+      agentR = startR; agentC = startC;
+      updateStats(false);
+      drawRewardChart();
+    }
+    drawAll();
+  });
+
+  // ── Tool buttons ──
+  document.querySelectorAll('.tool-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tool-btn').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      currentTool = this.getAttribute('data-tool');
+    });
+  });
+
+  // ── Control bindings ──
+  document.getElementById('btnTrain').addEventListener('click', startTraining);
+  document.getElementById('btnPause').addEventListener('click', togglePause);
+  document.getElementById('btnStepEpisode').addEventListener('click', runOneEpisode);
+  document.getElementById('btnShowPath').addEventListener('click', showOptimalPath);
+  document.getElementById('btnShowQTable').addEventListener('click', showQTable);
+  document.getElementById('btnReset').addEventListener('click', resetTraining);
+  document.getElementById('btnClearWalls').addEventListener('click', function() {
+    walls.clear();
+    initQ();
+    episode = 0; stepInEpisode = 0; totalRewardEpisode = 0;
+    rewardHistory = []; successHistory = [];
+    agentR = startR; agentC = startC;
+    updateStats(false);
+    drawAll();
+    drawRewardChart();
+  });
+  document.getElementById('btnRandomWalls').addEventListener('click', function() {
+    walls.clear();
+    const numWalls = Math.floor(GRID * GRID * 0.18);
+    let placed = 0;
+    while (placed < numWalls) {
+      const r = Math.floor(Math.random() * GRID);
+      const c = Math.floor(Math.random() * GRID);
+      if (!isStart(r, c) && !isGoal(r, c) && !isWall(r, c)) {
+        walls.add(wallKey(r, c));
+        placed++;
+      }
+    }
+    initQ();
+    episode = 0; stepInEpisode = 0; totalRewardEpisode = 0;
+    rewardHistory = []; successHistory = [];
+    agentR = startR; agentC = startC;
+    updateStats(false);
+    drawAll();
+    drawRewardChart();
+  });
+
+  // ── Slider displays ──
+  document.getElementById('lrSlider').addEventListener('input', function() {
+    document.getElementById('lrVal').textContent = parseFloat(this.value).toFixed(2);
+  });
+  document.getElementById('gammaSlider').addEventListener('input', function() {
+    document.getElementById('gammaVal').textContent = parseFloat(this.value).toFixed(2);
+  });
+  document.getElementById('epSlider').addEventListener('input', function() {
+    document.getElementById('epVal').textContent = parseFloat(this.value).toFixed(2);
+  });
+  document.getElementById('speedSlider').addEventListener('input', function() {
+    document.getElementById('speedVal').textContent = this.value;
+  });
+  document.getElementById('episodesSlider').addEventListener('input', function() {
+    document.getElementById('episodesVal').textContent = this.value;
+  });
+
+  // ── Init ──
+  drawAll();
+  drawRewardChart();
+})();
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

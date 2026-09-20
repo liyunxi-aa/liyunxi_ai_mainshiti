@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reranker 重排序 — 大模型检索精排</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #f59e0b;
+    --accent2: #fbbf24;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --orange: #fb923c;
+    --lime: #a3e635;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a1d30 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--pink), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.yellow { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.green  { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.cyan   { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+  .dot.pink   { background: var(--pink);   box-shadow: 0 0 10px var(--pink); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 50%), var(--border) var(--pct, 50%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(245,158,11,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(245,158,11,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(245,158,11,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #2a2830; }
+  .btn.active {
+    background: var(--accent);
+    color: #0f1219;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(245,158,11,0.3);
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(167,139,250,0.06));
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Comparison table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+  }
+  .cmp-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl { color: var(--green); font-weight: 600; }
+
+  /* ── Two-column layout ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text2);
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── Stage Flow ── */
+  .stage-flow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+  .stage-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+    min-width: 120px;
+  }
+  .stage-box .stage-icon { font-size: 28px; margin-bottom: 4px; }
+  .stage-box .stage-name { font-weight: 700; color: var(--text); font-size: 17px; }
+  .stage-box .stage-info { font-size: 16px; color: var(--text2); }
+  .stage-arrow { font-size: 24px; color: var(--accent); }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .section { padding: 18px; }
+    .section h2 { font-size: 1.4rem; }
+    .header h1 { font-size: 1.6rem; }
+  }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔄 Reranker 重排序</h1>
+  <p>大模型检索系统中的精排引擎 — 从粗筛到精排，用 Cross-Encoder 深度理解 Query-Document 相关性</p>
+</div>
+
+<div class="container">
+
+<!-- ═══ Section 1: 两阶段检索全景 ═══ -->
+<div class="section" id="sec-overview">
+  <h2><span class="dot yellow"></span> 两阶段检索：Retriever → Reranker</h2>
+  <p class="desc">
+    在现代 <strong>RAG（检索增强生成）</strong>系统中，检索不是一步到位的。<strong>粗筛（Retriever）</strong>用轻量级 Bi-Encoder 从海量库中快速召回 Top-K 候选，再由<strong>精排（Reranker）</strong>用更强的 Cross-Encoder 对候选进行深度重排，最终输出 Top-N 最相关的文档给 LLM。
+  </p>
+
+  <div class="stage-flow">
+    <div class="stage-box">
+      <div class="stage-icon">🔍</div>
+      <div class="stage-name">Query</div>
+      <div class="stage-info">用户查询</div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-box">
+      <div class="stage-icon">📚</div>
+      <div class="stage-name">Retriever</div>
+      <div class="stage-info">Bi-Encoder<br>百万级·毫秒</div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-box">
+      <div class="stage-icon">📋</div>
+      <div class="stage-name">Top-K 候选</div>
+      <div class="stage-info">K=10~100</div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-box" style="border-color: var(--accent); box-shadow: 0 0 16px rgba(245,158,11,0.15);">
+      <div class="stage-icon">🎯</div>
+      <div class="stage-name">Reranker</div>
+      <div class="stage-info">Cross-Encoder<br>精准重排</div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-box">
+      <div class="stage-icon">✅</div>
+      <div class="stage-name">Top-N 结果</div>
+      <div class="stage-info">N=3~10</div>
+    </div>
+    <div class="stage-arrow">→</div>
+    <div class="stage-box">
+      <div class="stage-icon">🤖</div>
+      <div class="stage-name">LLM 生成</div>
+      <div class="stage-info">基于精排文档</div>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 两阶段检索引擎公式</h3>
+    <div id="formula-twostage"></div>
+  </div>
+
+  <div class="insight">
+    <strong>💡 核心直觉：</strong>Bi-Encoder 分别编码 Query 和 Document，通过向量内积计算相似度——<strong>快但粗糙</strong>（Query 和 Doc 在编码时互不可见）。Cross-Encoder 将 Query 和 Document <strong>拼接后一起送入模型</strong>，让它们的 Token 在每一层 Transformer 中充分交互——<strong>慢但精准</strong>。两阶段策略恰好取长补短：粗筛用快方法缩小范围，精排用强方法精细排序。
+  </div>
+</div>
+
+<!-- ═══ Section 2: Bi-Encoder vs Cross-Encoder ═══ -->
+<div class="section" id="sec-biencoder-crossencoder">
+  <h2><span class="dot blue"></span> Bi-Encoder vs Cross-Encoder</h2>
+  <p class="desc">
+    理解 Reranker 的关键在于区分两种编码架构。<strong>Bi-Encoder</strong>独立编码 Query 和 Doc，然后通过点积计算分数；<strong>Cross-Encoder</strong>将两者拼接后联合编码，实现 Token 级别的交叉注意力。
+  </p>
+
+  <div class="two-col">
+    <div style="background:var(--surface2); border-radius:8px; padding:20px; border:1px solid var(--border);">
+      <h3 style="color:var(--blue); margin-bottom:12px; font-size:19px;">🔷 Bi-Encoder（双塔）</h3>
+      <p style="color:var(--text2); font-size:16px; margin-bottom:12px;">Query 和 Document <strong>独立编码</strong>为向量，通过余弦相似度/点积计算相关性。</p>
+      <div class="formula-block" style="margin-bottom:8px;">
+        <div id="formula-biencoder"></div>
+      </div>
+      <div style="color:var(--green); font-size:16px;">✅ 离线预计算 Doc 向量，在线仅算 Query</div>
+      <div style="color:var(--green); font-size:16px;">✅ 百万级文档毫秒级检索（ANN 近似最近邻）</div>
+      <div style="color:var(--red); font-size:16px;">❌ Query 和 Doc 编码时互不可见，缺乏细粒度交互</div>
+    </div>
+    <div style="background:var(--surface2); border-radius:8px; padding:20px; border:1px solid var(--accent); box-shadow: 0 0 12px rgba(245,158,11,0.08);">
+      <h3 style="color:var(--accent); margin-bottom:12px; font-size:19px;">🟡 Cross-Encoder（交叉编码）</h3>
+      <p style="color:var(--text2); font-size:16px; margin-bottom:12px;">Query 和 Document <strong>拼接后共同输入</strong>模型，每层 Transformer 都进行交叉注意力。</p>
+      <div class="formula-block" style="margin-bottom:8px;">
+        <div id="formula-crossencoder"></div>
+      </div>
+      <div style="color:var(--green); font-size:16px;">✅ Query-Doc Token 级交互，捕捉精确语义匹配</div>
+      <div style="color:var(--green); font-size:16px;">✅ 对近义词、同义改写、长尾查询泛化更强</div>
+      <div style="color:var(--red); font-size:16px;">❌ 无法预计算——每对 Query-Doc 都要完整推理一次</div>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <h3>🔬 两种编码方式的计算复杂度对比</h3>
+    <div id="formula-complexity"></div>
+  </div>
+
+  <div class="insight">
+    <strong>💡 为什么 Cross-Encoder 更准？</strong>在 Bi-Encoder 中，Query "苹果" 和 Document "iPhone 最新发布会" 分别编码时，"苹果"可能被编码偏向"水果"方向。而在 Cross-Encoder 中，Query 和 Document Token 在同一上下文中交互，模型能从"发布会"推知"苹果=Apple公司"。这就是<strong>上下文感知的相关性判断</strong>。
+  </div>
+</div>
+
+<!-- ═══ Section 3: Cross-Encoder 重排机制详解 ═══ -->
+<div class="section" id="sec-crossencoder-detail">
+  <h2><span class="dot pink"></span> Cross-Encoder 重排机制详解</h2>
+  <p class="desc">
+    Cross-Encoder Reranker 的核心流程：将 <strong>[CLS] Query [SEP] Document [SEP]</strong> 输入预训练语言模型，取 [CLS] Token 的最后一层表示，通过一个线性分类头输出<strong>相关性分数</strong>。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 Cross-Encoder 前向传播</h3>
+    <div id="formula-cross-forward"></div>
+  </div>
+
+  <div class="formula-block">
+    <h3>🎯 训练目标</h3>
+    <div id="formula-training"></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-bottom:16px;">
+    <div class="info-card">
+      <span style="color:var(--text2);">输入格式</span><br>
+      <span class="val">[CLS] Query [SEP] Doc [SEP]</span>
+    </div>
+    <div class="info-card">
+      <span style="color:var(--text2);">输出 Token</span><br>
+      <span class="val">[CLS] → Linear → Score</span>
+    </div>
+    <div class="info-card">
+      <span style="color:var(--text2);">常见基座</span><br>
+      <span class="val">BERT / RoBERTa / DeBERTa</span>
+    </div>
+    <div class="info-card">
+      <span style="color:var(--text2);">分数范围</span><br>
+      <span class="val">0~1 (Sigmoid) 或实数</span>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>💡 推理成本分析：</strong>对于一个 Query，若 Retriever 召回 K=100 篇文档，Reranker 需要对 100 个 (Query, Doc) 对分别执行 Cross-Encoder 推理——每对都要完整过一遍 Transformer。这是 Reranker 的计算瓶颈，也是为什么<strong>K 不能太大的根本原因</strong>。实践中通常 K=20~100，N=3~10。
+  </div>
+</div>
+
+<!-- ═══ Section 4: 交互式演示 ═══ -->
+<div class="section" id="sec-interactive">
+  <h2><span class="dot green"></span> 交互式演示：Reranker 如何改变排序</h2>
+  <p class="desc">
+    下方演示模拟了一次 RAG 查询 "<strong>大模型推理加速技术</strong>"。左侧展示 Bi-Encoder 粗筛得到的 Top-K 个候选文档及其分数；右侧展示经过 Cross-Encoder Reranker 精排后的结果。拖动滑块调整参数，观察哪些文档被<strong style="color:var(--green);">提升</strong>、哪些被<strong style="color:var(--red);">降级</strong>。
+  </p>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>🔍 粗筛候选数 (Top-K) <span class="val" id="val-k">20</span></label>
+      <input type="range" id="slider-k" min="5" max="30" value="20" step="1">
+    </div>
+    <div class="slider-group">
+      <label>🎯 精排输出数 (Top-N) <span class="val" id="val-n">5</span></label>
+      <input type="range" id="slider-n" min="1" max="15" value="5" step="1">
+    </div>
+    <div class="slider-group">
+      <label>📊 重排强度 <span class="val" id="val-strength">0.7</span></label>
+      <input type="range" id="slider-strength" min="0" max="1" value="0.7" step="0.05">
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--blue);"></span> Bi-Encoder 粗筛分数</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--accent);"></span> Cross-Encoder 精排分数</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--green);"></span> 排名上升 ↑</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--red);"></span> 排名下降 ↓</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--border);"></span> 被裁减</div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3 style="font-size:18px; color:var(--blue); margin-bottom:8px; text-align:center;">🔷 Bi-Encoder 粗筛结果</h3>
+      <canvas id="canvas-before" width="660" height="620"></canvas>
+    </div>
+    <div>
+      <h3 style="font-size:18px; color:var(--accent); margin-bottom:8px; text-align:center;">🟡 Cross-Encoder Reranker 精排结果</h3>
+      <canvas id="canvas-after" width="660" height="620"></canvas>
+    </div>
+  </div>
+
+  <div class="info-row" id="info-stats"></div>
+
+  <div class="insight" id="insight-dynamic">
+    <strong>💡 观察：</strong>滑块默认 K=20、N=5——Retriever 从知识库中召回 20 篇候选，Reranker 对其重排后只取前 5 篇送入 LLM。尝试将<strong>重排强度</strong>拉到 1.0，可以看到 Reranker 的 Cross-Encoder 分数几乎完全覆盖了 Bi-Encoder 粗筛分数，某些粗筛排名靠后的文档因为语义精准匹配而<span style="color:var(--green);">跃升至前列</span>。
+  </div>
+</div>
+
+<!-- ═══ Section 5: 分数融合 ═══ -->
+<div class="section" id="sec-score-fusion">
+  <h2><span class="dot cyan"></span> 分数融合：线性加权与 Reciprocal Rank Fusion</h2>
+  <p class="desc">
+    实际系统中，Reranker 分数不一定完全替代粗筛分数。常见做法是将<strong>多路信号融合</strong>——Bi-Encoder 的语义相似度、Cross-Encoder 的相关性分数、BM25 的词汇匹配分数、甚至是 URL PageRank 等信号按权重混合，得到最终排序分数。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 线性加权融合</h3>
+    <div id="formula-fusion-linear"></div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 Reciprocal Rank Fusion (RRF)</h3>
+    <div id="formula-fusion-rrf"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="insight" style="margin-top:0;">
+      <strong>✅ 线性加权融合</strong><br>
+      适合<strong>分数同尺度</strong>的场景（如都已归一化到 0~1）。调节 α 可控制各信号占比。问题：不同 Reranker 的分数分布差异大，直接加权可能导致某个信号主宰最终排序。
+    </div>
+    <div class="insight" style="margin-top:0; background: linear-gradient(135deg, rgba(34,211,238,0.06), rgba(167,139,250,0.06)); border-color: rgba(34,211,238,0.2);">
+      <strong>✅ RRF 排序融合</strong><br>
+      <strong>不依赖分数绝对值</strong>——只使用排名位置。k 是平滑常数（通常 k=60）。极其鲁棒：即使某个 Reranker 给某文档打了极端高分，在 RRF 中也只贡献排名信息。多系统融合首选。
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Section 6: 级联重排 ═══ -->
+<div class="section" id="sec-cascade">
+  <h2><span class="dot orange"></span> 级联重排：多阶段漏斗</h2>
+  <p class="desc">
+    在大规模 RAG 系统中，通常不止两阶段——而是<strong>多级漏斗</strong>：从海量文档到最终少而精的上下文，每一级都更贵但更准。这就是<strong>级联重排（Cascade Reranking）</strong>的核心思想。
+  </p>
+
+  <div style="overflow-x:auto;">
+    <div class="mermaid" style="background:var(--surface2); border-radius:8px; padding:24px; margin-bottom:16px;">
+flowchart LR
+    A["📚<br/>全量知识库<br/><strong>百万~十亿级</strong>"] -->|"BM25 / Sparse<br/>关键词粗筛"| B["📋<br/>候选集<br/><strong>万级</strong>"]
+    B -->|"Bi-Encoder<br/>Dense Retrieval"| C["📋<br/>Top-K 候选<br/><strong>K=50~200</strong>"]
+    C -->|"Cross-Encoder<br/>Reranker 精排"| D["✅<br/>Top-N 文档<br/><strong>N=5~20</strong>"]
+    D -->|"LLM-as-Reranker<br/>逐篇打分/成对比较"| E["🎯<br/>最终上下文<br/><strong>3~8 篇</strong>"]
+    E --> F["🤖 LLM 生成回答"]
+    style A fill:#1e2332,stroke:#2a3040,color:#e1e4eb
+    style B fill:#1e2332,stroke:#2a3040,color:#e1e4eb
+    style C fill:#1e2332,stroke:#38bdf8,color:#e1e4eb
+    style D fill:#1e2332,stroke:#f59e0b,color:#e1e4eb
+    style E fill:#1e2332,stroke:#4ade80,color:#e1e4eb
+    style F fill:#1e2332,stroke:#a78bfa,color:#e1e4eb
+    </div>
+  </div>
+
+  <div class="cmp-table" style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr><th>阶段</th><th>技术</th><th>模型</th><th>候选量</th><th>延迟/Query</th><th>精度</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Stage 0</strong></td>
+          <td>稀疏检索</td>
+          <td>BM25 / SPLADE</td>
+          <td>百万→万</td>
+          <td class="hl">~1ms</td>
+          <td>★☆☆☆☆</td>
+        </tr>
+        <tr>
+          <td><strong>Stage 1</strong></td>
+          <td>稠密检索</td>
+          <td>Bi-Encoder (BGE / E5)</td>
+          <td>万→百</td>
+          <td class="hl">~5ms</td>
+          <td>★★★☆☆</td>
+        </tr>
+        <tr>
+          <td><strong>Stage 2</strong></td>
+          <td>Cross-Encoder 重排</td>
+          <td>BGE-Reranker / Cohere Rerank</td>
+          <td>百→十</td>
+          <td>~100ms</td>
+          <td>★★★★☆</td>
+        </tr>
+        <tr>
+          <td><strong>Stage 3</strong></td>
+          <td>LLM-as-Reranker</td>
+          <td>GPT-4 / Claude / RankGPT</td>
+          <td>十→个</td>
+          <td>~1s</td>
+          <td class="hl">★★★★★</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight">
+    <strong>💡 LLM-as-Reranker：</strong>最新趋势是将 LLM 本身用作最终 Reranker。常见方法包括：<strong>Pointwise</strong>（逐篇打分，LLM 输出 0~100 相关度）、<strong>Pairwise</strong>（两两比较，LLM 判断哪个更相关）、<strong>Listwise</strong>（一次性排序，如 RankGPT 用滑动窗口 + 冒泡排序思想）。LLM 作为 Reranker 的优势在于<strong>零样本泛化能力极强</strong>，无需特定领域训练数据。
+  </div>
+</div>
+
+<!-- ═══ Section 7: 主流 Reranker 模型对比 ═══ -->
+<div class="section" id="sec-models">
+  <h2><span class="dot purple"></span> 主流 Reranker 模型对比</h2>
+  <p class="desc">
+    从经典 Cross-Encoder 到最新的 LLM-based Reranker，不同方案在精度、速度、成本之间各有取舍。
+  </p>
+
+  <div style="overflow-x:auto;">
+    <div class="table-wrap">
+<table class="cmp-table">
+      <thead>
+        <tr><th>模型</th><th>架构</th><th>基座</th><th>推理速度</th><th>特色</th><th>使用场景</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cohere Rerank v3</strong></td>
+          <td>Cross-Encoder</td>
+          <td>自研</td>
+          <td class="hl">快</td>
+          <td>API 服务，支持多语言，支持长文档（4K tokens）</td>
+          <td>企业 RAG 首选</td>
+        </tr>
+        <tr>
+          <td><strong>BGE-Reranker-v2</strong></td>
+          <td>Cross-Encoder</td>
+          <td>BGE-M3</td>
+          <td>中</td>
+          <td>开源，中英双语，支持交叉编码 + 向量检索双模式</td>
+          <td>自部署 RAG</td>
+        </tr>
+        <tr>
+          <td><strong>ColBERT v2</strong></td>
+          <td>Late Interaction</td>
+          <td>BERT</td>
+          <td class="hl">较快</td>
+          <td>Token 级 MaxSim——介于 Bi/Cross 之间，可预计算</td>
+          <td>延迟敏感场景</td>
+        </tr>
+        <tr>
+          <td><strong>monoT5</strong></td>
+          <td>Seq2Seq</td>
+          <td>T5</td>
+          <td>慢</td>
+          <td>"true"/"false" 生成概率作为相关性分数</td>
+          <td>学术 Benchmark</td>
+        </tr>
+        <tr>
+          <td><strong>RankLLaMA</strong></td>
+          <td>LLM Pointwise</td>
+          <td>LLaMA</td>
+          <td>很慢</td>
+          <td>零样本排序，无需微调，配合指令模板使用</td>
+          <td>高精度需求</td>
+        </tr>
+        <tr>
+          <td><strong>RankGPT</strong></td>
+          <td>LLM Listwise</td>
+          <td>GPT-4</td>
+          <td>很慢</td>
+          <td>滑动窗口 + 排列生成，一次排序多篇文档</td>
+          <td>顶级精度</td>
+        </tr>
+      </tbody>
+    </table>
+</div>
+  </div>
+
+  <div class="insight">
+    <strong>💡 选型建议：</strong>
+    <strong>延迟优先</strong> → Cohere Rerank API 或 BGE-Reranker-v2（5~20ms/doc）；<br>
+    <strong>精度优先</strong> → RankGPT Listwise（~1s，但零样本泛化最强）；<br>
+    <strong>平衡方案</strong> → ColBERT v2——用 Late Interaction 在预计算和精度间取得平衡，查询时只需存储 Token 级 Embedding，MaxSim 计算极快。<br>
+    <strong>自部署中文</strong> → BGE-Reranker-v2-m3 或 bge-reranker-v2-minicpm。
+  </div>
+</div>
+
+<!-- ═══ Section 8: Reranker 在 RAG Pipeline 中的角色 ═══ -->
+<div class="section" id="sec-rag-role">
+  <h2><span class="dot yellow"></span> Reranker 在 RAG Pipeline 中的角色</h2>
+  <p class="desc">
+    Reranker 不只是"把排序弄准一点"——它是连接<strong>检索</strong>和<strong>生成</strong>的关键桥梁，直接影响 LLM 的生成质量。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 Reranker 对生成质量的影响</h3>
+    <div id="formula-rag-quality"></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:14px; margin-bottom:16px;">
+    <div class="info-card" style="border-left: 3px solid var(--red);">
+      <span style="color:var(--text2);">❌ 无 Reranker</span><br>
+      <span class="val">粗筛 Top-5 直接给 LLM</span><br>
+      <span style="color:var(--text2); font-size:14px;">可能包含不相关文档，浪费上下文窗口，增加幻觉风险</span>
+    </div>
+    <div class="info-card" style="border-left: 3px solid var(--accent);">
+      <span style="color:var(--text2);">✅ 有 Reranker</span><br>
+      <span class="val">精排 Top-5 给 LLM</span><br>
+      <span style="color:var(--text2); font-size:14px;">最相关文档在前，生成质量显著提升</span>
+    </div>
+    <div class="info-card" style="border-left: 3px solid var(--green);">
+      <span style="color:var(--text2);">🚀 Reranker + 融合</span><br>
+      <span class="val">多路融合精排</span><br>
+      <span style="color:var(--text2); font-size:14px;">结合 BM25 + Bi-Encoder + Cross-Encoder + 时效性信号</span>
+    </div>
+    <div class="info-card" style="border-left: 3px solid var(--purple);">
+      <span style="color:var(--text2);">🧠 LLM-as-Reranker</span><br>
+      <span class="val">LLM 直接精排</span><br>
+      <span style="color:var(--text2); font-size:14px;">零样本，理解复杂指令，但延迟和成本最高</span>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>💡 关键洞察：</strong>Reranker 本质上是在用<strong>计算换上下文质量</strong>。在 RAG 中，LLM 的输入上下文窗口是有限且昂贵的——必须确保每一篇送入 LLM 的文档都是高质量的。Reranker 承担了"守门员"角色：<strong>宁可多花 100ms 做精排，也不要浪费 LLM 宝贵的上下文窗口在无关文档上</strong>。研究表明，经过 Reranker 精排后，RAG 生成质量可提升 20%~40%（以 RAGAS 指标衡量）。
+  </div>
+</div>
+
+</div><!-- /.container -->
+
+<script>
+// ── Mermaid init ──
+mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+
+// ── KaTeX formulas ──
+(function() {
+  const formulaEls = {
+    'formula-twostage': String.raw`\begin{aligned}
+\text{Stage 1 (Retriever):}&\quad \mathcal{C} = \text{TopK}_{d \in \mathcal{D}}\; \text{sim}\big(E_Q(q),\, E_D(d)\big) \\[8pt]
+\text{Stage 2 (Reranker):}&\quad \mathcal{R} = \text{TopN}_{d \in \mathcal{C}}\; f_{\text{ce}}\big(q,\, d\big)
+\end{aligned}`,
+
+    'formula-biencoder': String.raw`\begin{aligned}
+s_{\text{bi}}(q, d) &= \frac{E_Q(q)^\top \cdot E_D(d)}{\|E_Q(q)\| \cdot \|E_D(d)\|} \\[4pt]
+&= \cos\big(E_Q(q),\, E_D(d)\big) \in [-1, 1]
+\end{aligned}`,
+
+    'formula-crossencoder': String.raw`\begin{aligned}
+s_{\text{ce}}(q, d) &= \sigma\!\left(\mathbf{W}^\top \cdot \text{Transformer}\big([\text{CLS}]\; q\; [\text{SEP}]\; d\; [\text{SEP}]\big)_{\text{[CLS]}} + b\right) \\[4pt]
+&\in [0, 1]
+\end{aligned}`,
+
+    'formula-complexity': String.raw`\begin{aligned}
+\text{Bi-Encoder:}&\quad O(|Q| + |D|)\;\text{per doc pair (编码独立，可预计算)} \\[4pt]
+\text{Cross-Encoder:}&\quad O(|Q| + |D|)\;\text{per doc pair} \quad \textcolor{#f87171}{\text{—— 但 }(Q, D)\text{ 需成对输入，无法预计算}} \\[4pt]
+&\quad \text{对 }K\text{ 篇文档重排： }K \times O(L^2)\text{（Transformer 自注意力）}
+\end{aligned}`,
+
+    'formula-cross-forward': String.raw`\begin{aligned}
+\mathbf{h} &= \text{BERT}\big([\text{CLS}]\; q_1 \ldots q_m\; [\text{SEP}]\; d_1 \ldots d_n\; [\text{SEP}]\big) \\[4pt]
+s(q, d) &= \sigma(\mathbf{w}^\top \mathbf{h}_{\text{[CLS]}} + b) \quad \text{或}\quad s(q, d) = \mathbf{w}^\top \mathbf{h}_{\text{[CLS]}} + b
+\end{aligned}`,
+
+    'formula-training': String.raw`\begin{aligned}
+\mathcal{L}_{\text{CE}} &= -\frac{1}{|\mathcal{P}|}\sum_{(q,d^+,d^-) \in \mathcal{P}} \log\frac{e^{s(q,d^+)}}{e^{s(q,d^+)} + e^{s(q,d^-)}} \\[6pt]
+\mathcal{L}_{\text{Margin}} &= \max\big(0,\, m - s(q,d^+) + s(q,d^-)\big) \\[6pt]
+\mathcal{L}_{\text{InfoNCE}} &= -\log\frac{\exp(s(q, d^+) / \tau)}{\sum_{i=1}^{B}\exp(s(q, d_i) / \tau)}
+\end{aligned}`,
+
+    'formula-fusion-linear': String.raw`\begin{aligned}
+s_{\text{final}}(q, d) &= \alpha \cdot s_{\text{bi}}(q, d) + (1-\alpha) \cdot s_{\text{ce}}(q, d) \\[4pt]
+&\quad + \beta \cdot s_{\text{bm25}}(q, d) + \gamma \cdot s_{\text{fresh}}(d) + \cdots
+\end{aligned}`,
+
+    'formula-fusion-rrf': String.raw`\begin{aligned}
+\text{RRF}(d) &= \sum_{r \in \mathcal{R}} \frac{1}{k + \text{rank}_r(d)} \\[6pt]
+\text{其中 } &\mathcal{R} \text{ 是所有 Reranker 的集合，}k\text{ 是平滑常数（通常 }k=60\text{）}
+\end{aligned}`,
+
+    'formula-rag-quality': String.raw`\begin{aligned}
+\text{Precision}@N &= \frac{|\{d \in \text{TopN} \mid d \text{ 与 } q \text{ 相关}\}|}{N} \\[6pt]
+\text{MRR} &= \frac{1}{|\mathcal{Q}|}\sum_{q \in \mathcal{Q}} \frac{1}{\text{rank}_q(\text{首个相关文档})} \\[6pt]
+\text{NDCG}@N &= \frac{\text{DCG}@N}{\text{IDCG}@N},\quad \text{DCG}@N = \sum_{i=1}^{N} \frac{2^{\text{rel}_i} - 1}{\log_2(i+1)}
+\end{aligned}`
+  };
+
+  for (const [id, tex] of Object.entries(formulaEls)) {
+    const el = document.getElementById(id);
+    if (el) {
+      katex.render(tex, el, { displayMode: true, throwOnError: false });
+    }
+  }
+})();
+
+// ── Interactive Reranker Demo ──
+(function() {
+  // Simulated documents for query "大模型推理加速技术"
+  const docLabels = [
+    'FlashAttention-2: 高效精确注意力',
+    'vLLM: PagedAttention 显存优化',
+    'TensorRT-LLM 推理部署实践',
+    '量化技术综述: GPTQ/AWQ',
+    '投机解码 (Speculative Decoding)',
+    'KV Cache 压缩与 Multi-Query',
+    '模型蒸馏: 大模型压缩',
+    '连续批处理 (Continuous Batching)',
+    '推测采样加速推理',
+    'MoE 混合专家推理优化',
+    '模型剪枝与稀疏化',
+    '流水线并行推理加速',
+    '显存卸载 (Offloading) 技术',
+    'Prefix Caching 前缀缓存',
+    '动态批处理策略优化',
+    '算子融合与 Kernel 优化',
+    '并行解码 (Parallel Decoding)',
+    '推测编辑 (Speculative Editing)',
+    '级联推理 (Cascade Inference)',
+    '自适应计算与提前退出',
+    '大模型训练数据配比',
+    'RLHF 对齐训练方法',
+    '多模态视觉语言模型',
+    'Agent 工具调用框架',
+    'Prompt Engineering 技巧',
+    '大模型幻觉问题研究',
+    '大模型安全对齐综述',
+    '联邦学习隐私保护',
+    '大模型评测 Benchmark',
+    '嵌入模型训练与微调'
+  ];
+
+  // Cross-encoder "ground truth" relevance (0-1)
+  // Docs about inference acceleration get HIGH cross-encoder scores
+  // Docs not about inference get LOW scores regardless of bi-encoder score
+  const trueRelevance = [
+    0.95, // FlashAttention-2
+    0.92, // vLLM
+    0.88, // TensorRT-LLM
+    0.85, // 量化技术
+    0.82, // 投机解码
+    0.78, // KV Cache
+    0.72, // 模型蒸馏 (relevant but less direct)
+    0.70, // 连续批处理
+    0.68, // 推测采样
+    0.65, // MoE
+    0.60, // 模型剪枝
+    0.55, // 流水线并行
+    0.50, // 显存卸载
+    0.48, // Prefix Caching
+    0.42, // 动态批处理
+    0.38, // 算子融合
+    0.35, // 并行解码
+    0.30, // 推测编辑
+    0.25, // 级联推理
+    0.20, // 自适应计算
+    0.12, // 训练数据配比 - IRRELEVANT
+    0.10, // RLHF - irrelevant
+    0.08, // 多模态 - irrelevant
+    0.06, // Agent - irrelevant
+    0.04, // Prompt Engineering - irrelevant
+    0.03, // 幻觉 - irrelevant
+    0.02, // 安全 - irrelevant
+    0.01, // 联邦学习 - irrelevant
+    0.005,// 评测 - irrelevant
+    0.001 // 嵌入模型 - irrelevant
+  ];
+
+  const canvasBefore = document.getElementById('canvas-before');
+  const canvasAfter = document.getElementById('canvas-after');
+  const ctxBefore = canvasBefore.getContext('2d');
+  const ctxAfter = canvasAfter.getContext('2d');
+
+  const sliderK = document.getElementById('slider-k');
+  const sliderN = document.getElementById('slider-n');
+  const sliderStrength = document.getElementById('slider-strength');
+  const valK = document.getElementById('val-k');
+  const valN = document.getElementById('val-n');
+  const valStrength = document.getElementById('val-strength');
+  const infoStats = document.getElementById('info-stats');
+  const insightDynamic = document.getElementById('insight-dynamic');
+
+  function updateSliderTrack(slider) {
+    const pct = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+    slider.style.setProperty('--pct', pct + '%');
+  }
+
+  function initSliders() {
+    document.querySelectorAll('input[type=range]').forEach(s => {
+      const pct = (s.value - s.min) / (s.max - s.min) * 100;
+      s.style.setProperty('--pct', pct + '%');
+    });
+  }
+
+  function draw() {
+    const K = parseInt(sliderK.value);
+    const N = Math.min(parseInt(sliderN.value), K);
+    const alpha = parseFloat(sliderStrength.value);
+
+    // Generate bi-encoder scores (0-1, noisy)
+    const biScores = [];
+    for (let i = 0; i < Math.min(K, docLabels.length); i++) {
+      // Bi-encoder: relevance + noise (some irrelevant docs sneak high)
+      const noise = (Math.random() - 0.3) * 0.3; // bias upward
+      biScores.push({ idx: i, score: Math.max(0.05, Math.min(0.99, trueRelevance[i] + noise)), label: docLabels[i] });
+    }
+
+    // Sort by bi-encoder score descending
+    biScores.sort((a, b) => b.score - a.score);
+
+    // Cross-encoder scores: blend of bi-encoder and true relevance
+    const ceScores = biScores.map(doc => ({
+      ...doc,
+      ceScore: alpha * trueRelevance[doc.idx] + (1 - alpha) * doc.score
+    }));
+
+    // Sort by cross-encoder score descending
+    ceScores.sort((a, b) => b.ceScore - a.ceScore);
+
+    // Track rank changes
+    const biRankMap = {};
+    biScores.forEach((d, i) => { biRankMap[d.idx] = i; });
+
+    const promoted = [];
+    const demoted = [];
+    const cut = [];
+    ceScores.forEach((d, i) => {
+      const oldRank = biRankMap[d.idx];
+      if (i >= N && oldRank < N) {
+        cut.push(d);
+      } else if (i < oldRank && i < N) {
+        promoted.push({ ...d, from: oldRank, to: i });
+      } else if (i > oldRank && oldRank < N) {
+        demoted.push({ ...d, from: oldRank, to: i });
+      }
+    });
+
+    // ── Draw Before Canvas ──
+    const w = canvasBefore.width;
+    const h = canvasBefore.height;
+    ctxBefore.clearRect(0, 0, w, h);
+
+    const barH = Math.min(28, (h - 40) / K - 2);
+    const gap = 2;
+    const maxBarW = w - 200;
+    const startX = 180;
+
+    biScores.forEach((doc, i) => {
+      if (i >= K) return;
+      const y = 20 + i * (barH + gap);
+      const barW = maxBarW * doc.score;
+
+      // Label
+      ctxBefore.fillStyle = '#8e96a9';
+      ctxBefore.font = '16px "JetBrains Mono", "Fira Code", monospace';
+      ctxBefore.textAlign = 'right';
+      ctxBefore.fillText(`#${i+1}`, startX - 10, y + barH / 2 + 5);
+      ctxBefore.fillStyle = '#e1e4eb';
+      ctxBefore.font = '15px "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctxBefore.textAlign = 'left';
+      const shortLabel = doc.label.length > 14 ? doc.label.slice(0, 14) + '…' : doc.label;
+      ctxBefore.fillText(shortLabel, startX + 8, y + barH / 2 + 5);
+
+      // Bar
+      ctxBefore.fillStyle = i < N ? '#38bdf8' : '#2a3040';
+      ctxBefore.fillRect(startX, y, barW, barH);
+
+      // Score
+      ctxBefore.fillStyle = '#8e96a9';
+      ctxBefore.font = '15px "JetBrains Mono", monospace';
+      ctxBefore.textAlign = 'left';
+      ctxBefore.fillText(doc.score.toFixed(3), startX + barW + 6, y + barH / 2 + 4);
+
+      // Top-N cutoff line
+      if (i === N - 1) {
+        ctxBefore.strokeStyle = '#f59e0b';
+        ctxBefore.lineWidth = 1.5;
+        ctxBefore.setLineDash([5, 3]);
+        ctxBefore.beginPath();
+        ctxBefore.moveTo(0, y + barH + gap / 2);
+        ctxBefore.lineTo(w, y + barH + gap / 2);
+        ctxBefore.stroke();
+        ctxBefore.setLineDash([]);
+        ctxBefore.fillStyle = '#f59e0b';
+        ctxBefore.font = '12px "PingFang SC", sans-serif';
+        ctxBefore.textAlign = 'right';
+        ctxBefore.fillText('Top-N 截止线 →', w - 10, y + barH + gap / 2 - 4);
+      }
+    });
+
+    // ── Draw After Canvas (Reranked) ──
+    ctxAfter.clearRect(0, 0, w, h);
+
+    ceScores.forEach((doc, i) => {
+      if (i >= K) return;
+      const y = 20 + i * (barH + gap);
+      const barW = maxBarW * doc.ceScore;
+
+      // Determine bar color
+      let barColor = '#f59e0b'; // default: included in top-N
+      let labelColor = '#e1e4eb';
+      if (i >= N) {
+        barColor = '#2a3040'; // cut
+        labelColor = '#555b6b';
+      }
+
+      // Rank change indicator
+      const oldRank = biRankMap[doc.idx];
+      let changeIndicator = '';
+      if (i < N && oldRank >= N) {
+        changeIndicator = ' ↑NEW';
+        barColor = '#4ade80';
+      } else if (i >= N && oldRank < N) {
+        changeIndicator = ' ↓CUT';
+        barColor = '#f87171';
+      }
+
+      // Label
+      ctxAfter.fillStyle = '#8e96a9';
+      ctxAfter.font = '16px "JetBrains Mono", "Fira Code", monospace';
+      ctxAfter.textAlign = 'right';
+      ctxAfter.fillText(`#${i+1}`, startX - 10, y + barH / 2 + 5);
+      ctxAfter.fillStyle = labelColor;
+      ctxAfter.font = '15px "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctxAfter.textAlign = 'left';
+      const shortLabel = doc.label.length > 14 ? doc.label.slice(0, 14) + '…' : doc.label;
+      const labelText = shortLabel + changeIndicator;
+      ctxAfter.fillText(labelText, startX + 8, y + barH / 2 + 5);
+
+      // Bar
+      ctxAfter.fillStyle = barColor;
+      ctxAfter.fillRect(startX, y, barW, barH);
+
+      // Score
+      ctxAfter.fillStyle = '#8e96a9';
+      ctxAfter.font = '15px "JetBrains Mono", monospace';
+      ctxAfter.textAlign = 'left';
+      ctxAfter.fillText(doc.ceScore.toFixed(3), startX + barW + 6, y + barH / 2 + 4);
+
+      // Top-N cutoff line
+      if (i === N - 1) {
+        ctxAfter.strokeStyle = '#f59e0b';
+        ctxAfter.lineWidth = 1.5;
+        ctxAfter.setLineDash([5, 3]);
+        ctxAfter.beginPath();
+        ctxAfter.moveTo(0, y + barH + gap / 2);
+        ctxAfter.lineTo(w, y + barH + gap / 2);
+        ctxAfter.stroke();
+        ctxAfter.setLineDash([]);
+        ctxAfter.fillStyle = '#f59e0b';
+        ctxAfter.font = '12px "PingFang SC", sans-serif';
+        ctxAfter.textAlign = 'right';
+        ctxAfter.fillText('Top-N 截止线 →', w - 10, y + barH + gap / 2 - 4);
+      }
+    });
+
+    // ── Update stats ──
+    const promotedCount = promoted.length;
+    const demotedCount = demoted.length;
+    const cutCount = cut.length;
+    const overlap = ceScores.slice(0, N).filter(d => biScores.slice(0, N).some(b => b.idx === d.idx)).length;
+
+    infoStats.innerHTML = `
+      <div class="info-card" style="border-left:3px solid var(--green);">
+        <span style="color:var(--text2);">⬆️ 排名提升</span><br>
+        <span class="val">${promotedCount}</span> 篇新入 Top-N
+      </div>
+      <div class="info-card" style="border-left:3px solid var(--red);">
+        <span style="color:var(--text2);">⬇️ 被裁减</span><br>
+        <span class="val">${cutCount}</span> 篇跌出 Top-N
+      </div>
+      <div class="info-card" style="border-left:3px solid var(--blue);">
+        <span style="color:var(--text2);">🔄 保留重叠</span><br>
+        <span class="val">${overlap}/${N}</span> 篇仍在 Top-N
+      </div>
+      <div class="info-card" style="border-left:3px solid var(--accent);">
+        <span style="color:var(--text2);">📊 重排强度</span><br>
+        <span class="val">α=${alpha.toFixed(2)}</span>
+      </div>
+    `;
+
+    // Update dynamic insight
+    if (alpha > 0.8) {
+      insightDynamic.innerHTML = `<strong>💡 高重排强度 (α=${alpha.toFixed(2)})：</strong>Cross-Encoder 分数主导排序。不相关文档（如"RLHF"、"联邦学习"）被大幅降权，<span style="color:var(--green);">真正相关的推理加速技术文档跃升到前列</span>。` + (cutCount > 0 ? ` <span style="color:var(--red);">${cutCount} 篇粗筛高分文档被移除 Top-N。</span>` : '');
+    } else if (alpha < 0.3) {
+      insightDynamic.innerHTML = `<strong>💡 低重排强度 (α=${alpha.toFixed(2)})：</strong>以 Bi-Encoder 粗筛分数为主，排序变化<strong>较小</strong>。Top-N 与粗筛结果高度重叠（${overlap}/${N} 篇保持一致）。这说明当 α 低时，Reranker 更像一个"微调"而非"大洗牌"。`;
+    } else {
+      insightDynamic.innerHTML = `<strong>💡 中等重排强度 (α=${alpha.toFixed(2)})：</strong>平衡了粗筛和精排信号。${promotedCount} 篇文档因精准语义匹配进入 Top-N，${cutCount} 篇被裁减。<span style="color:var(--green);">Top-N 重叠率 ${overlap}/${N}</span>——Reranker 在不大幅改变排序的前提下优化了头部文档质量。`;
+    }
+  }
+
+  function redraw() {
+    updateSliderTrack(sliderK);
+    updateSliderTrack(sliderN);
+    updateSliderTrack(sliderStrength);
+    valK.textContent = sliderK.value;
+    valN.textContent = sliderN.value;
+    valStrength.textContent = parseFloat(sliderStrength.value).toFixed(2);
+    draw();
+  }
+
+  sliderK.addEventListener('input', redraw);
+  sliderN.addEventListener('input', redraw);
+  sliderStrength.addEventListener('input', redraw);
+
+  // Randomize button effect - generate slightly different bi-encoder scores
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'r' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body) {
+      redraw();
+    }
+  });
+
+  initSliders();
+  redraw();
+})();
+</script>
+
+</body>
+</html>

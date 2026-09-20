@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>位置编码 · RoPE & ALiBi 交互可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222634;
+    --text: #e1e4eb;
+    --text2: #9ca3b4;
+    --rope: #4da6ff;
+    --rope2: #7cc4ff;
+    --alibi: #ff6b6b;
+    --alibi2: #ff9e53;
+    --accent: #a78bfa;
+    --green: #4ade80;
+    --yellow: #facc15;
+    --border: #2d3148;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16.0px;
+    line-height: 1.7;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #1e2240 50%, #1a1d2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 32px 24px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--rope), var(--alibi2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header p { color: var(--text2); font-size: 18px; }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
+
+  /* ===== Section blocks ===== */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot.rope { background: var(--rope); box-shadow: 0 0 8px var(--rope); }
+  .dot.alibi { background: var(--alibi); box-shadow: 0 0 8px var(--alibi); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ===== Formula card ===== */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ===== Canvas ===== */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ===== Sliders ===== */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(167,139,250,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(167,139,250,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(167,139,250,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(167,139,250,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .rope-range::-webkit-slider-thumb { background: var(--rope); }
+  .alibi-range::-webkit-slider-thumb { background: var(--alibi); }
+
+  /* ===== Info row ===== */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 17px;
+    color: var(--text2);
+    font-family: 'Courier New', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+  .info-card .v-rope { color: var(--rope); }
+  .info-card .v-alibi { color: var(--alibi2); }
+
+  /* ===== Insight ===== */
+  .insight {
+    background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(77,166,255,0.08));
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ===== Comparison ===== */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 17px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 24px; height: 3px; border-radius: 2px; }
+
+  /* ===== Spectrum ===== */
+  .colorbar { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--text2); margin-top: 8px; }
+  .colorbar .bar { width: 200px; height: 14px; border-radius: 3px; background: linear-gradient(90deg, #1e1eb4, #1e3c82, #1e5a50, #c83c28, #ff1e1e); }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 16px; }
+    .sliders { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>RoPE &amp; ALiBi · 位置编码可视化</h1>
+  <p>核心量：s<sub>h</sub> · |i−j| — head 特定尺度 × 相对距离 → 注意力偏置</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: RoPE -->
+<!-- ================================================================ -->
+<div class="section" id="rope-section">
+  <h2><span class="dot rope"></span> RoPE · 旋转位置编码 (Rotary Position Embedding)</h2>
+  <p class="desc">
+    RoPE 通过<b>旋转向量</b>来编码位置信息。对于每个 head h 的维度对 (2k, 2k+1)，
+    将 query 和 key 向量按角度 <b>θ<sub>h</sub> · position</b> 在 2D 子空间中旋转。
+    两个位置 i 和 j 之间的内积（注意力分数）仅依赖于它们的<b>相对距离</b> (i−j)。
+  </p>
+
+  <!-- Formula Block -->
+  <div class="formula-block">
+    <h3>📐 核心公式</h3>
+    <div id="formula-rope-core"></div>
+  </div>
+
+  <canvas id="ropeRotation" width="1200" height="540"></canvas>
+
+  <div class="info-row" id="rope-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>位置 i <span class="val" id="val-i">5</span></label>
+      <input type="range" class="rope-range" id="slider-i" min="0" max="20" value="5" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>位置 j <span class="val" id="val-j">5</span></label>
+      <input type="range" class="rope-range" id="slider-j" min="0" max="20" value="5" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>频率指数 h (θ<sub>h</sub> = base<sup>−2h/d</sup>) <span class="val" id="val-h">16</span></label>
+      <input type="range" class="rope-range" id="slider-h" min="0" max="63" value="16" step="1">
+    </div>
+    <div class="slider-group">
+      <label>base (频率基数) <span class="val" id="val-base-rope">10000</span></label>
+      <input type="range" class="rope-range" id="slider-base-rope" min="100" max="100000" value="10000" step="100">
+    </div>
+    <div class="slider-group">
+      <label>总 head 维度 d <span class="val" id="val-d">128</span></label>
+      <input type="range" class="rope-range" id="slider-d" min="16" max="256" value="128" step="16">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>RoPE 将 |i−j| 转化为旋转角度 θ<sub>h</sub>·|i−j|，
+    cos(角度) = q 和 k 在该 2D 子空间内的点积贡献。多个频率叠加 = 多尺度位置感知。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: ALiBi -->
+<!-- ================================================================ -->
+<div class="section" id="alibi-section">
+  <h2><span class="dot alibi"></span> ALiBi · 线性偏置注意力 (Attention with Linear Biases)</h2>
+  <p class="desc">
+    ALiBi 直接在注意力 softmax 之前<b>减去一个与距离成线性关系的偏置</b>：
+    bias = −m<sub>h</sub> · |i−j|。每个 head 有不同的斜率 m<sub>h</sub>，
+    无需额外可学习参数，外推能力极强。越远的 token 被指数级地"惩罚"。
+  </p>
+
+  <!-- Formula Block -->
+  <div class="formula-block">
+    <h3>📐 核心公式</h3>
+    <div id="formula-alibi-core"></div>
+  </div>
+
+  <canvas id="alibiBias" width="1200" height="540"></canvas>
+
+  <div class="info-row" id="alibi-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>相对距离 |i−j| <span class="val" id="val-dist">10</span></label>
+      <input type="range" class="alibi-range" id="slider-dist" min="0" max="30" value="10" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>head 数量 n <span class="val" id="val-nheads">8</span></label>
+      <input type="range" class="alibi-range" id="slider-nheads" min="2" max="32" value="8" step="2">
+    </div>
+    <div class="slider-group">
+      <label>高亮 head 索引 <span class="val" id="val-highlight-head">4</span></label>
+      <input type="range" class="alibi-range" id="slider-highlight-head" min="0" max="7" value="4" step="1">
+    </div>
+    <div class="slider-group">
+      <label>斜率公式参数 <span class="val" id="val-slope-factor">8</span></label>
+      <input type="range" class="alibi-range" id="slider-slope-factor" min="2" max="16" value="8" step="0.5">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>ALiBi = 直接在注意力分数上做减法。
+    距离越远 → 减得越多 → softmax 后权重越小。
+    不同 m<sub>h</sub> 让不同 head 有不同的"感受野"。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: RoPE vs ALiBi 对比 -->
+<!-- ================================================================ -->
+<div class="section" id="comparison-section">
+  <h2>📐 s<sub>h</sub> · |i−j| — 统一对比</h2>
+  <p class="desc">
+    <b>共同内核：</b>RoPE 和 ALiBi 都依赖于 s<sub>h</sub> · |i−j| —
+    一个 head 特定的尺度 × 相对距离。区别仅在于 <b>如何应用</b> 这个量。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 统一形式</h3>
+    <div id="formula-unified"></div>
+  </div>
+
+  <canvas id="comparison" width="1360" height="540"></canvas>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--rope)"></span> RoPE: cos(s<sub>h</sub>·Δ)</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--alibi)"></span> ALiBi: −s<sub>h</sub>·Δ</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--green)"></span> 线性项: s<sub>h</sub>·Δ</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--yellow)"></span> RoPE Σ 多频总和</div>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>s<sub>h</sub> (通用尺度) <span class="val" id="val-sh">0.30</span></label>
+      <input type="range" id="slider-sh" min="0.01" max="2.0" value="0.3" step="0.01">
+    </div>
+    <div class="slider-group">
+      <label>最大距离 <span class="val" id="val-maxdist">32</span></label>
+      <input type="range" id="slider-maxdist" min="8" max="128" value="32" step="4">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>统一视角：</strong>注意力偏置 = f(s<sub>h</sub> · |i−j|)。
+    RoPE: f(x)=cos(x)；ALiBi: f(x)=−x。
+    两者都用<b>多尺度 s<sub>h</sub></b> 实现从局部到全局的位置感知。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: 多尺度频谱 -->
+<!-- ================================================================ -->
+<div class="section" id="spectrum-section">
+  <h2>🌈 多尺度频谱对比</h2>
+  <p class="desc">
+    横轴：相对距离 Δ；纵轴：不同 s<sub>h</sub> 的 head。
+    热力图展示从<b>短距离（局部）</b>到<b>长距离（全局）</b>，不同尺度的 head 如何分工。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 频谱公式</h3>
+    <div id="formula-spectrum"></div>
+  </div>
+
+  <canvas id="spectrum" width="1360" height="440"></canvas>
+
+  <div class="colorbar" style="margin-bottom:12px">
+    <span>−1 (冷)</span><div class="bar"></div><span>+1 (暖)</span>
+    <span style="margin-left:12px;font-size: 16px">暖色=正相关, 冷色=负相关</span>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>s<sub>min</sub> (最平缓) <span class="val" id="val-smin">0.02</span></label>
+      <input type="range" id="slider-smin" min="0.001" max="0.2" value="0.02" step="0.001">
+    </div>
+    <div class="slider-group">
+      <label>s<sub>max</sub> (最陡峭) <span class="val" id="val-smax">2.0</span></label>
+      <input type="range" id="slider-smax" min="0.5" max="5.0" value="2.0" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>Head 数量 <span class="val" id="val-nheads2">16</span></label>
+      <input type="range" id="slider-nheads2" min="4" max="64" value="16" step="4">
+    </div>
+  </div>
+</div>
+
+</div><!-- .container -->
+
+<script>
+// ============================================================
+// KaTeX formula rendering
+// ============================================================
+function renderFormulas() {
+  const formulas = {
+    'formula-rope-core': String.raw`
+      \begin{aligned}
+      \Theta_h &= \text{base}^{-2h/d} &&\text{频率：维度对 (2k,2k+1) 的旋转速度} \\[4pt]
+      q_i^{(h)} &= R_h(i) \cdot q_i &&\text{位置 } i \text{ 的 query 旋转 } R_h(i) \\[4pt]
+      k_j^{(h)} &= R_h(j) \cdot k_j &&\text{位置 } j \text{ 的 key 旋转 } R_h(j) \\[4pt]
+      R_h(p) &= \begin{bmatrix} \cos(p\theta_h) & -\sin(p\theta_h) \\ \sin(p\theta_h) & \cos(p\theta_h) \end{bmatrix} &&\text{2D 旋转矩阵} \\[4pt]
+      q_i^{\mathsf T} k_j &= \sum_h \cos((i-j)\theta_h) &&\text{点积仅依赖相对距离 } |i-j|
+      \end{aligned}
+    `,
+    'formula-alibi-core': String.raw`
+      \begin{aligned}
+      \text{Attention}(Q,K,V) &= \operatorname{softmax}\!\left(\frac{QK^{\mathsf T}}{\sqrt{d_k}} + B\right) V \\[4pt]
+      B_{i,j} &= -m_h \cdot |i-j| &&\text{线性偏置矩阵} \\[4pt]
+      m_h &= 2^{-\frac{8h}{n}} &&\text{几何级数斜率，} h=0,1,\dots,n-1 \\[4pt]
+      \text{softmax}(x + B)_{i,j} &\propto e^{x_{i,j}} \cdot e^{-m_h|i-j|} &&\text{距离越远 → 权重指数衰减}
+      \end{aligned}
+    `,
+    'formula-unified': String.raw`
+      \begin{aligned}
+      s_h &\in \{s_0, s_1, \dots, s_{H-1}\} &&\text{每个 head 的特征尺度} \\[4pt]
+      \text{RoPE:}\quad f(s_h, \Delta) &= \cos(s_h \cdot \Delta) &&\text{余弦调制 (振荡)} \\[4pt]
+      \text{ALiBi:}\quad f(s_h, \Delta) &= -s_h \cdot \Delta &&\text{线性衰减 (单调)} \\[4pt]
+      \text{AttentionBias}_h &= f(s_h, |i-j|) &&\text{统一形式}
+      \end{aligned}
+    `,
+    'formula-spectrum': String.raw`
+      \begin{aligned}
+      s_h &= s_{\min} \cdot \left(\frac{s_{\max}}{s_{\min}}\right)^{h/(H-1)} &&\text{对数均匀分布的多尺度} \\[4pt]
+      R_{h,\Delta} &= \cos(s_h \cdot \Delta) &&\text{RoPE 响应：位置 } \Delta \text{ 处 head } h \text{ 的值} \\[4pt]
+      \text{MultiScale}(\Delta) &= \frac{1}{H}\sum_{h=0}^{H-1} \cos(s_h \cdot \Delta) &&\text{多尺度平均响应}
+      \end{aligned}
+    `,
+  };
+  for (const [id, tex] of Object.entries(formulas)) {
+    try {
+      katex.render(tex, document.getElementById(id), { displayMode: true, throwOnError: false });
+    } catch(e) { document.getElementById(id).textContent = tex; }
+  }
+}
+renderFormulas();
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+const state = {
+  posI: 5, posJ: 5, hIdx: 16, baseRope: 10000, d: 128,
+  dist: 10, nHeads: 8, highlightHead: 4, slopeFactor: 8,
+  sh: 0.3, maxDist: 32,
+  sMin: 0.02, sMax: 2.0, nHeads2: 16,
+};
+
+// ============================================================
+// UTILITY
+// ============================================================
+function getTheta(h, d, base) { return Math.pow(base, -2 * h / d); }
+function getAlibiSlope(h, n, factor) { return Math.pow(2, -factor * h / n); }
+function hexToRgba(hex, a) { const r = parseInt(hex.slice(1,3), 16); const g = parseInt(hex.slice(3,5), 16); const b = parseInt(hex.slice(5,7), 16); return `rgba(${r},${g},${b},${a})`; }
+
+// ============================================================
+// CANVAS 1: RoPE 2D Rotation
+// ============================================================
+function drawRopeRotation() {
+  const canvas = document.getElementById('ropeRotation');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const cx = 350, cy = H / 2, r = 170;
+  const { posI, posJ, hIdx, d, baseRope } = state;
+  const theta = getTheta(hIdx, d, baseRope);
+  const angleI = posI * theta, angleJ = posJ * theta;
+  const deltaAngle = angleI - angleJ, delta = Math.abs(posI - posJ);
+
+  // Draw info
+  const infoDiv = document.getElementById('rope-info');
+  const cosVal = Math.cos(deltaAngle).toFixed(4);
+  infoDiv.innerHTML = `
+    <div class="info-card">θ<sub>h</sub> = <span class="val v-rope">${theta.toFixed(4)}</span><br>cos(θ<sub>h</sub>·Δ) = <span class="val v-rope">${cosVal}</span></div>
+    <div class="info-card">|i−j| = <span class="val">${delta.toFixed(1)}</span><br>注意力贡献 ≈ <span class="val v-rope">${cosVal}</span></div>
+    <div class="info-card">angle(q) = <span class="val">${angleI.toFixed(3)}</span> rad<br>angle(k) = <span class="val">${angleJ.toFixed(3)}</span> rad</div>
+    <div class="info-card">s<sub>h</sub>·|i−j| = θ<sub>h</sub> · ${delta.toFixed(1)} = <span class="val v-rope">${(theta*delta).toFixed(4)}</span></div>
+  `;
+
+  // Background circle and grid
+  ctx.strokeStyle = '#2d3148'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+  for (let a = 0; a < Math.PI*2; a += Math.PI/6) {
+    ctx.strokeStyle = '#1e2240'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+Math.cos(a)*r, cy-Math.sin(a)*r); ctx.stroke();
+    const deg = Math.round(a*180/Math.PI);
+    ctx.fillStyle = '#3d4158'; ctx.font = '17px monospace';
+    ctx.fillText(deg+'°', cx+Math.cos(a)*(r+16)-10, cy-Math.sin(a)*(r+16)+4);
+  }
+
+  // Axes
+  ctx.strokeStyle = '#3d4158'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(cx-r-20, cy); ctx.lineTo(cx+r+20, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy-r-20); ctx.lineTo(cx, cy+r+20); ctx.stroke();
+
+  // Vectors
+  function drawArrow(fx, fy, tx, ty, color, w) {
+    const headLen = 12, angle = Math.atan2(fy-ty, fx-tx);
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w * 1.5;
+    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(tx, ty); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(tx, ty);
+    ctx.lineTo(tx+headLen*Math.cos(angle-Math.PI/6), ty+headLen*Math.sin(angle-Math.PI/6));
+    ctx.lineTo(tx+headLen*Math.cos(angle+Math.PI/6), ty+headLen*Math.sin(angle+Math.PI/6));
+    ctx.closePath(); ctx.fill();
+  }
+
+  const xi = cx + Math.cos(angleI)*r, yi = cy - Math.sin(angleI)*r;
+  const xj = cx + Math.cos(angleJ)*r, yj = cy - Math.sin(angleJ)*r;
+  drawArrow(ctx, cx, cy, xi, yi, '#4da6ff', 3);
+  drawArrow(ctx, cx, cy, xj, yj, '#a78bfa', 3);
+  ctx.fillStyle = '#4da6ff'; ctx.font = 'bold 19px monospace';
+  ctx.fillText(`q (pos=${posI.toFixed(1)})`, xi+10, yi-8);
+  ctx.fillStyle = '#a78bfa';
+  ctx.fillText(`k (pos=${posJ.toFixed(1)})`, xj+10, yj-8);
+
+  // Arc
+  ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.arc(cx, cy, r*0.6, -angleJ, -angleI, angleI > angleJ); ctx.stroke();
+  ctx.setLineDash([]);
+  const midA = (angleI+angleJ)/2;
+  ctx.fillStyle = '#facc15'; ctx.font = '18px monospace';
+  ctx.fillText(`θ·Δ=${deltaAngle.toFixed(3)}`, cx+Math.cos(midA)*r*0.72-35, cy-Math.sin(midA)*r*0.72+5);
+
+  // Right side text
+  const rx = 700, ry = 60, lh = 28;
+  ctx.fillStyle = '#e1e4eb'; ctx.font = 'bold 20px sans-serif';
+  ctx.fillText('单频率 2D 旋转示意', rx, ry);
+  ctx.fillStyle = '#9ca3b4'; ctx.font = '19px monospace';
+  const lines = [
+    `θ_h = base^(-2h/d) = ${theta.toFixed(4)}`,
+    `angle(q) = i·θ_h = ${angleI.toFixed(3)} rad`,
+    `angle(k) = j·θ_h = ${angleJ.toFixed(3)} rad`,
+    `Δ_angle = (i-j)·θ_h = ${deltaAngle.toFixed(3)} rad`,
+    `cos(Δ_angle) = ${cosVal}`,
+  ];
+  lines.forEach((l, i) => ctx.fillText(l, rx, ry+20 + i*lh));
+
+  // Highlight s_h * |i-j|
+  ctx.fillStyle = '#4ade80'; ctx.font = 'bold 20px monospace';
+  ctx.fillText(`→ s_h·|i-j| = θ_h · ${delta.toFixed(1)} = ${(theta*delta).toFixed(4)}`, rx, ry+20 + lines.length*lh + 12);
+
+  // Bottom note
+  ctx.fillStyle = '#6b7280'; ctx.font = '18px sans-serif';
+  ctx.fillText('↑ 角度差 = θ_h · (i−j)。cos(角度差) 即为 q 和 k 在该 2D 子空间内的点积贡献。', 20, H-14);
+}
+
+// ============================================================
+// CANVAS 2: ALiBi Bias
+// ============================================================
+function drawAlibiBias() {
+  const canvas = document.getElementById('alibiBias');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const { dist, nHeads, highlightHead, slopeFactor } = state;
+  const m = { l: 70, r: 40, t: 40, b: 60 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const maxDist = 30;
+  const hSlope = getAlibiSlope(highlightHead, nHeads, slopeFactor);
+  const biasVal = -hSlope * dist;
+  let minBias = -getAlibiSlope(0, nHeads, slopeFactor) * maxDist - 2;
+  minBias = Math.min(minBias, -20);
+
+  // Update info
+  const infoDiv = document.getElementById('alibi-info');
+  infoDiv.innerHTML = `
+    <div class="info-card">m<sub>h</sub> = <span class="val v-alibi">${hSlope.toFixed(4)}</span><br>bias = <span class="val v-alibi">${biasVal.toFixed(4)}</span></div>
+    <div class="info-card">|i−j| = <span class="val">${dist.toFixed(1)}</span><br>e<sup>bias</sup> ≈ <span class="val v-alibi">${Math.exp(biasVal).toFixed(4)}</span></div>
+    <div class="info-card">s<sub>h</sub>·|i−j| = <span class="val v-alibi">${(hSlope*dist).toFixed(4)}</span><br>head 总数 = <span class="val">${nHeads}</span></div>
+  `;
+
+  function xOf(d) { return m.l + (d/maxDist)*pw; }
+  function yOf(b) { return m.t + (1 - b/minBias)*ph; }
+
+  // Grid
+  ctx.strokeStyle = '#1e2240'; ctx.lineWidth = 1;
+  for (let d = 0; d <= maxDist; d += 5) {
+    const x = xOf(d);
+    ctx.beginPath(); ctx.moveTo(x, m.t); ctx.lineTo(x, m.t+ph); ctx.stroke();
+    ctx.fillStyle = '#4a5068'; ctx.font = '17px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(d, x, m.t+ph+18);
+  }
+  for (const b of [-20, -15, -10, -5, 0]) {
+    if (b < minBias) continue;
+    const y = yOf(b);
+    ctx.beginPath(); ctx.moveTo(m.l, y); ctx.lineTo(m.l+pw, y); ctx.stroke();
+    ctx.fillStyle = '#4a5068'; ctx.textAlign = 'right';
+    ctx.fillText(b, m.l-8, y+4);
+  }
+  ctx.textAlign = 'start';
+
+  // Axes
+  ctx.strokeStyle = '#6b7280'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t+ph); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(m.l, yOf(0)); ctx.lineTo(m.l+pw, yOf(0)); ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = '#9ca3b4'; ctx.font = '19px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('相对距离 Δ = |i−j|', m.l+pw/2, H-10);
+  ctx.save(); ctx.translate(16, m.t+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('bias = −m_h · Δ', 0, 0); ctx.restore();
+
+  // Lines per head
+  for (let h = 0; h < nHeads; h++) {
+    const slope = getAlibiSlope(h, nHeads, slopeFactor);
+    const isHL = (h === highlightHead);
+    ctx.strokeStyle = hexToRgba('#ff6b6b', isHL ? 1.0 : 0.15);
+    ctx.lineWidth = isHL ? 3 : 1;
+    ctx.beginPath();
+    for (let d = 0; d <= maxDist; d += 0.2) {
+      const bias = -slope * d;
+      const x = xOf(d), y = yOf(bias);
+      if (d === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    if (isHL) {
+      ctx.fillStyle = '#ff6b6b'; ctx.font = 'bold 18px monospace';
+      ctx.fillText(`h=${h} m=${slope.toFixed(3)}`, xOf(maxDist)+5, yOf(-slope*maxDist));
+    }
+  }
+
+  // Marker
+  const mx = xOf(dist), my = yOf(biasVal);
+  ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.arc(mx, my, 7, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(mx, my, 7, 0, Math.PI*2); ctx.stroke();
+  ctx.fillStyle = '#ff6b6b'; ctx.font = 'bold 18px monospace';
+  ctx.fillText(`bias(${dist.toFixed(1)}) = ${biasVal.toFixed(3)}`, mx+12, my+4);
+
+  // Dashed
+  ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 1; ctx.setLineDash([3,5]);
+  ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx, yOf(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(m.l, my); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // s_h label
+  ctx.fillStyle = '#ff9e53'; ctx.font = 'bold 20px monospace';
+  ctx.fillText(`s_h·|i-j| = m_h · Δ = ${hSlope.toFixed(3)} · ${dist.toFixed(1)} = ${(hSlope*dist).toFixed(3)}`, m.l+10, m.t-8);
+}
+
+// ============================================================
+// CANVAS 3: Comparison
+// ============================================================
+function drawComparison() {
+  const canvas = document.getElementById('comparison');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const { sh, maxDist } = state;
+  const m = { l: 70, r: 40, t: 45, b: 55 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  function xOf(d) { return m.l + (d/maxDist)*pw; }
+  const minY = -Math.max(sh*maxDist+1, 3), maxY = 1.5;
+  function yOf(v) { return m.t + (1-(v-minY)/(maxY-minY))*ph; }
+
+  // Grid
+  ctx.strokeStyle = '#1e2240'; ctx.lineWidth = 1;
+  for (let d = 0; d <= maxDist; d += Math.ceil(maxDist/8)) {
+    const x = xOf(d);
+    ctx.beginPath(); ctx.moveTo(x, m.t); ctx.lineTo(x, m.t+ph); ctx.stroke();
+    ctx.fillStyle = '#4a5068'; ctx.font = '17px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(d, x, m.t+ph+18);
+  }
+  for (let v = -3; v <= 1; v++) {
+    const y = yOf(v);
+    ctx.beginPath(); ctx.moveTo(m.l, y); ctx.lineTo(m.l+pw, y); ctx.stroke();
+    ctx.fillStyle = '#4a5068'; ctx.textAlign = 'right';
+    ctx.fillText(v, m.l-8, y+4);
+  }
+  ctx.textAlign = 'start';
+  ctx.strokeStyle = '#6b7280'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t+ph); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(m.l, yOf(0)); ctx.lineTo(m.l+pw, yOf(0)); ctx.stroke();
+  ctx.fillStyle = '#9ca3b4'; ctx.font = '19px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Δ = |i−j|', m.l+pw/2, H-10);
+  ctx.save(); ctx.translate(16, m.t+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('f(s_h·Δ)', 0, 0); ctx.restore();
+
+  // 1. Linear s_h*Δ
+  ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2; ctx.setLineDash([6,4]);
+  ctx.beginPath();
+  for (let d = 0; d <= maxDist; d += 0.3) {
+    const val = sh*d, x = xOf(d), y = yOf(val);
+    if (d===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = '#4ade80'; ctx.font = '18px monospace';
+  ctx.fillText(`s_h·Δ = ${sh.toFixed(2)}·Δ`, xOf(maxDist*0.7), yOf(sh*maxDist*0.7)-8);
+
+  // 2. RoPE cos(s_h*Δ)
+  ctx.strokeStyle = '#4da6ff'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let d = 0; d <= maxDist; d += 0.3) {
+    const val = Math.cos(sh*d), x = xOf(d), y = yOf(val);
+    if (d===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#4da6ff'; ctx.fillText('RoPE: cos(s_h·Δ)', xOf(maxDist*0.1), yOf(Math.cos(sh*maxDist*0.1))-10);
+
+  // 3. ALiBi -s_h*Δ
+  ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let d = 0; d <= maxDist; d += 0.3) {
+    const val = -sh*d, x = xOf(d), y = yOf(val);
+    if (d===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    if (y > H) break;
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#ff6b6b'; ctx.fillText('ALiBi: −s_h·Δ', xOf(maxDist*0.5), Math.min(yOf(-sh*maxDist*0.5)+20, H-10));
+
+  // 4. RoPE sum
+  ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2; ctx.setLineDash([3,3]);
+  ctx.beginPath();
+  for (let d = 0; d <= maxDist; d += 0.3) {
+    let sum = 0;
+    for (let k = 0; k < 8; k++) sum += Math.cos(sh*Math.pow(2,k-4)*d);
+    sum /= 8;
+    const x = xOf(d), y = yOf(sum);
+    if (d===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = '#facc15'; ctx.fillText('RoPE Σ cos (多频)', xOf(maxDist*0.5), yOf(0.5)+16);
+
+  ctx.fillStyle = '#e1e4eb'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(`s_h = ${state.sh.toFixed(2)} 时的各种响应函数`, m.l+pw/2, m.t-14);
+}
+
+// ============================================================
+// CANVAS 4: Spectrum
+// ============================================================
+function drawSpectrum() {
+  const canvas = document.getElementById('spectrum');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const { sMin, sMax, nHeads2, maxDist } = state;
+  const m = { l: 90, r: 40, t: 35, b: 50 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+
+  const sValues = [];
+  for (let h = 0; h < nHeads2; h++) sValues.push(sMin * Math.pow(sMax/sMin, h/(nHeads2-1)));
+
+  for (let row = 0; row < nHeads2; row++) {
+    const s = sValues[row], y = m.t + (row/(nHeads2-1))*ph;
+    for (let col = 0; col < pw; col++) {
+      const d = (col/pw)*maxDist, val = Math.cos(s*d), t = (val+1)/2;
+      let r, g, b;
+      if (t < 0.5) { const u = t*2; r = Math.floor(30+30*u); g = Math.floor(30+60*u); b = Math.floor(180-100*u); }
+      else { const u = (t-0.5)*2; r = Math.floor(60+195*u); g = Math.floor(90-60*u); b = Math.floor(80-50*u); }
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(m.l+col, y-ph/nHeads2/2, 1, ph/nHeads2+1);
+    }
+  }
+
+  ctx.strokeStyle = '#6b7280'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t+ph); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(m.l, m.t+ph); ctx.lineTo(m.l+pw, m.t+ph); ctx.stroke();
+
+  ctx.fillStyle = '#9ca3b4'; ctx.font = '17px monospace'; ctx.textAlign = 'center';
+  for (let i = 0; i <= 8; i++) {
+    const d = (i/8)*maxDist, x = m.l + (i/8)*pw;
+    ctx.fillText(Math.round(d), x, m.t+ph+18);
+  }
+  ctx.fillText('相对距离 Δ = |i−j|', m.l+pw/2, H-8);
+
+  ctx.textAlign = 'right';
+  for (let h = 0; h < nHeads2; h += Math.max(1, Math.floor(nHeads2/8))) {
+    const y = m.t + (h/(nHeads2-1))*ph;
+    ctx.fillText(`s=${sValues[h].toFixed(3)}`, m.l-8, y+4);
+  }
+  ctx.save(); ctx.translate(14, m.t+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center';
+  ctx.fillText('Head 维度 (低频 → 高频)', 0, 0); ctx.restore(); ctx.textAlign = 'start';
+
+  // Highlight current s_h
+  const { sh } = state;
+  const rowForSh = nHeads2 * (Math.log(sh/sMin) / Math.log(sMax/sMin));
+  if (rowForSh >= 0 && rowForSh <= nHeads2) {
+    const ySh = m.t + rowForSh/(nHeads2-1)*ph;
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(m.l, ySh); ctx.lineTo(m.l+pw, ySh); ctx.stroke();
+    ctx.fillStyle = 'white'; ctx.font = 'bold 18px monospace';
+    ctx.fillText(`s_h = ${sh.toFixed(3)}`, m.l+pw-100, ySh-6);
+  }
+
+  ctx.fillStyle = '#e1e4eb'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('RoPE 多频率响应热力图: cos(s_h · Δ)', m.l+pw/2, m.t-10);
+}
+
+// ============================================================
+// DRAW ALL
+// ============================================================
+function drawAll() { drawRopeRotation(); drawAlibiBias(); drawComparison(); drawSpectrum(); }
+
+// ============================================================
+// SLIDER BINDINGS
+// ============================================================
+function bindSlider(id, stateKey, valId) {
+  const slider = document.getElementById(id);
+  slider.addEventListener('input', () => {
+    state[stateKey] = parseFloat(slider.value);
+    if (valId) {
+      const v = state[stateKey];
+      document.getElementById(valId).textContent = Number.isInteger(v) ? v : v.toFixed(4);
+    }
+    if (stateKey === 'nHeads') {
+      const hh = document.getElementById('slider-highlight-head');
+      hh.max = state.nHeads - 1;
+      if (state.highlightHead >= state.nHeads) {
+        state.highlightHead = state.nHeads - 1;
+        hh.value = state.highlightHead;
+        document.getElementById('val-highlight-head').textContent = state.highlightHead;
+      }
+    }
+    drawAll();
+  });
+}
+
+bindSlider('slider-i', 'posI', 'val-i');
+bindSlider('slider-j', 'posJ', 'val-j');
+bindSlider('slider-h', 'hIdx', 'val-h');
+bindSlider('slider-base-rope', 'baseRope', 'val-base-rope');
+bindSlider('slider-d', 'd', 'val-d');
+bindSlider('slider-dist', 'dist', 'val-dist');
+bindSlider('slider-nheads', 'nHeads', 'val-nheads');
+bindSlider('slider-highlight-head', 'highlightHead', 'val-highlight-head');
+bindSlider('slider-slope-factor', 'slopeFactor', 'val-slope-factor');
+bindSlider('slider-sh', 'sh', 'val-sh');
+bindSlider('slider-maxdist', 'maxDist', 'val-maxdist');
+bindSlider('slider-smin', 'sMin', 'val-smin');
+bindSlider('slider-smax', 'sMax', 'val-smax');
+bindSlider('slider-nheads2', 'nHeads2', 'val-nheads2');
+
+drawAll();
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

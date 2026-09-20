@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>神经网络参数初始化方法 — 交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #161822;
+    --card2: #1a1c2a;
+    --text: #e1e4ed;
+    --text2: #8b8fa8;
+    --accent: #6366f1;
+    --red: #ef4444;
+    --orange: #f97316;
+    --amber: #f59e0b;
+    --green: #22c55e;
+    --teal: #14b8a6;
+    --cyan: #06b6d4;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --border: #252840;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #161822 0%, #1a1040 40%, #162238 70%, #161822 100%);
+    border-bottom: 2px solid var(--border);
+    padding: 28px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(99,102,241,0.06) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(168,85,247,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 29px;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .header p { color: var(--text2); font-size: 17px; position: relative; }
+
+  /* Main */
+  .main {
+    max-width: 1460px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Section */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+  }
+  .section h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section h2 .dot {
+    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+  }
+  .section > p.desc {
+    font-size: 16px;
+    color: var(--text2);
+    margin-bottom: 18px;
+    line-height: 1.7;
+  }
+
+  /* Formula block */
+  .formula-block {
+    background: #0d0e16;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    border-left: 3px solid var(--accent);
+  }
+  .formula-block h3 {
+    font-size: 16px;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+  .formula-block .katex-display { margin: 6px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* Two-column grid */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* Three-column */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 1100px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 680px) { .grid-3 { grid-template-columns: 1fr; } }
+
+  /* Info card */
+  .info-card {
+    background: #0d0e16;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--blue);
+  }
+  .info-card h4 {
+    font-size: 16px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .info-card p {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  /* Canvas container */
+  .canvas-wrap {
+    position: relative;
+    background: #0a0b12;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+  }
+
+  /* Sliders */
+  .control-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-top: 12px;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 140px;
+  }
+  .control-group label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .control-group label .val {
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    min-width: 36px;
+  }  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(99,102,241,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(99,102,241,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .control-group select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0d0e16;
+    color: var(--text);
+    font-size: 16px;
+    font-family: inherit;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #1a1c2e;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: #252840; border-color: #4a4d66; }
+  .btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+  /* Method comparison table */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-top: 12px;
+  }
+  .compare-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #0d0e16;
+    color: var(--text2);
+    font-weight: 600;
+    font-size: 16px;
+    border-bottom: 2px solid var(--border);
+  }
+  .compare-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .compare-table tr:hover td { background: #0d0e16; }
+  .compare-table .method-name {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* Color legend */
+  .legend-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 16px;
+    color: var(--text2);
+    margin-bottom: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px;
+  }
+
+  /* Variance flow visualization */
+  .variance-card {
+    background: #0d0e16;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    position: relative;
+  }
+  .variance-card .layer-name {
+    font-size: 16px;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+  .variance-card .bar-track {
+    height: 20px;
+    background: #1a1c2e;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .variance-card .bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+  .variance-card .var-val {
+    font-size: 17px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  /* Insight block */
+  .insight {
+    background: linear-gradient(135deg, #1a1030, #162040);
+    border: 1px solid #3a3560;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 16px;
+  }
+  .insight h4 {
+    font-size: 16px;
+    color: #a78bfa;
+    margin-bottom: 6px;
+  }
+  .insight p {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  .katex-display { overflow-x: auto; overflow-y: hidden; }
+
+  /* Footer */
+  .page-footer {
+    text-align: center;
+    padding: 20px;
+    color: #555;
+    font-size: 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  /* ── highlight.js code blocks ── */
+  .hljs {
+    background: #0d1117 !important;
+    border-radius: 10px;
+    padding: 18px 22px !important;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  pre code.hljs {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="header">
+  <h1>🎲 神经网络参数初始化方法</h1>
+  <p>涵盖 17 种方法: Xavier/Glorot · He/Kaiming · LeCun · Orthogonal · Sparse · Truncated Normal · Constant · Identity · Normal · Uniform · Normed · Fixup — 交互式对比可视化</p>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════ SECTION 1: Overview & Why Init Matters ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--amber);"></span>🔑 为什么参数初始化至关重要？</h2>
+  <p class="desc">
+    权重初始化决定了网络训练的起点。糟糕的初始化会导致梯度消失、梯度爆炸或对称性问题，使网络无法学习。
+    好的初始化保持各层激活值和梯度的方差稳定，让信息在网络中顺畅流动。
+  </p>
+
+  <div class="grid-3">
+    <div class="info-card" style="border-left-color: var(--red);">
+      <h4 style="color:var(--red);">💀 梯度消失</h4>
+      <p>权重太小 → 激活值逐层缩小 → 梯度趋近于 0 → 深层网络无法学习。Sigmoid/Tanh 激活下尤为严重。</p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--orange);">
+      <h4 style="color:var(--orange);">💥 梯度爆炸</h4>
+      <p>权重太大 → 激活值逐层放大 → 梯度指数增长 → 参数更新过大，loss 变成 NaN。</p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--amber);">
+      <h4 style="color:var(--amber);">🔁 对称性问题</h4>
+      <p>所有权重初始化为相同值（如全 0）→ 同层神经元计算相同输出 → 梯度相同 → 退化为等效单神经元。</p>
+    </div>
+  </div>
+
+  <div class="formula-block" style="margin-top: 16px;">
+    <h3>📐 核心目标：保持方差稳定</h3>
+    <div id="formula-goal"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 2: Distribution Visualization ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--purple);"></span>📊 权重分布对比 — 交互式直方图</h2>
+  <p class="desc">
+    选择初始化方法，观察其权重分布形态。调节 fan_in / fan_out 模拟不同层宽度下的初始化行为。
+  </p>
+
+  <div class="legend-row" id="dist-legend"></div>
+
+  <div class="grid-2">
+    <div>
+      <div class="canvas-wrap">
+        <canvas id="canvas-hist" width="700" height="420"></canvas>
+      </div>
+    </div>
+    <div>
+      <div class="control-row" style="flex-direction: column; gap: 14px;">
+        <div class="control-group" style="width:100%;">
+          <label>🎯 初始化方法</label>
+          <select id="sel-method" onchange="redrawAll()">
+            <option value="zero">❌ Zero Init（全零）</option>
+            <option value="constant">🔧 Constant Init（常量）</option>
+            <option value="uniform">📐 Standard Uniform（标准均匀）</option>
+            <option value="normal">📊 Standard Normal（标准正态）</option>
+            <option value="random_small">🔹 Random Small（小随机数 σ=0.01）</option>
+            <option value="xavier_uniform" selected>🔷 Xavier Uniform（Glorot, 2010）</option>
+            <option value="xavier_normal">🔷 Xavier Normal（Glorot, 2010）</option>
+            <option value="he_uniform">🟣 He Uniform（Kaiming, 2015）</option>
+            <option value="he_normal">🟣 He Normal（Kaiming, 2015）</option>
+            <option value="lecun_uniform">🟢 LeCun Uniform（1998）</option>
+            <option value="lecun_normal">🟢 LeCun Normal（1998）</option>
+            <option value="trunc_normal">✂️ Truncated Normal（截断正态）</option>
+            <option value="orthogonal">💎 Orthogonal（正交初始化）</option>
+            <option value="normed">🎯 L2-Normalized（归一化初始化）</option>
+            <option value="sparse">🕸️ Sparse Init（稀疏初始化）</option>
+            <option value="identity">🪞 Identity Init（恒等初始化）</option>
+            <option value="fixup">🔩 Fixup / Zero-Center（去归一化训练）</option>
+          </select>
+        </div>
+        <div class="control-group" style="width:100%;">
+          <label>📥 fan_in（输入维度）<span class="val" id="val-fan-in">256</label>
+          <input type="range" id="sl-fan-in" min="32" max="2048" value="256" step="16" oninput="onFanChange()">
+        </div>
+        <div class="control-group" style="width:100%;">
+          <label>📤 fan_out（输出维度）<span class="val" id="val-fan-out">128</label>
+          <input type="range" id="sl-fan-out" min="32" max="2048" value="128" step="16" oninput="onFanChange()">
+        </div>
+        <div class="control-group" style="width:100%;">
+          <label>🔢 采样数量</label>
+          <select id="sel-samples" onchange="redrawAll()">
+            <option value="2000">2,000</option>
+            <option value="5000" selected>5,000</option>
+            <option value="10000">10,000</option>
+            <option value="20000">20,000</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Stats display -->
+      <div class="info-card" style="margin-top:14px; border-left-color:var(--teal);">
+        <h4 style="color:var(--teal);">📐 当前分布统计</h4>
+        <div id="stats-display" style="font-size:16px;color:var(--text2);line-height:1.7;"></div>
+      </div>
+
+      <div class="formula-block" id="formula-current" style="margin-top:12px;">
+        <h3>📝 当前方法公式</h3>
+        <div id="formula-method"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 3: Variance Flow ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--green);"></span>📈 方差传播分析 — 前向 / 反向传播</h2>
+  <p class="desc">
+    模拟一个 10 层全连接网络的激活值方差变化。好的初始化应使方差在各层保持 ≈1（虚线参考线）。
+    选择不同初始化方法，观察方差是保持稳定、衰减还是爆炸。
+  </p>
+
+  <div class="control-row">
+    <div class="control-group">
+      <label>🔢 每层神经元数 <span class="val" id="val-layer-width">256</label>
+      <input type="range" id="sl-layer-width" min="64" max="1024" value="256" step="32" oninput="onVarianceChange()">
+    </div>
+    <div class="control-group">
+      <label>🧮 激活函数</label>
+      <select id="sel-activation" onchange="onVarianceChange()">
+        <option value="linear">Linear（线性）</option>
+        <option value="relu" selected>ReLU</option>
+        <option value="leaky_relu">Leaky ReLU (α=0.01)</option>
+        <option value="tanh">Tanh</option>
+        <option value="sigmoid">Sigmoid</option>
+        <option value="selu">SELU</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>📐 对比初始化</label>
+      <select id="sel-var-method" onchange="onVarianceChange()">
+        <option value="xavier_uniform">Xavier Uniform</option>
+        <option value="xavier_normal">Xavier Normal</option>
+        <option value="he_uniform" selected>He Uniform (Kaiming)</option>
+        <option value="he_normal">He Normal</option>
+        <option value="lecun_uniform">LeCun Uniform</option>
+        <option value="lecun_normal">LeCun Normal</option>
+        <option value="trunc_normal">Truncated Normal (α=2)</option>
+        <option value="orthogonal">Orthogonal</option>
+        <option value="normed">L2-Normalized</option>
+        <option value="random_small">Random Small (std=0.01)</option>
+        <option value="normal">Standard Normal (std=1.0)</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:18px;">
+    <div class="canvas-wrap">
+      <canvas id="canvas-var-forward" width="640" height="380"></canvas>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas-var-backward" width="640" height="380"></canvas>
+    </div>
+  </div>
+
+  <div class="insight">
+    <h4>💡 核心直觉</h4>
+    <p id="variance-insight">
+      He 初始化专为 ReLU 设计，因为 ReLU 会"杀死"一半的神经元（负半轴输出为 0），
+      所以 He 初始化的方差比 Xavier 大 2 倍，以补偿 ReLU 造成的方差减半效应。
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 4: Detailed Method Cards ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--blue);"></span>📚 各方法详解</h2>
+  <p class="desc">以下是实践中最重要的参数初始化方法。每种方法都有特定的适用场景和数学推导。</p>
+
+  <div class="grid-2">
+    <!-- Xavier -->
+    <div class="info-card" style="border-left-color: var(--blue);">
+      <h4 style="color:var(--blue);">🎓 Xavier / Glorot 初始化 (2010)</h4>
+      <p>
+        <b>核心思想：</b>保持前向传播和反向传播的方差一致。<br>
+        <b>推导假设：</b>线性激活函数，且权重与输入独立。<br>
+        <b>Uniform 范围：</b> $[-\sqrt{\frac{6}{n_{in}+n_{out}}}, +\sqrt{\frac{6}{n_{in}+n_{out}}}]$ <br>
+        <b>Normal 标准差：</b> $\sigma = \sqrt{\frac{2}{n_{in}+n_{out}}}$ <br>
+        <b>适用激活：</b> Tanh、Sigmoid、Linear（效果最好）；<b>不适用 ReLU</b>。<br>
+        <b>PyTorch：</b> <code>nn.init.xavier_uniform_()</code> / <code>nn.init.xavier_normal_()</code>
+      </p>
+    </div>
+
+    <!-- He -->
+    <div class="info-card" style="border-left-color: var(--purple);">
+      <h4 style="color:var(--purple);">🏆 He / Kaiming 初始化 (2015)</h4>
+      <p>
+        <b>核心思想：</b>针对 ReLU 激活函数的修正 — ReLU 使一半输出为 0，方差减半。<br>
+        <b>Uniform 范围：</b> $[-\sqrt{\frac{6}{n_{in}}}, +\sqrt{\frac{6}{n_{in}}}]$ <br>
+        <b>Normal 标准差：</b> $\sigma = \sqrt{\frac{2}{n_{in}}}$ （注意分母只有 $n_{in}$，无 $n_{out}$）<br>
+        <b>适用激活：</b> ReLU 及变体（Leaky ReLU、PReLU）。<br>
+        <b>PyTorch：</b> <code>nn.init.kaiming_uniform_()</code> / <code>nn.init.kaiming_normal_()</code><br>
+        <b>变体：</b> <code>a</code> 参数为 Leaky ReLU 负斜率，默认 0 (ReLU)。
+      </p>
+    </div>
+
+    <!-- LeCun -->
+    <div class="info-card" style="border-left-color: var(--teal);">
+      <h4 style="color:var(--teal);">📜 LeCun 初始化 (1998)</h4>
+      <p>
+        <b>核心思想：</b>最早的方差缩放方法，比 Xavier/He 更早提出。假设激活函数在 0 附近近似线性。<br>
+        <b>Uniform 范围：</b> $[-\sqrt{\frac{3}{n_{in}}}, +\sqrt{\frac{3}{n_{in}}}]$ <br>
+        <b>Normal 标准差：</b> $\sigma = \sqrt{\frac{1}{n_{in}}}$ <br>
+        <b>适用激活：</b> Tanh、SELU（SELU 配合 LeCun Normal 使用）。<br>
+        <b>PyTorch：</b> <code>nn.init.lecun_uniform_()</code> / <code>nn.init.lecun_normal_()</code><br>
+        <b>与 He 的关系：</b> He 的方差是 LeCun 的 2 倍（为 ReLU 补偿）。
+      </p>
+    </div>
+
+    <!-- Orthogonal -->
+    <div class="info-card" style="border-left-color: var(--green);">
+      <h4 style="color:var(--green);">🔷 Orthogonal 正交初始化</h4>
+      <p>
+        <b>核心思想：</b>权重矩阵为正交矩阵（$W^T W = I$），使各层输出方差完全保持为输入方差。<br>
+        <b>实现方式：</b>生成随机矩阵后进行 QR 分解或 SVD，取正交部分。<br>
+        <b>适用场景：</b> RNN/LSTM（缓解梯度消失/爆炸）、深度线性网络。<br>
+        <b>PyTorch：</b> <code>nn.init.orthogonal_()</code><br>
+        <b>变体：</b>可以乘以 $\sqrt{gain}$ 调整输出方差幅度。
+      </p>
+    </div>
+
+    <!-- Sparse -->
+    <div class="info-card" style="border-left-color: var(--orange);">
+      <h4 style="color:var(--orange);">🕸️ Sparse 稀疏初始化</h4>
+      <p>
+        <b>核心思想：</b>每个神经元只连接 $k$ 个输入，其余权重为 0。灵感来自生物神经网络的稀疏连接。<br>
+        <b>实现方式：</b>随机选择 $k$ 个连接赋非零值（通常用正态分布），其余置零。<br>
+        <b>典型稀疏度：</b> $k = 10 \sim 100$ 或 $k = \log_2(n_{in})$。<br>
+        <b>适用场景：</b> 大型嵌入层、超大网络、模仿生物稀疏性。<br>
+        <b>PyTorch：</b> <code>nn.init.sparse_()</code>
+      </p>
+    </div>
+
+    <!-- Zero -->
+    <div class="info-card" style="border-left-color: var(--red);">
+      <h4 style="color:var(--red);">❌ Zero 初始化（反面教材）</h4>
+      <p>
+        <b>为什么不行？</b>所有权重相同 → 所有神经元产生相同的输出和相同的梯度 → <b>对称性无法打破</b>。<br>
+        <b>例外：</b>偏置（bias）可以初始化为 0，因为权重已经打破了对称性。<br>
+        <b>特殊情况：</b>某些归一化层的 scale/bias 参数可初始化为 0（如 BatchNorm 的 $\gamma=1, \beta=0$）。
+      </p>
+    </div>
+
+    <!-- Truncated Normal -->
+    <div class="info-card" style="border-left-color: var(--cyan);">
+      <h4 style="color:var(--cyan);">✂️ Truncated Normal 截断正态分布</h4>
+      <p>
+        <b>核心思想：</b>从正态分布采样，但丢弃超过 ±2σ 的值重新采样，避免极端值导致的不稳定。<br>
+        <b>标准差：</b> 通常采用 Xavier 或 He 的标准差。<br>
+        <b>适用场景：</b> <b>TensorFlow/Keras 的默认初始化</b>（<code>glorot_uniform</code> 的替代是 <code>TruncatedNormal</code>）。<br>
+        <b>优点：</b> 去除了长尾，使初始训练更稳定，尤其在使用较大学习率时。<br>
+        <b>PyTorch：</b> <code>nn.init.trunc_normal_()</code> (PyTorch 1.10+)
+      </p>
+    </div>
+
+    <!-- Standard Normal -->
+    <div class="info-card" style="border-left-color: var(--amber);">
+      <h4 style="color:var(--amber);">📊 Standard Normal / Uniform</h4>
+      <p>
+        <b>标准正态 N(0,1)：</b>方差 = 1，不考虑 fan_in/fan_out → 深层网络极易梯度爆炸。<br>
+        <b>标准均匀 U[-1,1]：</b>方差 = 1/3 ≈ 0.333，无理论依据，仅适用于极浅层网络。<br>
+        <b>使用建议：</b> 几乎<b>不推荐</b>直接使用。至少要乘以 $\frac{1}{\sqrt{n_{in}}}$ 缩放。<br>
+        <b>例外：</b> 某些非常浅的模型（如逻辑回归）或调试阶段可用。<br>
+        <b>PyTorch：</b> <code>nn.init.normal_()</code> / <code>nn.init.uniform_()</code>
+      </p>
+    </div>
+
+    <!-- Constant -->
+    <div class="info-card" style="border-left-color: var(--red);">
+      <h4 style="color:var(--red);">🔧 Constant 常量初始化</h4>
+      <p>
+        <b>核心思想：</b>所有权重初始化为相同常量 $c$。<br>
+        <b>问题：</b>与 Zero Init 类似，同样导致<b>对称性问题</b>——所有权重在同一梯度方向更新。<br>
+        <b>适用场景：</b>基本不用于权重初始化，常用于偏置初始化（如 Forget Gate Bias = 1）。<br>
+        <b>LSTM 中：</b> 遗忘门偏置常初始化为 1，迫使模型初始时保留更多信息。<br>
+        <b>PyTorch：</b> <code>nn.init.constant_()</code>
+      </p>
+    </div>
+
+    <!-- Identity -->
+    <div class="info-card" style="border-left-color: var(--gray);">
+      <h4 style="color:#8b9dc3;">🪞 Identity 恒等初始化</h4>
+      <p>
+        <b>核心思想：</b>$W = I$（或广义单位阵），输出 = 输入 + 微小扰动。网络初始行为等同于恒等映射。<br>
+        <b>适用场景：</b> <b>ResNet</b> 风格跳跃连接、循环神经网络、可逆网络、Normalizing Flows。<br>
+        <b>优点：</b> 深层网络初始时等价于浅层网络，梯度能高效回传。<br>
+        <b>变体：</b> <code>W = I + small_noise</code> 用于打破对称性。<br>
+        <b>PyTorch：</b> <code>nn.init.eye_()</code> 或手动 <code>torch.eye()</code>
+      </p>
+    </div>
+
+    <!-- Normed -->
+    <div class="info-card" style="border-left-color: var(--purple);">
+      <h4 style="color:#8b5cf6;">🎯 L2-Normalized 归一化初始化</h4>
+      <p>
+        <b>核心思想：</b>每个神经元的权重向量 L2 范数 = 1，即 $\|W_i\|_2 = 1$。<br>
+        <b>等价于：</b> 使每个神经元初始输出方差 ≈ 输入方差（不膨胀也不衰减）。<br>
+        <b>适用场景：</b> 度量学习（Siamese/Triplet 网络）、对比学习、嵌入层、自编码器。<br>
+        <b>与正交初始化的关系：</b> 正交初始化同时约束不同神经元之间的方向正交，而 L2-Normed 只约束模长。<br>
+        <b>实现：</b> <code>W = random(); W = W / ||W||_2</code>
+      </p>
+    </div>
+
+    <!-- Fixup -->
+    <div class="info-card" style="border-left-color: var(--pink);">
+      <h4 style="color:var(--pink);">🔩 Fixup / Zero-Center 初始化 (2019)</h4>
+      <p>
+        <b>核心思想：</b>通过精心设计的初始化方案，<b>无需 BatchNorm 即可训练 10,000 层深层网络</b>。<br>
+        <b>规则：</b> (1) 最后一层分类头初始化为 0；(2) 残差分支中最后一个 BN/Conv 初始化为 0；(3) 偏置和缩放因子设特定值补偿 ReLU 的均值偏移。<br>
+        <b>适用场景：</b> 极深 ResNet、无归一化层训练、分布式训练（避免 BN 跨卡同步开销）。<br>
+        <b>相关方法：</b> <b>SkipInit</b>、<b>ReZero</b>（最后一层初始化为 0 的思想）、<b>ZOOPS</b>。<br>
+        <b>论文：</b> Zhang et al., "Fixup Initialization: Residual Learning Without Normalization", ICLR 2019
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 5: Comparison Table ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--cyan);"></span>📋 快速对照表</h2>
+  <p class="desc">一表看懂各种初始化方法的差异。</p>
+
+  <div style="overflow-x:auto;">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>方法</th>
+          <th>Uniform 范围</th>
+          <th>Normal 标准差 $\sigma$</th>
+          <th>分母</th>
+          <th>推荐激活函数</th>
+          <th>年份</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="method-name" style="color:var(--teal);">LeCun</td>
+          <td>$[-\sqrt{3/{n_{in}}}, +\sqrt{3/{n_{in}}}]$</td>
+          <td>$\sqrt{1/{n_{in}}}$</td>
+          <td>$n_{in}$</td>
+          <td>Tanh, SELU</td>
+          <td>1998</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:var(--blue);">Xavier / Glorot</td>
+          <td>$[-\sqrt{6/{(n_{in}+n_{out})}}, +\sqrt{6/{(n_{in}+n_{out})}}]$</td>
+          <td>$\sqrt{2/{(n_{in}+n_{out})}}$</td>
+          <td>$n_{in}+n_{out}$</td>
+          <td>Tanh, Sigmoid, Linear</td>
+          <td>2010</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:var(--purple);">He / Kaiming</td>
+          <td>$[-\sqrt{6/{n_{in}}}, +\sqrt{6/{n_{in}}}]$</td>
+          <td>$\sqrt{2/{n_{in}}}$</td>
+          <td>$n_{in}$</td>
+          <td>ReLU, Leaky ReLU, PReLU</td>
+          <td>2015</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:var(--cyan);">Truncated Normal</td>
+          <td colspan="2">$W \sim \mathcal{N}_{[-\alpha\sigma,+\alpha\sigma]}(0, \sigma^2)$，$\alpha=2$，超界重采</td>
+          <td>(同基础方法)</td>
+          <td>Keras/TF 默认, 大学习率</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:var(--green);">Orthogonal</td>
+          <td colspan="2">QR/SVD 分解 → 正交矩阵（非区间采样）</td>
+          <td>—</td>
+          <td>RNN/LSTM, 深度线性网</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:var(--purple);">L2-Normalized</td>
+          <td colspan="2">$\|W_i\|_2 = 1$（每行 L2 归一化，非区间采样）</td>
+          <td>—</td>
+          <td>度量学习, 嵌入层</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:var(--orange);">Sparse</td>
+          <td colspan="2">每神经元 $k$ 个非零连接（正态采样）</td>
+          <td>—</td>
+          <td>大嵌入层, 稀疏网络</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:#8b9dc3;">Identity</td>
+          <td colspan="2">$W = I$ 或 $W = [I \mid 0]$（恒等映射）</td>
+          <td>—</td>
+          <td>ResNet, 循环网络, NF</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:var(--pink);">Fixup</td>
+          <td colspan="2">多层缩放 + 末层置零 + 偏置补偿（非单一分布）</td>
+          <td>—</td>
+          <td>极深 ResNet (无BN)</td>
+          <td>2019</td>
+        </tr>
+        <tr>
+          <td class="method-name" style="color:var(--red);">Zero / Constant</td>
+          <td colspan="2">全零 / 全常量 $c$ → 对称性问题</td>
+          <td>—</td>
+          <td>仅适 bias, 不适用权重</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="formula-block" style="margin-top: 16px;">
+    <h3>📐 Uniform ↔ Normal 转换关系（Uniform 的方差 = (b-a)²/12）</h3>
+    <div id="formula-uniform-normal"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 6: How to Choose ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--pink);"></span>🎯 选择指南</h2>
+  <p class="desc">不同架构和激活函数下，如何选择最合适的初始化方法。</p>
+
+  <div class="grid-3">
+    <div class="info-card" style="border-left-color: var(--purple);">
+      <h4 style="color:var(--purple);">🧠 CNN / ResNet / ViT</h4>
+      <p>
+        → <b>He/Kaiming Normal</b>（默认标配）<br>
+        ReLU 家族 + He Init = 工业界最广泛的组合。<br>
+        ResNet 论文明确使用 He 初始化。<br>
+        PyTorch 中 Conv2d 默认即 Kaiming Uniform。
+      </p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--blue);">
+      <h4 style="color:var(--blue);">🔤 Transformer / Attention</h4>
+      <p>
+        → <b>Xavier Uniform</b> 或 <b>He Normal</b><br>
+        BERT/GPT 多使用 Xavier/Normal(0, 0.02)。<br>
+        注意力层无 ReLU → Xavier 合适。<br>
+        PyTorch 中 nn.Linear 默认 Kaiming Uniform。
+      </p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--green);">
+      <h4 style="color:var(--green);">🔄 RNN / LSTM / GRU</h4>
+      <p>
+        → <b>Orthogonal</b> 初始化（权重矩阵）<br>
+        正交矩阵保持范数，缓解梯度消失/爆炸。<br>
+        输入→隐层可用 Xavier。<br>
+        PyTorch LSTM 默认采用 Uniform(-√k, √k)。
+      </p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--teal);">
+      <h4 style="color:var(--teal);">⚡ SELU 网络 (SNN)</h4>
+      <p>
+        → <b>LeCun Normal</b>（唯一正确选择）<br>
+        SELU 的自归一化性质依赖 LeCun 初始化。<br>
+        使用其他初始化会破坏自归一化特性。
+      </p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--amber);">
+      <h4 style="color:var(--amber);">📊 GAN / 生成模型</h4>
+      <p>
+        → <b>Normal(0, 0.02)</b>（DCGAN 风格）<br>
+        DCGAN 论文推荐 N(0, 0.02)。<br>
+        也可用 Xavier Normal。<br>
+        BigGAN 等大模型使用 Orthogonal。
+      </p>
+    </div>
+    <div class="info-card" style="border-left-color: var(--red);">
+      <h4 style="color:var(--red);">⚠️ 常见错误</h4>
+      <p>
+        → 用 <b>Xavier + ReLU</b> ← 方差会逐渐衰减<br>
+        → 用 <b>He + Tanh</b> ← 方差会逐渐膨胀<br>
+        → 忘记设置 <b>gain</b> 参数<br>
+        → 所有层用同一 std，忽略 fan 差异<br>
+        → bias 初始化过大（应设为 0）
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 7: PyTorch Practice ═══════════════ -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--accent);"></span>💻 PyTorch 实战代码</h2>
+  <p class="desc">在 PyTorch 中如何正确使用各种初始化方法。</p>
+
+  <div class="grid-2">
+    <div class="formula-block" style="border-left-color: var(--accent);">
+      <h3>🔧 单层手动初始化</h3>
+      <pre style="font-size:16px; color:var(--text); line-height:1.8; white-space:pre-wrap;"><code class="language-python">import torch.nn as nn
+import torch.nn.init as init
+
+linear = nn.Linear(256, 128)
+
+# Xavier / Glorot
+init.xavier_uniform_(linear.weight)
+init.xavier_normal_(linear.weight)
+
+# He / Kaiming
+init.kaiming_uniform_(linear.weight, mode='fan_in', nonlinearity='relu')
+init.kaiming_normal_(linear.weight, mode='fan_in', nonlinearity='relu')
+
+# LeCun
+init.lecun_uniform_(linear.weight)
+init.lecun_normal_(linear.weight)
+
+# Truncated Normal (PyTorch 1.10+)
+init.trunc_normal_(linear.weight, std=0.02, a=-0.04, b=0.04)
+
+# Orthogonal
+init.orthogonal_(linear.weight)
+
+# Identity (方阵) / Eye
+init.eye_(linear.weight)
+
+# Sparse
+init.sparse_(linear.weight, sparsity=0.9, std=0.01)
+
+# Standard Normal / Uniform
+init.normal_(linear.weight, mean=0, std=1)
+init.uniform_(linear.weight, a=-1, b=1)
+
+# Constant (weight: 不推荐; bias: 常用)
+init.constant_(linear.weight, 0.1)
+init.zeros_(linear.bias)    # Bias 始终初始化为 0</code></pre>
+    </div>
+
+    <div class="formula-block" style="border-left-color: var(--purple);">
+      <h3>📦 通用初始化函数（遍历所有层）</h3>
+      <pre style="font-size:16px; color:var(--text); line-height:1.8; white-space:pre-wrap;"><code class="language-python">def init_weights(model, method='he'):
+    for m in model.modules():
+        if isinstance(m, (nn.Linear, nn.Conv2d)):
+            if method == 'xavier':
+                init.xavier_uniform_(m.weight)
+            elif method == 'he':
+                init.kaiming_normal_(
+                    m.weight, mode='fan_in',
+                    nonlinearity='relu')
+            elif method == 'orthogonal':
+                init.orthogonal_(m.weight)
+            if m.bias is not None:
+                init.zeros_(m.bias)
+
+# 使用
+model = MyModel()
+model.apply(init_weights)</code></pre>
+    </div>
+  </div>
+
+  <div class="formula-block" style="margin-top: 12px; border-left-color: var(--amber);">
+    <h3>⚠️ gain 参数 — 根据激活函数调整方差</h3>
+    <div id="formula-gain"></div>
+  </div>
+</div>
+
+</div>
+
+<div class="page-footer">
+  💡 调节滑块和下拉菜单，观察不同初始化方法的分布形态和方差传播 &nbsp;|&nbsp; 初始化是深度学习中最容易被忽视却至关重要的超参数
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+// ========== KaTeX Rendering ==========
+function renderFormulas() {
+  const formulas = {
+    'formula-goal': String.raw`
+      \begin{aligned}
+      \text{前向: } &\operatorname{Var}(x^{(l)}) = n_{in} \cdot \operatorname{Var}(W) \cdot \operatorname{Var}(x^{(l-1)}) \quad\text{→ 需 } \operatorname{Var}(W) = \frac{1}{n_{in}} \\[6pt]
+      \text{反向: } &\operatorname{Var}\!\left(\frac{\partial \mathcal{L}}{\partial x^{(l-1)}}\right) = n_{out} \cdot \operatorname{Var}(W) \cdot \operatorname{Var}\!\left(\frac{\partial \mathcal{L}}{\partial x^{(l)}}\right) \quad\text{→ 需 } \operatorname{Var}(W) = \frac{1}{n_{out}} \\[6pt]
+      \text{Xavier: } &\operatorname{Var}(W) = \frac{2}{n_{in} + n_{out}} \quad \text{(折中前向与反向)} \\[4pt]
+      \text{He: } &\operatorname{Var}(W) = \frac{2}{n_{in}} \quad \text{(仅考虑前向，+ReLU修正因子2)}
+      \end{aligned}
+    `,
+    'formula-uniform-normal': String.raw`
+      \begin{aligned}
+      \text{Uniform } W &\sim U[-a, a] \quad\Rightarrow\quad \operatorname{Var}(W) = \frac{(2a)^2}{12} = \frac{a^2}{3} \\[4pt]
+      &\text{令 } \frac{a^2}{3} = \sigma^2 \quad\Rightarrow\quad a = \sqrt{3}\,\sigma \\[4pt]
+      \text{例: Xavier } \sigma &= \sqrt{\frac{2}{n_{in}+n_{out}}} \quad\Rightarrow\quad a = \sqrt{\frac{6}{n_{in}+n_{out}}}
+      \end{aligned}
+    `,
+    'formula-gain': String.raw`
+      \begin{aligned}
+      &\text{gain} = \sqrt{\frac{2}{1 + \alpha^2}} \quad\text{对于 Leaky ReLU (负斜率 }\alpha\text{)} \\[4pt]
+      &\text{常见 gain 值:} \\[2pt]
+      &\quad \text{ReLU: } \sqrt{2} \approx 1.414 \qquad \text{Tanh: } 5/3 \approx 1.667 \\[2pt]
+      &\quad \text{Sigmoid: } 1 \qquad\qquad\;\; \text{Linear: } 1 \qquad \text{SELU: } 1 \\[6pt]
+      &\text{PyTorch: } \texttt{nn.init.calculate\_gain('relu')}
+      \end{aligned}
+    `,
+  };
+  for (const [id, tex] of Object.entries(formulas)) {
+    try {
+      katex.render(tex, document.getElementById(id), { displayMode: true, throwOnError: false });
+    } catch(e) { document.getElementById(id).textContent = tex; }
+  }
+}
+renderFormulas();
+
+// ========== Render inline $...$ LaTeX in all elements with .render-math class and comparison table ==========
+function renderInlineLatex() {
+  // Render comparison table cells
+  const table = document.querySelector('.compare-table');
+  const cells = table ? table.querySelectorAll('td, th') : [];
+  // Also render any element with class "render-math"
+  const mathEls = document.querySelectorAll('.render-math');
+
+  const allEls = [...cells, ...mathEls];
+
+  for (const el of allEls) {
+    const html = el.innerHTML;
+    // Only process if it contains $...$
+    if (!html.includes('$')) continue;
+
+    // Split by $...$ pairs: text $math$ text $math$ text
+    const parts = html.split(/(\$[^$]+\$)/g);
+    let result = '';
+    for (const part of parts) {
+      if (part.startsWith('$') && part.endsWith('$')) {
+        // Math part — render with KaTeX
+        const tex = part.slice(1, -1);
+        try {
+          result += katex.renderToString(tex, { throwOnError: false });
+        } catch (e) {
+          result += part;
+        }
+      } else {
+        result += part;
+      }
+    }
+    el.innerHTML = result;
+  }
+
+  // Also render inline math in .info-card p and .formula-block p if they have $...$
+  const infoParas = document.querySelectorAll('.info-card p, .insight p, .section > p.desc');
+  for (const p of infoParas) {
+    if (!p.innerHTML.includes('$')) continue;
+    const parts = p.innerHTML.split(/(\$[^$]+\$)/g);
+    let result = '';
+    for (const part of parts) {
+      if (part.startsWith('$') && part.endsWith('$')) {
+        const tex = part.slice(1, -1);
+        try {
+          result += katex.renderToString(tex, { throwOnError: false });
+        } catch (e) {
+          result += part;
+        }
+      } else {
+        result += part;
+      }
+    }
+    p.innerHTML = result;
+  }
+}
+renderInlineLatex();
+
+// ========== Method Formulas (dynamic) ==========
+const methodFormulas = {
+  zero: String.raw`W_{ij} = 0 \quad \text{（所有参数相同时梯度也相同，对称性无法打破）}`,
+  constant: String.raw`W_{ij} = c \quad \text{（所有参数初始化为同一常量 } c \text{，通常 } c=0.1\text{，同样有对称性问题）}`,
+  uniform: String.raw`W \sim U[-1, 1] \quad \operatorname{Var}(W) = \frac{1}{3} \quad \text{（标准均匀分布，不考虑 fan\_in/fan\_out）}`,
+  normal: String.raw`W \sim \mathcal{N}(0, 1) \quad \operatorname{Var}(W) = 1 \quad \text{（标准正态分布，方差过大易导致梯度爆炸）}`,
+  random_small: String.raw`W_{ij} \sim \mathcal{N}(0, 0.01^2) \quad \text{（简单但尺度随意，无理论保证，深层网络方差消失）}`,
+  xavier_uniform: String.raw`W \sim U\!\left[-\sqrt{\frac{6}{n_{in}+n_{out}}},\; +\sqrt{\frac{6}{n_{in}+n_{out}}}\right] \quad \text{(Glorot \& Bengio, 2010)}`,
+  xavier_normal: String.raw`W \sim \mathcal{N}\!\left(0,\; \frac{2}{n_{in}+n_{out}}\right) \quad \text{(Glorot \& Bengio, 2010)}`,
+  he_uniform: String.raw`W \sim U\!\left[-\sqrt{\frac{6}{n_{in}}},\; +\sqrt{\frac{6}{n_{in}}}\right] \quad \text{(He et al., 2015) — 分母仅 } n_{in}`,
+  he_normal: String.raw`W \sim \mathcal{N}\!\left(0,\; \frac{2}{n_{in}}\right) \quad \text{(He et al., 2015) — ReLU 专用}`,
+  lecun_uniform: String.raw`W \sim U\!\left[-\sqrt{\frac{3}{n_{in}}},\; +\sqrt{\frac{3}{n_{in}}}\right] \quad \text{(LeCun et al., 1998)}`,
+  lecun_normal: String.raw`W \sim \mathcal{N}\!\left(0,\; \frac{1}{n_{in}}\right) \quad \text{(LeCun et al., 1998) — SELU 标配}`,
+  trunc_normal: String.raw`W \sim \mathcal{N}_{[-\alpha\sigma,\;\alpha\sigma]}\!\left(0,\; \frac{2}{n_{in}+n_{out}}\right) \quad \text{(TensorFlow/Keras 默认，}\alpha=2\text{，超出 2σ 重新采样)}`,
+  orthogonal: String.raw`W \text{ 为正交矩阵: } W^T W = I \quad \text{(QR/SVD分解，保持范数不变)}`,
+  normed: String.raw`W_{ij} \sim \mathcal{N}(0,1) \quad \text{然后 L2 归一化每行: } \|W_i\|_2 = 1 \quad \text{(常用于度量学习)}`,
+  sparse: String.raw`\text{每神经元随机选取 } k \text{ 个连接 → } \mathcal{N}(0,1/\sqrt{k}) \text{，其余为 0 — 模仿生物稀疏性}`,
+  identity: String.raw`W = I \text{ (方阵) 或 } W = [I \mid 0] \text{ (非方阵)} \quad \text{(恒等映射，适用于 ResNet 或循环网络)}`,
+  fixup: String.raw`\text{最后一层初始化为 0，其他层适当缩放，偏置设特定值 — 无需 BatchNorm 即可训练深层网络}`,
+};
+
+// ========== Method Colors ==========
+const methodColors = {
+  zero: '#ef4444',
+  constant: '#dc2626',
+  uniform: '#eab308',
+  normal: '#f59e0b',
+  random_small: '#f97316',
+  xavier_uniform: '#3b82f6',
+  xavier_normal: '#60a5fa',
+  he_uniform: '#a855f7',
+  he_normal: '#c084fc',
+  lecun_uniform: '#14b8a6',
+  lecun_normal: '#2dd4bf',
+  trunc_normal: '#06b6d4',
+  orthogonal: '#22c55e',
+  normed: '#8b5cf6',
+  sparse: '#f59e0b',
+  identity: '#64748b',
+  fixup: '#ec4899',
+};
+
+const methodNames = {
+  zero: 'Zero Init',
+  constant: 'Constant Init (c=0.1)',
+  uniform: 'Standard Uniform U[-1,1]',
+  normal: 'Standard Normal N(0,1)',
+  random_small: 'Random Small (σ=0.01)',
+  xavier_uniform: 'Xavier Uniform',
+  xavier_normal: 'Xavier Normal',
+  he_uniform: 'He Uniform',
+  he_normal: 'He Normal',
+  lecun_uniform: 'LeCun Uniform',
+  lecun_normal: 'LeCun Normal',
+  trunc_normal: 'Truncated Normal (α=2)',
+  orthogonal: 'Orthogonal',
+  normed: 'L2-Normalized',
+  sparse: 'Sparse Init',
+  identity: 'Identity Init',
+  fixup: 'Fixup / Zero-Center',
+};
+
+// ========== Histogram Canvas ==========
+const canvasHist = document.getElementById('canvas-hist');
+const ctxHist = canvasHist.getContext('2d');
+const W = canvasHist.width, H = canvasHist.height;
+
+function getFanIn() { return parseInt(document.getElementById('sl-fan-in').value); }
+function getFanOut() { return parseInt(document.getElementById('sl-fan-out').value); }
+function getMethod() { return document.getElementById('sel-method').value; }
+function getNumSamples() { return parseInt(document.getElementById('sel-samples').value); }
+
+// Box-Muller for normal distribution
+function randn() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function generateWeights(method, nIn, nOut, nSamples) {
+  const weights = [];
+  const totalElements = nIn * nOut;
+  const actualSamples = Math.min(nSamples, totalElements);
+
+  switch (method) {
+    case 'zero':
+      for (let i = 0; i < actualSamples; i++) weights.push(0);
+      break;
+
+    case 'constant':
+      for (let i = 0; i < actualSamples; i++) weights.push(0.1);
+      break;
+
+    case 'uniform':
+      for (let i = 0; i < actualSamples; i++) weights.push(Math.random() * 2 - 1);
+      break;
+
+    case 'normal':
+      for (let i = 0; i < actualSamples; i++) weights.push(randn());
+      break;
+
+    case 'random_small':
+      for (let i = 0; i < actualSamples; i++) weights.push(randn() * 0.01);
+      break;
+
+    case 'xavier_uniform': {
+      const limit = Math.sqrt(6 / (nIn + nOut));
+      for (let i = 0; i < actualSamples; i++) weights.push((Math.random() * 2 - 1) * limit);
+      break;
+    }
+    case 'xavier_normal': {
+      const std = Math.sqrt(2 / (nIn + nOut));
+      for (let i = 0; i < actualSamples; i++) weights.push(randn() * std);
+      break;
+    }
+
+    case 'he_uniform': {
+      const limit = Math.sqrt(6 / nIn);
+      for (let i = 0; i < actualSamples; i++) weights.push((Math.random() * 2 - 1) * limit);
+      break;
+    }
+    case 'he_normal': {
+      const std = Math.sqrt(2 / nIn);
+      for (let i = 0; i < actualSamples; i++) weights.push(randn() * std);
+      break;
+    }
+
+    case 'lecun_uniform': {
+      const limit = Math.sqrt(3 / nIn);
+      for (let i = 0; i < actualSamples; i++) weights.push((Math.random() * 2 - 1) * limit);
+      break;
+    }
+    case 'lecun_normal': {
+      const std = Math.sqrt(1 / nIn);
+      for (let i = 0; i < actualSamples; i++) weights.push(randn() * std);
+      break;
+    }
+
+    case 'trunc_normal': {
+      const std = Math.sqrt(2 / (nIn + nOut));
+      const alpha = 2; // truncate at ±2σ
+      for (let i = 0; i < actualSamples; i++) {
+        let val;
+        do {
+          val = randn() * std;
+        } while (Math.abs(val) > alpha * std);
+        weights.push(val);
+      }
+      break;
+    }
+
+    case 'orthogonal': {
+      // Generate a random matrix and orthogonalize via Gram-Schmidt on columns
+      const rows = Math.min(nIn, Math.ceil(Math.sqrt(actualSamples)));
+      const cols = Math.floor(actualSamples / rows);
+      const M = [];
+      for (let r = 0; r < rows; r++) {
+        M[r] = [];
+        for (let c = 0; c < cols; c++) M[r][c] = randn();
+      }
+      // Gram-Schmidt
+      for (let c = 0; c < cols; c++) {
+        for (let p = 0; p < c; p++) {
+          let dot = 0;
+          for (let r = 0; r < rows; r++) dot += M[r][c] * M[r][p];
+          for (let r = 0; r < rows; r++) M[r][c] -= dot * M[r][p];
+        }
+        let norm = 0;
+        for (let r = 0; r < rows; r++) norm += M[r][c] * M[r][c];
+        norm = Math.sqrt(norm);
+        if (norm > 1e-10) {
+          for (let r = 0; r < rows; r++) M[r][c] /= norm;
+        }
+      }
+      // Scale to match fan-in variance
+      const scale = Math.sqrt(1 / nIn) * Math.sqrt(rows);
+      for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+          weights.push(M[r][c] * scale);
+      // Trim to actualSamples
+      weights.length = Math.min(weights.length, actualSamples);
+      break;
+    }
+
+    case 'sparse': {
+      const k = Math.max(10, Math.round(Math.log2(nIn)));
+      for (let i = 0; i < actualSamples; i++) {
+        // Simulate: each "neuron block" has k non-zero connections
+        const posInBlock = i % nIn;
+        const isNonZero = posInBlock < k;
+        weights.push(isNonZero ? randn() / Math.sqrt(k) : 0);
+      }
+      break;
+    }
+
+    case 'normed': {
+      // Generate random values, then L2-normalize per row (simulate)
+      const rows = Math.ceil(actualSamples / nIn);
+      const rowWeights = [];
+      for (let r = 0; r < rows; r++) {
+        const row = [];
+        let normSq = 0;
+        for (let c = 0; c < nIn; c++) {
+          const v = randn();
+          row.push(v);
+          normSq += v * v;
+        }
+        const norm = Math.sqrt(normSq) || 1;
+        for (const v of row) rowWeights.push(v / norm);
+      }
+      for (let i = 0; i < actualSamples; i++) weights.push(rowWeights[i]);
+      break;
+    }
+
+    case 'identity': {
+      // Simulate identity-like values: diagonal-like high values, off-diagonal near zero
+      for (let i = 0; i < actualSamples; i++) {
+        // In a real identity matrix, only positions where row==col are 1
+        // Here we simulate: most values are 0 with small noise, occasional 1's
+        const row = Math.floor(i / nOut);
+        const col = i % nOut;
+        if (row === col && row < Math.min(nIn, nOut)) {
+          weights.push(1.0 + randn() * 0.001); // diagonal ~1
+        } else if (row < nOut && col < nIn && Math.abs(row - col) <= 1) {
+          weights.push(randn() * 0.01); // near-diagonal tiny noise
+        } else {
+          weights.push(randn() * 0.001); // off-diagonal near-zero
+        }
+      }
+      break;
+    }
+
+    case 'fixup': {
+      // Fixup initialization: scale with special bias trick for ResNet-style
+      // Most layers use He init scaled down; final layers zero
+      const std = Math.sqrt(2 / nIn);
+      for (let i = 0; i < actualSamples; i++) {
+        // Simulate: most layers have small weights
+        // In practice: first layers scaled down by L^(-1/(2m-2)), last layer = 0
+        const scale = 1.0 / Math.sqrt(10); // roughly for 10-layer depth
+        weights.push(randn() * std * scale);
+      }
+      break;
+    }
+
+    default:
+      for (let i = 0; i < actualSamples; i++) weights.push(randn() * 0.01);
+  }
+
+  return weights;
+}
+
+function computeStats(weights) {
+  const n = weights.length;
+  if (n === 0) return { mean: 0, std: 0, min: 0, max: 0, range: 1 };
+  let sum = 0, sumSq = 0;
+  let mn = Infinity, mx = -Infinity;
+  for (const w of weights) {
+    sum += w;
+    sumSq += w * w;
+    if (w < mn) mn = w;
+    if (w > mx) mx = w;
+  }
+  const mean = sum / n;
+  const variance = sumSq / n - mean * mean;
+  const std = Math.sqrt(Math.max(0, variance));
+  return { mean, std, min: mn, max: mx, range: Math.max(mx - mn, 1e-10), n };
+}
+
+function drawHistogram(weights, method) {
+  const ctx = ctxHist;
+  const stats = computeStats(weights);
+
+  // Clear
+  ctx.fillStyle = '#0a0b12';
+  ctx.fillRect(0, 0, W, H);
+
+  // Determine bin range
+  const pad = stats.range * 0.15;
+  const lo = stats.min - pad;
+  const hi = stats.max + pad;
+  const range = hi - lo;
+
+  // If all zeros, make a tiny range
+  if (range < 1e-10) {
+    return drawSingleBar(method);
+  }
+
+  const nBins = 60;
+  const bins = new Array(nBins).fill(0);
+  const binWidth = range / nBins;
+
+  for (const w of weights) {
+    const idx = Math.floor((w - lo) / binWidth);
+    if (idx >= 0 && idx < nBins) bins[idx]++;
+  }
+
+  const maxCount = Math.max(...bins, 1);
+
+  // Margins
+  const marginL = 60, marginR = 30, marginT = 30, marginB = 50;
+  const plotW = W - marginL - marginR;
+  const plotH = H - marginT - marginB;
+
+  // Grid lines
+  ctx.strokeStyle = '#1e2030';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = marginT + (plotH * i) / 5;
+    ctx.beginPath();
+    ctx.moveTo(marginL, y);
+    ctx.lineTo(W - marginR, y);
+    ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#4a4d66';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(marginL, marginT);
+  ctx.lineTo(marginL, marginT + plotH);
+  ctx.lineTo(W - marginR, marginT + plotH);
+  ctx.stroke();
+
+  // Y axis labels
+  ctx.fillStyle = '#8b8fa8';
+  ctx.font = '16px "JetBrains Mono", monospace';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const y = marginT + (plotH * i) / 5;
+    const val = Math.round(maxCount * (1 - i / 5));
+    ctx.fillText(val.toString(), marginL - 10, y + 5);
+  }
+
+  // X axis labels
+  ctx.textAlign = 'center';
+  const xTicks = 7;
+  for (let i = 0; i <= xTicks; i++) {
+    const x = marginL + (plotW * i) / xTicks;
+    const val = lo + range * (i / xTicks);
+    ctx.fillText(val.toFixed(3), x, marginT + plotH + 22);
+  }
+
+  // Draw bars
+  const color = methodColors[method] || '#6366f1';
+  const barW = Math.max(1, plotW / nBins - 0.5);
+
+  for (let i = 0; i < nBins; i++) {
+    const barH = (bins[i] / maxCount) * plotH;
+    const x = marginL + i * (plotW / nBins);
+    const y = marginT + plotH - barH;
+
+    const alpha = 0.5 + 0.5 * (bins[i] / maxCount);
+    ctx.fillStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.fillRect(x, y, barW, barH);
+  }
+  ctx.globalAlpha = 1;
+
+  // Mean line
+  const meanX = marginL + ((stats.mean - lo) / range) * plotW;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 3]);
+  ctx.beginPath();
+  ctx.moveTo(meanX, marginT);
+  ctx.lineTo(meanX, marginT + plotH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Mean label
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 15px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('μ=' + stats.mean.toFixed(4), meanX, marginT - 8);
+
+  // Title
+  ctx.fillStyle = '#e1e4ed';
+  ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(methodNames[method] + ' — 权重分布直方图', marginL, 22);
+
+  // Legend
+  updateDistLegend(method, color);
+
+  // Update stats display
+  updateStatsDisplay(stats, method);
+
+  return stats;
+}
+
+function drawSingleBar(method) {
+  const ctx = ctxHist;
+  ctx.fillStyle = '#0a0b12';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#e1e4ed';
+  ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(methodNames[method] + ' — 所有权重均为 0', W / 2, H / 2 - 10);
+  ctx.fillStyle = '#8b8fa8';
+  ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+  ctx.fillText('对称性未打破 → 网络无法学习', W / 2, H / 2 + 25);
+
+  updateDistLegend(method, methodColors[method]);
+  updateStatsDisplay({ mean: 0, std: 0, min: 0, max: 0, n: 0 }, method);
+}
+
+function updateDistLegend(method, color) {
+  document.getElementById('dist-legend').innerHTML = `
+    <div class="legend-item"><span class="legend-dot" style="background:${color};"> ${methodNames[method]}</div>
+    <div class="legend-item"><span style="color:#fff;">--- 均值 μ</div>
+  `;
+}
+
+function updateStatsDisplay(stats, method) {
+  const nIn = getFanIn();
+  const nOut = getFanOut();
+  let expectedStd = '';
+  switch (method) {
+    case 'zero': expectedStd = '—'; break;
+    case 'constant': expectedStd = '0 (方差=0)'; break;
+    case 'uniform': expectedStd = Math.sqrt(1/3).toFixed(5); break;
+    case 'normal': expectedStd = '1.00000'; break;
+    case 'random_small': expectedStd = '0.01'; break;
+    case 'xavier_uniform':
+    case 'xavier_normal': expectedStd = Math.sqrt(2 / (nIn + nOut)).toFixed(5); break;
+    case 'he_uniform':
+    case 'he_normal': expectedStd = Math.sqrt(2 / nIn).toFixed(5); break;
+    case 'lecun_uniform':
+    case 'lecun_normal': expectedStd = Math.sqrt(1 / nIn).toFixed(5); break;
+    case 'trunc_normal': expectedStd = '≈' + Math.sqrt(2 / (nIn + nOut)).toFixed(5); break;
+    case 'orthogonal': expectedStd = '≈' + Math.sqrt(1 / nIn).toFixed(5); break;
+    case 'normed': expectedStd = '≈' + (1 / Math.sqrt(nIn)).toFixed(5); break;
+    case 'sparse': expectedStd = '≈' + (1 / Math.sqrt(Math.max(10, Math.round(Math.log2(nIn))))).toFixed(5); break;
+    case 'identity': expectedStd = '≈1 (对角占优)'; break;
+    case 'fixup': expectedStd = '≈' + (Math.sqrt(2 / nIn) / Math.sqrt(10)).toFixed(5); break;
+  }
+
+  document.getElementById('stats-display').innerHTML = `
+    <div>📏 样本数: <b>${stats.n}</b> &nbsp;|&nbsp;
+    均值 μ: <b>${stats.mean.toFixed(5)}</b> &nbsp;|&nbsp;
+    标准差 σ: <b>${stats.std.toFixed(5)}</b></div>
+    <div>📐 理论 σ: <b>${expectedStd}</b> &nbsp;|&nbsp;
+    范围: [<b>${stats.min.toFixed(4)}</b>, <b>${stats.max.toFixed(4)}</b>] &nbsp;|&nbsp;
+    方差: <b>${(stats.std * stats.std).toFixed(6)}</b></div>
+  `;
+
+  // Update formula
+  const formulaTex = methodFormulas[method] || '';
+  try {
+    katex.render(formulaTex, document.getElementById('formula-method'), { displayMode: true, throwOnError: false });
+  } catch(e) {
+    document.getElementById('formula-method').textContent = formulaTex;
+  }
+}
+
+function onFanChange() {
+  document.getElementById('val-fan-in').textContent = getFanIn();
+  document.getElementById('val-fan-out').textContent = getFanOut();
+  redrawAll();
+}
+
+function redrawAll() {
+  const method = getMethod();
+  const nIn = getFanIn();
+  const nOut = getFanOut();
+  const nSamples = getNumSamples();
+  const weights = generateWeights(method, nIn, nOut, nSamples);
+  drawHistogram(weights, method);
+}
+
+// ========== Variance Flow Canvas ==========
+const canvasVarF = document.getElementById('canvas-var-forward');
+const canvasVarB = document.getElementById('canvas-var-backward');
+const ctxVarF = canvasVarF.getContext('2d');
+const ctxVarB = canvasVarB.getContext('2d');
+
+function getLayerWidth() { return parseInt(document.getElementById('sl-layer-width').value); }
+function getVarMethod() { return document.getElementById('sel-var-method').value; }
+function getActivation() { return document.getElementById('sel-activation').value; }
+
+function getVarStd(method, nIn, nOut) {
+  switch (method) {
+    case 'xavier_uniform':
+    case 'xavier_normal': return Math.sqrt(2 / (nIn + nOut));
+    case 'he_uniform':
+    case 'he_normal': return Math.sqrt(2 / nIn);
+    case 'lecun_uniform':
+    case 'lecun_normal': return Math.sqrt(1 / nIn);
+    case 'trunc_normal': return Math.sqrt(2 / (nIn + nOut));
+    case 'orthogonal': return Math.sqrt(1 / nIn);
+    case 'normed': return 1 / Math.sqrt(nIn);
+    case 'random_small': return 0.01;
+    case 'normal': return 1.0;
+    default: return Math.sqrt(2 / nIn);
+  }
+}
+
+// Activation gain: how much activation scales variance
+// For ReLU: Var(ReLU(x)) = 0.5 * Var(x) when x ~ N(0, σ²)
+function activationGainForward(act) {
+  switch (act) {
+    case 'linear': return 1.0;
+    case 'relu': return 0.5;
+    case 'leaky_relu': return (1 + 0.01 * 0.01) / 2; // approx (1+α²)/2
+    case 'tanh': return 0.27; // empirical for small inputs near origin
+    case 'sigmoid': return 0.21; // empirical
+    case 'selu': return 1.0; // SELU is designed to preserve variance
+    default: return 1.0;
+  }
+}
+
+function activationGainBackward(act) {
+  // Derivative gain
+  switch (act) {
+    case 'linear': return 1.0;
+    case 'relu': return 0.5; // derivative is 0 or 1, with prob ~0.5 each
+    case 'leaky_relu': return (1 + 0.01 * 0.01) / 2;
+    case 'tanh': return 0.27;
+    case 'sigmoid': return 0.21;
+    case 'selu': return 1.0;
+    default: return 1.0;
+  }
+}
+
+function computeVarianceFlow(method, n, nLayers, act) {
+  const varW = getVarStd(method, n, n);
+  const varW2 = varW * varW;
+  const gainF = activationGainForward(act);
+  const gainB = activationGainBackward(act);
+
+  // Forward: Var(x_l) = Var(x_{l-1}) * n * Var(W) * gainF
+  // Backward: Var(grad_l) = Var(grad_{l+1}) * n * Var(W) * gainB
+
+  const forward = [1.0]; // input variance = 1
+  const backward = [1.0]; // output gradient variance = 1
+
+  for (let l = 1; l <= nLayers; l++) {
+    forward.push(forward[l - 1] * n * varW2 * gainF);
+  }
+  for (let l = 1; l <= nLayers; l++) {
+    backward.push(backward[l - 1] * n * varW2 * gainB);
+  }
+
+  return { forward, backward };
+}
+
+function drawVarianceCanvas(ctx, data, title, canvasW, canvasH) {
+  // Clear
+  ctx.fillStyle = '#0a0b12';
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  const marginL = 60, marginR = 30, marginT = 35, marginB = 45;
+  const plotW = canvasW - marginL - marginR;
+  const plotH = canvasH - marginT - marginB;
+
+  const nLayers = data.length - 1;
+  const maxVal = Math.max(...data, 2);
+
+  // y range: log-like but linear for small values
+  const yMax = Math.max(2.5, maxVal * 1.2);
+
+  // Grid
+  ctx.strokeStyle = '#1e2030';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = marginT + (plotH * i) / 5;
+    ctx.beginPath();
+    ctx.moveTo(marginL, y);
+    ctx.lineTo(canvasW - marginR, y);
+    ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#4a4d66';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(marginL, marginT);
+  ctx.lineTo(marginL, marginT + plotH);
+  ctx.lineTo(canvasW - marginR, marginT + plotH);
+  ctx.stroke();
+
+  // Reference line at y=1
+  const refY = marginT + plotH - (1 / yMax) * plotH;
+  ctx.strokeStyle = '#4a4d66';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([8, 4]);
+  ctx.beginPath();
+  ctx.moveTo(marginL, refY);
+  ctx.lineTo(canvasW - marginR, refY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#8b8fa8';
+  ctx.font = '16px "JetBrains Mono", monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('Var=1', marginL - 12, refY + 5);
+
+  // Y labels
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const y = marginT + (plotH * i) / 5;
+    const val = yMax * (1 - i / 5);
+    ctx.fillText(val.toFixed(1), marginL - 12, y + 5);
+  }
+
+  // X labels
+  ctx.textAlign = 'center';
+  for (let l = 0; l <= nLayers; l++) {
+    const x = marginL + (plotW * l) / nLayers;
+    ctx.fillText('L' + l, x, marginT + plotH + 20);
+  }
+  ctx.fillText('层索引', canvasW - marginR, marginT + plotH + 36);
+
+  // Data line
+  const color = methodColors[getVarMethod()] || '#a855f7';
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let l = 0; l <= nLayers; l++) {
+    const x = marginL + (plotW * l) / nLayers;
+    const y = marginT + plotH - (data[l] / yMax) * plotH;
+    if (l === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Data points
+  for (let l = 0; l <= nLayers; l++) {
+    const x = marginL + (plotW * l) / nLayers;
+    const y = marginT + plotH - (data[l] / yMax) * plotH;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    // Value label
+    ctx.fillStyle = '#e1e4ed';
+    ctx.font = 'bold 13px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(data[l].toFixed(2), x, y - 10);
+  }
+
+  // Title
+  ctx.fillStyle = '#e1e4ed';
+  ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(title, marginL, 22);
+}
+
+function onVarianceChange() {
+  document.getElementById('val-layer-width').textContent = getLayerWidth();
+
+  const method = getVarMethod();
+  const n = getLayerWidth();
+  const act = getActivation();
+  const nLayers = 10;
+
+  const flow = computeVarianceFlow(method, n, nLayers, act);
+
+  drawVarianceCanvas(ctxVarF, flow.forward, '前向传播 — 激活值方差变化 (Var=1 为理想值)', 640, 380);
+  drawVarianceCanvas(ctxVarB, flow.backward, '反向传播 — 梯度方差变化 (Var=1 为理想值)', 640, 380);
+
+  // Update insight
+  updateVarianceInsight(method, act, flow);
+}
+
+function updateVarianceInsight(method, act, flow) {
+  const lastFwd = flow.forward[flow.forward.length - 1];
+  const lastBwd = flow.backward[flow.backward.length - 1];
+  let insight = '';
+
+  if (lastFwd > 100 || lastBwd > 100) {
+    insight = '⚠️ <b>方差爆炸！</b>激活值/梯度以指数速度增长。减小初始化标准差或使用更保守的方法。';
+  } else if (lastFwd < 0.001 || lastBwd < 0.001) {
+    insight = '⚠️ <b>方差消失！</b>激活值/梯度趋近于 0。增大初始化标准差或使用 He/Orthogonal 初始化。';
+  } else if (Math.abs(lastFwd - 1) < 0.5 && Math.abs(lastBwd - 1) < 0.5) {
+    insight = '✅ <b>方差稳定！</b>此初始化方法配合 ' + act + ' 激活函数，各层方差保持良好。';
+  } else {
+    insight = '🔶 <b>方差有偏差。</b>第10层方差 ≈ ' + lastFwd.toFixed(2) + '（理想值=1）。考虑更换初始化方法。';
+  }
+
+  insight += '<br><br>📐 <b>理论分析：</b>';
+  if (method.includes('xavier')) {
+    insight += ' Xavier 假设线性激活。若使用 ' + act + '，';
+    if (act === 'relu') insight += 'ReLU 丢弃一半信号导致方差衰减 → <b>建议改用 He 初始化</b>。';
+    else if (act === 'tanh' || act === 'sigmoid') insight += 'tanh/sigmoid 压缩方差，但浅层仍可接受。';
+    else insight += '线性激活下 Xavier 表现最佳。';
+  } else if (method.includes('he')) {
+    insight += ' He 专为 ReLU 设计，额外 factor 2 补偿 ReLU 的"一半神经元输出为0"。';
+    if (act === 'tanh' || act === 'sigmoid') insight += ' 但 ' + act + ' 无此效应 → 方差可能膨胀。';
+  } else if (method.includes('lecun')) {
+    insight += ' LeCun 最保守（方差最小），适合 Tanh/SELU 等自归一化激活。';
+  } else if (method === 'random_small') {
+    insight += ' σ=0.01 太小，方差迅速衰减 → 深层网络无法训练。';
+  } else if (method === 'random_large') {
+    insight += ' σ=1.0 太大，方差迅速膨胀 → 梯度爆炸。';
+  }
+
+  document.getElementById('variance-insight').innerHTML = insight;
+}
+
+// ========== Init ==========
+function initAll() {
+  redrawAll();
+  onVarianceChange();
+}
+
+// Canvas resize handling
+function resizeCanvases() {
+  // Canvases with display:block;width:100% don't need pixel resizing
+  // since we set fixed width/height attributes
+}
+
+window.addEventListener('DOMContentLoaded', initAll);
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>
+  // ── highlight.js Init ──
+  hljs.highlightAll();
+</script>
+
+</body>
+</html>

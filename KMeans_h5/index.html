@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-Means 聚类 — 交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #161822;
+    --surface2: #1d1f2e;
+    --text: #e1e4ed;
+    --text2: #8b8fa8;
+    --accent: #818cf8;
+    --blue: #4ea8f6;
+    --red: #e94560;
+    --gold: #f0c040;
+    --green: #4ade80;
+    --orange: #f59342;
+    --teal: #2dd4bf;
+    --pink: #f472b6;
+    --border: #252840;
+    --radius: 14px;
+    --c0: #4ea8f6;
+    --c1: #e94560;
+    --c2: #4ade80;
+    --c3: #f0c040;
+    --c4: #f472b6;
+    --c5: #2dd4bf;
+    --c6: #f59342;
+    --c7: #a78bfa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #161822 0%, #1a1040 40%, #162238 70%, #161822 100%);
+    border-bottom: 2px solid var(--border);
+    padding: 28px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(129,140,248,0.06) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(240,192,64,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 29px;
+    background: linear-gradient(135deg, var(--accent), var(--teal), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .header p { color: var(--text2); font-size: 17px; position: relative; }
+
+  /* Main */
+  .main {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Section */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+  }
+  .section h2 {
+    font-size: 22px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot.blue { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+  .dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .dot.gold { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.purple { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .dot.teal { background: var(--teal); box-shadow: 0 0 8px var(--teal); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 17px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* Canvas layout */
+  .viz-row {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1000px) { .viz-row { grid-template-columns: 1fr; } }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 4px; }
+  .control-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .control-group label .val {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 42px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(129,140,248,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(129,140,248,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(129,140,248,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(129,140,248,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn:hover { border-color: var(--accent); background: #252840; }
+  .btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.accent { background: #4ade80; color: #0f1117; border-color: #4ade80; font-weight: 600; }
+  .btn.accent:hover { background: #6ee7a0; }
+
+  /* Formula */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 16px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.12em; }
+
+  /* Info cards */
+  .info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .info-card .val {
+    font-size: 24px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .info-card .label { font-size: 16px; color: var(--text2); margin-top: 2px; }
+
+  /* Insight */
+  .insight {
+    background: linear-gradient(135deg, #1a1a30, #1a2030);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 16px;
+    color: #c8ccd8;
+    line-height: 1.8;
+  }
+  .insight strong { color: var(--gold); }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+  /* Step indicator */
+  .step-indicator {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: var(--text2);
+    align-items: center;
+  }
+  .step-indicator .step-num {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 16px;
+  }
+
+  /* Algorithm pseudo-code */
+  .algo-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .algo-steps .algo-line {
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: var(--surface2);
+    border-left: 3px solid var(--border);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 16px;
+    transition: all 0.3s;
+  }
+  .algo-steps .algo-line.highlight {
+    border-left-color: var(--accent);
+    color: var(--text);
+    background: rgba(129,140,248,0.08);
+  }
+
+  /* Elbow chart annotation */
+  .elbow-annotation {
+    position: relative;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧩 K-Means 聚类 — 交互式可视化</h1>
+  <p>质心迭代 · 初始化策略 · 肘部法则 · 从算法原理到实际应用</p>
+</div>
+
+<div class="main">
+
+  <!-- ═══ Section 1: Algorithm Core ═══ -->
+  <div class="section" id="sec-core">
+    <h2><span class="dot blue"></span> 1. K-Means 算法核心：分配-更新迭代</h2>
+    <p class="desc">
+      K-Means 是最经典的<b>无监督聚类</b>算法，目标是将 n 个数据点划分到 K 个簇中。
+      算法在两个步骤之间交替迭代：<b>(1) 分配步</b> — 将每个点分配给最近的质心；<b>(2) 更新步</b> — 将质心重新计算为其簇内所有点的均值。
+      这个过程保证<b>惯性 (Inertia / SSE)</b> 单调递减直到收敛。
+    </p>
+
+    <div class="formula-block">
+      <h3>📐 K-Means 优化目标与两步迭代</h3>
+      <div id="formula-kmeans-objective"></div>
+    </div>
+
+    <div class="viz-row">
+      <div>
+        <div class="step-indicator">
+          当前步骤: <span class="step-num" id="step-label">初始化</span>
+           迭代: <span class="step-num" id="iter-num">0</span>
+        </div>
+        <div class="legend" id="legend-core"></div>
+        <canvas id="canvas-core" width="700" height="450"></canvas>
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>K (簇数) = <span class="val" id="core-k-val">3</span></label>
+          <input type="range" id="core-k-slider" min="2" max="8" step="1" value="3">
+        </div>
+        <div class="info-cards">
+          <div class="info-card"><div class="val" id="core-inertia">—</div><div class="label">惯性 (SSE)</div></div>
+          <div class="info-card"><div class="val" id="core-iter">—</div><div class="label">迭代次数</div></div>
+          <div class="info-card"><div class="val" id="core-converged">—</div><div class="label">已收敛?</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn accent" onclick="stepAssign()">① 分配步</button>
+          <button class="btn accent" onclick="stepUpdate()">② 更新步</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="runFullKMeans()">▶ 自动运行到底</button>
+          <button class="btn" onclick="stepReset()">🔄 重置</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="cycleDataset()">🔀 切换数据集</button>
+        </div>
+        <div class="insight" style="margin-top:0;">
+          💡 <strong>直觉：</strong>分配步保证"每个点属于最近的质心"→ SSE↓；更新步保证"质心在簇中心"→ SSE↓。两步交替，单调收敛到局部最优。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Section 2: Initialization ═══ -->
+  <div class="section" id="sec-init">
+    <h2><span class="dot red"></span> 2. 初始化方法：Random vs K-Means++</h2>
+    <p class="desc">
+      标准 K-Means 随机选择初始质心，可能导致<b>收敛到较差的局部最优</b>。
+      <b>K-Means++</b> 通过让初始质心尽可能"分散"来改进初始化：第一个质心随机选，之后每个新质心以与已有质心最短距离的<b>平方成正比</b>的概率被选中。
+      这使得 K-Means++ 在理论上保证 O(log K) 的近似比。
+    </p>
+
+    <div class="formula-block">
+      <h3>📐 K-Means++ 初始化分布</h3>
+      <div id="formula-kmeanspp"></div>
+    </div>
+
+    <div class="viz-row">
+      <div>
+        <canvas id="canvas-init-compare" width="700" height="520"></canvas>
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>K = <span class="val" id="init-k-val">5</span></label>
+          <input type="range" id="init-k-slider" min="2" max="8" step="1" value="5">
+        </div>
+        <div class="info-cards">
+          <div class="info-card"><div class="val" id="init-rand-inertia">—</div><div class="label">Random SSE</div></div>
+          <div class="info-card"><div class="val" id="init-pp-inertia">—</div><div class="label">K-Means++ SSE</div></div>
+          <div class="info-card"><div class="val" id="init-pp-improve">—</div><div class="label">改善幅度</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn accent" onclick="runInitCompare()">▶ 运行对比</button>
+          <button class="btn" onclick="rerollInitCompare()">🎲 重新生成数据</button>
+        </div>
+        <div class="insight" style="margin-top:0;">
+          💡 <strong>直觉：</strong>Random 可能把两个质心放在同一密集区域 → 簇分裂困难。K-Means++ 强制质心分散 → 更好的起始状态 → 更低的最终 SSE。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Section 3: Elbow Method ═══ -->
+  <div class="section" id="sec-elbow">
+    <h2><span class="dot gold"></span> 3. 选择 K 值：肘部法则 (Elbow Method)</h2>
+    <p class="desc">
+      如何选择合适的 K？<b>肘部法则</b>绘制不同 K 值下的惯性 (SSE)，寻找曲线的"肘部"拐点。
+      在拐点之前，增加 K 显著降低 SSE；拐点之后，增加 K 的边际收益递减——再增加 K 只是"过拟合"。
+      也可结合 <b>Silhouette Score</b>（轮廓系数）综合判断：轮廓系数越接近 1 表示聚类质量越好。
+    </p>
+
+    <div class="formula-block">
+      <h3>📐 肘部法则与轮廓系数</h3>
+      <div id="formula-elbow"></div>
+    </div>
+
+    <div class="viz-row">
+      <div>
+        <canvas id="canvas-elbow" width="700" height="400"></canvas>
+      </div>
+      <div class="controls">
+        <div class="info-cards">
+          <div class="info-card"><div class="val" id="elbow-best-k">—</div><div class="label">建议 K (肘部)</div></div>
+          <div class="info-card"><div class="val" id="elbow-best-sil">—</div><div class="label">最佳轮廓系数</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="runElbow()">🔄 重新计算</button>
+          <button class="btn" onclick="cycleElbowDataset()">🔀 切换数据集</button>
+        </div>
+        <div class="insight" style="margin-top:0;">
+          💡 <strong>直觉：</strong>K=真实簇数时，每增加一个质心能大幅解释新的方差 → SSE 骤降。超过真实 K 后，增加的质心只是分割已有簇 → SSE 下降放缓 → 形成"肘部"。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Section 4: Interactive Playground ═══ -->
+  <div class="section" id="sec-play">
+    <h2><span class="dot purple"></span> 4. 自由实验台</h2>
+    <p class="desc">
+      自由添加数据点和调节参数，实时观察 K-Means 的聚类过程。支持不同初始化方法和数据集形状，直观理解算法的特性与局限。
+    </p>
+
+    <div class="viz-row">
+      <div>
+        <div class="legend" id="legend-play"></div>
+        <canvas id="canvas-play" width="700" height="480"></canvas>
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>K = <span class="val" id="play-k-val">3</span></label>
+          <input type="range" id="play-k-slider" min="2" max="8" step="1" value="3">
+        </div>
+        <div class="control-group">
+          <label>初始化</label>
+          <div class="btn-row">
+            <button class="btn active" id="btn-init-random" onclick="setPlayInit('random')">Random</button>
+            <button class="btn" id="btn-init-pp" onclick="setPlayInit('kmeanspp')">K-Means++</button>
+          </div>
+        </div>
+        <div class="info-cards">
+          <div class="info-card"><div class="val" id="play-inertia">—</div><div class="label">惯性 (SSE)</div></div>
+          <div class="info-card"><div class="val" id="play-iter">—</div><div class="label">迭代</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn accent" onclick="runPlayKMeans()">▶ 运行 K-Means</button>
+          <button class="btn" onclick="resetPlay()">🔄 重置</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="loadPlayData('blobs')">📦 高斯团</button>
+          <button class="btn" onclick="loadPlayData('rings')">⭕ 同心圆</button>
+          <button class="btn" onclick="loadPlayData('moons')">🌙 双月</button>
+          <button class="btn" onclick="loadPlayData('elongated')">📏 长条</button>
+          <button class="btn" onclick="loadPlayData('uneven')">⚖️ 不均密度</button>
+        </div>
+        <div class="insight" style="margin-top:0;">
+          💡 <strong>注意：</strong>K-Means 假设簇是<b>凸的、各向同性的、大小相近的</b>。对于非凸形状（同心圆、双月）或密度不均的数据，K-Means 表现不佳——这正是其核心局限性。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Section 5: Summary ═══ -->
+  <div class="section" id="sec-summary">
+    <h2><span class="dot teal"></span> 5. 总结：K-Means 的优势与局限</h2>
+
+    <div class="formula-block">
+      <h3>📐 K-Means 复杂度与收敛性</h3>
+      <div id="formula-complexity"></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:16px;">
+      <div>
+        <h3 style="color:var(--green); font-size:18px; margin-bottom:10px;">✅ 优势</h3>
+        <ul style="color:var(--text2); font-size:16px; line-height:2; padding-left:20px;">
+          <li><b>简单直观</b>：两步迭代，易于理解和实现</li>
+          <li><b>可扩展</b>：时间复杂度 O(n·K·d·t)，对大数据集高效</li>
+          <li><b>保证收敛</b>：SSE 单调递减，有限步内收敛</li>
+          <li><b>易于并行化</b>：分配步天然可并行</li>
+          <li><b>K-Means++</b> 提供理论保证的初始化</li>
+          <li><b>可解释性强</b>：每个簇有明确的质心</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="color:var(--red); font-size:18px; margin-bottom:10px;">⚠️ 局限</h3>
+        <ul style="color:var(--text2); font-size:16px; line-height:2; padding-left:20px;">
+          <li><b>需预设 K</b>：K 值需人工指定或通过肘部法则估计</li>
+          <li><b>仅凸簇</b>：无法处理非凸形状（同心圆、双月）</li>
+          <li><b>各向同性假设</b>：假设簇是球形、方差相近</li>
+          <li><b>对离群点敏感</b>：离群点会显著拉偏质心</li>
+          <li><b>局部最优</b>：不同初始化可能收敛到不同结果</li>
+          <li><b>欧氏距离限制</b>：仅适用于欧氏空间</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="insight" style="margin-top:20px;">
+      💡 <strong>何时用 K-Means？</strong>数据簇大致是球形、大小相近、维度适中、需快速聚类时。
+      若数据有复杂形状 → 考虑 <b>DBSCAN</b>（密度聚类）或 <b>Spectral Clustering</b>（谱聚类）。
+      若不想预设 K → 考虑 <b>Mean Shift</b> 或 <b>HDBSCAN</b>。
+      若需软分配 → 考虑 <b>GMM</b>（高斯混合模型，EM 算法）。
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// Color palette for clusters
+// ═══════════════════════════════════════════
+const CLUSTER_COLORS = [
+  '#4ea8f6', '#e94560', '#4ade80', '#f0c040',
+  '#f472b6', '#2dd4bf', '#f59342', '#a78bfa'
+];
+const CENTROID_COLOR = '#ffffff';
+
+// ═══════════════════════════════════════════
+// Utility functions
+// ═══════════════════════════════════════════
+function sqDist(a, b) {
+  return (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2;
+}
+
+function dist(a, b) {
+  return Math.sqrt(sqDist(a, b));
+}
+
+// ═══════════════════════════════════════════
+// K-Means Core Implementation
+// ═══════════════════════════════════════════
+
+// Assign each point to nearest centroid
+function assignClusters(points, centroids) {
+  let changed = false;
+  for (const p of points) {
+    let bestD = Infinity, bestC = -1;
+    for (let j = 0; j < centroids.length; j++) {
+      const d = sqDist([p.x, p.y], centroids[j]);
+      if (d < bestD) { bestD = d; bestC = j; }
+    }
+    if (p.cluster !== bestC) changed = true;
+    p.cluster = bestC;
+  }
+  return changed;
+}
+
+// Update centroids as mean of assigned points
+function updateCentroids(points, centroids) {
+  const sums = centroids.map(() => [0, 0]);
+  const counts = centroids.map(() => 0);
+  for (const p of points) {
+    sums[p.cluster][0] += p.x;
+    sums[p.cluster][1] += p.y;
+    counts[p.cluster]++;
+  }
+  let maxMove = 0;
+  for (let j = 0; j < centroids.length; j++) {
+    if (counts[j] > 0) {
+      const nx = sums[j][0] / counts[j];
+      const ny = sums[j][1] / counts[j];
+      const move = Math.sqrt((nx - centroids[j][0]) ** 2 + (ny - centroids[j][1]) ** 2);
+      if (move > maxMove) maxMove = move;
+      centroids[j][0] = nx;
+      centroids[j][1] = ny;
+    }
+  }
+  return maxMove;
+}
+
+// Compute inertia (SSE)
+function computeInertia(points, centroids) {
+  let sse = 0;
+  for (const p of points) {
+    sse += sqDist([p.x, p.y], centroids[p.cluster]);
+  }
+  return sse;
+}
+
+// K-Means++ initialization
+function kmeansppInit(points, K, rng) {
+  const centroids = [];
+  // First centroid: random
+  const first = points[Math.floor((rng ? rng() : Math.random()) * points.length)];
+  centroids.push([first.x, first.y]);
+
+  // Remaining centroids
+  const D = new Array(points.length).fill(Infinity);
+  for (let k = 1; k < K; k++) {
+    let totalDist = 0;
+    for (let i = 0; i < points.length; i++) {
+      const d = sqDist([points[i].x, points[i].y], centroids[k - 1]);
+      if (d < D[i]) D[i] = d;
+      totalDist += D[i];
+    }
+    // Pick with probability proportional to D[i]
+    let r = (rng ? rng() : Math.random()) * totalDist;
+    let cumsum = 0;
+    let chosen = points.length - 1;
+    for (let i = 0; i < points.length; i++) {
+      cumsum += D[i];
+      if (cumsum >= r) { chosen = i; break; }
+    }
+    centroids.push([points[chosen].x, points[chosen].y]);
+  }
+  return centroids;
+}
+
+// Random initialization
+function randomInit(points, K, rng) {
+  const shuffled = [...points].sort(() => (rng ? rng() : Math.random()) - 0.5);
+  const chosen = new Set();
+  const centroids = [];
+  for (let i = 0; i < shuffled.length && centroids.length < K; i++) {
+    const key = `${shuffled[i].x.toFixed(3)},${shuffled[i].y.toFixed(3)}`;
+    if (!chosen.has(key)) {
+      chosen.add(key);
+      centroids.push([shuffled[i].x, shuffled[i].y]);
+    }
+  }
+  // If we don't have enough unique points, add random offsets
+  while (centroids.length < K) {
+    const p = shuffled[Math.floor((rng ? rng() : Math.random()) * shuffled.length)];
+    centroids.push([p.x + (Math.random() - 0.5) * 0.5, p.y + (Math.random() - 0.5) * 0.5]);
+  }
+  return centroids;
+}
+
+// Full K-Means
+function kmeans(points, K, initMethod = 'random', maxIters = 100, tol = 1e-4, rng = null) {
+  let centroids;
+  if (initMethod === 'kmeanspp') {
+    centroids = kmeansppInit(points, K, rng);
+  } else {
+    centroids = randomInit(points, K, rng);
+  }
+
+  let iters = 0;
+  for (; iters < maxIters; iters++) {
+    assignClusters(points, centroids);
+    const maxMove = updateCentroids(points, centroids);
+    if (maxMove < tol) break;
+  }
+  const inertia = computeInertia(points, centroids);
+  return { centroids, iters: iters + 1, inertia };
+}
+
+// ═══════════════════════════════════════════
+// Datasets
+// ═══════════════════════════════════════════
+function generateBlobs(n, centers) {
+  const points = [];
+  for (const c of centers) {
+    for (let i = 0; i < n; i++) {
+      const angle = Math.random() * 2 * Math.PI;
+      const r = Math.sqrt(-2 * Math.log(Math.random() + 1e-9)) * c[2]; // Box-Muller-ish
+      points.push({
+        x: c[0] + r * Math.cos(angle),
+        y: c[1] + r * Math.sin(angle),
+        cluster: 0, trueLabel: centers.indexOf(c)
+      });
+    }
+  }
+  return points;
+}
+
+function generateRings(n) {
+  const points = [];
+  // Inner ring
+  for (let i = 0; i < n; i++) {
+    const angle = Math.random() * 2 * Math.PI;
+    const r = 1.2 + (Math.random() - 0.5) * 0.4;
+    points.push({ x: r * Math.cos(angle), y: r * Math.sin(angle), cluster: 0, trueLabel: 0 });
+  }
+  // Outer ring
+  for (let i = 0; i < n; i++) {
+    const angle = Math.random() * 2 * Math.PI;
+    const r = 3.0 + (Math.random() - 0.5) * 0.5;
+    points.push({ x: r * Math.cos(angle), y: r * Math.sin(angle), cluster: 0, trueLabel: 1 });
+  }
+  return points;
+}
+
+function generateMoons(n) {
+  const points = [];
+  // Upper moon
+  for (let i = 0; i < n; i++) {
+    const t = Math.random() * Math.PI;
+    const x = Math.cos(t) * 2.5;
+    const y = Math.sin(t) * 2.5;
+    points.push({
+      x: x + (Math.random() - 0.5) * 0.5,
+      y: y + (Math.random() - 0.5) * 0.5,
+      cluster: 0, trueLabel: 0
+    });
+  }
+  // Lower moon
+  for (let i = 0; i < n; i++) {
+    const t = Math.random() * Math.PI;
+    const x = 1 - Math.cos(t) * 2.5;
+    const y = 1 - Math.sin(t) * 2.5;
+    points.push({
+      x: x + (Math.random() - 0.5) * 0.5,
+      y: y + (Math.random() - 0.5) * 0.5,
+      cluster: 0, trueLabel: 1
+    });
+  }
+  return points;
+}
+
+function generateElongated(n) {
+  const points = [];
+  // Three elongated clusters at different angles
+  const configs = [
+    { cx: -3, cy: 0, angle: 0.3, len: 3, w: 0.3 },
+    { cx: 3, cy: 2, angle: -0.6, len: 3.5, w: 0.25 },
+    { cx: 0, cy: -3, angle: 1.2, len: 2.8, w: 0.3 },
+  ];
+  for (const cfg of configs) {
+    for (let i = 0; i < Math.floor(n * 1.2); i++) {
+      const along = (Math.random() - 0.5) * 2 * cfg.len;
+      const perp = (Math.random() - 0.5) * 2 * cfg.w * (1 + Math.abs(along) * 0.15);
+      const px = cfg.cx + along * Math.cos(cfg.angle) - perp * Math.sin(cfg.angle);
+      const py = cfg.cy + along * Math.sin(cfg.angle) + perp * Math.cos(cfg.angle);
+      if (Math.abs(px) < 7 && Math.abs(py) < 5) {
+        points.push({ x: px, y: py, cluster: 0, trueLabel: configs.indexOf(cfg) });
+      }
+    }
+  }
+  return points;
+}
+
+function generateUneven(n) {
+  const points = [];
+  const configs = [
+    { cx: 0, cy: 0, sigma: 1.8, count: Math.floor(n * 0.6) },   // Large dense cluster
+    { cx: -4, cy: -3, sigma: 0.3, count: Math.floor(n * 0.25) },  // Small tight cluster
+    { cx: 4, cy: 2, sigma: 0.4, count: Math.floor(n * 0.15) },    // Very small cluster
+  ];
+  for (const cfg of configs) {
+    for (let i = 0; i < cfg.count; i++) {
+      const angle = Math.random() * 2 * Math.PI;
+      const r = Math.sqrt(-2 * Math.log(Math.random() + 1e-9)) * cfg.sigma;
+      points.push({
+        x: cfg.cx + r * Math.cos(angle),
+        y: cfg.cy + r * Math.sin(angle),
+        cluster: 0, trueLabel: configs.indexOf(cfg)
+      });
+    }
+  }
+  return points;
+}
+
+// Default: 3 blobs
+function defaultDataset() {
+  return generateBlobs(40, [
+    [-2.5, -1.5, 1.0],
+    [2.5, 1.5, 1.0],
+    [0, -2.5, 0.9],
+  ]);
+}
+
+const DATASETS = [
+  { name: '高斯团 (3簇)', fn: () => generateBlobs(40, [
+    [-2.5, -1.5, 1.0], [2.5, 1.5, 1.0], [0, -2.5, 0.9]
+  ])},
+  { name: '高斯团 (5簇)', fn: () => generateBlobs(30, [
+    [-3, -2.5, 0.7], [3, -2.5, 0.7], [0, 0, 0.7], [-3, 2.5, 0.7], [3, 2.5, 0.7]
+  ])},
+  { name: '不均匀高斯团', fn: () => generateBlobs(35, [
+    [0, 0, 1.8], [-4, -3, 0.4], [4, 3, 0.4]
+  ])},
+  { name: '拉伸团', fn: () => [{x:-1,y:1,cluster:0,trueLabel:0},{x:-1.5,y:1.5,cluster:0,trueLabel:0},{x:-0.5,y:0.5,cluster:0,trueLabel:0},{x:1,y:-1,cluster:0,trueLabel:1},{x:1.5,y:-1.5,cluster:0,trueLabel:1},{x:0.5,y:-0.5,cluster:0,trueLabel:1}]},
+];
+
+// ═══════════════════════════════════════════
+// Section 1: Core Algorithm Step-by-Step
+// ═══════════════════════════════════════════
+let corePoints, coreCentroids, coreIter, coreDatasetIdx, coreConverged;
+
+function initCore() {
+  coreDatasetIdx = 0;
+  corePoints = DATASETS[coreDatasetIdx].fn();
+  coreIter = 0;
+  coreConverged = false;
+  const K = parseInt(document.getElementById('core-k-slider').value);
+  coreCentroids = randomInit(corePoints, K);
+  assignClusters(corePoints, coreCentroids);
+  drawCore();
+}
+
+function resetCoreCentroids() {
+  const K = parseInt(document.getElementById('core-k-slider').value);
+  coreCentroids = randomInit(corePoints, K);
+  coreIter = 0;
+  coreConverged = false;
+  assignClusters(corePoints, coreCentroids);
+  drawCore();
+}
+
+function stepAssign() {
+  if (coreConverged) return;
+  const changed = assignClusters(corePoints, coreCentroids);
+  if (!changed) {
+    // Already at local optimum
+  }
+  document.getElementById('step-label').textContent = '分配完成';
+  drawCore();
+}
+
+function stepUpdate() {
+  if (coreConverged) return;
+  const maxMove = updateCentroids(corePoints, coreCentroids);
+  coreIter++;
+  if (maxMove < 1e-4) {
+    coreConverged = true;
+    document.getElementById('step-label').textContent = '已收敛 ✓';
+  } else {
+    document.getElementById('step-label').textContent = '更新完成';
+  }
+  assignClusters(corePoints, coreCentroids);
+  document.getElementById('iter-num').textContent = coreIter;
+  drawCore();
+}
+
+function runFullKMeans() {
+  if (coreConverged) { resetCoreCentroids(); }
+  const K = parseInt(document.getElementById('core-k-slider').value);
+  const result = kmeans(corePoints, K, 'random', 100, 1e-4);
+  coreCentroids = result.centroids;
+  coreIter = result.iters;
+  coreConverged = true;
+  document.getElementById('step-label').textContent = '已收敛 ✓';
+  document.getElementById('iter-num').textContent = coreIter;
+  assignClusters(corePoints, coreCentroids);
+  drawCore();
+}
+
+function stepReset() {
+  const K = parseInt(document.getElementById('core-k-slider').value);
+  coreDatasetIdx = (coreDatasetIdx + 0) % DATASETS.length;
+  corePoints = DATASETS[coreDatasetIdx].fn();
+  coreIter = 0;
+  coreConverged = false;
+  coreCentroids = randomInit(corePoints, K);
+  assignClusters(corePoints, coreCentroids);
+  document.getElementById('step-label').textContent = '初始化';
+  document.getElementById('iter-num').textContent = '0';
+  drawCore();
+}
+
+function cycleDataset() {
+  coreDatasetIdx = (coreDatasetIdx + 1) % DATASETS.length;
+  const K = parseInt(document.getElementById('core-k-slider').value);
+  corePoints = DATASETS[coreDatasetIdx].fn();
+  coreIter = 0;
+  coreConverged = false;
+  coreCentroids = randomInit(corePoints, K);
+  assignClusters(corePoints, coreCentroids);
+  document.getElementById('step-label').textContent = '初始化';
+  document.getElementById('iter-num').textContent = '0';
+  drawCore();
+}
+
+function drawCore() {
+  const canvas = document.getElementById('canvas-core');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Coordinate transform: data range ~[-6, 6] x [-5, 5]
+  const pad = 50;
+  const sx = (W - 2 * pad) / 12;
+  const sy = (H - 2 * pad) / 10;
+  const ox = W / 2;
+  const oy = H / 2;
+  function tx(x) { return ox + x * sx; }
+  function ty(y) { return oy - y * sy; }
+
+  // Draw Voronoi regions (approximate via pixel sampling)
+  if (coreCentroids && coreCentroids.length > 0 && coreIter > 0) {
+    const imageData = ctx.createImageData(W, H);
+    for (let py = 0; py < H; py += 2) {
+      for (let px = 0; px < W; px += 2) {
+        const wx = (px - ox) / sx;
+        const wy = -(py - oy) / sy;
+        let bestD = Infinity, bestC = 0;
+        for (let j = 0; j < coreCentroids.length; j++) {
+          const d = sqDist([wx, wy], coreCentroids[j]);
+          if (d < bestD) { bestD = d; bestC = j; }
+        }
+        const col = hexToRgb(CLUSTER_COLORS[bestC]);
+        for (let dy = 0; dy < 2 && py + dy < H; dy++) {
+          for (let dx = 0; dx < 2 && px + dx < W; dx++) {
+            const idx = ((py + dy) * W + (px + dx)) * 4;
+            imageData.data[idx] = col.r;
+            imageData.data[idx + 1] = col.g;
+            imageData.data[idx + 2] = col.b;
+            imageData.data[idx + 3] = 30;
+          }
+        }
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  // Draw grid
+  ctx.strokeStyle = '#1e2035';
+  ctx.lineWidth = 0.5;
+  for (let i = -6; i <= 6; i++) {
+    ctx.beginPath();
+    ctx.moveTo(tx(i), ty(-5));
+    ctx.lineTo(tx(i), ty(5));
+    ctx.stroke();
+  }
+  for (let i = -5; i <= 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(tx(-6), ty(i));
+    ctx.lineTo(tx(6), ty(i));
+    ctx.stroke();
+  }
+
+  // Draw points
+  for (const p of corePoints) {
+    const cx = tx(p.x), cy = ty(p.y);
+    const color = p.cluster < coreCentroids.length ? CLUSTER_COLORS[p.cluster] : '#888';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Draw centroids
+  if (coreCentroids) {
+    for (let j = 0; j < coreCentroids.length; j++) {
+      const cx = tx(coreCentroids[j][0]), cy = ty(coreCentroids[j][1]);
+      // Glow
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fill();
+      // Star shape
+      drawStar(ctx, cx, cy, 12, CLUSTER_COLORS[j]);
+      // Label
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px "Segoe UI","PingFang SC",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`C${j+1}`, cx, cy - 18);
+    }
+  }
+
+  // Update info
+  const inertia = coreCentroids ? computeInertia(corePoints, coreCentroids) : 0;
+  document.getElementById('core-inertia').textContent = inertia.toFixed(1);
+  document.getElementById('core-iter').textContent = coreIter;
+  document.getElementById('core-converged').textContent = coreConverged ? '是 ✓' : '否';
+
+  // Update legend
+  const legend = document.getElementById('legend-core');
+  legend.innerHTML = coreCentroids ? coreCentroids.map((_, j) =>
+    `<span><span class="swatch" style="background:${CLUSTER_COLORS[j]};"></span> 簇 ${j+1}</span>`
+  ).join('') + '<span><span class="swatch" style="background:#fff;width:18px;height:18px;border:3px solid #fff;"></span> 质心</span>' : '';
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return { r, g, b };
+}
+
+function drawStar(ctx, cx, cy, size, color) {
+  const spikes = 5, outerR = size, innerR = size * 0.5;
+  ctx.beginPath();
+  for (let i = 0; i < spikes * 2; i++) {
+    const r = i % 2 === 0 ? outerR : innerR;
+    const angle = (i * Math.PI) / spikes - Math.PI / 2;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+// ═══════════════════════════════════════════
+// Section 2: Initialization Comparison
+// ═══════════════════════════════════════════
+let initCompareData = null;
+let initCompareResults = null;
+
+function generateInitCompareData() {
+  const K = parseInt(document.getElementById('init-k-slider').value);
+  // Generate clusters with varying density & spread
+  const points = [];
+  const configs = [
+    { cx: -3, cy: 2, sx: 0.8, sy: 0.8, n: 30 },
+    { cx: 3, cy: 2.5, sx: 0.5, sy: 0.5, n: 20 },
+    { cx: 0, cy: -1, sx: 1.2, sy: 1.2, n: 45 },
+    { cx: -3, cy: -2.5, sx: 0.4, sy: 0.4, n: 15 },
+    { cx: 3, cy: -2, sx: 0.7, sy: 0.7, n: 25 },
+    { cx: -0.5, cy: 3, sx: 0.3, sy: 0.3, n: 12 },
+    { cx: -4.5, cy: -0.5, sx: 0.35, sy: 0.35, n: 14 },
+    { cx: 4.5, cy: -0.5, sx: 0.45, sy: 0.45, n: 18 },
+  ];
+  for (let k = 0; k < Math.min(K + 2, configs.length); k++) {
+    const cfg = configs[k];
+    for (let i = 0; i < cfg.n; i++) {
+      points.push({
+        x: cfg.cx + (Math.random() - 0.5) * 2 * cfg.sx * 2.5,
+        y: cfg.cy + (Math.random() - 0.5) * 2 * cfg.sy * 2.5,
+        cluster: 0, trueLabel: k
+      });
+    }
+  }
+  return points;
+}
+
+function runInitCompare() {
+  const K = parseInt(document.getElementById('init-k-slider').value);
+  if (!initCompareData) initCompareData = generateInitCompareData();
+
+  // K-Means++ run
+  const ppPoints = initCompareData.map(p => ({...p, cluster: 0}));
+  const ppResult = kmeans(ppPoints, K, 'kmeanspp', 100, 1e-4);
+
+  // Random init run (best of 5)
+  let bestRandResult = null, bestRandInertia = Infinity;
+  for (let t = 0; t < 5; t++) {
+    const randPoints = initCompareData.map(p => ({...p, cluster: 0}));
+    const result = kmeans(randPoints, K, 'random', 100, 1e-4);
+    if (result.inertia < bestRandInertia) {
+      bestRandInertia = result.inertia;
+      bestRandResult = result;
+    }
+  }
+
+  initCompareResults = {
+    rand: { centroids: bestRandResult.centroids, inertia: bestRandResult.inertia, iters: bestRandResult.iters },
+    pp: { centroids: ppResult.centroids, inertia: ppResult.inertia, iters: ppResult.iters }
+  };
+
+  document.getElementById('init-rand-inertia').textContent = bestRandResult.inertia.toFixed(1);
+  document.getElementById('init-pp-inertia').textContent = ppResult.inertia.toFixed(1);
+  const improve = ((bestRandResult.inertia - ppResult.inertia) / bestRandResult.inertia * 100);
+  document.getElementById('init-pp-improve').textContent = improve > 0 ? `${improve.toFixed(1)}%` : '持平';
+
+  drawInitCompare();
+}
+
+function rerollInitCompare() {
+  initCompareData = generateInitCompareData();
+  initCompareResults = null;
+  document.getElementById('init-rand-inertia').textContent = '—';
+  document.getElementById('init-pp-inertia').textContent = '—';
+  document.getElementById('init-pp-improve').textContent = '—';
+  drawInitCompare();
+}
+
+function drawInitCompare() {
+  const canvas = document.getElementById('canvas-init-compare');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const pad = 40;
+  const midY = H / 2;
+  const halfH = midY - 10;
+  const sx = (W - 2 * pad) / 12;
+  const sy = (halfH - 2 * pad) / 10;
+  const ox = W / 2;
+  function tx(x) { return ox + x * sx; }
+  function ty(y, oy) { return oy - y * sy; }
+
+  if (!initCompareData) {
+    ctx.fillStyle = '#555';
+    ctx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('点击"运行对比"查看初始化效果', W/2, H/2);
+    return;
+  }
+
+  // Draw two halves
+  const halves = [
+    { oy: pad + halfH / 2, label: 'Random 初始化', color: '#e94560', result: initCompareResults?.rand },
+    { oy: midY + pad + halfH / 2, label: 'K-Means++ 初始化', color: '#4ade80', result: initCompareResults?.pp },
+  ];
+
+  for (const half of halves) {
+    const oy = half.oy;
+
+    // Grid
+    ctx.strokeStyle = '#1e2035';
+    ctx.lineWidth = 0.5;
+    for (let i = -6; i <= 6; i++) {
+      ctx.beginPath();
+      ctx.moveTo(tx(i), oy - halfH / 2 + pad);
+      ctx.lineTo(tx(i), oy + halfH / 2 - pad);
+      ctx.stroke();
+    }
+    for (let i = -5; i <= 5; i++) {
+      const py = oy - (i * sy);
+      ctx.beginPath();
+      ctx.moveTo(tx(-6), py);
+      ctx.lineTo(tx(6), py);
+      ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle = half.color;
+    ctx.font = 'bold 18px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(half.label, pad, oy - halfH / 2 + pad + 16);
+
+    // SSE label
+    if (half.result) {
+      ctx.fillStyle = '#8b8fa8';
+      ctx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`SSE: ${half.result.inertia.toFixed(1)}  |  ${half.result.iters} iters`, W - pad, oy - halfH / 2 + pad + 16);
+    }
+
+    // Points
+    for (const p of initCompareData) {
+      const cx = tx(p.x), cy = ty(p.y, oy);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+      ctx.fillStyle = half.result ?
+        CLUSTER_COLORS[p.cluster % 8] : '#555';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Centroids
+    if (half.result) {
+      for (let j = 0; j < half.result.centroids.length; j++) {
+        const c = half.result.centroids[j];
+        const cx = tx(c[0]), cy = ty(c[1], oy);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+        ctx.fillStyle = CLUSTER_COLORS[j];
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Divider line
+  ctx.strokeStyle = '#252840';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad, midY);
+  ctx.lineTo(W - pad, midY);
+  ctx.stroke();
+}
+
+// ═══════════════════════════════════════════
+// Section 3: Elbow Method
+// ═══════════════════════════════════════════
+let elbowData = null;
+let elbowDatasetIdx = 0;
+
+const ELBOW_DATASETS = [
+  {
+    name: '4个明显簇',
+    fn: () => generateBlobs(40, [
+      [-2.5, -2, 0.7], [2.5, -2, 0.7], [-2.5, 2, 0.7], [2.5, 2, 0.7]
+    ])
+  },
+  {
+    name: '6个高斯团',
+    fn: () => generateBlobs(25, [
+      [-3,-2.5,0.5],[3,-2.5,0.5],[0,0,0.5],[-3,2.5,0.5],[3,2.5,0.5],[0,4,0.5]
+    ])
+  },
+  {
+    name: '3个不均匀团',
+    fn: () => generateBlobs(35, [
+      [0,0,1.8],[-4,-3,0.3],[4,2,0.3]
+    ])
+  },
+];
+
+function runElbow() {
+  const data = ELBOW_DATASETS[elbowDatasetIdx].fn();
+  const maxK = 10;
+  const results = [];
+
+  for (let k = 1; k <= maxK; k++) {
+    let bestInertia = Infinity;
+    // Multiple runs, take best
+    for (let t = 0; t < 10; t++) {
+      const pts = data.map(p => ({...p, cluster: 0}));
+      const result = kmeans(pts, k, 'kmeanspp', 100, 1e-4);
+      if (result.inertia < bestInertia) bestInertia = result.inertia;
+    }
+    results.push({ k, inertia: bestInertia });
+  }
+
+  // Compute silhouette scores
+  for (let k = 1; k <= maxK; k++) {
+    const pts = data.map(p => ({...p, cluster: 0}));
+    const result = kmeans(pts, k, 'kmeanspp', 100, 1e-4);
+    if (k === 1) {
+      results[k-1].silhouette = 0;
+    } else {
+      results[k-1].silhouette = computeSilhouette(pts, result.centroids);
+    }
+  }
+
+  elbowData = results;
+  findElbow(results);
+  drawElbow();
+}
+
+function computeSilhouette(points, centroids) {
+  const n = points.length;
+  if (n === 0 || centroids.length < 2) return 0;
+
+  let totalScore = 0;
+  for (const p of points) {
+    // Compute a(i) = mean intra-cluster distance
+    let intraSum = 0, intraCount = 0;
+    for (const q of points) {
+      if (q === p) continue;
+      if (q.cluster === p.cluster) {
+        intraSum += dist([p.x, p.y], [q.x, q.y]);
+        intraCount++;
+      }
+    }
+    const a = intraCount > 0 ? intraSum / intraCount : 0;
+
+    // Compute b(i) = min mean inter-cluster distance
+    const interMean = {};
+    for (const q of points) {
+      if (q.cluster === p.cluster) continue;
+      if (!interMean[q.cluster]) interMean[q.cluster] = { sum: 0, count: 0 };
+      interMean[q.cluster].sum += dist([p.x, p.y], [q.x, q.y]);
+      interMean[q.cluster].count++;
+    }
+    let b = Infinity;
+    for (const c in interMean) {
+      const mean = interMean[c].sum / interMean[c].count;
+      if (mean < b) b = mean;
+    }
+    if (b === Infinity) b = 0;
+
+    const s = Math.max(a, b) > 0 ? (b - a) / Math.max(a, b) : 0;
+    totalScore += s;
+  }
+  return totalScore / n;
+}
+
+function findElbow(results) {
+  // Simple curvature-based elbow detection
+  if (results.length < 3) {
+    document.getElementById('elbow-best-k').textContent = '—';
+    return;
+  }
+
+  // Normalize
+  const inertias = results.map(r => r.inertia);
+  const minI = inertias[inertias.length - 1];
+  const maxI = inertias[0];
+  const range = maxI - minI || 1;
+
+  // Find point with max distance to the line from first to last
+  const p1 = [results[0].k, (inertias[0] - minI) / range];
+  const p2 = [results[results.length - 1].k, (inertias[results.length - 1] - minI) / range];
+
+  let maxDist = 0, bestK = 2;
+  for (let i = 1; i < results.length - 1; i++) {
+    const p = [results[i].k, (inertias[i] - minI) / range];
+    // Distance from point to line p1-p2
+    const d = Math.abs((p2[1] - p1[1]) * p[0] - (p2[0] - p1[0]) * p[1] + p2[0] * p1[1] - p2[1] * p1[0]) /
+              Math.sqrt((p2[1] - p1[1]) ** 2 + (p2[0] - p1[0]) ** 2);
+    if (d > maxDist) { maxDist = d; bestK = results[i].k; }
+  }
+
+  document.getElementById('elbow-best-k').textContent = `K = ${bestK}`;
+
+  // Best silhouette
+  let bestSil = -1, bestSilK = -1;
+  for (let i = 1; i < results.length; i++) {
+    if (results[i].silhouette > bestSil) {
+      bestSil = results[i].silhouette;
+      bestSilK = results[i].k;
+    }
+  }
+  document.getElementById('elbow-best-sil').textContent = bestSilK > 0 ? `${bestSil.toFixed(3)} (K=${bestSilK})` : '—';
+}
+
+function drawElbow() {
+  const canvas = document.getElementById('canvas-elbow');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  if (!elbowData) {
+    ctx.fillStyle = '#555';
+    ctx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('点击"重新计算"生成肘部曲线', W/2, H/2);
+    return;
+  }
+
+  const pad = 60;
+  const plotW = W - 2 * pad;
+  const plotH = H - 2 * pad;
+
+  // Normalize inertia to [0, 1]
+  const inertias = elbowData.map(d => d.inertia);
+  const maxI = inertias[0];
+  const minI = inertias[inertias.length - 1];
+  const range = maxI - minI || 1;
+
+  // Axes
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(pad, pad);
+  ctx.lineTo(pad, H - pad);
+  ctx.lineTo(W - pad, H - pad);
+  ctx.stroke();
+
+  // X-axis labels
+  ctx.fillStyle = '#8b8fa8';
+  ctx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  for (const d of elbowData) {
+    const x = pad + (d.k - 1) / (elbowData.length - 1) * plotW;
+    ctx.fillText(d.k.toString(), x, H - pad + 30);
+  }
+  ctx.fillText('K (簇数)', W / 2, H - 10);
+
+  // Y-axis label
+  ctx.save();
+  ctx.translate(pad - 42, H / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('惯性 (SSE)', 0, 0);
+  ctx.restore();
+
+  // Inertia curve
+  ctx.strokeStyle = '#4ea8f6';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let i = 0; i < elbowData.length; i++) {
+    const x = pad + (elbowData[i].k - 1) / (elbowData.length - 1) * plotW;
+    const y = pad + (1 - (elbowData[i].inertia - minI) / range) * plotH;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Data points
+  for (const d of elbowData) {
+    const x = pad + (d.k - 1) / (elbowData.length - 1) * plotW;
+    const y = pad + (1 - (d.inertia - minI) / range) * plotH;
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#4ea8f6';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // Silhouette curve (secondary axis, scaled)
+  const silVals = elbowData.map(d => d.silhouette).filter(s => s !== undefined);
+  if (silVals.length > 0) {
+    const maxSil = Math.max(...silVals);
+    const minSil = Math.min(...silVals);
+    const silRange = (maxSil - minSil) || 1;
+
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    for (let i = 0; i < elbowData.length; i++) {
+      if (elbowData[i].silhouette === undefined) continue;
+      const x = pad + (elbowData[i].k - 1) / (elbowData.length - 1) * plotW;
+      const y = pad + (1 - (elbowData[i].silhouette - minSil) / silRange) * plotH;
+      if (i === 0 || elbowData[i - 1]?.silhouette === undefined) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Silhouette legend
+    ctx.fillStyle = '#4ade80';
+    ctx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`轮廓系数 (max: ${maxSil.toFixed(3)})`, W - pad, pad + 16);
+  }
+
+  // Inertia legend
+  ctx.fillStyle = '#4ea8f6';
+  ctx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('惯性 (SSE)', W - pad, pad - 6);
+
+  // Mark elbow
+  const elbowK = parseInt(document.getElementById('elbow-best-k').textContent.replace('K = ', ''));
+  if (elbowK && elbowData[elbowK - 1]) {
+    const ex = pad + (elbowK - 1) / (elbowData.length - 1) * plotW;
+    const ey = pad + (1 - (elbowData[elbowK - 1].inertia - minI) / range) * plotH;
+    ctx.beginPath();
+    ctx.arc(ex, ey, 14, 0, Math.PI * 2);
+    ctx.strokeStyle = '#f0c040';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([4, 2]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#f0c040';
+    ctx.font = 'bold 16px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('← 肘部', ex + 18, ey + 6);
+  }
+}
+
+function cycleElbowDataset() {
+  elbowDatasetIdx = (elbowDatasetIdx + 1) % ELBOW_DATASETS.length;
+  elbowData = null;
+  document.getElementById('elbow-best-k').textContent = '—';
+  document.getElementById('elbow-best-sil').textContent = '—';
+  runElbow();
+}
+
+// ═══════════════════════════════════════════
+// Section 4: Interactive Playground
+// ═══════════════════════════════════════════
+let playPoints = [];
+let playCentroids = [];
+let playInitMethod = 'random';
+let playMode = 'add'; // 'add' or 'cluster'
+
+const PLAY_DATASETS = {
+  blobs: () => generateBlobs(50, [
+    [-2.5, -1.5, 0.9], [2.5, 1.5, 0.9], [0, -2.5, 0.9]
+  ]),
+  rings: () => generateRings(30),
+  moons: () => generateMoons(30),
+  elongated: () => generateElongated(45),
+  uneven: () => generateUneven(40),
+};
+
+function setPlayInit(method) {
+  playInitMethod = method;
+  document.getElementById('btn-init-random').classList.toggle('active', method === 'random');
+  document.getElementById('btn-init-pp').classList.toggle('active', method === 'kmeanspp');
+}
+
+function loadPlayData(name) {
+  playPoints = PLAY_DATASETS[name]();
+  playCentroids = [];
+  document.getElementById('play-inertia').textContent = '—';
+  document.getElementById('play-iter').textContent = '—';
+  drawPlay();
+}
+
+function runPlayKMeans() {
+  if (playPoints.length === 0) return;
+  const K = parseInt(document.getElementById('play-k-slider').value);
+  const result = kmeans(playPoints, K, playInitMethod, 100, 1e-4);
+  playCentroids = result.centroids;
+  document.getElementById('play-inertia').textContent = result.inertia.toFixed(1);
+  document.getElementById('play-iter').textContent = result.iters.toString();
+  drawPlay();
+}
+
+function resetPlay() {
+  playCentroids = [];
+  document.getElementById('play-inertia').textContent = '—';
+  document.getElementById('play-iter').textContent = '—';
+  drawPlay();
+}
+
+function drawPlay() {
+  const canvas = document.getElementById('canvas-play');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const pad = 50;
+  const sx = (W - 2 * pad) / 14;
+  const sy = (H - 2 * pad) / 10;
+  const ox = W / 2;
+  const oy = H / 2;
+  function tx(x) { return ox + x * sx; }
+  function ty(y) { return oy - y * sy; }
+
+  // Grid
+  ctx.strokeStyle = '#1e2035';
+  ctx.lineWidth = 0.5;
+  for (let i = -7; i <= 7; i++) {
+    ctx.beginPath(); ctx.moveTo(tx(i), ty(-5)); ctx.lineTo(tx(i), ty(5)); ctx.stroke();
+  }
+  for (let i = -5; i <= 5; i++) {
+    ctx.beginPath(); ctx.moveTo(tx(-7), ty(i)); ctx.lineTo(tx(7), ty(i)); ctx.stroke();
+  }
+
+  // Voronoi regions (if clustered)
+  if (playCentroids.length > 0) {
+    const imageData = ctx.createImageData(W, H);
+    for (let py = 0; py < H; py += 2) {
+      for (let px = 0; px < W; px += 2) {
+        const wx = (px - ox) / sx;
+        const wy = -(py - oy) / sy;
+        let bestD = Infinity, bestC = 0;
+        for (let j = 0; j < playCentroids.length; j++) {
+          const d = sqDist([wx, wy], playCentroids[j]);
+          if (d < bestD) { bestD = d; bestC = j; }
+        }
+        const col = hexToRgb(CLUSTER_COLORS[bestC]);
+        for (let dy = 0; dy < 2 && py + dy < H; dy++) {
+          for (let dx = 0; dx < 2 && px + dx < W; dx++) {
+            const idx = ((py + dy) * W + (px + dx)) * 4;
+            imageData.data[idx] = col.r;
+            imageData.data[idx + 1] = col.g;
+            imageData.data[idx + 2] = col.b;
+            imageData.data[idx + 3] = 30;
+          }
+        }
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  // Points
+  for (const p of playPoints) {
+    const cx = tx(p.x), cy = ty(p.y);
+    const color = playCentroids.length > 0 ? CLUSTER_COLORS[p.cluster % 8] : '#6b7280';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Centroids
+  for (let j = 0; j < playCentroids.length; j++) {
+    const cx = tx(playCentroids[j][0]), cy = ty(playCentroids[j][1]);
+    drawStar(ctx, cx, cy, 11, CLUSTER_COLORS[j]);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px "Segoe UI","PingFang SC",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`C${j+1}`, cx, cy - 17);
+  }
+
+  // Update legend
+  const legend = document.getElementById('legend-play');
+  legend.innerHTML = playCentroids.length > 0
+    ? playCentroids.map((_, j) =>
+        `<span><span class="swatch" style="background:${CLUSTER_COLORS[j]};"></span> 簇 ${j+1}</span>`
+      ).join('') + '<span><span class="swatch" style="background:#fff;border:3px solid #fff;width:18px;height:18px;"></span> 质心</span>'
+    : '<span style="color:#6b7280;">点击"运行 K-Means"开始聚类</span>';
+}
+
+// ═══════════════════════════════════════════
+// KaTeX Formulas
+// ═══════════════════════════════════════════
+function renderFormulas() {
+  // K-Means objective
+  const objEl = document.getElementById('formula-kmeans-objective');
+  katex.render(String.raw`\begin{aligned}
+&\textbf{优化目标：} \\
+&\min_{\{C_j\}, \{\boldsymbol{\mu}_j\}} \sum_{j=1}^{K} \sum_{\mathbf{x}_i \in C_j} \|\mathbf{x}_i - \boldsymbol{\mu}_j\|_2^2
+= \min \ \text{SSE} \\
+\\
+&\textbf{分配步 (Assignment):} \\
+&C_j^{(t)} = \left\{ \mathbf{x}_i : \|\mathbf{x}_i - \boldsymbol{\mu}_j^{(t)}\|_2 \leq \|\mathbf{x}_i - \boldsymbol{\mu}_k^{(t)}\|_2,\ \forall k \neq j \right\} \\
+&\text{将每个点分配给最近的质心 —— 固定 } \boldsymbol{\mu} \text{，优化 } C \\
+\\
+&\textbf{更新步 (Update):} \\
+&\boldsymbol{\mu}_j^{(t+1)} = \frac{1}{|C_j^{(t)}|} \sum_{\mathbf{x}_i \in C_j^{(t)}} \mathbf{x}_i \\
+&\text{将质心更新为簇内点的均值 —— 固定 } C \text{，优化 } \boldsymbol{\mu}
+\end{aligned}`, objEl, { displayMode: true });
+
+  // K-Means++ formula
+  const ppEl = document.getElementById('formula-kmeanspp');
+  katex.render(String.raw`\begin{aligned}
+&\textbf{K-Means++ 初始化：} \\
+&\text{1. 随机选择第一个质心 } \boldsymbol{\mu}_1 \text{（均匀分布）} \\
+&\text{2. 对于 } k = 2, \ldots, K\text{：} \\
+&\quad P(\mathbf{x}_i \text{ 被选为 } \boldsymbol{\mu}_k) = \frac{D(\mathbf{x}_i)^2}{\sum_{\mathbf{x}_j} D(\mathbf{x}_j)^2} \\
+&\quad \text{其中 } D(\mathbf{x}_i) = \min_{j=1}^{k-1} \|\mathbf{x}_i - \boldsymbol{\mu}_j\|_2 \text{（到最近已有质心的距离）} \\
+\\
+&\textbf{理论保证：} \\
+&\mathbb{E}[\text{SSE}_{\text{K-Means++}}] \leq 8(\log K + 2) \cdot \text{SSE}_{\text{optimal}}
+\end{aligned}`, ppEl, { displayMode: true });
+
+  // Elbow + Silhouette
+  const elEl = document.getElementById('formula-elbow');
+  katex.render(String.raw`\begin{aligned}
+&\textbf{肘部法则 (Elbow Method):} \\
+&\text{对 } K = 1, 2, \ldots, K_{\max} \text{ 分别运行 K-Means，记录 } \text{SSE}(K) \\
+&\text{选择 SSE 曲线"拐点"处的 } K \text{ —— } \Delta\text{SSE}(K) \gg \Delta\text{SSE}(K+1) \\
+\\
+&\textbf{轮廓系数 (Silhouette Score):} \\
+&s(i) = \frac{b(i) - a(i)}{\max\{a(i), b(i)\}} ,\quad s(i) \in [-1, 1] \\
+&a(i)\text{: 点 } i \text{ 到同簇其他点的平均距离（凝聚度）} \\
+&b(i)\text{: 点 } i \text{ 到最近异簇所有点的平均距离（分离度）} \\
+&\text{整体轮廓系数 } = \frac{1}{n}\sum_i s(i)，\text{ 越接近 1 越好}
+\end{aligned}`, elEl, { displayMode: true });
+
+  // Complexity
+  const compEl = document.getElementById('formula-complexity');
+  katex.render(String.raw`\begin{aligned}
+&\textbf{时间复杂度：} \\
+&T_{\text{K-Means}} = O(n \cdot K \cdot d \cdot t) \\
+&n\text{: 数据点数},\ K\text{: 簇数},\ d\text{: 维度},\ t\text{: 迭代次数} \\
+&\text{通常 } t \ll n，\text{实际中很快收敛（几十次迭代）} \\
+\\
+&\textbf{收敛性：} \\
+&\text{SSE 单调递减且有下界（0）} \Rightarrow \text{保证有限步收敛到局部最优} \\
+&\text{但 } \textbf{不能保证全局最优} \text{—— 依赖于初始质心选择} \\
+&\text{K-Means++ 提供 } O(\log K) \text{ 近似比的期望保证}
+\end{aligned}`, compEl, { displayMode: true });
+}
+
+// ═══════════════════════════════════════════
+// Event Listeners
+// ═══════════════════════════════════════════
+document.getElementById('core-k-slider').addEventListener('input', function() {
+  document.getElementById('core-k-val').textContent = this.value;
+  stepReset();
+});
+
+document.getElementById('init-k-slider').addEventListener('input', function() {
+  document.getElementById('init-k-val').textContent = this.value;
+  initCompareData = generateInitCompareData();
+  initCompareResults = null;
+  document.getElementById('init-rand-inertia').textContent = '—';
+  document.getElementById('init-pp-inertia').textContent = '—';
+  document.getElementById('init-pp-improve').textContent = '—';
+  drawInitCompare();
+});
+
+document.getElementById('play-k-slider').addEventListener('input', function() {
+  document.getElementById('play-k-val').textContent = this.value;
+});
+
+// ═══════════════════════════════════════════
+// Initialization
+// ═══════════════════════════════════════════
+function init() {
+  initCore();
+  initCompareData = generateInitCompareData();
+  drawInitCompare();
+  loadPlayData('blobs');
+  runElbow();
+  renderFormulas();
+}
+
+init();
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

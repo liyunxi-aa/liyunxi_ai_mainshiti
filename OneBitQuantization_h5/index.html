@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1-Bit 量化 — 大模型极限压缩与端侧部署</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #10b981;
+    --accent2: #34d399;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --orange: #f59e0b;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0a0f0c 0%, #0d1a14 30%, #0f1a18 60%, #0a0f0c 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.green  { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.cyan   { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+  .dot.red    { background: var(--red);    box-shadow: 0 0 10px var(--red); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(16,185,129,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(16,185,129,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #1a2a24; }
+  .btn.active {
+    background: var(--accent);
+    color: #0a0f0c;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(16,185,129,0.3);
+  }
+  .btn.play-btn { background: var(--green); color: #0b0e14; border-color: var(--green); font-weight: 700; }
+  .btn.play-btn:hover { box-shadow: 0 0 14px rgba(74,222,128,0.3); }
+
+  /* ── Tabs ── */
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Comparison table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--green); font-weight: 600; }
+  .cmp-table .warn-cell { color: var(--red); font-weight: 600; }
+
+  /* ── Mermaid ── */
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text2);
+    overflow-x: auto;
+    white-space: pre;
+    margin-bottom: 16px;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .co { color: #8b949e; }
+  .code-block .nm { color: #79c0ff; }
+  .code-block .op { color: #ff7b72; }
+
+  /* ── Legend ── */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 16px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 18px; height: 18px; border-radius: 3px; }
+
+  /* ── Matrix grid ── */
+  .matrix-grid {
+    display: grid;
+    gap: 2px;
+    justify-content: center;
+    margin: 16px 0;
+    overflow-x: auto;
+    padding: 8px;
+  }
+
+  /* ── Step indicator ── */
+  .step-indicator {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 17px;
+    flex-wrap: wrap;
+    color: var(--text2);
+  }
+  .step-indicator .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .step-indicator .step-num.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0b0e14;
+    box-shadow: 0 0 12px rgba(16,185,129,0.4);
+  }
+  .step-indicator .step-arrow { font-size: 20px; color: var(--text2); }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧊 1-Bit 量化 · 大模型极限压缩</h1>
+  <p>从 FP16 到 ±1：权重二值化 / 三值化的原理、主流方案与端侧部署实战</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: 为什么需要1比特量化 -->
+<!-- ================================================================ -->
+<div class="section" id="sec-why">
+  <h2><span class="dot green"></span> 1. 为什么需要 1-Bit 量化？</h2>
+  <p class="desc">
+    大语言模型参数动辄 7B–70B，FP16 精度下 7B 模型需要 <b>~14GB 显存</b>，无法在消费级设备运行。
+    量化的核心思想：<b>用极少比特数表示每个权重</b>，极限就是 1 比特——每个权重仅占 1 bit，取值 {−1, +1}（或加 0 变为三值）。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 量化压缩比</h3>
+    <div id="formula-compression"></div>
+  </div>
+
+  <canvas id="canvasMemory" width="1200" height="520"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>模型参数量 <span class="val" id="val-params">7B</span></label>
+      <input type="range" id="slider-params" min="0" max="12" value="3" step="1">
+    </div>
+    <div class="slider-group">
+      <label>量化位宽 <span class="val" id="val-bits">1.58 bit</span></label>
+      <input type="range" id="slider-bits" min="0" max="5" value="1" step="1">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-memory"></div>
+
+  <div class="insight">
+    💡 <strong>极限压缩：</strong>从 FP16 (16 bit/weight) 压到 1.58 bit（三值），<strong>压缩比 ≈ 10×</strong>；
+    纯 1 bit（二值 {−1,+1}），<strong>压缩比 = 16×</strong>。8B 模型仅需 ~1.15GB，iPhone 可实时推理。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: 1比特 vs 1.58比特 -->
+<!-- ================================================================ -->
+<div class="section" id="sec-compare">
+  <h2><span class="dot blue"></span> 2. 两条路线：1 比特 vs 1.58 比特</h2>
+  <p class="desc">
+    业界「1-Bit LLM」实际分两支：<b>纯 1 比特（二值 {−1,+1}）</b>和<b>1.58 比特（三值 {−1,0,+1}）</b>。
+    加一个 0 值（稀疏化）能极大稳定训练，是当前工程上的最优平衡点。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>纯 1-Bit（二值）</th>
+        <th>1.58-Bit（三值）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>权重取值</td>
+        <td class="warn-cell">{−1, +1}</td>
+        <td class="hl-cell">{−1, 0, +1}</td>
+      </tr>
+      <tr>
+        <td>每权重比特数</td>
+        <td>1.0 bit</td>
+        <td>1.58 bit</td>
+      </tr>
+      <tr>
+        <td>压缩比 (vs FP16)</td>
+        <td class="hl-cell">16×</td>
+        <td class="hl-cell">~10×</td>
+      </tr>
+      <tr>
+        <td>训练难度</td>
+        <td class="warn-cell">极高（易崩溃）</td>
+        <td class="hl-cell">中等（0 值缓冲）</td>
+      </tr>
+      <tr>
+        <td>推理性能</td>
+        <td class="warn-cell">略低于全精度</td>
+        <td class="hl-cell">接近全精度</td>
+      </tr>
+      <tr>
+        <td>代表方案</td>
+        <td>Bonsai, OneBit</td>
+        <td>BitNet b1.58</td>
+      </tr>
+      <tr>
+        <td>适用场景</td>
+        <td>极致端侧（手机/嵌入式）</td>
+        <td>通用 CPU 推理 / 服务器</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <canvas id="canvasWeightViz" width="1200" height="460"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>量化模式 <span class="val" id="val-mode">三值 {-1,0,+1}</span></label>
+      <input type="range" id="slider-mode" min="0" max="3" value="1" step="1">
+    </div>
+    <div class="slider-group">
+      <label>稀疏度 (0 占比) <span class="val" id="val-sparsity">30%</span></label>
+      <input type="range" id="slider-sparsity" min="0" max="100" value="30" step="5">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>为什么主流是 1.58 bit？</strong>纯 ±1 太激进：sign 函数直接抹掉所有幅度信息，<strong>训练容易发散</strong>。
+    加一个 0（稀疏连接）给模型留了「不表达」的自由度，大幅稳定训练，且平均每权重仅 1.58 bit，工程上最划算。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: BitNet b1.58 — 工业级三值量化 -->
+<!-- ================================================================ -->
+<div class="section" id="sec-bitnet">
+  <h2><span class="dot purple"></span> 3. BitNet b1.58 — 工业级三值量化</h2>
+  <p class="desc">
+    <b>微软 BitNet b1.58</b> 是最成熟的 1-bit 级 LLM 方案。权重约束为 {−1, 0, +1}，
+    使用 <b>BitLinear</b> 替代标准 nn.Linear，从头训练（非 PTQ 后量化），2B 模型仅 0.4GB。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 BitLinear 量化公式</h3>
+    <div id="formula-bitlinear"></div>
+  </div>
+
+  <canvas id="canvasBitNet" width="1200" height="500"></canvas>
+
+  <div class="info-row" id="info-bitnet">
+    <div class="info-card">BitNet b1.58-2B-4T <div class="val" style="color:#4ade80">2B 参数</div></div>
+    <div class="info-card">模型内存 <div class="val" style="color:#4ade80">0.4 GB</div></div>
+    <div class="info-card">FP16 等量 <div class="val" style="color:#f87171">26 GB</div></div>
+    <div class="info-card">压缩比 <div class="val" style="color:#f59e0b">~65×</div></div>
+    <div class="info-card">CPU 速度 <div class="val" style="color:#4ade80">5–7 tok/s</div></div>
+    <div class="info-card">质量 <div class="val" style="color:#38bdf8">≈ Llama 2 2B</div></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>架构创新：</strong>BitNet 不止量化权重——还用 <b>RMSNorm 替代 LayerNorm</b>、<b>swiGLU 激活</b>、
+    <b>RoPE 位置编码</b>，专为 1-bit 权重从头设计。用 4T token 训练，质量与同规模全精度模型相当。
+  </div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TB
+    subgraph bitnet["BitNet b1.58 架构"]
+        direction TB
+        inp["Input x ∈ R^(d)"]
+        rms["RMSNorm"]
+        bl["BitLinear (三值权重)"]
+        act["swiGLU 激活"]
+        skip["残差连接 +"]
+        out["Output"]
+
+        inp --> rms --> bl --> act --> skip --> out
+        inp --> skip
+
+        subgraph bitlinear["BitLinear 内部"]
+            qt["量化: W → {−1,0,+1}"]
+            scale["按通道缩放: α"]
+            qtz["激活量化: 8-bit"]
+        end
+        bl -.-> bitlinear
+    end
+    style bitnet fill:#0b0e14,stroke:#2a3040,color:#e1e4eb
+    style bitlinear fill:#10b98122,stroke:#10b981,color:#e1e4eb
+    style bl fill:#a78bfa22,stroke:#a78bfa,color:#a78bfa
+    style act fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+    </pre>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Bonsai — 纯1比特端侧 -->
+<!-- ================================================================ -->
+<div class="section" id="sec-bonsai">
+  <h2><span class="dot cyan"></span> 4. Bonsai — 纯 1-Bit 端侧部署最强方案</h2>
+  <p class="desc">
+    <b>PrismML（加州理工孵化）</b> 2026 年 3 月开源 Bonsai。权重严格 {−1, +1}，无 0——真正的 1 比特。
+    <b>Bonsai 8B</b> 仅 1.15GB，iPhone 上跑出 <b>44 tok/s</b> 的实时速度。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 Bonsai 纯二值权重</h3>
+    <div id="formula-bonsai"></div>
+  </div>
+
+  <canvas id="canvasBonsai" width="1200" height="480"></canvas>
+
+  <div class="info-row" id="info-bonsai">
+    <div class="info-card">Bonsai 8B <div class="val" style="color:#4ade80">8.2B 参数</div></div>
+    <div class="info-card">模型内存 <div class="val" style="color:#4ade80">1.15 GB</div></div>
+    <div class="info-card">FP16 等量 <div class="val" style="color:#f87171">130 GB</div></div>
+    <div class="info-card">压缩比 <div class="val" style="color:#f59e0b">~113×</div></div>
+    <div class="info-card">iPhone 速度 <div class="val" style="color:#4ade80">44 tok/s</div></div>
+    <div class="info-card">精度 <div class="val" style="color:#38bdf8">接近 8B 全精度</div></div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>真正的端侧 AI：</strong>Bonsai 是当前<b>唯一的纯 1-bit 工业级大模型</b>。
+    8B 参数在 iPhone 上跑 44 tok/s 意味着<b>实时对话毫无压力</b>。
+    这为离线、隐私保护的端侧 AI 铺平了道路。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: STE 训练技术 -->
+<!-- ================================================================ -->
+<div class="section" id="sec-ste">
+  <h2><span class="dot orange"></span> 5. 核心技术：STE 与混合精度训练</h2>
+  <p class="desc">
+    1-bit 量化的核心挑战：<b>sign() 函数导数几乎处处为 0，梯度无法回传</b>。
+    解决方案是 <b>STE（Straight-Through Estimator）</b>：前向用硬量化，反向直接拷贝梯度。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 STE 梯度估计</h3>
+    <div id="formula-ste"></div>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="tab-ste-viz">STE 可视化</button>
+    <button class="tab-btn" data-tab="tab-ste-code">伪代码</button>
+  </div>
+
+  <div id="tab-ste-viz" class="tab-content">
+    <canvas id="canvasSTE" width="1200" height="480"></canvas>
+  </div>
+
+  <div id="tab-ste-code" class="tab-content" style="display:none;">
+    <div class="code-block">
+<span class="co">// 1-Bit 量化训练伪代码 (PyTorch 风格)</span>
+<span class="kw">class</span> <span class="fn">BitLinear</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        <span class="co">// 1. 权重量化 (前向: 硬量化)</span>
+        alpha = self.W.abs().mean(dim=-<span class="nm">1</span>, keepdim=<span class="nm">True</span>)
+        W_q = sign(self.W) * alpha     <span class="co">// 纯 1-bit: {−α, +α}</span>
+        <span class="co">// 或三值: W_q = round(clip(self.W/alpha, −1, 1)) * alpha</span>
+
+        <span class="co">// 2. 激活动态量化 (8-bit)</span>
+        x_q = quantize_8bit(x, block_size=<span class="nm">128</span>)
+
+        <span class="co">// 3. 低精度矩阵乘法</span>
+        out = W_q @ x_q
+
+        <span class="co">// 4. 反向传播时 W_q.grad = W.grad (STE 直通!)</span>
+        <span class="kw">return</span> out + self.bias
+
+<span class="co">// STE 实现: 前向用量化值, 反向传梯度给全精度权重</span>
+<span class="kw">def</span> <span class="fn">ste_quantize</span>(w, bits=<span class="nm">1</span>):
+    w_q = quantize(w, bits)           <span class="co">// 硬量化: sign() 或 round()</span>
+    <span class="kw">return</span> w + (w_q - w).detach()   <span class="co">// 前向=w_q, 反向梯度流过 w</span>
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>STE 的直觉：</strong>前向传播时，量化函数像一个「硬开关」，输出确切的 ±1/0；
+    但反向传播时，梯度直接穿过量化函数（当成恒等映射），更新底层的全精度权重副本。
+    <strong>这样模型始终维护一份 FP16 的 latent weights</strong>，训练稳定且质量高。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: 性能对比与总结 -->
+<!-- ================================================================ -->
+<div class="section" id="sec-summary">
+  <h2><span class="dot red"></span> 6. 性能全景对比与总结</h2>
+  <p class="desc">
+    从 FP32 到 1-Bit，内存与速度的跨度超过 <b>100×</b>。下面展示各精度级别的模型大小和典型推理速度。
+  </p>
+
+  <canvas id="canvasBar" width="1200" height="540"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>基准参数量 <span class="val" id="val-base-params">7B</span></label>
+      <input type="range" id="slider-base-params" min="0" max="12" value="3" step="1">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>方案</th>
+        <th>精度</th>
+        <th>7B 模型大小</th>
+        <th>CPU 速度</th>
+        <th>质量 vs FP16</th>
+        <th>成熟度</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>标准 LLM</b></td>
+        <td>FP16</td>
+        <td class="warn-cell">14 GB</td>
+        <td>—</td>
+        <td>基准</td>
+        <td>完全成熟</td>
+      </tr>
+      <tr>
+        <td><b>INT4 量化 (GPTQ/AWQ)</b></td>
+        <td>4-bit</td>
+        <td>~4 GB</td>
+        <td>2–3 tok/s</td>
+        <td>轻微下降</td>
+        <td>广泛使用</td>
+      </tr>
+      <tr>
+        <td><b>BitNet b1.58</b></td>
+        <td>1.58-bit</td>
+        <td class="hl-cell">~0.9 GB</td>
+        <td>5–7 tok/s</td>
+        <td>≈ 同规模 FP16</td>
+        <td>工业可用</td>
+      </tr>
+      <tr>
+        <td><b>Bonsai</b></td>
+        <td>1-bit</td>
+        <td class="hl-cell">~0.7 GB</td>
+        <td class="hl-cell">44 tok/s (iPhone)</td>
+        <td>接近 8B FP16</td>
+        <td>2026 开源</td>
+      </tr>
+      <tr>
+        <td><b>OneBit</b></td>
+        <td>1-bit</td>
+        <td class="hl-cell">~0.7 GB</td>
+        <td>—</td>
+        <td>81%+ 全精度性能</td>
+        <td>学术验证</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>总结：</strong>1-Bit 量化已从学术概念走向<b>生产可用</b>。
+    <strong>BitNet b1.58</strong>（1.58 bit）是当前最成熟的方案，CPU 可跑 2B 模型；
+    <strong>Bonsai</strong>（纯 1 bit）在端侧做到实时对话。核心趋势：<b>2025–2026 年，端侧 AI 将因 1-Bit 量化而爆发</b>。
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  🧊 1-Bit 量化交互可视化 · Created for Learning · 基于 BitNet / Bonsai / OneBit 开源方案
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- KaTeX Render -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  // Compression ratio
+  katex.render(String.raw`
+  \text{压缩比} = \frac{\text{原始位宽}}{\text{量化位宽}},\quad
+  \text{模型大小} = \frac{N_{\text{params}} \times b_{\text{quant}}}{8}\ \text{bytes}
+  \qquad
+  \begin{aligned}
+  \text{FP16: } &7\text{B} \times 16/8 = \mathbf{14\ \text{GB}} \\[2pt]
+  \text{1.58-bit: } &7\text{B} \times 1.58/8 = \mathbf{1.38\ \text{GB}} \\[2pt]
+  \text{1-bit: } &7\text{B} \times 1/8 = \mathbf{0.875\ \text{GB}}
+  \end{aligned}
+  `, document.getElementById('formula-compression'), { displayMode: true });
+
+  // BitLinear
+  katex.render(String.raw`
+  \begin{aligned}
+  \widetilde{W} &= \operatorname{RoundClip}\!\left(\frac{W}{\alpha+\epsilon},\; -1,\; 1\right) \quad\Rightarrow\quad \widetilde{W}_{ij} \in \{-1, 0, +1\} \\[4pt]
+  \alpha &= \frac{1}{nm}\sum_{i,j}|W_{ij}| \quad\text{(逐层缩放因子)} \\[4pt]
+  Y &= \widetilde{W} \cdot \operatorname{Quant}_8(X)
+  \end{aligned}
+  `, document.getElementById('formula-bitlinear'), { displayMode: true });
+
+  // Bonsai
+  katex.render(String.raw`
+  \begin{aligned}
+  W^{\text{binary}} &= \operatorname{sign}(W) \in \{-1, +1\}^{d_{\text{out}} \times d_{\text{in}}} \quad\text{(纯二值，无 0)} \\[4pt]
+  \alpha_k &= \frac{1}{d_{\text{in}}}\sum_{j=1}^{d_{\text{in}}} |W_{kj}| \quad\text{(逐行缩放)} \\[4pt]
+  Y &= (\alpha \odot W^{\text{binary}}) \cdot X
+  \end{aligned}
+  `, document.getElementById('formula-bonsai'), { displayMode: true });
+
+  // STE
+  katex.render(String.raw`
+  \begin{aligned}
+  &\textbf{前向:}\quad y = q(w) = \begin{cases} +1 & w \ge 0 \\ -1 & w < 0 \end{cases} \quad\text{(硬量化，导数=0)} \\[6pt]
+  &\textbf{反向 (STE):}\quad \frac{\partial \mathcal{L}}{\partial w} = \frac{\partial \mathcal{L}}{\partial y} \cdot \underbrace{\frac{\partial y}{\partial w}}_{\text{当做 } 1} = \frac{\partial \mathcal{L}}{\partial y} \quad\text{(直接拷贝梯度!)} \\[6pt]
+  &\textbf{混合精度:}\quad \text{权重(1/1.58-bit) + 激活(8-bit) + 梯度(FP16) + 优化器状态(FP16)}
+  \end{aligned}
+  `, document.getElementById('formula-ste'), { displayMode: true });
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: Memory Visualization -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasMemory');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const paramSizes = [0.1, 0.5, 1, 2, 3, 4, 7, 8, 13, 20, 30, 40, 70];
+  const bitLabels = ['1 bit', '1.58 bit', '2 bit', '4 bit', '8 bit', '16 bit'];
+  const bitValues = [1, 1.58, 2, 4, 8, 16];
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const pi = +document.getElementById('slider-params').value;
+    const bi = +document.getElementById('slider-bits').value;
+    const paramsB = paramSizes[pi];
+    const bits = bitValues[bi];
+    const label = bitLabels[bi];
+
+    document.getElementById('val-params').textContent = paramsB >= 1 ? paramsB + 'B' : (paramsB * 1000).toFixed(0) + 'M';
+    document.getElementById('val-bits').textContent = label;
+
+    const margin = { top: 50, left: 180, right: 280, bottom: 50 };
+    const bh = H - margin.top - margin.bottom;
+    const bw = Math.min(W - margin.left - margin.right - 200, 520);
+
+    // Draw bar: FP16 vs Quantized
+    const fp16GB = paramsB * 2; // FP16 = 2 bytes per param
+    const quantGB = paramsB * bits / 8;
+    const maxGB = Math.max(fp16GB, quantGB) * 1.3;
+
+    const barH = 60;
+    const gap = 30;
+    const startY = margin.top + 30;
+
+    // FP16 bar
+    const fp16W = (fp16GB / maxGB) * bw;
+    const fp16Grad = ctx.createLinearGradient(margin.left, startY, margin.left + fp16W, startY);
+    fp16Grad.addColorStop(0, '#f87171');
+    fp16Grad.addColorStop(1, '#fbbf24');
+    ctx.fillStyle = fp16Grad;
+    ctx.fillRect(margin.left, startY, fp16W, barH);
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(margin.left, startY, fp16W, barH);
+    ctx.fillStyle = '#0b0e14';
+    ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('FP16: ' + fp16GB.toFixed(1) + ' GB', margin.left + 12, startY + barH/2 + 7);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('标准精度 (16-bit)', margin.left - 16, startY + barH/2 + 7);
+
+    // Quantized bar
+    const qY = startY + barH + gap;
+    const qW = Math.max(20, (quantGB / maxGB) * bw);
+    const qGrad = ctx.createLinearGradient(margin.left, qY, margin.left + qW, qY);
+    qGrad.addColorStop(0, '#10b981');
+    qGrad.addColorStop(1, '#34d399');
+    ctx.fillStyle = qGrad;
+    ctx.fillRect(margin.left, qY, qW, barH);
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(margin.left, qY, qW, barH);
+    ctx.fillStyle = '#0b0e14';
+    ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(label + ': ' + quantGB.toFixed(2) + ' GB', margin.left + 12, qY + barH/2 + 7);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#e1e4eb';
+    ctx.fillText(label + ' 量化', margin.left - 16, qY + barH/2 + 7);
+
+    // Compression ratio arrow
+    const ratio = (fp16GB / quantGB).toFixed(1);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 26px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    const rx = margin.left + bw + 24;
+    ctx.fillText('压缩比: ' + ratio + '×', rx, startY + barH/2 + 7);
+    ctx.fillText('节省: ' + ((1 - quantGB/fp16GB)*100).toFixed(0) + '%', rx, qY + barH/2 + 7);
+    ctx.font = '22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillStyle = '#8e96a9';
+    ctx.fillText(paramsB + 'B 参数', rx, startY + barH + 14);
+    ctx.fillText(bits.toFixed(bits < 2 ? 0 : 2) + ' bit/weight', rx, qY + barH + 14);
+
+    // Device annotations
+    const devices = [
+      { label: '🖥 A100 80GB', y: startY - 8, maxGB: 80 },
+      { label: '💻 RTX 4090 24GB', y: startY - 8, maxGB: 24 },
+      { label: '📱 iPhone 16 8GB', y: startY - 8, maxGB: 8 },
+      { label: '🥧 Raspberry Pi 5 8GB', y: startY - 8, maxGB: 8 },
+    ];
+    devices.forEach(d => {
+      const x = margin.left + (d.maxGB / maxGB) * bw;
+      if (x < margin.left + bw) {
+        ctx.strokeStyle = '#8e96a9';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 5]);
+        ctx.beginPath();
+        ctx.moveTo(x, startY - 4);
+        ctx.lineTo(x, qY + barH + 4);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#8e96a9';
+        ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(d.label, x, startY - 12);
+      }
+    });
+
+    // Info row
+    const GBtoMB = (v) => v < 1 ? (v*1024).toFixed(0) + ' MB' : v.toFixed(2) + ' GB';
+    document.getElementById('info-memory').innerHTML = `
+      <div class="info-card">参数量 <div class="val">${paramsB >= 1 ? paramsB + 'B' : (paramsB*1000).toFixed(0) + 'M'}</div></div>
+      <div class="info-card">FP16 大小 <div class="val" style="color:#f87171">${GBtoMB(fp16GB)}</div></div>
+      <div class="info-card">${label} 大小 <div class="val" style="color:#4ade80">${GBtoMB(quantGB)}</div></div>
+      <div class="info-card">压缩比 <div class="val" style="color:#f59e0b">${ratio}×</div></div>
+      <div class="info-card">节省 <div class="val" style="color:#4ade80">${((1-quantGB/fp16GB)*100).toFixed(0)}%</div></div>
+      <div class="info-card">bits/weight <div class="val">${bits.toFixed(bits<2?0:2)}</div></div>
+    `;
+  }
+
+  document.getElementById('slider-params').addEventListener('input', draw);
+  document.getElementById('slider-bits').addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: Weight Visualization -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasWeightViz');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const modeNames = ['纯二值 {−1,+1}', '三值 {−1,0,+1}', 'INT4 (16值)', 'FP16'];
+  let seed = 42;
+  function pseudoRandom() { seed = (seed * 16807 + 0) % 2147483647; return (seed - 1) / 2147483646; }
+
+  function generateWeights(rows, cols, mode, sparsity) {
+    const w = [];
+    // Generate latent continuous weights
+    const latent = [];
+    for (let r = 0; r < rows; r++) {
+      latent[r] = [];
+      for (let c = 0; c < cols; c++) {
+        latent[r][c] = (pseudoRandom() * 2 - 1) * 3; // ~N(0,1) scaled
+      }
+    }
+
+    // Quantize based on mode
+    for (let r = 0; r < rows; r++) {
+      w[r] = [];
+      for (let c = 0; c < cols; c++) {
+        const v = latent[r][c];
+        if (mode === 0) {
+          // Pure binary {−1,+1}
+          w[r][c] = v >= 0 ? 1 : -1;
+        } else if (mode === 1) {
+          // Ternary {−1,0,+1}
+          const threshold = sparsity / 100;
+          const absV = Math.abs(v);
+          const maxAbs = 3;
+          if (absV < threshold * maxAbs) w[r][c] = 0;
+          else w[r][c] = v >= 0 ? 1 : -1;
+        } else if (mode === 2) {
+          // INT4: 16 levels
+          w[r][c] = Math.round(((v / 3) * 7 + 8)) / 15 * 2 - 1;
+        } else {
+          // FP16
+          w[r][c] = v;
+        }
+      }
+    }
+    return w;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const mode = +document.getElementById('slider-mode').value;
+    const sparsity = +document.getElementById('slider-sparsity').value;
+
+    document.getElementById('val-mode').textContent = modeNames[mode];
+    document.getElementById('val-sparsity').textContent = sparsity + '%';
+
+    const rows = 20, cols = 36;
+    const weights = generateWeights(rows, cols, mode, sparsity);
+
+    const margin = { top: 40, left: 30, right: 40, bottom: 30 };
+    const availW = W - margin.left - margin.right;
+    const availH = H - margin.top - margin.bottom;
+    const cellSize = Math.min(availW / cols, availH / rows);
+    const startX = margin.left + (availW - cols * cellSize) / 2;
+    const startY = margin.top + (availH - rows * cellSize) / 2;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const v = weights[r][c];
+        let fill;
+        if (v === 0) {
+          fill = '#1e2332'; // zero -> dark gray
+        } else if (v > 0) {
+          const intensity = Math.min(1, Math.abs(v));
+          fill = `hsl(160, ${60 + intensity * 40}%, ${20 + intensity * 35}%)`;
+        } else {
+          const intensity = Math.min(1, Math.abs(v));
+          fill = `hsl(0, ${50 + intensity * 50}%, ${20 + intensity * 35}%)`;
+        }
+        ctx.fillStyle = fill;
+        ctx.fillRect(startX + c * cellSize, startY + r * cellSize, cellSize - 1, cellSize - 1);
+      }
+    }
+
+    // Legend
+    const lx = startX + cols * cellSize + 20;
+    const ly = startY;
+    ctx.textAlign = 'left';
+    ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+
+    const legend = [
+      { color: '#4ade80', label: '+1 (正向)' },
+      { color: '#1e2332', label: '0 (稀疏/关闭)' },
+      { color: '#f87171', label: '−1 (负向)' },
+    ];
+    legend.forEach((item, i) => {
+      const y = ly + i * 24;
+      ctx.fillStyle = item.color;
+      ctx.fillRect(lx, y, 16, 16);
+      ctx.fillStyle = '#e1e4eb';
+      ctx.fillText(item.label, lx + 22, y + 13);
+    });
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('权重矩阵 (20×36) — ' + modeNames[mode], W/2, startY - 10);
+
+    // Stats
+    ctx.textAlign = 'left';
+    ctx.font = '18px "JetBrains Mono", monospace';
+    const negCount = weights.flat().filter(v => v < 0).length;
+    const zeroCount = weights.flat().filter(v => v === 0).length;
+    const posCount = weights.flat().filter(v => v > 0).length;
+    const total = rows * cols;
+    ctx.fillStyle = '#f87171'; ctx.fillText('−1: ' + (negCount/total*100).toFixed(0) + '%', lx, ly + 90);
+    ctx.fillStyle = '#8e96a9'; ctx.fillText('0: ' + (zeroCount/total*100).toFixed(0) + '%', lx, ly + 112);
+    ctx.fillStyle = '#4ade80'; ctx.fillText('+1: ' + (posCount/total*100).toFixed(0) + '%', lx, ly + 134);
+  }
+
+  document.getElementById('slider-mode').addEventListener('input', draw);
+  document.getElementById('slider-sparsity').addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: BitNet Architecture Visual -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasBitNet');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const margin = { top: 30, left: 60, right: 300, bottom: 30 };
+    const bw = W - margin.left - margin.right;
+
+    // Draw comparison: FP16 Linear vs BitLinear
+    const blockH = 100, gap = 40;
+    const startY = margin.top + 30;
+
+    // Left side: weight cube metaphor
+    const cubeX = margin.left;
+    const cubeW = bw * 0.55;
+
+    // FP16 Weight Matrix metaphor (large, dense)
+    const fpY = startY;
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('标准 FP16 Linear', cubeX, fpY);
+
+    const fpRows = 10, fpCols = 20;
+    const fpCell = 12, fpGap = 1;
+    const fpMatrixX = cubeX + 20;
+    const fpMatrixY = fpY + 30;
+    for (let r = 0; r < fpRows; r++) {
+      for (let c = 0; c < fpCols; c++) {
+        const hue = (r * fpCols + c) / (fpRows * fpCols) * 360;
+        ctx.fillStyle = `hsl(${hue}, 60%, ${40 + (r/fpRows)*30}%)`;
+        ctx.fillRect(fpMatrixX + c * (fpCell + fpGap), fpMatrixY + r * (fpCell + fpGap), fpCell, fpCell);
+      }
+    }
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('每个权重 = 16 bits，连续值', fpMatrixX, fpMatrixY + fpRows * (fpCell + fpGap) + 22);
+
+    // BitLinear Weight Matrix (tiny, ternary)
+    const blY = fpMatrixY + fpRows * (fpCell + fpGap) + 60;
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('BitNet BitLinear (1.58-bit)', cubeX, blY);
+
+    const blRows = 10, blCols = 20;
+    const blCell = 12, blGap = 1;
+    const blMatrixX = cubeX + 20;
+    const blMatrixY = blY + 30;
+    const values = [-1, 0, 1];
+    for (let r = 0; r < blRows; r++) {
+      for (let c = 0; c < blCols; c++) {
+        const v = values[Math.floor(Math.random() * 3)];
+        if (v === 1) ctx.fillStyle = '#4ade80';
+        else if (v === -1) ctx.fillStyle = '#f87171';
+        else ctx.fillStyle = '#1e2332';
+        ctx.fillRect(blMatrixX + c * (blCell + blGap), blMatrixY + r * (blCell + blGap), blCell, blCell);
+      }
+    }
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('每个权重 ∈ {−1, 0, +1}，1.58 bits', blMatrixX, blMatrixY + blRows * (blCell + blGap) + 22);
+
+    // Compression arrow
+    const arrowY = fpMatrixY + fpRows * (fpCell + fpGap) + 10;
+    const arrowEndY = blY - 10;
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(fpMatrixX + fpCols * (fpCell + fpGap) / 2, arrowY);
+    ctx.lineTo(fpMatrixX + fpCols * (fpCell + fpGap) / 2, arrowEndY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f59e0b';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('压缩 ~10×', fpMatrixX + fpCols * (fpCell + fpGap) / 2, (arrowY + arrowEndY) / 2);
+
+    // Right side: stats
+    const rx = cubeX + bw * 0.55 + 40;
+    ctx.textAlign = 'left';
+    const stats = [
+      { label: 'FP16 权重存储', value: 'N × 16 bits', color: '#f87171' },
+      { label: 'BitLinear 存储', value: 'N × 1.58 bits', color: '#4ade80' },
+      { label: '', value: '', color: '' },
+      { label: '激活量化', value: '8-bit 动态', color: '#38bdf8' },
+      { label: '归一化', value: 'RMSNorm (无偏置)', color: '#a78bfa' },
+      { label: '激活函数', value: 'swiGLU', color: '#f59e0b' },
+    ];
+    stats.forEach((st, i) => {
+      const y = startY + i * 36;
+      if (st.label) {
+        ctx.fillStyle = '#8e96a9';
+        ctx.font = '19px "Segoe UI", "PingFang SC", sans-serif';
+        ctx.fillText(st.label, rx, y);
+        ctx.fillStyle = st.color;
+        ctx.font = 'bold 19px "JetBrains Mono", monospace';
+        ctx.fillText(st.value, rx + 200, y);
+      }
+    });
+
+    // Bottom annotation
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('⭐ BitNet 从头用 1.58-bit 训练（非后量化），模型内部权重原生就是三值', rx, blMatrixY + 60);
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: Bonsai Visual -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasBonsai');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const margin = { top: 40, left: 60, right: 30, bottom: 30 };
+
+    // Memory comparison for 8B model
+    const barH = 55;
+    const barGap = 35;
+    const startY = margin.top + 20;
+    const bw = W - margin.left - margin.right - 200;
+
+    const comparisons = [
+      { label: 'FP16 (标准)', size: 130, color: '#f87171', barW: 1 },
+      { label: 'INT4 量化', size: 30, color: '#f59e0b', barW: 30 / 130 },
+      { label: 'Bonsai 1-Bit', size: 1.15, color: '#4ade80', barW: 1.15 / 130 },
+    ];
+
+    comparisons.forEach((comp, i) => {
+      const y = startY + i * (barH + barGap);
+      const barWidth = Math.max(30, comp.barW * bw);
+
+      const grad = ctx.createLinearGradient(margin.left, y, margin.left + barWidth, y);
+      grad.addColorStop(0, comp.color);
+      grad.addColorStop(1, comp.color + '88');
+      ctx.fillStyle = grad;
+      ctx.fillRect(margin.left, y, barWidth, barH);
+      ctx.strokeStyle = comp.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(margin.left, y, barWidth, barH);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(comp.label + ': ' + comp.size + ' GB', margin.left + barWidth + 14, y + barH/2 + 7);
+    });
+
+    // Speed annotations
+    const speedY = startY + comparisons.length * (barH + barGap) + 20;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('🚀 推理速度对比 (8B 模型)', margin.left, speedY);
+
+    const platforms = [
+      { device: '📱 iPhone 16', fps: '44 tok/s', fpsColor: '#4ade80' },
+      { device: '💻 M2 MacBook', fps: '60+ tok/s', fpsColor: '#4ade80' },
+      { device: '🖥 服务器 CPU (32核)', fps: '80+ tok/s', fpsColor: '#4ade80' },
+    ];
+    platforms.forEach((p, i) => {
+      const y = speedY + 30 + i * 30;
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(p.device, margin.left + 20, y);
+      ctx.fillStyle = p.fpsColor;
+      ctx.font = 'bold 18px "JetBrains Mono", monospace';
+      ctx.fillText(p.fps, margin.left + 260, y);
+    });
+  }
+
+  draw();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: STE Visualization -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasSTE');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  let t = 0;
+  let animId = null;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const margin = { top: 40, left: 80, right: 300, bottom: 40 };
+    const pw = W - margin.left - margin.right;
+    const ph = H - margin.top - margin.bottom;
+
+    // Coordinate system
+    const x0 = margin.left;
+    const y0 = margin.top + ph / 2;
+    const xEnd = margin.left + pw;
+    const xScale = pw / 10;
+
+    // Axes
+    ctx.strokeStyle = '#2a3040';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, margin.top); ctx.lineTo(x0, H - margin.bottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(xEnd, y0); ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('x (浮点权重)', xEnd, y0 + 30);
+    ctx.fillText('y = sign(x)', x0 - 20, margin.top + 10);
+    ctx.fillText('+1', x0 - 30, y0 - ph/3);
+    ctx.fillText('−1', x0 - 30, y0 + ph/3);
+    ctx.fillText('0', x0 - 20, y0 + 6);
+
+    // Grid
+    ctx.strokeStyle = '#1e2332';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([2, 4]);
+    for (let i = -5; i <= 5; i++) {
+      const gx = x0 + (i + 5) * xScale;
+      ctx.beginPath(); ctx.moveTo(gx, margin.top); ctx.lineTo(gx, H - margin.bottom); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // sign function (hard quantization) — red
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    // x < 0: y = -1
+    ctx.moveTo(x0, y0 + ph/3);
+    ctx.lineTo(x0 + 5 * xScale, y0 + ph/3);
+    // x = 0: jump
+    ctx.moveTo(x0 + 5 * xScale, y0);
+    // x > 0: y = +1
+    ctx.moveTo(x0 + 5 * xScale, y0 - ph/3);
+    ctx.lineTo(xEnd, y0 - ph/3);
+    ctx.stroke();
+
+    // Open circles at jump points
+    ctx.fillStyle = '#f87171';
+    ctx.beginPath();
+    ctx.arc(x0 + 5 * xScale, y0 + ph/3, 6, 0, Math.PI * 2); ctx.fill(); // left endpoint
+    ctx.beginPath();
+    ctx.arc(x0 + 5 * xScale, y0 - ph/3, 6, 0, Math.PI * 2); ctx.fill(); // right endpoint
+    // Closed circle at x=0
+    ctx.beginPath();
+    ctx.arc(x0 + 5 * xScale, y0, 6, 0, Math.PI * 2); ctx.fill();
+
+    // STE gradient path (green dashed) — identity
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0 - ph/3);
+    ctx.lineTo(xEnd, y0 - ph/3);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Animated point showing forward vs backward
+    const animX = x0 + ((Math.sin(t * 0.03) + 1) / 2) * pw;
+    const forwardY = Math.sin(t * 0.03) > 0 ? y0 - ph/3 : y0 + ph/3;
+    const backwardX = animX;
+    const backwardY = y0 - ph/3 * Math.sin(t * 0.03); // STE: identity mapping
+
+    // Forward point (hard quantized)
+    ctx.fillStyle = '#f87171';
+    ctx.beginPath();
+    ctx.arc(animX, forwardY, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(animX, forwardY);
+    ctx.setLineDash([3, 3]);
+    ctx.lineTo(animX, backwardY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // STE point (gradient passes through)
+    ctx.fillStyle = '#4ade80';
+    ctx.beginPath();
+    ctx.arc(backwardX, backwardY, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Labels
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('前向: y = sign(x) (硬量化)', x0 + pw * 0.55, margin.top + 20);
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText('反向 (STE): ∂L/∂x = ∂L/∂y (直通!)', x0 + pw * 0.55, margin.top + 44);
+
+    // Right panel: formula
+    const rx = xEnd + 20;
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '17px "JetBrains Mono", monospace';
+    ctx.fillText('前向: y_q = sign(w)', rx, margin.top + 20);
+    ctx.fillText('反向: ∇w = ∇y_q', rx, margin.top + 44);
+    ctx.fillText('  (当成 ∂(sign)/∂w = 1)', rx, margin.top + 66);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('⭐ 核心思想:', rx, margin.top + 100);
+    ctx.fillText('  前向用硬量化', rx, margin.top + 122);
+    ctx.fillText('  反向直接传梯度', rx, margin.top + 144);
+    ctx.fillText('  让浮点权重缓慢更新', rx, margin.top + 166);
+
+    t++;
+    animId = requestAnimationFrame(draw);
+  }
+
+  draw();
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => { if (animId) cancelAnimationFrame(animId); });
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 6: Performance Bar Chart -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasBar');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const paramSizes = [0.1, 0.5, 1, 2, 3, 4, 7, 8, 13, 20, 30, 40, 70];
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const pi = +document.getElementById('slider-base-params').value;
+    const paramsB = paramSizes[pi];
+
+    document.getElementById('val-base-params').textContent = paramsB >= 1 ? paramsB + 'B' : (paramsB * 1000).toFixed(0) + 'M';
+
+    const margin = { top: 50, left: 80, right: 30, bottom: 70 };
+    const bw = W - margin.left - margin.right;
+    const bh = H - margin.top - margin.bottom;
+
+    const configs = [
+      { name: 'FP32', bits: 32, color: '#f87171' },
+      { name: 'FP16', bits: 16, color: '#fbbf24' },
+      { name: 'INT8', bits: 8, color: '#f59e0b' },
+      { name: 'INT4', bits: 4, color: '#38bdf8' },
+      { name: '1.58-bit\n(BitNet)', bits: 1.58, color: '#a78bfa' },
+      { name: '1-bit\n(Bonsai)', bits: 1, color: '#4ade80' },
+    ];
+
+    const maxGB = paramsB * 4; // FP32 max
+
+    const barW = Math.min(100, (bw / configs.length) * 0.7);
+    const gap = (bw - configs.length * barW) / (configs.length + 1);
+
+    configs.forEach((cfg, i) => {
+      const x = margin.left + gap + i * (barW + gap);
+      const gb = paramsB * cfg.bits / 8;
+      const h = Math.max(8, (gb / maxGB) * bh);
+      const y = margin.top + bh - h;
+
+      const grad = ctx.createLinearGradient(x, y, x, margin.top + bh);
+      grad.addColorStop(0, cfg.color);
+      grad.addColorStop(1, cfg.color + '44');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, barW, h);
+      ctx.strokeStyle = cfg.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, barW, h);
+
+      // Value on top
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 18px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      const displayGB = gb < 1 ? (gb * 1024).toFixed(0) + ' MB' : gb.toFixed(1) + ' GB';
+      ctx.fillText(displayGB, x + barW/2, y - 8);
+
+      // Label at bottom
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+      const lines = cfg.name.split('\n');
+      lines.forEach((line, li) => {
+        ctx.fillText(line, x + barW/2, margin.top + bh + 22 + li * 22);
+      });
+    });
+
+    // Compression ratio annotations
+    const fp16GB = paramsB * 2;
+    const bonsaiGB = paramsB * 1 / 8;
+    const ratio = (fp16GB / bonsaiGB).toFixed(1);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('FP16 → 1-Bit 压缩比: ' + ratio + '×', W/2, margin.top - 12);
+  }
+
+  document.getElementById('slider-base-params').addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- Tab switching -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  document.querySelectorAll('.tab-btn').forEach(tab => {
+    tab.addEventListener('click', function() {
+      const section = this.closest('.section');
+      section.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.getAttribute('data-tab');
+      section.querySelectorAll('.tab-content').forEach(c => c.style.display = c.id === target ? 'block' : 'none');
+    });
+  });
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- Mermaid Init -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#0d1a14',
+    primaryTextColor: '#e1e4eb',
+    primaryBorderColor: '#10b981',
+    lineColor: '#ffffff',
+    secondaryColor: '#16213e',
+    tertiaryColor: '#0b0e14',
+    fontSize: '18px',
+    noteBkgColor: '#1e2332',
+    noteTextColor: '#e1e4eb',
+    noteBorderColor: '#10b981',
+    sequenceNumberColor: '#10b981',
+  },
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: 'basis',
+    padding: 18,
+  },
+  sequence: {
+    useMaxWidth: true,
+    boxMargin: 10,
+    mirrorActors: false,
+  },
+});
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- Slider progress fill -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoE 混合专家模型 — 稀疏门控、专家路由与负载均衡</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #10b981;
+    --accent2: #34d399;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --orange: #fb923c;
+    --yellow: #fbbf24;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a2030 50%, #0f1219 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--cyan), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.green  { background: var(--accent);  box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);    box-shadow: 0 0 10px var(--blue); }
+  .dot.purple { background: var(--purple);  box-shadow: 0 0 10px var(--purple); }
+  .dot.orange { background: var(--orange);  box-shadow: 0 0 10px var(--orange); }
+  .dot.cyan   { background: var(--cyan);    box-shadow: 0 0 10px var(--cyan); }
+  .dot.pink   { background: var(--pink);    box-shadow: 0 0 10px var(--pink); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+
+    -webkit-appearance: none;
+
+    appearance: none;
+
+    width: 100%;
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+
+    outline: none;
+
+    cursor: pointer;
+
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: transparent;
+
+  }
+
+  input[type=range]::-moz-range-track {
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: var(--border);
+
+    border: none;
+
+  }
+
+  input[type=range]::-moz-range-progress {
+
+    height: 8px;
+
+    border-radius: 4px 0 0 4px;
+
+    background: var(--accent);
+
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+
+    -webkit-appearance: none;
+
+    appearance: none;
+
+    width: 24px; height: 24px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    border: 2px solid var(--accent);
+
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.15), 0 2px 6px rgba(0,0,0,0.25);
+
+    margin-top: -8px;
+
+    transition: box-shadow 0.2s, transform 0.15s;
+
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+
+    box-shadow: 0 0 0 8px rgba(16,185,129,0.2), 0 2px 8px rgba(0,0,0,0.3);
+
+    transform: scale(1.1);
+
+  }
+
+  input[type=range]::-moz-range-thumb {
+
+    width: 24px; height: 24px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    border: 2px solid var(--accent);
+
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.15), 0 2px 6px rgba(0,0,0,0.25);
+
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #1a2a25; }
+  .btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(16,185,129,0.3);
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Comparison table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--green); font-weight: 600; }
+  .cmp-table .warn-cell { color: var(--red); font-weight: 600; }
+
+  /* ── Legend ── */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 16px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 18px; height: 18px; border-radius: 3px; }
+
+  /* ── Model cards ── */
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .model-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+  }
+  .model-card h3 {
+    font-size: 1.2rem;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .model-card .model-stat {
+    display: inline-block;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--accent);
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.2);
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin: 2px 4px 2px 0;
+  }
+  .model-card p { color: var(--text2); font-size: 16px; margin-top: 6px; line-height: 1.6; }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+  }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧩 MoE · 混合专家模型</h1>
+  <p>条件计算 + 稀疏激活：每个 Token 只激活一小部分专家，在参数总量爆炸式增长的同时保持推理成本可控</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: What is MoE -->
+<!-- ================================================================ -->
+<div class="section" id="sec-overview">
+  <h2><span class="dot green"></span> 1. 什么是混合专家模型 (MoE)？</h2>
+  <p class="desc">
+    MoE 是一种<b>条件计算 (Conditional Computation)</b> 架构：模型包含 N 个独立的"专家"子网络，
+    每个 Token 经由<b>门控路由器 (Router/Gate)</b> 动态选择 <b>Top-K 个专家</b> 参与计算。
+    最终输出是各专家输出的<b>加权求和</b>。核心优势：<b>参数量可以极大扩展而推理 FLOPs 几乎不变</b>。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 MoE 核心公式</h3>
+    <div id="formula-moe-core"></div>
+  </div>
+
+  <canvas id="canvasArch" width="1200" height="500"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>专家总数 N <span class="val" id="val-N-arch">8</span></label>
+      <input type="range" id="slider-N-arch" min="4" max="16" value="8" step="2">
+    </div>
+    <div class="slider-group">
+      <label>Top-K 激活数 <span class="val" id="val-K-arch">2</span></label>
+      <input type="range" id="slider-K-arch" min="1" max="4" value="2" step="1">
+    </div>
+    <div class="slider-group">
+      <label>Token 数量 <span class="val" id="val-tokens-arch">12</span></label>
+      <input type="range" id="slider-tokens-arch" min="4" max="20" value="12" step="2">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-arch"></div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>想象一个由 N 位专家组成的委员会。每个问题 (Token) 到达时，门控路由器判断"谁最擅长回答这个问题"，
+    只派给 Top-K 个最相关的专家。最终答案 = 各专家意见的加权综合。大部分专家保持沉默 →
+    <strong>激活的参数量远小于总参数量</strong>，这就是"稀疏激活"的精髓。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: Router / Gating -->
+<!-- ================================================================ -->
+<div class="section" id="sec-router">
+  <h2><span class="dot blue"></span> 2. 门控路由器 (Router) — 谁来决定分配？</h2>
+  <p class="desc">
+    路由器本身是一个<b>可学习的线性层</b> W<sub>g</sub> ∈ R<sup>d×N</sup>：输入 Token 表示 x，
+    输出 N 个 logits，经 <b>Softmax + Top-K 截断</b> 后得到稀疏的门控权重。
+    Softmax 前的 logits 还可叠加 <b>可学习的偏置 / 噪声</b> 鼓励探索。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 门控函数 G(x)</h3>
+    <div id="formula-gate"></div>
+  </div>
+
+  <canvas id="canvasRouter" width="1200" height="520"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>专家数 N <span class="val" id="val-N-rt">8</span></label>
+      <input type="range" id="slider-N-rt" min="4" max="16" value="8" step="2">
+    </div>
+    <div class="slider-group">
+      <label>Top-K <span class="val" id="val-K-rt">2</span></label>
+      <input type="range" id="slider-K-rt" min="1" max="4" value="2" step="1">
+    </div>
+    <div class="slider-group">
+      <label>Gating Noise σ <span class="val" id="val-noise">0.0</span></label>
+      <input type="range" id="slider-noise" min="0" max="10" value="0" step="1">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-router"></div>
+
+  <div class="insight">
+    💡 <strong>Top-K 截断是关键：</strong>Softmax 本身不稀疏（所有 N 个专家都有非零权重），
+    Top-K 强制只保留最大的 K 个值并置零其余 → 实现真正的<b>稀疏计算</b>。
+    K=1 最节省计算但可能限制容量；K=2 是当前主流选择。<b>加噪声</b>（Gating Noise）
+    帮助路由器在训练初期探索不同的专家组合，避免过早陷入局部最优。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: Expert Networks -->
+<!-- ================================================================ -->
+<div class="section" id="sec-experts">
+  <h2><span class="dot purple"></span> 3. 专家网络 — 每个专家是什么？</h2>
+  <p class="desc">
+    在 Transformer MoE 中，每个专家通常是一个<b>标准的前馈网络 (FFN)</b>，
+    与密集模型的 FFN 结构相同，但<b>不同专家学习不同的知识分布</b>。
+    现代 MoE 中常使用 <b>SwiGLU</b> 激活函数。专家可以分为
+    <b>路由专家 (Routed)</b> 和 <b>共享专家 (Shared)</b> 两类。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 单个专家 & SwiGLU 激活</h3>
+    <div id="formula-expert"></div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--purple)"></span> 路由专家 (Routed)</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--cyan)"></span> 共享专家 (Shared)</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--orange)"></span> 门控权重 W<sub>g</sub></span>
+  </div>
+
+  <canvas id="canvasExpert" width="1200" height="500"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>路由专家数 <span class="val" id="val-routed">4</span></label>
+      <input type="range" id="slider-routed" min="2" max="8" value="4" step="1">
+    </div>
+    <div class="slider-group">
+      <label>共享专家数 <span class="val" id="val-shared">1</span></label>
+      <input type="range" id="slider-shared" min="0" max="2" value="1" step="1">
+    </div>
+    <div class="slider-group">
+      <label>Top-K <span class="val" id="val-K-exp">2</span></label>
+      <input type="range" id="slider-K-exp" min="1" max="4" value="2" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>共享专家 (DeepSeek-MoE 创新)：</strong>传统 MoE 所有专家都是路由的。
+    DeepSeek-MoE 提出：设置少量<b>"共享专家"</b>，<b>每个 Token 必定通过</b>，
+    负责捕获通用知识；路由专家则专注各自领域。这解决了"某些通用知识被分散到不同专家中"的问题，
+    同时避免路由专家在通用知识上的冗余。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Load Balancing -->
+<!-- ================================================================ -->
+<div class="section" id="sec-loadbalance">
+  <h2><span class="dot orange"></span> 4. 负载均衡 — MoE 最核心的工程挑战</h2>
+  <p class="desc">
+    路由器可能"偏爱"少数专家 → 热门专家过载、冷门专家闲置 → 计算资源浪费、训练不稳定。
+    为此需要<b>辅助损失 (Auxiliary Loss)</b> 和 <b>专家容量 (Expert Capacity)</b> 机制。
+    理想情况下每个专家处理的 Token 数应均匀分布。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 负载均衡辅助损失 & 容量</h3>
+    <div id="formula-loadbalance"></div>
+  </div>
+
+  <canvas id="canvasLoad" width="1200" height="480"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>Token 数量 <span class="val" id="val-tokens-lb">64</span></label>
+      <input type="range" id="slider-tokens-lb" min="16" max="128" value="64" step="8">
+    </div>
+    <div class="slider-group">
+      <label>专家数 N <span class="val" id="val-N-lb">8</span></label>
+      <input type="range" id="slider-N-lb" min="4" max="16" value="8" step="2">
+    </div>
+    <div class="slider-group">
+      <label>Top-K <span class="val" id="val-K-lb">2</span></label>
+      <input type="range" id="slider-K-lb" min="1" max="3" value="2" step="1">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-balance-good">✅ 良好均衡</button>
+    <button class="btn" id="btn-balance-skew">⚠️ 倾斜分布</button>
+    <button class="btn" id="btn-balance-collapse">🔥 路由坍塌</button>
+    <button class="btn" id="btn-balance-shuffle">🎲 随机分配</button>
+  </div>
+
+  <div class="info-row" id="info-load"></div>
+
+  <div class="insight">
+    💡 <strong>路由坍塌 (Routing Collapse)：</strong>最需要警惕的失败模式。
+    路由器学到"所有 Token 都发给 1-2 个专家"——模型退化为密集模型，完全损失 MoE 的优势。
+    辅助损失 + 容量强制 + Router Z-Loss 三者合力防止坍塌。<b>容量因子 C</b> 控制每个专家
+    最多处理的 Token 数：超出容量的 Token 被"溢出"到下一层或直接丢弃 (Token Dropping)。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: MoE vs Dense -->
+<!-- ================================================================ -->
+<div class="section" id="sec-compare">
+  <h2><span class="dot cyan"></span> 5. MoE vs 密集模型 — 对比分析</h2>
+  <p class="desc">
+    MoE 和密集模型在不同维度上各有优劣。理解这些 trade-off 是正确使用 MoE 的前提。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>密集模型 (Dense)</th>
+        <th>MoE 稀疏模型</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>总参数量</td>
+        <td>较小（如 7B）</td>
+        <td class="hl-cell">极大（如 8×7B MoE）</td>
+      </tr>
+      <tr>
+        <td>每 Token 激活参数量</td>
+        <td>= 总参数量</td>
+        <td class="hl-cell">≈ 总参数 / N × K（如 2×7B）</td>
+      </tr>
+      <tr>
+        <td>每 Token FLOPs</td>
+        <td>固定，与参数量正比</td>
+        <td class="hl-cell">远小于总参数量对应的 FLOPs</td>
+      </tr>
+      <tr>
+        <td>推理延迟</td>
+        <td class="hl-cell">低（无路由开销）</td>
+        <td>中等（路由 + all-to-all 通信）</td>
+      </tr>
+      <tr>
+        <td>训练稳定性</td>
+        <td class="hl-cell">高</td>
+        <td>较低（需负载均衡 + Z-Loss）</td>
+      </tr>
+      <tr>
+        <td>显存占用（推理）</td>
+        <td>中等</td>
+        <td class="warn-cell">高（所有专家均需加载）</td>
+      </tr>
+      <tr>
+        <td>知识容量</td>
+        <td>受限于参数量</td>
+        <td class="hl-cell">极大（不同专家专精不同领域）</td>
+      </tr>
+      <tr>
+        <td>微调难度</td>
+        <td class="hl-cell">简单</td>
+        <td>中等（需注意专家利用率）</td>
+      </tr>
+      <tr>
+        <td>分布式训练通信</td>
+        <td>仅 All-Reduce</td>
+        <td class="warn-cell">额外 All-to-All（专家并行）</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>Best of both worlds：</strong>DeepSeek-V3 等架构采用 <b>MoE + 多头潜在注意力 (MLA)</b> 的组合——
+    注意力部分保持密集（低开销），FFN 部分使用 MoE 扩展知识容量。这种"密集注意力 + 稀疏 FFN"已成为
+    主流大模型的设计范式，兼顾推理效率与知识广度。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: Real-World MoE Models -->
+<!-- ================================================================ -->
+<div class="section" id="sec-models">
+  <h2><span class="dot pink"></span> 6. 知名 MoE 模型一览</h2>
+  <p class="desc">
+    从 2017 年的稀疏门控 MoE 到 2024 年的 DeepSeek-V3，MoE 已从学术概念走向大规模工业部署。
+  </p>
+
+  <div class="model-grid">
+    <div class="model-card">
+      <h3>🔮 Mixtral 8×7B</h3>
+      <span class="model-stat">8 专家</span><span class="model-stat">Top-2</span><span class="model-stat">47B 总参</span>
+      <p>Mistral AI 2023 发布。8 个 FFN 专家，每次激活 2 个，激活参数 ~13B。
+      在多数 benchmark 上超越 LLaMA 2 70B，推理速度接近 7B 密集模型。证明了 MoE 在中等规模的实用性。</p>
+    </div>
+    <div class="model-card">
+      <h3>🐋 DeepSeek-V2 / V3</h3>
+      <span class="model-stat">256 专家</span><span class="model-stat">Top-8</span><span class="model-stat">共享专家</span>
+      <p>DeepSeek 2024。引入 <b>共享专家 (Shared Expert)</b> + <b>细粒度专家切分</b>：
+      256 个路由专家 + 2 个共享专家，Top-8 激活。配合 MLA 注意力，实现了极高的训练效率和推理性能。
+      V3 总参数 671B，激活 ~37B。</p>
+    </div>
+    <div class="model-card">
+      <h3>⚡ Switch Transformer</h3>
+      <span class="model-stat">2048 专家</span><span class="model-stat">Top-1</span><span class="model-stat">1.6T 总参</span>
+      <p>Google 2021。将 Top-K 推到极致：<b>K=1</b>，每个 Token 只激活一个专家。
+      简化了路由、减少了通信，以 2048 专家验证了 MoE 的超大规模可能性。
+      引入 capacity factor 处理溢出。</p>
+    </div>
+    <div class="model-card">
+      <h3>🧠 GLaM</h3>
+      <span class="model-stat">64 专家</span><span class="model-stat">Top-2</span><span class="model-stat">1.2T 总参</span>
+      <p>Google 2021。64 个专家每层，Top-2 激活，总参 1.2T，激活 ~97B。
+      训练效率：用 GPT-3 1/3 的 FLOPs 达到更优性能。验证了 MoE 在训练成本上的巨大优势。</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.container -->
+
+<!-- ================================================================ -->
+<!-- KaTeX Rendering -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  // Section 1: MoE Core Formula
+  katex.render(String.raw`
+  \begin{aligned}
+  &\textbf{MoE 层输出：} \\
+  &y = \sum_{i=1}^{N} G(x)_i \cdot E_i(x) \\[8pt]
+  &\text{其中：} \\
+  &\quad x \in \mathbb{R}^d                     &&\text{输入 Token} \\
+  &\quad G(x) \in \mathbb{R}^N                  &&\text{稀疏门控权重（仅 Top-K 非零）} \\
+  &\quad E_i(x): \mathbb{R}^d \to \mathbb{R}^d  &&\text{第 i 个专家网络（通常为 FFN）} \\
+  &\quad N                                     &&\text{专家总数} \\
+  &\quad \|G(x)\|_0 = K \ll N                   &&\text{稀疏性：只有 K 个非零权重}
+  \end{aligned}
+  `, document.getElementById('formula-moe-core'), { displayMode: true });
+
+  // Section 2: Gate function
+  katex.render(String.raw`
+  \begin{aligned}
+  &\textbf{Top-K Gating (标准门控)：} \\
+  &G(x) = \operatorname{Softmax}\big(\operatorname{TopK}(\, W_g \cdot x + \varepsilon \cdot \operatorname{Softplus}(W_{\text{noise}} \cdot x) \,)\big) \\[8pt]
+  &\operatorname{TopK}(v)_i = \begin{cases}
+    v_i & \text{if } v_i \text{ 在最大的 K 个值之中} \\
+    -\infty & \text{otherwise}
+  \end{cases} \\[8pt]
+  &\text{其中 } W_g \in \mathbb{R}^{d \times N} \text{ 为可学习路由矩阵，} \varepsilon \text{ 控制噪声强度}
+  \end{aligned}
+  `, document.getElementById('formula-gate'), { displayMode: true });
+
+  // Section 3: Expert FFN + SwiGLU
+  katex.render(String.raw`
+  \begin{aligned}
+  &\textbf{专家 FFN (SwiGLU 变体)：} \\
+  &E_i(x) = W_{\text{down},i} \cdot \big( \operatorname{SwiGLU}(W_{\text{gate},i} \cdot x) \odot W_{\text{up},i} \cdot x \big) \\[8pt]
+  &\operatorname{SwiGLU}(z) = z \cdot \sigma(z) = z \cdot \frac{1}{1 + e^{-z}} \\[8pt]
+  &\textbf{共享专家 (DeepSeek-MoE)：} \\
+  &y = \underbrace{E_{\text{shared}}(x)}_{\text{所有 Token 通过}} + \sum_{i \in \text{TopK}} G(x)_i \cdot E_i^{\text{routed}}(x)
+  \end{aligned}
+  `, document.getElementById('formula-expert'), { displayMode: true });
+
+  // Section 4: Load Balancing
+  katex.render(String.raw`
+  \begin{aligned}
+  &\textbf{辅助损失 (Auxiliary Loss)：} \\
+  &\mathcal{L}_{\text{aux}} = \alpha \cdot N \cdot \sum_{i=1}^{N} f_i \cdot P_i \\[6pt]
+  &\quad f_i = \frac{1}{T} \sum_{x \in \text{batch}} \mathbb{1}\{ \text{Token } x \text{ 被路由到专家 } i \} \quad &\text{专家 i 的实际分配比例} \\
+  &\quad P_i = \frac{1}{T} \sum_{x \in \text{batch}} \operatorname{Softmax}(W_g \cdot x)_i \quad &\text{专家 i 的平均门控概率} \\[8pt]
+  &\textbf{专家容量 (Expert Capacity)：} \\
+  &\text{Capacity} = \left\lfloor \frac{T \cdot K}{N} \cdot C \right\rfloor \quad C \text{ 为容量因子（通常 ≥ 1.0）}
+  \end{aligned}
+  `, document.getElementById('formula-loadbalance'), { displayMode: true });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 1 Canvas: Architecture Overview -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasArch');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const EXPERT_COLORS = [
+    '#f87171','#fb923c','#fbbf24','#4ade80','#34d399',
+    '#22d3ee','#38bdf8','#818cf8','#a78bfa','#e879f9',
+    '#f472b6','#fb7185','#f97316','#84cc16','#14b8a6',
+    '#06b6d4'
+  ];
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const N = +document.getElementById('slider-N-arch').value;
+    const K = +document.getElementById('slider-K-arch').value;
+    const T = +document.getElementById('slider-tokens-arch').value;
+
+    // Layout
+    const leftPad = 60;
+    const rightPad = 40;
+    const topPad = 40;
+
+    // --- Token column (left) ---
+    const tokenW = 90, tokenH = 26;
+    const tokenGap = 4;
+    const tokenColX = leftPad;
+    const tokenTotalH = T * (tokenH + tokenGap);
+    const tokenStartY = (H - tokenTotalH) / 2;
+
+    // --- Router block (middle) ---
+    const routerW = 100, routerH = 60;
+    const routerX = tokenColX + tokenW + 60;
+    const routerY = H/2 - routerH/2;
+
+    // --- Expert column (right) ---
+    const expertW = 140, expertH = 36;
+    const expertGap = 6;
+    const expertColX = routerX + routerW + 80;
+    const expertTotalH = N * (expertH + expertGap);
+    const expertStartY = (H - expertTotalH) / 2;
+
+    // Draw Tokens
+    for (let t = 0; t < T; t++) {
+      const tx = tokenColX;
+      const ty = tokenStartY + t * (tokenH + tokenGap);
+      const hue = (t / T) * 360;
+      ctx.fillStyle = `hsl(${hue}, 50%, 55%)`;
+      ctx.beginPath();
+      ctx.roundRect(tx, ty, tokenW, tokenH, 6);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Token ${t+1}`, tx + tokenW/2, ty + tokenH/2 + 5);
+    }
+
+    // Label: Tokens
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${T} Tokens`, tokenColX + tokenW/2, tokenStartY - 16);
+
+    // Draw Router
+    ctx.fillStyle = '#1e2332';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(routerX, routerY, routerW, routerH, 10);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Router', routerX + routerW/2, routerY + 28);
+    ctx.fillText(`Top-${K}`, routerX + routerW/2, routerY + 50);
+
+    // Draw Experts
+    for (let i = 0; i < N; i++) {
+      const ex = expertColX;
+      const ey = expertStartY + i * (expertH + expertGap);
+      ctx.fillStyle = EXPERT_COLORS[i % EXPERT_COLORS.length];
+      ctx.beginPath();
+      ctx.roundRect(ex, ey, expertW, expertH, 8);
+      ctx.fill();
+      ctx.fillStyle = '#0b0e14';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Expert ${i}`, ex + expertW/2, ey + expertH/2 + 6);
+    }
+
+    // Label: Experts
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${N} Experts`, expertColX + expertW/2, expertStartY - 16);
+
+    // Draw connections for a subset of tokens (to keep it clean)
+    // Simulate routing: each token picks K experts with a "preference" pattern
+    const seed = 42;
+    function pseudoRandom(t, e) {
+      return ((Math.sin((t * 137.5 + e * 93.1 + seed) * 0.7) + 1) / 2);
+    }
+
+    const maxConns = Math.min(T, 8);
+    for (let t = 0; t < maxConns; t++) {
+      const ty = tokenStartY + t * (tokenH + tokenGap) + tokenH/2;
+      const srcX = tokenColX + tokenW;
+
+      // Determine which experts this token routes to
+      const scores = [];
+      for (let i = 0; i < N; i++) {
+        scores.push({ idx: i, val: pseudoRandom(t, i) });
+      }
+      scores.sort((a,b) => b.val - a.val);
+
+      for (let k = 0; k < K; k++) {
+        const ei = scores[k].idx;
+        const ey = expertStartY + ei * (expertH + expertGap) + expertH/2;
+
+        // Line from token → router → expert
+        const alpha = 0.55;
+        ctx.strokeStyle = EXPERT_COLORS[ei % EXPERT_COLORS.length] + '99';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        // Token → Router
+        ctx.moveTo(srcX, ty);
+        ctx.lineTo(routerX, routerY + routerH/2);
+        // Router → Expert
+        ctx.moveTo(routerX + routerW, routerY + routerH/2);
+        ctx.lineTo(expertColX, ey);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Small glow dot at expert entry
+        ctx.fillStyle = EXPERT_COLORS[ei % EXPERT_COLORS.length];
+        ctx.beginPath();
+        ctx.arc(expertColX, ey, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Draw arrow labels
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = 'italic 17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Token Embeddings', tokenColX + tokenW/2, H - 16);
+    ctx.fillText('Sparse Dispatch', routerX + routerW/2, H - 16);
+    ctx.fillText('Weighted Output Sum', expertColX + expertW/2, H - 16);
+
+    // Update info row
+    document.getElementById('info-arch').innerHTML = `
+      <div class="info-card">总专家 <div class="val">${N}</div></div>
+      <div class="info-card">Top-K <div class="val">${K}</div></div>
+      <div class="info-card">激活比例 <div class="val">${(K/N*100).toFixed(1)}%</div></div>
+      <div class="info-card">Token 数 <div class="val">${T}</div></div>
+      <div class="info-card">路由连接总数 <div class="val">${T * K}</div></div>
+      <div class="info-card">均每专家Token <div class="val">${(T*K/N).toFixed(1)}</div></div>
+    `;
+  }
+
+  ['slider-N-arch','slider-K-arch','slider-tokens-arch'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      document.getElementById('val-N-arch').textContent = document.getElementById('slider-N-arch').value;
+      document.getElementById('val-K-arch').textContent = document.getElementById('slider-K-arch').value;
+      document.getElementById('val-tokens-arch').textContent = document.getElementById('slider-tokens-arch').value;
+      draw();
+    });
+  });
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 2 Canvas: Router Detail -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasRouter');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const EXPERT_COLORS = [
+    '#f87171','#fb923c','#fbbf24','#4ade80','#34d399',
+    '#22d3ee','#38bdf8','#818cf8','#a78bfa','#e879f9',
+    '#f472b6','#fb7185','#f97316','#84cc16','#14b8a6',
+    '#06b6d4'
+  ];
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const N = +document.getElementById('slider-N-rt').value;
+    const K = +document.getElementById('slider-K-rt').value;
+    const noiseStd = (+document.getElementById('slider-noise').value) / 10;
+
+    const leftPad = 80;
+    const barW = 50;
+    const barGap = 14;
+    const barsTotalW = N * (barW + barGap);
+    const barStartX = leftPad;
+    const barMaxH = 300;
+    const barBaseY = 420;
+
+    // Simulate a token's gating logits + softmax -> probs
+    const seed = 137;
+    const logits = [];
+    for (let i = 0; i < N; i++) {
+      const baseVal = ((Math.sin((seed + i * 0.8) * 2.7) + 1) / 2) * 3;
+      const noise = noiseStd * ((Math.cos((seed + i * 3.1) * 1.3)) * 2);
+      logits.push({ idx: i, raw: baseVal + noise });
+    }
+
+    // Softmax
+    const maxLogit = Math.max(...logits.map(l => l.raw));
+    const exps = logits.map(l => Math.exp(l.raw - maxLogit));
+    const sumExp = exps.reduce((a,b) => a+b, 0);
+    const probs = logits.map((l, i) => ({ idx: l.idx, prob: exps[i] / sumExp }));
+
+    // Top-K: find largest K
+    const sorted = [...probs].sort((a,b) => b.prob - a.prob);
+    const topKSet = new Set(sorted.slice(0, K).map(s => s.idx));
+
+    // Truncated probs
+    const truncated = probs.map(p => ({
+      idx: p.idx,
+      prob: topKSet.has(p.idx) ? p.prob : 0
+    }));
+    const truncSum = truncated.reduce((s, t) => s + t.prob, 0);
+    const normalized = truncated.map(t => ({
+      idx: t.idx,
+      prob: truncSum > 0 ? t.prob / truncSum : 0
+    }));
+
+    // Draw bars for each expert
+    for (let i = 0; i < N; i++) {
+      const bx = barStartX + i * (barW + barGap);
+      const isTopK = topKSet.has(i);
+
+      // Logit bar (dimmer background)
+      const logitH = Math.min(probs[i].prob * barMaxH * 3, barMaxH);
+      ctx.fillStyle = isTopK ? EXPERT_COLORS[i % EXPERT_COLORS.length] : '#3a3040';
+      if (!isTopK) ctx.globalAlpha = 0.35;
+      ctx.beginPath();
+      ctx.roundRect(bx, barBaseY - logitH, barW, logitH, [4, 4, 0, 0]);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Final weight bar (after Top-K truncation + renormalization)
+      const finalH = normalized[i].prob * barMaxH * 3;
+      if (isTopK && finalH > 0) {
+        // Gradient bar for final weights
+        const grad = ctx.createLinearGradient(bx, barBaseY, bx, barBaseY - finalH);
+        grad.addColorStop(0, EXPERT_COLORS[i % EXPERT_COLORS.length]);
+        grad.addColorStop(1, EXPERT_COLORS[i % EXPERT_COLORS.length] + 'cc');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(bx + barW + 6, barBaseY - finalH, barW, finalH, [4, 4, 0, 0]);
+        ctx.fill();
+
+        // Value label
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 17px "JetBrains Mono", "Fira Code", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(normalized[i].prob.toFixed(3), bx + barW + 6 + barW/2, barBaseY - finalH - 10);
+      }
+
+      // Expert label
+      ctx.fillStyle = isTopK ? EXPERT_COLORS[i % EXPERT_COLORS.length] : '#5a5060';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`E${i}`, bx + barW/2, barBaseY + 20);
+    }
+
+    // Labels
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Pre-Softmax Logits', barStartX, barBaseY - barMaxH - 40);
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('▬', barStartX, barBaseY - barMaxH - 14);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('(原始分数)', barStartX + 24, barBaseY - barMaxH - 14);
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('After Top-K + Softmax', barStartX + 300, barBaseY - barMaxH - 40);
+    ctx.fillText('▬', barStartX + 300, barBaseY - barMaxH - 14);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('(最终路由权重)', barStartX + 324, barBaseY - barMaxH - 14);
+
+    // Noise indicator
+    if (noiseStd > 0) {
+      ctx.fillStyle = '#fb923c';
+      ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`🔊 Noise σ = ${noiseStd.toFixed(1)}`, W - 40, 36);
+    }
+
+    // Update info
+    const activeExperts = normalized.filter(p => p.prob > 0);
+    document.getElementById('info-router').innerHTML = `
+      <div class="info-card">Top-K <div class="val">${K}</div></div>
+      <div class="info-card">激活专家 <div class="val">${activeExperts.length}</div></div>
+      <div class="info-card">最大权重 <div class="val">${activeExperts.length > 0 ? activeExperts.reduce((a,b) => a.prob > b.prob ? a : b).prob.toFixed(3) : '0'}</div></div>
+      <div class="info-card">权重熵 <div class="val">${(activeExperts.length > 0 ? -activeExperts.reduce((s, p) => s + p.prob * Math.log(p.prob + 1e-9), 0) : 0).toFixed(3)}</div></div>
+      <div class="info-card">Gating Noise <div class="val">${noiseStd.toFixed(1)}</div></div>
+      <div class="info-card">非活跃专家 <div class="val" style="color:#f87171">${N - activeExperts.length}</div></div>
+    `;
+  }
+
+  ['slider-N-rt','slider-K-rt','slider-noise'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      document.getElementById('val-N-rt').textContent = document.getElementById('slider-N-rt').value;
+      document.getElementById('val-K-rt').textContent = document.getElementById('slider-K-rt').value;
+      document.getElementById('val-noise').textContent = (+document.getElementById('slider-noise').value / 10).toFixed(1);
+      draw();
+    });
+  });
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 3 Canvas: Expert Network Detail -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasExpert');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const EXPERT_COLORS = [
+    '#f87171','#fb923c','#fbbf24','#4ade80','#34d399',
+    '#22d3ee','#38bdf8','#818cf8','#a78bfa'
+  ];
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const routedN = +document.getElementById('slider-routed').value;
+    const sharedN = +document.getElementById('slider-shared').value;
+    const K = +document.getElementById('slider-K-exp').value;
+
+    const totalN = routedN + sharedN;
+    const topPad = 60;
+    const bottomPad = 30;
+
+    // Layout: experts in a row
+    const expertW = 90, expertH = 180;
+    const expertGap = 20;
+    const totalW_experts = totalN * (expertW + expertGap) - expertGap;
+    const expertStartX = (W - totalW_experts) / 2;
+    const expertY = topPad + 50;
+
+    // Input token representation
+    const inputW = 300, inputH = 30;
+    const inputX = W/2 - inputW/2;
+    const inputY = topPad;
+
+    // Draw input
+    ctx.fillStyle = '#1e2332';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(inputX, inputY, inputW, inputH, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Token x ∈ Rᵈ  (Single Token Flow)`, inputX + inputW/2, inputY + 22);
+
+    // Draw experts
+    for (let i = 0; i < totalN; i++) {
+      const isShared = i < sharedN;
+      const routedIdx = i - sharedN;
+      const ex = expertStartX + i * (expertW + expertGap);
+
+      // Expert box
+      const fillColor = isShared ? '#22d3ee' : EXPERT_COLORS[routedIdx % EXPERT_COLORS.length];
+      ctx.fillStyle = fillColor + '22';
+      ctx.strokeStyle = fillColor;
+      ctx.lineWidth = isShared ? 3 : 2;
+      ctx.setLineDash(isShared ? [6, 3] : []);
+      ctx.beginPath();
+      ctx.roundRect(ex, expertY, expertW, expertH, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Expert header
+      ctx.fillStyle = fillColor;
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      const label = isShared ? `Shared` : `Expert ${routedIdx}`;
+      ctx.fillText(label, ex + expertW/2, expertY + 28);
+
+      // FFN internals: Gate/Up/Down projection
+      const internalW = expertW - 20;
+      const internalH = 14;
+      const internalX = ex + 10;
+      const layers = [
+        { y: expertY + 48, label: 'W_gate', color: '#fbbf24' },
+        { y: expertY + 70, label: 'W_up',   color: '#f87171' },
+        { y: expertY + 92, label: 'SwiGLU', color: '#a78bfa' },
+        { y: expertY + 120, label: '⊙ (gating)', color: '#38bdf8' },
+        { y: expertY + 142, label: 'W_down', color: '#4ade80' },
+      ];
+      layers.forEach(l => {
+        ctx.fillStyle = l.color + '33';
+        ctx.beginPath();
+        ctx.roundRect(internalX, l.y, internalW, internalH, 4);
+        ctx.fill();
+        ctx.fillStyle = l.color;
+        ctx.font = '12px "JetBrains Mono", "Fira Code", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(l.label, ex + expertW/2, l.y + 11);
+      });
+
+      // Connection from input to expert (if active for visualization)
+      if (isShared || routedIdx < K) {
+        const alpha = isShared ? 0.9 : 0.7;
+        ctx.strokeStyle = fillColor + Math.round(alpha * 255).toString(16).padStart(2,'0');
+        ctx.lineWidth = isShared ? 3 : 2;
+        ctx.beginPath();
+        ctx.moveTo(inputX + inputW/2, inputY + inputH);
+        ctx.lineTo(ex + expertW/2, expertY);
+        ctx.stroke();
+
+        // Dot at connection point
+        ctx.fillStyle = fillColor;
+        ctx.beginPath();
+        ctx.arc(ex + expertW/2, expertY, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Output label
+    const outputY = expertY + expertH + 40;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('y = E_shared(x) · 𝟙 + Σᵢ₌₀ᴺ⁻¹ G(x)ᵢ · Eᵢ(x)', W/2, outputY);
+
+    // Legend
+    ctx.fillStyle = '#22d3ee';
+    ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('▬ 共享专家 (必过)', 30, outputY + 30);
+    ctx.fillStyle = EXPERT_COLORS[0];
+    ctx.fillText('▬ 路由专家 (Top-K 选择)', 250, outputY + 30);
+  }
+
+  ['slider-routed','slider-shared','slider-K-exp'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      document.getElementById('val-routed').textContent = document.getElementById('slider-routed').value;
+      document.getElementById('val-shared').textContent = document.getElementById('slider-shared').value;
+      document.getElementById('val-K-exp').textContent = document.getElementById('slider-K-exp').value;
+      draw();
+    });
+  });
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4 Canvas: Load Balancing -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasLoad');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const EXPERT_COLORS = [
+    '#f87171','#fb923c','#fbbf24','#4ade80','#34d399',
+    '#22d3ee','#38bdf8','#818cf8','#a78bfa','#e879f9',
+    '#f472b6','#fb7185','#f97316','#84cc16','#14b8a6',
+    '#06b6d4'
+  ];
+
+  let currentDistribution = 'good'; // good, skew, collapse
+
+  function generateDistribution(N, T, K, mode) {
+    const counts = new Array(N).fill(0);
+    const idealCount = Math.floor(T * K / N);
+
+    if (mode === 'good') {
+      // Near-uniform with small variance
+      for (let t = 0; t < T; t++) {
+        const chosen = new Set();
+        while (chosen.size < K) {
+          // Weight toward less-loaded experts
+          const minCount = Math.min(...counts);
+          const candidates = [];
+          for (let i = 0; i < N; i++) {
+            if (chosen.has(i)) continue;
+            if (counts[i] <= minCount + 2) candidates.push(i);
+          }
+          if (candidates.length === 0) {
+            for (let i = 0; i < N; i++) if (!chosen.has(i)) candidates.push(i);
+          }
+          const pick = candidates[Math.floor(Math.random() * candidates.length)];
+          chosen.add(pick);
+        }
+        chosen.forEach(i => counts[i]++);
+      }
+    } else if (mode === 'skew') {
+      // Power-law distribution
+      const weights = [];
+      for (let i = 0; i < N; i++) weights.push(1 / (i + 1));
+      const totalW = weights.reduce((a,b) => a+b, 0);
+      const probs = weights.map(w => w / totalW);
+
+      for (let t = 0; t < T; t++) {
+        const chosen = new Set();
+        while (chosen.size < K) {
+          let r = Math.random();
+          for (let i = 0; i < N; i++) {
+            if (chosen.has(i)) continue;
+            r -= probs[i];
+            if (r <= 0) { chosen.add(i); break; }
+          }
+          if (chosen.size < K && r > 0) {
+            for (let i = N-1; i >= 0; i--) {
+              if (!chosen.has(i)) { chosen.add(i); break; }
+            }
+          }
+        }
+        chosen.forEach(i => counts[i]++);
+      }
+    } else if (mode === 'collapse') {
+      // Most tokens go to expert 0 and 1
+      for (let t = 0; t < T; t++) {
+        const chosen = new Set();
+        chosen.add(0);
+        if (K >= 2) chosen.add(1);
+        if (K >= 3) chosen.add(Math.random() < 0.5 ? 2 : 3);
+        if (K >= 4) chosen.add(Math.random() < 0.5 ? 4 : 5);
+        chosen.forEach(i => counts[i]++);
+      }
+    }
+
+    return counts;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const T = +document.getElementById('slider-tokens-lb').value;
+    const N = +document.getElementById('slider-N-lb').value;
+    const K = +document.getElementById('slider-K-lb').value;
+
+    const counts = generateDistribution(N, T, K, currentDistribution);
+    const idealPerExpert = (T * K) / N;
+    const capacity = Math.floor(idealPerExpert * 1.25);
+
+    // Layout
+    const leftPad = 40;
+    const rightPad = 40;
+    const topPad = 50;
+    const chartW = W - leftPad - rightPad;
+    const barAreaTop = topPad;
+    const barAreaH = 320;
+    const barGap = 8;
+    const barW = Math.min(80, (chartW - (N - 1) * barGap) / N);
+    const totalBarW = N * (barW + barGap) - barGap;
+    const barStartX = leftPad + (chartW - totalBarW) / 2;
+
+    const maxCount = Math.max(...counts, capacity + 2);
+    const scaleY = barAreaH / maxCount;
+
+    // Capacity line
+    const capY = barAreaTop + barAreaH - capacity * scaleY;
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(barStartX, capY);
+    ctx.lineTo(barStartX + totalBarW, capY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Capacity = ${capacity}`, barStartX + totalBarW + 10, capY + 6);
+
+    // Ideal line
+    const idealY = barAreaTop + barAreaH - idealPerExpert * scaleY;
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 6]);
+    ctx.beginPath();
+    ctx.moveTo(barStartX, idealY);
+    ctx.lineTo(barStartX + totalBarW, idealY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#4ade80';
+    ctx.font = '17px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Ideal = ${idealPerExpert.toFixed(1)}`, barStartX + totalBarW + 10, idealY + 6);
+
+    // Draw bars
+    for (let i = 0; i < N; i++) {
+      const bx = barStartX + i * (barW + barGap);
+      const barH = counts[i] * scaleY;
+      const by = barAreaTop + barAreaH - barH;
+
+      const overCapacity = counts[i] > capacity;
+      const color = EXPERT_COLORS[i % EXPERT_COLORS.length];
+
+      // Bar
+      const grad = ctx.createLinearGradient(bx, by, bx, barAreaTop + barAreaH);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, color + '44');
+      ctx.fillStyle = overCapacity ? '#f87171' : grad;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, barW, barH, [4, 4, 0, 0]);
+      ctx.fill();
+
+      // Overflow indicator
+      if (overCapacity) {
+        ctx.fillStyle = '#f87171';
+        ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚠', bx + barW/2, by - 8);
+      }
+
+      // Count label
+      ctx.fillStyle = overCapacity ? '#f87171' : '#e1e4eb';
+      ctx.font = 'bold 16px "JetBrains Mono", "Fira Code", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(counts[i], bx + barW/2, by - (overCapacity ? 28 : 6));
+
+      // Expert label
+      ctx.fillStyle = color;
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`E${i}`, bx + barW/2, barAreaTop + barAreaH + 20);
+    }
+
+    // Title
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    const modeNames = { good: '✅ 良好均衡', skew: '⚠️ 倾斜分布', collapse: '🔥 路由坍塌' };
+    ctx.fillText(`Load Distribution: ${modeNames[currentDistribution] || currentDistribution}`, barStartX, barAreaTop - 14);
+
+    // Update info
+    const overloaded = counts.filter(c => c > capacity).length;
+    const totalAssigned = counts.reduce((a,b) => a+b, 0);
+    const maxC = Math.max(...counts);
+    const minC = Math.min(...counts);
+    const imbalance = maxC / Math.max(1, minC);
+    document.getElementById('info-load').innerHTML = `
+      <div class="info-card">Token 总数 <div class="val">${T}</div></div>
+      <div class="info-card">每 Token × Top-K <div class="val">${T * K} 次派遣</div></div>
+      <div class="info-card">超容量专家 <div class="val" style="color:${overloaded > 0 ? '#f87171' : '#4ade80'}">${overloaded} / ${N}</div></div>
+      <div class="info-card">max/min 比值 <div class="val" style="color:${imbalance > 3 ? '#f87171' : '#4ade80'}">${imbalance.toFixed(1)}×</div></div>
+      <div class="info-card">最忙专家 <div class="val">${maxC} tokens</div></div>
+      <div class="info-card">最闲专家 <div class="val">${minC} tokens</div></div>
+    `;
+  }
+
+  // Button handlers
+  document.getElementById('btn-balance-good').addEventListener('click', function() {
+    currentDistribution = 'good';
+    document.querySelectorAll('#sec-loadbalance .btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    draw();
+  });
+  document.getElementById('btn-balance-skew').addEventListener('click', function() {
+    currentDistribution = 'skew';
+    document.querySelectorAll('#sec-loadbalance .btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    draw();
+  });
+  document.getElementById('btn-balance-collapse').addEventListener('click', function() {
+    currentDistribution = 'collapse';
+    document.querySelectorAll('#sec-loadbalance .btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    draw();
+  });
+  document.getElementById('btn-balance-shuffle').addEventListener('click', function() {
+    currentDistribution = 'good';
+    document.querySelectorAll('#sec-loadbalance .btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-balance-good').classList.add('active');
+    draw();
+  });
+
+  ['slider-tokens-lb','slider-N-lb','slider-K-lb'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      document.getElementById('val-tokens-lb').textContent = document.getElementById('slider-tokens-lb').value;
+      document.getElementById('val-N-lb').textContent = document.getElementById('slider-N-lb').value;
+      document.getElementById('val-K-lb').textContent = document.getElementById('slider-K-lb').value;
+      draw();
+    });
+  });
+
+  document.getElementById('btn-balance-good').classList.add('active');
+  draw();
+})();
+</script>
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

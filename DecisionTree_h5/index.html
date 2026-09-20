@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>决策树 — 信息熵、基尼系数与递归分裂交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222634;
+    --text: #e1e4eb;
+    --text2: #9ca3b4;
+    --accent: #4ade80;
+    --accent2: #22c55e;
+    --blue: #4ea8f6;
+    --orange: #f59342;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --border: #2d3148;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16.0px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #1e3a2e 50%, #1a1d2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header p { color: var(--text2); font-size: 18px; }
+
+  .container { max-width: 1500px; margin: 0 auto; padding: 24px 20px; }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot.entropy { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .dot.gini { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .dot.tree { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+  .dot.boundary { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+
+  .section .desc { color: var(--text2); font-size: 18px; margin-bottom: 20px; line-height: 1.8; }
+
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px; color: var(--text2); margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.2em; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 17px;
+    color: var(--text2);
+  }
+  .slider-group label .val {
+    font-weight: 600; color: var(--text);
+    font-family: 'Courier New', monospace; font-size: 17px;
+    min-width: 48px; text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(74,222,128,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(74,222,128,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .s-entropy::-webkit-slider-thumb { background: var(--accent); }
+  .s-gini::-webkit-slider-thumb { background: var(--orange); }
+  .s-tree::-webkit-slider-thumb { background: var(--blue); }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px; margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2); border-radius: 6px; padding: 10px 14px;
+    font-size: 17px; color: var(--text2); font-family: 'Courier New', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+  .info-card .v-accent { color: var(--accent); }
+  .info-card .v-blue { color: var(--blue); }
+  .info-card .v-orange { color: var(--orange); }
+  .info-card .v-red { color: var(--red); }
+
+  .insight {
+    background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(78,168,246,0.08));
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 8px; padding: 14px 18px; margin-top: 16px;
+    font-size: 17px; color: var(--text2); line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); cursor: pointer;
+    font-size: 17px; font-weight: 600; transition: all .2s;
+  }
+  .btn:hover { border-color: var(--accent); background: #2a2d3a; }
+  .btn.active { border-color: var(--accent); background: rgba(74,222,128,0.2); color: var(--accent); }
+
+  .tree-stats {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;
+    font-size: 17px; color: var(--text2);
+  }
+  .tree-stats span { color: var(--text); font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 16px; }
+    .sliders { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌳 决策树 · 从信息论到递归分裂</h1>
+  <p>信息熵 · 基尼系数 · 信息增益 · 递归分裂 · 决策边界 — 交互式可视化</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: 信息论基础 — 熵 vs 基尼 -->
+<!-- ================================================================ -->
+<div class="section" id="info-theory">
+  <h2><span class="dot entropy"></span> 一、信息论基础：熵 vs 基尼系数</h2>
+  <p class="desc">
+    决策树的核心问题是：<b>选择哪个特征、在哪个阈值分裂？</b>
+    答案取决于<b>不纯度度量</b>。两个最常用的度量是 <b>信息熵（Entropy）</b>和<b>基尼系数（Gini Impurity）</b>。
+    它们都在度量一个节点中类别分布的"混乱程度"——越混乱（各类均匀），值越大；越纯净（全是同一类），值越小。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 不纯度度量：熵与基尼系数</h3>
+    <div id="formula-info-core"></div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 三大算法分裂准则：ID3 / C4.5 / CART</h3>
+    <div id="formula-algo-criteria"></div>
+  </div>
+
+  <canvas id="impurityCanvas" width="1400" height="480"></canvas>
+
+  <div class="info-row" id="impurity-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>正类比例 p₁ <span class="val" id="val-p1">0.50</span></label>
+      <input type="range" class="s-entropy" id="slider-p1" min="0" max="1" value="0.5" step="0.01">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>熵在 p=0.5 时达到最大值 1.0（最混乱），在 p=0 或 p=1 时为 0（完全纯净）。
+    基尼系数形状类似但更线性——它是熵的<b>一阶泰勒近似</b>，计算更快。
+    <br><br>
+    🏷️ <strong>算法与度量：</strong><b>ID3</b> 使用信息增益（基于熵），倾向于选择取值多的特征；<b>C4.5</b> 引入<b>增益率（Gain Ratio）</b>，
+    除以 SplitInfo 惩罚多值特征，克服了 ID3 的偏差；<b>CART</b> 使用基尼系数，且只做<b>二分叉</b>（binary split），
+    生成二叉树。实践中 CART + 基尼 计算量最小，C4.5 的增益率在特征值数量差异大时更合理。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: 决策树分裂过程 — 交互式数据划分 -->
+<!-- ================================================================ -->
+<div class="section" id="tree-splitting">
+  <h2><span class="dot tree"></span> 二、决策树分裂过程 — 交互式演示</h2>
+  <p class="desc">
+    给定一个 2D 分类数据集，决策树<b>递归地</b>选择最优分裂点：遍历每个特征的每个候选阈值，计算分裂后的<b>信息增益（Information Gain）</b>，
+    选择增益最大的 split。然后对每个子节点重复此过程，直到满足停止条件（纯节点、最大深度、最小样本数）。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 信息增益公式 (ID3)</h3>
+    <div id="formula-ig"></div>
+  </div>
+
+  <div class="formula-block">
+    <h3>📐 增益率公式 (C4.5)</h3>
+    <div id="formula-gainratio"></div>
+  </div>
+
+  <canvas id="treeCanvas" width="1400" height="620"></canvas>
+
+  <div class="info-row" id="tree-info"></div>
+  <div class="tree-stats" id="tree-stats"></div>
+
+  <div class="btn-row">
+    <button class="btn active" id="btn-auto" onclick="setMode('auto')">🤖 自动分裂</button>
+    <button class="btn" id="btn-manual" onclick="setMode('manual')">🖐 手动调节</button>
+    <button class="btn" id="btn-reset" onclick="resetTree()">🔄 重新生成数据</button>
+  </div>
+
+  <div class="sliders" id="manual-sliders" style="display:none;">
+    <div class="slider-group">
+      <label>分裂特征 (0=X轴, 1=Y轴) <span class="val" id="val-feat">X 轴</span></label>
+      <input type="range" class="s-tree" id="slider-feat" min="0" max="1" value="0" step="1">
+    </div>
+    <div class="slider-group">
+      <label>分裂阈值 <span class="val" id="val-thresh">0.50</span></label>
+      <input type="range" class="s-tree" id="slider-thresh" min="0" max="1" value="0.5" step="0.01">
+    </div>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>最大深度 <span class="val" id="val-depth">3</span></label>
+      <input type="range" class="s-tree" id="slider-depth" min="1" max="6" value="3" step="1">
+    </div>
+    <div class="slider-group">
+      <label>最小分裂样本数 <span class="val" id="val-minsplit">5</span></label>
+      <input type="range" class="s-tree" id="slider-minsplit" min="2" max="30" value="5" step="1">
+    </div>
+    <div class="slider-group">
+      <label>不纯度度量 <span class="val" id="val-criterion">gini</span></label>
+      <input type="range" class="s-tree" id="slider-criterion" min="0" max="1" value="0" step="1">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>决策树本质上是<b>贪心算法</b>——每一步选择当前最优的分裂，不保证全局最优。
+    但配合剪枝（pre/post pruning），可以避免过拟合。注意看图中，随着深度增加，决策边界变得越来越复杂，容易<b>过拟合噪声点</b>。
+    <br><br>
+    🏷️ <strong>ID3 vs C4.5：</strong>ID3 直接用信息增益选特征，<b>偏向取值多的特征</b>（如 ID 列，每个样本唯一 → 每个子节点 100% 纯净 → IG 最大）。
+    C4.5 除以 SplitInfo 做归一化：特征取值越多 → SplitInfo 越大 → Gain Ratio 被压低，有效<b>惩罚多值偏置</b>。
+    上图可通过切换不纯度度量滑块体验 Entropy（ID3/C4.5）与 Gini（CART）的差异。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: 决策边界与过拟合 -->
+<!-- ================================================================ -->
+<div class="section" id="decision-boundary">
+  <h2><span class="dot boundary"></span> 三、决策边界与过拟合</h2>
+  <p class="desc">
+    决策树的决策边界是<b>轴对齐（axis-aligned）</b>的矩形区域——每次分裂只沿一个特征维度切割。
+    这使得决策树天然适合处理<b>非线性</b>分类问题，但也容易<b>过拟合</b>：树太深会记忆每个训练样本，泛化能力下降。
+  </p>
+
+  <canvas id="boundaryCanvas" width="1400" height="550"></canvas>
+
+  <div class="info-row" id="boundary-info"></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>最大深度 <span class="val" id="val-bdepth">3</span></label>
+      <input type="range" class="s-tree" id="slider-bdepth" min="1" max="8" value="3" step="1">
+    </div>
+    <div class="slider-group">
+      <label>数据点数 <span class="val" id="val-bpts">100</span></label>
+      <input type="range" class="s-tree" id="slider-bpts" min="30" max="200" value="100" step="10">
+    </div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>核心直觉：</strong>深度=1 时是"一刀切"（stump），欠拟合；深度过大时边界紧贴训练点，过拟合。
+    最佳深度在两者之间，通过<b>交叉验证</b>选取。这就是为什么 Random Forest 和 XGBoost 引入<b>集成学习</b>来降低方差。
+  </div>
+</div>
+
+</div>
+
+<script>
+// ==================== KaTeX 公式渲染 ====================
+function renderFormulas() {
+  // Section 1: entropy & gini
+  katex.render(String.raw`
+    \begin{aligned}
+    \text{Entropy}(S) &= -\sum_{k=1}^{K} p_k \log_2(p_k) \\[6pt]
+    \text{Gini}(S) &= 1 - \sum_{k=1}^{K} p_k^2 = \sum_{k \neq k'} p_k p_{k'}
+    \end{aligned}
+  `, document.getElementById('formula-info-core'), { displayMode: true });
+
+  // Section 1: ID3 / C4.5 / CART comparison
+  katex.render(String.raw`
+    \begin{aligned}
+    \text{ID3: } &\quad IG(S, A) = \text{Entropy}(S) - \sum_{v \in \text{Values}(A)} \frac{|S_v|}{|S|} \cdot \text{Entropy}(S_v) \\[8pt]
+    \text{C4.5: } &\quad \text{GainRatio}(S, A) = \frac{IG(S, A)}{\text{SplitInfo}(S, A)}, \quad
+    \text{SplitInfo}(S, A) = -\sum_{v} \frac{|S_v|}{|S|} \log_2\!\left(\frac{|S_v|}{|S|}\right) \\[8pt]
+    \text{CART: } &\quad \Delta\text{Gini}(S, f, \theta) = \text{Gini}(S) - \left( \frac{|S_L|}{|S|}\text{Gini}(S_L) + \frac{|S_R|}{|S|}\text{Gini}(S_R) \right)
+    \end{aligned}
+  `, document.getElementById('formula-algo-criteria'), { displayMode: true });
+
+  // Section 2: info gain (ID3)
+  katex.render(String.raw`
+    \begin{aligned}
+    IG(S, f, \theta) &= \text{Impurity}(S) - \left( \frac{|S_L|}{|S|}\text{Impurity}(S_L) + \frac{|S_R|}{|S|}\text{Impurity}(S_R) \right) \\[6pt]
+    \text{其中 } S_L &= \{(x,y) \in S \mid x_f \leq \theta\}, \quad S_R = \{(x,y) \in S \mid x_f > \theta\}
+    \end{aligned}
+  `, document.getElementById('formula-ig'), { displayMode: true });
+
+  // Section 2: gain ratio (C4.5)
+  katex.render(String.raw`
+    \begin{aligned}
+    \text{GainRatio}(S, f, \theta) &= \frac{IG(S, f, \theta)}{\text{SplitInfo}(S, f, \theta)} \\[8pt]
+    \text{SplitInfo}(S, f, \theta) &= -\left[ \frac{|S_L|}{|S|} \log_2\!\left(\frac{|S_L|}{|S|}\right) + \frac{|S_R|}{|S|} \log_2\!\left(\frac{|S_R|}{|S|}\right) \right] \\[6pt]
+    \text{其中 } IG(S, f, \theta) &\text{ 使用熵计算（见上）}
+    \end{aligned}
+  `, document.getElementById('formula-gainratio'), { displayMode: true });
+}
+renderFormulas();
+
+// ==================== SECTION 1: Impurity Curves ====================
+const impurityCanvas = document.getElementById('impurityCanvas');
+const impCtx = impurityCanvas.getContext('2d');
+const W1 = impurityCanvas.width, H1 = impurityCanvas.height;
+
+function drawImpurityCurves() {
+  const p1 = parseFloat(document.getElementById('slider-p1').value);
+  document.getElementById('val-p1').textContent = p1.toFixed(2);
+
+  impCtx.clearRect(0, 0, W1, H1);
+  const pad = { l: 80, r: 40, t: 50, b: 60 };
+  const pw = W1 - pad.l - pad.r;
+  const ph = H1 - pad.t - pad.b;
+
+  // Background grid
+  impCtx.strokeStyle = '#2d3148';
+  impCtx.lineWidth = 1;
+  for (let i = 0; i <= 10; i++) {
+    const y = pad.t + ph * i / 10;
+    impCtx.beginPath(); impCtx.moveTo(pad.l, y); impCtx.lineTo(W1 - pad.r, y); impCtx.stroke();
+    impCtx.fillStyle = '#9ca3b4';
+    impCtx.font = '16px "Courier New", monospace';
+    impCtx.textAlign = 'right';
+    impCtx.fillText((1 - i/10).toFixed(1), pad.l - 10, y + 5);
+  }
+  for (let i = 0; i <= 10; i++) {
+    const x = pad.l + pw * i / 10;
+    impCtx.beginPath(); impCtx.moveTo(x, pad.t); impCtx.lineTo(x, pad.t + ph); impCtx.stroke();
+    impCtx.fillStyle = '#9ca3b4';
+    impCtx.textAlign = 'center';
+    impCtx.fillText((i/10).toFixed(1), x, pad.t + ph + 25);
+  }
+
+  // Labels
+  impCtx.fillStyle = '#e1e4eb';
+  impCtx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+  impCtx.textAlign = 'center';
+  impCtx.fillText('p₁ (正类比例)', W1/2, H1 - 8);
+  impCtx.save();
+  impCtx.translate(16, H1/2);
+  impCtx.rotate(-Math.PI/2);
+  impCtx.fillText('不纯度值', 0, 0);
+  impCtx.restore();
+
+  // Draw entropy curve
+  impCtx.beginPath();
+  impCtx.strokeStyle = '#4ade80';
+  impCtx.lineWidth = 3;
+  for (let i = 0; i <= pw; i++) {
+    const xp = i / pw;
+    let h = 0;
+    if (xp > 0 && xp < 1) h = -xp * Math.log2(xp) - (1-xp) * Math.log2(1-xp);
+    const x = pad.l + i;
+    const y = pad.t + ph * (1 - h);
+    if (i === 0) impCtx.moveTo(x, y);
+    else impCtx.lineTo(x, y);
+  }
+  impCtx.stroke();
+
+  // Draw Gini curve
+  impCtx.beginPath();
+  impCtx.strokeStyle = '#f59342';
+  impCtx.lineWidth = 3;
+  impCtx.setLineDash([8, 4]);
+  for (let i = 0; i <= pw; i++) {
+    const xp = i / pw;
+    const g = 1 - xp*xp - (1-xp)*(1-xp);
+    const x = pad.l + i;
+    const y = pad.t + ph * (1 - g);
+    if (i === 0) impCtx.moveTo(x, y);
+    else impCtx.lineTo(x, y);
+  }
+  impCtx.stroke();
+  impCtx.setLineDash([]);
+
+  // Current p1 marker
+  const mx = pad.l + pw * p1;
+  const ent = p1 > 0 && p1 < 1 ? -p1 * Math.log2(p1) - (1-p1) * Math.log2(1-p1) : 0;
+  const gin = 1 - p1*p1 - (1-p1)*(1-p1);
+  const my_e = pad.t + ph * (1 - ent);
+  const my_g = pad.t + ph * (1 - gin);
+
+  // Vertical line at p1
+  impCtx.beginPath();
+  impCtx.strokeStyle = '#fff';
+  impCtx.lineWidth = 1;
+  impCtx.setLineDash([4, 6]);
+  impCtx.moveTo(mx, pad.t);
+  impCtx.lineTo(mx, pad.t + ph);
+  impCtx.stroke();
+  impCtx.setLineDash([]);
+
+  // Dots at intersections
+  impCtx.beginPath();
+  impCtx.fillStyle = '#4ade80';
+  impCtx.arc(mx, my_e, 7, 0, Math.PI*2);
+  impCtx.fill();
+  impCtx.beginPath();
+  impCtx.fillStyle = '#f59342';
+  impCtx.arc(mx, my_g, 7, 0, Math.PI*2);
+  impCtx.fill();
+
+  // Legend
+  impCtx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+  impCtx.fillStyle = '#4ade80';
+  impCtx.fillRect(pad.l + 20, pad.t + 10, 20, 4);
+  impCtx.fillStyle = '#4ade80';
+  impCtx.textAlign = 'left';
+  impCtx.fillText(`Entropy = ${ent.toFixed(4)}`, pad.l + 50, pad.t + 17);
+
+  impCtx.fillStyle = '#f59342';
+  impCtx.fillRect(pad.l + 20, pad.t + 36, 20, 4);
+  impCtx.strokeStyle = '#f59342';
+  impCtx.fillStyle = '#f59342';
+  impCtx.fillText(`Gini = ${gin.toFixed(4)}`, pad.l + 50, pad.t + 43);
+
+  // Info cards
+  document.getElementById('impurity-info').innerHTML = `
+    <div class="info-card">Entropy <span class="val v-accent">${ent.toFixed(4)}</span></div>
+    <div class="info-card">Gini Impurity <span class="val v-orange">${gin.toFixed(4)}</span></div>
+    <div class="info-card">Gini×2 <span class="val v-orange">${(2*gin).toFixed(4)}</span> (≈ 熵的近似)</div>
+    <div class="info-card">类别分布 <span class="val v-blue">p₁=${p1.toFixed(2)}, p₂=${(1-p1).toFixed(2)}</span></div>
+  `;
+}
+
+// ==================== SECTION 2: Tree Splitting ====================
+const treeCanvas = document.getElementById('treeCanvas');
+const tCtx = treeCanvas.getContext('2d');
+const W2 = treeCanvas.width, H2 = treeCanvas.height;
+
+let dataPoints = [];
+let treeRoot = null;
+let mode = 'auto';
+let manualFeat = 0;
+let manualThresh = 0.5;
+
+function generateData(n = 80) {
+  dataPoints = [];
+  // Two interleaved half-moons pattern
+  for (let i = 0; i < n; i++) {
+    const angle = Math.random() * Math.PI;
+    const r = 0.3 + Math.random() * 0.15;
+    let x, y, label;
+    if (i < n/2) {
+      x = 0.25 + r * Math.cos(angle);
+      y = 0.35 + r * Math.sin(angle);
+      label = 0;
+    } else {
+      x = 0.65 + r * Math.cos(angle + Math.PI);
+      y = 0.55 + r * Math.sin(angle + Math.PI);
+      label = 1;
+    }
+    dataPoints.push({ x, y, label });
+  }
+  // Shuffle
+  for (let i = dataPoints.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [dataPoints[i], dataPoints[j]] = [dataPoints[j], dataPoints[i]];
+  }
+}
+
+function gini(labels) {
+  if (labels.length === 0) return 0;
+  const counts = {};
+  for (const l of labels) counts[l] = (counts[l] || 0) + 1;
+  let s = 0;
+  for (const c in counts) s += (counts[c] / labels.length) ** 2;
+  return 1 - s;
+}
+
+function entropy(labels) {
+  if (labels.length === 0) return 0;
+  const counts = {};
+  for (const l of labels) counts[l] = (counts[l] || 0) + 1;
+  let s = 0;
+  for (const c in counts) {
+    const p = counts[c] / labels.length;
+    if (p > 0) s -= p * Math.log2(p);
+  }
+  return s;
+}
+
+function impurity(labels, criterion) {
+  return criterion === 'entropy' ? entropy(labels) : gini(labels);
+}
+
+function bestSplit(points, criterion, minSplit) {
+  if (points.length < minSplit) return null;
+  const allLabels = points.map(p => p.label);
+  const parentImp = impurity(allLabels, criterion);
+  let bestGain = 0, bestFeat = 0, bestThresh = 0;
+
+  for (let feat = 0; feat < 2; feat++) {
+    const vals = points.map(p => feat === 0 ? p.x : p.y).sort((a, b) => a - b);
+    for (let i = 1; i < vals.length; i++) {
+      const thresh = (vals[i-1] + vals[i]) / 2;
+      const left = [], right = [];
+      for (const p of points) {
+        const v = feat === 0 ? p.x : p.y;
+        if (v <= thresh) left.push(p.label); else right.push(p.label);
+      }
+      if (left.length < minSplit || right.length < minSplit) continue;
+      const gain = parentImp - (left.length/points.length)*impurity(left, criterion)
+                   - (right.length/points.length)*impurity(right, criterion);
+      if (gain > bestGain) {
+        bestGain = gain;
+        bestFeat = feat;
+        bestThresh = thresh;
+      }
+    }
+  }
+  if (bestGain === 0) return null;
+  return { feat: bestFeat, thresh: bestThresh, gain: bestGain, imp: parentImp };
+}
+
+function buildTree(points, criterion, maxDepth, minSplit, depth = 0) {
+  const labels = points.map(p => p.label);
+  const majority = labels.filter(l => l === 1).length >= labels.length / 2 ? 1 : 0;
+  const leaf = { label: majority, imp: impurity(labels, criterion), n: points.length, depth, isLeaf: true };
+
+  if (depth >= maxDepth) return leaf;
+  const split = bestSplit(points, criterion, minSplit);
+  if (!split) return leaf;
+
+  const leftPts = [], rightPts = [];
+  for (const p of points) {
+    const v = split.feat === 0 ? p.x : p.y;
+    if (v <= split.thresh) leftPts.push(p); else rightPts.push(p);
+  }
+  if (leftPts.length === 0 || rightPts.length === 0) return leaf;
+
+  return {
+    ...split, depth, points, n: points.length,
+    isLeaf: false,
+    left: buildTree(leftPts, criterion, maxDepth, minSplit, depth + 1),
+    right: buildTree(rightPts, criterion, maxDepth, minSplit, depth + 1),
+    label: majority
+  };
+}
+
+function collectLeaves(node, leaves) {
+  if (!node) return;
+  if (node.isLeaf) { leaves.push(node); return; }
+  collectLeaves(node.left, leaves);
+  collectLeaves(node.right, leaves);
+}
+
+function predict(node, x, y) {
+  if (node.isLeaf) return node.label;
+  const v = node.feat === 0 ? x : y;
+  return predict(v <= node.thresh ? node.left : node.right, x, y);
+}
+
+function drawTreeOnCanvas() {
+  const criterion = document.getElementById('slider-criterion').value === '0' ? 'gini' : 'entropy';
+  const maxDepth = parseInt(document.getElementById('slider-depth').value);
+  const minSplit = parseInt(document.getElementById('slider-minsplit').value);
+
+  tCtx.clearRect(0, 0, W2, H2);
+  const pad = { l: 70, r: 370, t: 40, b: 50 };
+  const pw = W2 - pad.l - pad.r;
+  const ph = H2 - pad.t - pad.b;
+
+  // Draw data region
+  tCtx.strokeStyle = '#2d3148';
+  tCtx.lineWidth = 2;
+  tCtx.strokeRect(pad.l, pad.t, pw, ph);
+
+  // Axis labels
+  tCtx.fillStyle = '#9ca3b4';
+  tCtx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+  tCtx.textAlign = 'center';
+  tCtx.fillText('特征 X₁ (x 轴)', pad.l + pw/2, pad.t + ph + 35);
+  tCtx.save();
+  tCtx.translate(pad.l - 35, pad.t + ph/2);
+  tCtx.rotate(-Math.PI/2);
+  tCtx.fillText('特征 X₂ (y 轴)', 0, 0);
+  tCtx.restore();
+
+  // Tick marks
+  tCtx.fillStyle = '#9ca3b4';
+  tCtx.font = '15px "Courier New", monospace';
+  tCtx.textAlign = 'center';
+  for (let i = 0; i <= 5; i++) {
+    const v = i / 5;
+    const x = pad.l + pw * v;
+    tCtx.fillText(v.toFixed(1), x, pad.t + ph + 20);
+    const y = pad.t + ph * (1 - v);
+    tCtx.textAlign = 'right';
+    tCtx.fillText(v.toFixed(1), pad.l - 10, y + 5);
+    tCtx.textAlign = 'center';
+  }
+
+  // Draw data points
+  for (const pt of dataPoints) {
+    const sx = pad.l + pt.x * pw;
+    const sy = pad.t + (1 - pt.y) * ph;
+    tCtx.beginPath();
+    tCtx.fillStyle = pt.label === 0 ? '#4ea8f6' : '#ef4444';
+    tCtx.arc(sx, sy, 4.5, 0, Math.PI*2);
+    tCtx.fill();
+    tCtx.strokeStyle = '#0f1117';
+    tCtx.lineWidth = 1;
+    tCtx.stroke();
+  }
+
+  // Build tree and draw splits
+  treeRoot = buildTree(dataPoints, criterion, maxDepth, minSplit);
+
+  // Draw split lines recursively
+  function drawSplits(node, xMin, xMax, yMin, yMax) {
+    if (!node || node.isLeaf) return;
+    const x1 = pad.l + xMin * pw;
+    const x2 = pad.l + xMax * pw;
+    const y1 = pad.t + (1 - yMin) * ph;
+    const y2 = pad.t + (1 - yMax) * ph;
+
+    tCtx.beginPath();
+    tCtx.strokeStyle = '#f0c040';
+    tCtx.lineWidth = 2.5 - node.depth * 0.3;
+    if (node.feat === 0) {
+      // Vertical split
+      const sx = pad.l + node.thresh * pw;
+      tCtx.moveTo(sx, y1);
+      tCtx.lineTo(sx, y2);
+      tCtx.stroke();
+      // draw "X₁ ≤ θ" label
+      tCtx.fillStyle = '#f0c040';
+      tCtx.font = '15px "Segoe UI","PingFang SC",sans-serif';
+      tCtx.textAlign = 'center';
+      tCtx.fillText(`X₁≤${node.thresh.toFixed(2)}`, sx, y1 - 6);
+      drawSplits(node.left, xMin, node.thresh, yMin, yMax);
+      drawSplits(node.right, node.thresh, xMax, yMin, yMax);
+    } else {
+      // Horizontal split
+      const sy = pad.t + (1 - node.thresh) * ph;
+      tCtx.moveTo(x1, sy);
+      tCtx.lineTo(x2, sy);
+      tCtx.stroke();
+      tCtx.fillStyle = '#f0c040';
+      tCtx.font = '15px "Segoe UI","PingFang SC",sans-serif';
+      tCtx.textAlign = 'right';
+      tCtx.fillText(`X₂≤${node.thresh.toFixed(2)}`, x1 - 6, sy + 4);
+      drawSplits(node.left, xMin, xMax, yMin, node.thresh);
+      drawSplits(node.right, xMin, xMax, node.thresh, yMax);
+    }
+  }
+  drawSplits(treeRoot, 0, 1, 0, 1);
+
+  // Draw tree structure on the right
+  function drawTreeNode(node, x, y, w) {
+    if (!node) return;
+    const r = 18;
+    tCtx.beginPath();
+    if (node.isLeaf) {
+      tCtx.fillStyle = node.label === 0 ? '#4ea8f644' : '#ef444444';
+    } else {
+      tCtx.fillStyle = '#1a1d27';
+    }
+    tCtx.arc(x, y, r, 0, Math.PI*2);
+    tCtx.fill();
+    tCtx.strokeStyle = node.isLeaf ? (node.label === 0 ? '#4ea8f6' : '#ef4444') : '#f0c040';
+    tCtx.lineWidth = 2;
+    tCtx.stroke();
+
+    tCtx.fillStyle = '#e1e4eb';
+    tCtx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+    tCtx.textAlign = 'center';
+    if (node.isLeaf) {
+      tCtx.fillText(`C${node.label}`, x, y - 3);
+      tCtx.fillText(`n=${node.n}`, x, y + 14);
+    } else {
+      const fname = node.feat === 0 ? 'X₁' : 'X₂';
+      tCtx.fillText(`${fname}≤${node.thresh.toFixed(1)}`, x, y + 2);
+      tCtx.fillText(`n=${node.n}`, x, y + 16);
+    }
+  }
+
+  function drawTreeEdges(node, x, y, w, hGap) {
+    if (!node || node.isLeaf) return;
+    const childY = y + hGap;
+    const childW = w / 2;
+    const leftX = x - childW / 2;
+    const rightX = x + childW / 2;
+
+    tCtx.beginPath();
+    tCtx.strokeStyle = '#555';
+    tCtx.lineWidth = 1.5;
+    tCtx.moveTo(x, y + 18);
+    tCtx.lineTo(leftX, childY - 18);
+    tCtx.moveTo(x, y + 18);
+    tCtx.lineTo(rightX, childY - 18);
+    tCtx.stroke();
+
+    drawTreeNode(node.left, leftX, childY, childW);
+    drawTreeNode(node.right, rightX, childY, childW);
+    drawTreeEdges(node.left, leftX, childY, childW, hGap);
+    drawTreeEdges(node.right, rightX, childY, childW, hGap);
+  }
+
+  const treeX = pad.l + pw + 50;
+  const treeW = pad.r - 60;
+  drawTreeNode(treeRoot, treeX + treeW/2, 65, treeW);
+  drawTreeEdges(treeRoot, treeX + treeW/2, 65, treeW, 70);
+
+  // Legend
+  tCtx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+  tCtx.fillStyle = '#4ea8f6';
+  tCtx.beginPath(); tCtx.arc(pad.l + 20, pad.t + 20, 5, 0, Math.PI*2); tCtx.fill();
+  tCtx.fillStyle = '#e1e4eb';
+  tCtx.fillText('类别 0', pad.l + 35, pad.t + 26);
+
+  tCtx.fillStyle = '#ef4444';
+  tCtx.beginPath(); tCtx.arc(pad.l + 100, pad.t + 20, 5, 0, Math.PI*2); tCtx.fill();
+  tCtx.fillStyle = '#e1e4eb';
+  tCtx.fillText('类别 1', pad.l + 115, pad.t + 26);
+
+  tCtx.strokeStyle = '#f0c040';
+  tCtx.lineWidth = 2;
+  tCtx.beginPath(); tCtx.moveTo(pad.l + 190, pad.t + 16); tCtx.lineTo(pad.l + 220, pad.t + 16); tCtx.stroke();
+  tCtx.fillStyle = '#e1e4eb';
+  tCtx.fillText('分裂线', pad.l + 228, pad.t + 22);
+
+  // Tree stats
+  const leaves = [];
+  collectLeaves(treeRoot, leaves);
+  const criterionName = criterion === 'entropy' ? 'Entropy' : 'Gini';
+  const nCorrect = dataPoints.filter(p => predict(treeRoot, p.x, p.y) === p.label).length;
+  const acc = (nCorrect / dataPoints.length * 100).toFixed(1);
+
+  document.getElementById('tree-stats').innerHTML = `
+    <span>🌿 叶节点数: <b style="color:var(--accent)">${leaves.length}</b></span>
+    <span>📏 最大深度: <b style="color:var(--accent)">${maxDepth}</b></span>
+    <span>📐 度量: <b style="color:var(--orange)">${criterionName}</b></span>
+    <span>🎯 训练准确率: <b style="color:var(--blue)">${acc}%</b></span>
+  `;
+
+  document.getElementById('tree-info').innerHTML = `
+    <div class="info-card">根节点不纯度 <span class="val v-orange">${treeRoot.imp.toFixed(4)}</span></div>
+    <div class="info-card">叶节点数 <span class="val v-accent">${leaves.length}</span></div>
+    <div class="info-card">总节点数 <span class="val v-blue">${countNodes(treeRoot)}</span></div>
+    <div class="info-card">训练准确率 <span class="val v-accent">${acc}%</span></div>
+  `;
+}
+
+function countNodes(node) {
+  if (!node) return 0;
+  return 1 + countNodes(node.left) + countNodes(node.right);
+}
+
+// ==================== SECTION 3: Decision Boundary ====================
+const boundaryCanvas = document.getElementById('boundaryCanvas');
+const bCtx = boundaryCanvas.getContext('2d');
+const W3 = boundaryCanvas.width, H3 = boundaryCanvas.height;
+
+function drawBoundary() {
+  const maxDepth = parseInt(document.getElementById('slider-bdepth').value);
+  const nPts = parseInt(document.getElementById('slider-bpts').value);
+  document.getElementById('val-bdepth').textContent = maxDepth;
+  document.getElementById('val-bpts').textContent = nPts;
+
+  // Generate new data if count changed
+  generateData(nPts);
+
+  const pad = { l: 70, r: 30, t: 40, b: 55 };
+  const pw = W3 - pad.l - pad.r;
+  const ph = H3 - pad.t - pad.b;
+
+  bCtx.clearRect(0, 0, W3, H3);
+
+  // Build tree
+  const tree = buildTree(dataPoints, 'gini', maxDepth, 2);
+
+  // Draw decision regions (pixel-level)
+  const step = 4; // resolution
+  for (let px = 0; px < pw; px += step) {
+    for (let py = 0; py < ph; py += step) {
+      const x = px / pw;
+      const y = 1 - py / ph;
+      const pred = predict(tree, x, y);
+      bCtx.fillStyle = pred === 0 ? 'rgba(78,168,246,0.15)' : 'rgba(239,68,68,0.15)';
+      bCtx.fillRect(pad.l + px, pad.t + py, step, step);
+    }
+  }
+
+  // Data points
+  for (const pt of dataPoints) {
+    const sx = pad.l + pt.x * pw;
+    const sy = pad.t + (1 - pt.y) * ph;
+    bCtx.beginPath();
+    bCtx.fillStyle = pt.label === 0 ? '#4ea8f6' : '#ef4444';
+    bCtx.arc(sx, sy, 3.5, 0, Math.PI*2);
+    bCtx.fill();
+    bCtx.strokeStyle = '#0f1117';
+    bCtx.lineWidth = 0.5;
+    bCtx.stroke();
+  }
+
+  // Draw split lines
+  function drawLines(node, xMin, xMax, yMin, yMax) {
+    if (!node || node.isLeaf) return;
+    const x1 = pad.l + xMin * pw;
+    const x2 = pad.l + xMax * pw;
+    const y1 = pad.t + (1 - yMin) * ph;
+    const y2 = pad.t + (1 - yMax) * ph;
+
+    bCtx.beginPath();
+    bCtx.strokeStyle = '#fff';
+    bCtx.lineWidth = 2;
+    if (node.feat === 0) {
+      const sx = pad.l + node.thresh * pw;
+      bCtx.moveTo(sx, y1); bCtx.lineTo(sx, y2);
+      bCtx.stroke();
+      drawLines(node.left, xMin, node.thresh, yMin, yMax);
+      drawLines(node.right, node.thresh, xMax, yMin, yMax);
+    } else {
+      const sy = pad.t + (1 - node.thresh) * ph;
+      bCtx.moveTo(x1, sy); bCtx.lineTo(x2, sy);
+      bCtx.stroke();
+      drawLines(node.left, xMin, xMax, yMin, node.thresh);
+      drawLines(node.right, xMin, xMax, node.thresh, yMax);
+    }
+  }
+  drawLines(tree, 0, 1, 0, 1);
+
+  // Axis labels
+  bCtx.fillStyle = '#9ca3b4';
+  bCtx.font = '16px "Segoe UI","PingFang SC",sans-serif';
+  bCtx.textAlign = 'center';
+  bCtx.fillText('特征 X₁', pad.l + pw/2, pad.t + ph + 38);
+  bCtx.save();
+  bCtx.translate(pad.l - 35, pad.t + ph/2);
+  bCtx.rotate(-Math.PI/2);
+  bCtx.fillText('特征 X₂', 0, 0);
+  bCtx.restore();
+
+  // Legend
+  bCtx.font = '18px "Segoe UI","PingFang SC",sans-serif';
+  bCtx.textAlign = 'left';
+  bCtx.fillStyle = '#4ea8f6';
+  bCtx.fillRect(pad.l + 10, pad.t + 10, 16, 16);
+  bCtx.fillStyle = '#e1e4eb';
+  bCtx.fillText('类别 0 区域', pad.l + 34, pad.t + 24);
+  bCtx.fillStyle = '#ef4444';
+  bCtx.fillRect(pad.l + 140, pad.t + 10, 16, 16);
+  bCtx.fillStyle = '#e1e4eb';
+  bCtx.fillText('类别 1 区域', pad.l + 164, pad.t + 24);
+
+  // Stats
+  const leaves = [];
+  collectLeaves(tree, leaves);
+  const correct = dataPoints.filter(p => predict(tree, p.x, p.y) === p.label).length;
+  const acc = (correct / dataPoints.length * 100).toFixed(1);
+
+  document.getElementById('boundary-info').innerHTML = `
+    <div class="info-card">最大深度 <span class="val v-accent">${maxDepth}</span></div>
+    <div class="info-card">叶节点数 <span class="val v-orange">${leaves.length}</span></div>
+    <div class="info-card">数据点数 <span class="val v-blue">${nPts}</span></div>
+    <div class="info-card">训练准确率 <span class="val v-accent">${acc}%</span></div>
+  `;
+}
+
+// ==================== Event Handlers ====================
+document.getElementById('slider-p1').addEventListener('input', drawImpurityCurves);
+
+document.getElementById('slider-depth').addEventListener('input', () => {
+  document.getElementById('val-depth').textContent = document.getElementById('slider-depth').value;
+  drawTreeOnCanvas();
+});
+document.getElementById('slider-minsplit').addEventListener('input', () => {
+  document.getElementById('val-minsplit').textContent = document.getElementById('slider-minsplit').value;
+  drawTreeOnCanvas();
+});
+document.getElementById('slider-criterion').addEventListener('input', () => {
+  const v = document.getElementById('slider-criterion').value;
+  document.getElementById('val-criterion').textContent = v === '0' ? 'gini' : 'entropy';
+  drawTreeOnCanvas();
+});
+document.getElementById('slider-feat').addEventListener('input', () => {
+  const v = parseInt(document.getElementById('slider-feat').value);
+  document.getElementById('val-feat').textContent = v === 0 ? 'X 轴' : 'Y 轴';
+  manualFeat = v;
+  drawTreeOnCanvas();
+});
+document.getElementById('slider-thresh').addEventListener('input', () => {
+  manualThresh = parseFloat(document.getElementById('slider-thresh').value);
+  document.getElementById('val-thresh').textContent = manualThresh.toFixed(2);
+  drawTreeOnCanvas();
+});
+
+document.getElementById('slider-bdepth').addEventListener('input', drawBoundary);
+document.getElementById('slider-bpts').addEventListener('input', drawBoundary);
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-auto').classList.toggle('active', m === 'auto');
+  document.getElementById('btn-manual').classList.toggle('active', m === 'manual');
+  document.getElementById('manual-sliders').style.display = m === 'manual' ? 'grid' : 'none';
+  drawTreeOnCanvas();
+}
+
+function resetTree() {
+  generateData(80);
+  drawTreeOnCanvas();
+  drawBoundary();
+}
+
+// Initialize
+generateData(80);
+drawImpurityCurves();
+drawTreeOnCanvas();
+drawBoundary();
+</script>
+
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

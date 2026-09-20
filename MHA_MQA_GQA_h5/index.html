@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MHA · MQA · GQA — 注意力机制的 KV 缓存进化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --yellow: #fbbf24;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a1d30 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.green  { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.cyan   { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    max-width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(56,189,248,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(56,189,248,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(56,189,248,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  /* ── Tabs ── */
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .info-card .val { color: var(--text); font-weight: 600; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(56,189,248,0.06), rgba(129,140,248,0.06));
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Comparison table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+    white-space: nowrap;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 16px;
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--green); font-weight: 600; }
+  .cmp-table .mid-cell { color: var(--yellow); font-weight: 600; }
+
+  /* ── Mermaid ── */
+  /* ── Legend ── */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 16px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 18px; height: 18px; border-radius: 3px; }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text2);
+    overflow-x: auto;
+    white-space: pre;
+    margin-bottom: 16px;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .co { color: #8b949e; }
+  .code-block .nm { color: #79c0ff; }
+  .code-block .hl { background: rgba(56,189,248,0.15); border-left: 2px solid var(--accent); display: inline-block; padding-left: 6px; margin-left: -6px; }
+
+  /* ── Grid layouts ── */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 1100px) { .grid-3 { grid-template-columns: 1fr; } }
+
+  .mini-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+  .mini-card h4 {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .mini-card .katex-display { margin: 6px 0; }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔬 MHA · MQA · GQA</h1>
+  <p>从多头注意力到分组查询注意力 — 通过共享 KV 投影来大幅压缩推理缓存，在保持模型质量的同时实现更快的推理速度</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Concept Overview -->
+<!-- ================================================================ -->
+<div class="section" id="sec-overview">
+  <h2><span class="dot blue"></span> 1. 概念总览：KV 缓存的演化之路</h2>
+  <p class="desc">
+    在自回归生成中，每个 token 的 <b>K 和 V 需要被缓存</b>以便后续 token 进行注意力计算。
+    <b>MHA</b> 为每个头维护独立的 KV → <b>MQA</b> 所有头共享同一对 KV → <b>GQA</b> 折中方案：将头分组，组内共享 KV。
+  </p>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TB
+    subgraph MHA["🔴 MHA — Multi-Head Attention"]
+        direction TB
+        q1["Q₁"] --> h1["Head₁"]
+        q2["Q₂"] --> h2["Head₂"]
+        q3["Q₃"] --> h3["Head₃"]
+        q4["Q₄"] --> h4["Head₄"]
+        k1["K₁"] --> h1
+        k2["K₂"] --> h2
+        k3["K₃"] --> h3
+        k4["K₄"] --> h4
+        v1["V₁"] --> h1
+        v2["V₂"] --> h2
+        v3["V₃"] --> h3
+        v4["V₄"] --> h4
+        h1 --> o1["O₁"]
+        h2 --> o2["O₂"]
+        h3 --> o3["O₃"]
+        h4 --> o4["O₄"]
+    end
+
+    subgraph MQA["🟢 MQA — Multi-Query Attention"]
+        direction TB
+        q1m["Q₁"] --> h1m["Head₁"]
+        q2m["Q₂"] --> h2m["Head₂"]
+        q3m["Q₃"] --> h3m["Head₃"]
+        q4m["Q₄"] --> h4m["Head₄"]
+        k_shared["K<sub>shared</sub>"] --> h1m
+        k_shared --> h2m
+        k_shared --> h3m
+        k_shared --> h4m
+        v_shared["V<sub>shared</sub>"] --> h1m
+        v_shared --> h2m
+        v_shared --> h3m
+        v_shared --> h4m
+        h1m --> o1m["O₁"]
+        h2m --> o2m["O₂"]
+        h3m --> o3m["O₃"]
+        h4m --> o4m["O₄"]
+    end
+
+    subgraph GQA["🟣 GQA — Grouped-Query Attention"]
+        direction TB
+        q1g["Q₁"] --> h1g["Head₁"]
+        q2g["Q₂"] --> h2g["Head₂"]
+        q3g["Q₃"] --> h3g["Head₃"]
+        q4g["Q₄"] --> h4g["Head₄"]
+        kg1["K<sub>g1</sub>"] --> h1g
+        kg1 --> h2g
+        kg2["K<sub>g2</sub>"] --> h3g
+        kg2 --> h4g
+        vg1["V<sub>g1</sub>"] --> h1g
+        vg1 --> h2g
+        vg2["V<sub>g2</sub>"] --> h3g
+        vg2 --> h4g
+        h1g --> o1g["O₁"]
+        h2g --> o2g["O₂"]
+        h3g --> o3g["O₃"]
+        h4g --> o4g["O₄"]
+    end
+
+    MHA -->|"KV 缓存 = O(h·d)"| MQA
+    MQA -->|"恢复模型质量"| GQA
+
+    style MHA fill:#f8717122,stroke:#f87171,color:#fca5a5
+    style MQA fill:#4ade8022,stroke:#4ade80,color:#4ade80
+    style GQA fill:#a78bfa22,stroke:#a78bfa,color:#a78bfa
+    </pre>
+  </div>
+
+  <div class="grid-3">
+    <div class="mini-card" style="border-left: 3px solid var(--red);">
+      <h4 style="color:#f87171;">🔴 MHA</h4>
+      <p style="font-size:16px;color:var(--text2);">h 个 Q 头，h 个 KV 头<br>KV 缓存 = <b>2 · h · d</b> / token<br>质量最高，缓存最大</p>
+    </div>
+    <div class="mini-card" style="border-left: 3px solid var(--green);">
+      <h4 style="color:#4ade80;">🟢 MQA</h4>
+      <p style="font-size:16px;color:var(--text2);">h 个 Q 头，1 个 KV 头<br>KV 缓存 = <b>2 · d</b> / token<br>缓存最小，质量有损</p>
+    </div>
+    <div class="mini-card" style="border-left: 3px solid var(--purple);">
+      <h4 style="color:#a78bfa;">🟣 GQA</h4>
+      <p style="font-size:16px;color:var(--text2);">h 个 Q 头，g 个 KV 头<br>KV 缓存 = <b>2 · g · d</b> / token<br>质量与效率的最佳平衡点</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: Architecture Visualization -->
+<!-- ================================================================ -->
+<div class="section" id="sec-arch">
+  <h2><span class="dot cyan"></span> 2. 架构可视化：Q / K / V 投影矩阵对比</h2>
+  <p class="desc">
+    拖动滑块调整头数和组数，观察三种机制下 <b>Q（蓝色）、K（绿色）、V（紫色）投影矩阵</b>的数量变化。
+    每个小方块代表一个 d×d 的投影矩阵。
+  </p>
+
+  <div class="canvas-wrap"><canvas id="canvasArch" width="1200" height="620"></canvas></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>头数 h <span class="val" id="val-h">8</span></label>
+      <input type="range" id="slider-h" min="2" max="16" value="8" step="2">
+    </div>
+    <div class="slider-group">
+      <label>GQA 组数 g <span class="val" id="val-g">4</span></label>
+      <input type="range" id="slider-g" min="1" max="8" value="4" step="1">
+    </div>
+    <div class="slider-group">
+      <label>头维度 d<sub>k</sub> <span class="val" id="val-dk">64</span></label>
+      <input type="range" id="slider-dk" min="32" max="128" value="64" step="32">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-arch"></div>
+
+  <div class="insight">
+    💡 <strong>关键观察：</strong>当 g = 1 时，GQA 退化为 MQA；当 g = h 时，GQA 等价于 MHA。
+    GQA 的灵活性在于 <strong>g 可在 1 到 h 之间连续调节</strong>，允许在推理效率与模型质量之间进行精细权衡。
+    实践中常用 g = h/8 或 h/4（如 Llama-2 70B 用 g=8, h=64）。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: KV Cache Analysis -->
+<!-- ================================================================ -->
+<div class="section" id="sec-cache">
+  <h2><span class="dot green"></span> 3. KV Cache 大小对比</h2>
+  <p class="desc">
+    给定序列长度 N、头数 h、组数 g 和头维度 d<sub>k</sub>，直观对比三种机制在推理时的 KV 缓存开销。
+    MQA 将缓存压缩至 MHA 的 <b>1/h</b>，GQA 压缩至 <b>g/h</b>。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 KV Cache 大小公式</h3>
+    <div id="formula-kvcache"></div>
+  </div>
+
+  <div class="canvas-wrap"><canvas id="canvasCache" width="1200" height="480"></canvas></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>序列长度 N <span class="val" id="val-N-cache">2048</span></label>
+      <input type="range" id="slider-N-cache" min="256" max="8192" value="2048" step="256">
+    </div>
+    <div class="slider-group">
+      <label>头数 h <span class="val" id="val-h-cache">8</span></label>
+      <input type="range" id="slider-h-cache" min="2" max="32" value="8" step="2">
+    </div>
+    <div class="slider-group">
+      <label>GQA 组数 g <span class="val" id="val-g-cache">4</span></label>
+      <input type="range" id="slider-g-cache" min="1" max="16" value="4" step="1">
+    </div>
+    <div class="slider-group">
+      <label>头维度 d<sub>k</sub> <span class="val" id="val-dk-cache">64</span></label>
+      <input type="range" id="slider-dk-cache" min="32" max="128" value="64" step="32">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-cache"></div>
+
+  <div class="insight">
+    💡 <strong>实际影响：</strong>以 Llama-2 70B 为例（h=64, dₖ=128, N=4096），
+    MHA KV 缓存 ≈ <strong>64 MB/token</strong>，GQA (g=8) ≈ <strong>8 MB/token</strong> — 仅为 MHA 的 12.5%。
+    在批量推理场景中，这意味着可以在同样的显存下服务 <strong>8× 更多请求</strong>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Formula Comparison -->
+<!-- ================================================================ -->
+<div class="section" id="sec-formula">
+  <h2><span class="dot purple"></span> 4. 数学公式对比</h2>
+  <p class="desc">
+    三种机制的核心差异仅在于 K 和 V 的投影矩阵数量。Q 始终保持每头独立。
+  </p>
+
+  <div class="formula-block">
+    <h3>🔴 MHA — Multi-Head Attention</h3>
+    <div id="formula-mha"></div>
+  </div>
+  <div class="formula-block" style="border-left: 3px solid var(--green);">
+    <h3>🟢 MQA — Multi-Query Attention</h3>
+    <div id="formula-mqa"></div>
+  </div>
+  <div class="formula-block" style="border-left: 3px solid var(--purple);">
+    <h3>🟣 GQA — Grouped-Query Attention</h3>
+    <div id="formula-gqa"></div>
+  </div>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>MHA</th>
+        <th>MQA</th>
+        <th>GQA</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Q 投影矩阵数量</td>
+        <td class="hl-cell">h</td>
+        <td class="hl-cell">h</td>
+        <td class="hl-cell">h</td>
+      </tr>
+      <tr>
+        <td>K 投影矩阵数量</td>
+        <td class="hl-cell">h</td>
+        <td class="mid-cell">1</td>
+        <td class="mid-cell">g</td>
+      </tr>
+      <tr>
+        <td>V 投影矩阵数量</td>
+        <td class="hl-cell">h</td>
+        <td class="mid-cell">1</td>
+        <td class="mid-cell">g</td>
+      </tr>
+      <tr>
+        <td>总参数量 (QKV)</td>
+        <td>3h · d · d<sub>model</sub></td>
+        <td>(h+2) · d · d<sub>model</sub></td>
+        <td>(h+2g) · d · d<sub>model</sub></td>
+      </tr>
+      <tr>
+        <td>每 token KV 缓存</td>
+        <td>2 · h · d<sub>k</sub></td>
+        <td class="hl-cell">2 · d<sub>k</sub></td>
+        <td>2 · g · d<sub>k</sub></td>
+      </tr>
+      <tr>
+        <td>缓存相对比例</td>
+        <td>1× (基准)</td>
+        <td class="hl-cell">1/h ×</td>
+        <td class="mid-cell">g/h ×</td>
+      </tr>
+      <tr>
+        <td>模型质量</td>
+        <td class="hl-cell">⭐⭐⭐</td>
+        <td>⭐⭐</td>
+        <td class="mid-cell">⭐⭐½</td>
+      </tr>
+      <tr>
+        <td>代表模型</td>
+        <td>BERT, GPT-2, T5</td>
+        <td>PaLM, Gemini Nano</td>
+        <td>Llama-2 70B, Llama-3, Mistral, Gemma</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: Head-to-KV Mapping (Interactive) -->
+<!-- ================================================================ -->
+<div class="section" id="sec-mapping">
+  <h2><span class="dot orange"></span> 5. 交互式 Head → KV 映射</h2>
+  <p class="desc">
+    绿色连线表示每个 Q 头使用的 K/V 来源。MHA 下每个头有独立连线，MQA 下所有线汇聚到唯一的 KV，
+    GQA 下组内共享。拖动滑块观察连线的变化。
+  </p>
+
+  <div class="canvas-wrap"><canvas id="canvasMapping" width="1200" height="500"></canvas></div>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>头数 h <span class="val" id="val-h-map">8</span></label>
+      <input type="range" id="slider-h-map" min="2" max="16" value="8" step="2">
+    </div>
+    <div class="slider-group">
+      <label>GQA 组数 g <span class="val" id="val-g-map">4</span></label>
+      <input type="range" id="slider-g-map" min="1" max="8" value="4" step="1">
+    </div>
+    <div class="slider-group">
+      <label>展示模式 <span class="val" id="val-mode">ALL</span></label>
+      <input type="range" id="slider-mode" min="0" max="2" value="0" step="1">
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#f87171;"></div> MHA</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#4ade80;"></div> MQA</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#a78bfa;"></div> GQA</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#38bdf8;"></div> Q 头</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#fbbf24;"></div> KV 头</div>
+  </div>
+
+  <div class="insight" id="insight-map">
+    💡 <strong>直观理解：</strong>MQA 下所有 Q 头"看"同一对 K/V — 就像所有镜头共享同一个底片。
+    GQA 将镜头分组，每组有自己的底片。这解释了为什么 <strong>MQA 缓存最小但可能丢失细节</strong>，
+    而 GQA 通过增加少量缓存换回了大部分质量。
+  </div>
+</div>
+
+</div><!-- .container -->
+
+<!-- ═══ Mermaid Init ═══ -->
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1e1b4b',
+    primaryTextColor: '#e1e4eb',
+    primaryBorderColor: '#6366f1',
+    lineColor: '#ffffff',
+    secondaryColor: '#16213e',
+    tertiaryColor: '#0b0e14',
+    fontSize: '18px',
+    noteBkgColor: '#1e2332',
+    noteTextColor: '#e1e4eb',
+    noteBorderColor: '#38bdf8',
+    sequenceNumberColor: '#38bdf8',
+  },
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: 'basis',
+    padding: 18,
+  },
+  sequence: {
+    useMaxWidth: true,
+    boxMargin: 10,
+    mirrorActors: false,
+  },
+});
+</script>
+
+<!-- ═══ KaTeX Formulas ═══ -->
+<script>
+(function() {
+  const formulas = {
+    'formula-kvcache': String.raw`\begin{aligned}
+\text{MHA:}&\quad \text{KV}_{\text{cache}} = 2 \cdot N \cdot h \cdot d_k \\[6pt]
+\text{MQA:}&\quad \text{KV}_{\text{cache}} = 2 \cdot N \cdot 1 \cdot d_k = 2 N d_k \\[6pt]
+\text{GQA:}&\quad \text{KV}_{\text{cache}} = 2 \cdot N \cdot g \cdot d_k
+\end{aligned}`,
+
+    'formula-mha': String.raw`\begin{aligned}
+\text{head}_i &= \text{Attention}(Q_i, K_i, V_i) \\
+&= \text{softmax}\!\left(\frac{Q_i K_i^\top}{\sqrt{d_k}}\right) V_i \\[4pt]
+\text{where}&\quad Q_i = X W_i^Q,\; K_i = X W_i^K,\; V_i = X W_i^V \\[2pt]
+&\quad W_i^Q, W_i^K, W_i^V \in \mathbb{R}^{d_{\text{model}} \times d_k} \\[2pt]
+\text{MHA}(X) &= \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W^O
+\end{aligned}`,
+
+    'formula-mqa': String.raw`\begin{aligned}
+\text{head}_i &= \text{Attention}(Q_i, K, V) \\
+&= \text{softmax}\!\left(\frac{Q_i K^\top}{\sqrt{d_k}}\right) V \\[4pt]
+\text{where}&\quad Q_i = X W_i^Q \quad \text{(每头独立 Q)}\\[2pt]
+&\quad K = X W^K,\; V = X W^V \quad \text{(所有头共享同一对 K, V)}\\[2pt]
+&\quad W_i^Q \in \mathbb{R}^{d_{\text{model}} \times d_k},\; W^K, W^V \in \mathbb{R}^{d_{\text{model}} \times d_k}
+\end{aligned}`,
+
+    'formula-gqa': String.raw`\begin{aligned}
+\text{head}_i &= \text{Attention}(Q_i, K_{\lceil i \cdot g / h \rceil}, V_{\lceil i \cdot g / h \rceil}) \\[4pt]
+\text{where}&\quad Q_i = X W_i^Q \quad \text{(每头独立 Q)}\\[2pt]
+&\quad K_j = X W_j^K,\; V_j = X W_j^V \quad (j = 1, \ldots, g)\\[2pt]
+&\quad \text{head}_i \text{ 使用第 } \lceil i \cdot g / h \rceil \text{ 组的 KV}\\[2pt]
+\text{GQA}(X) &= \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W^O
+\end{aligned}`,
+  };
+
+  for (const [id, tex] of Object.entries(formulas)) {
+    const el = document.getElementById(id);
+    if (el) { katex.render(tex, el, { displayMode: true, throwOnError: false }); }
+  }
+})();
+</script>
+
+<!-- ═══ SECTION 2: Architecture Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasArch');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const h = +document.getElementById('slider-h').value;
+    const g = +document.getElementById('slider-g').value;
+    const dk = +document.getElementById('slider-dk').value;
+
+    // Clamp g to h
+    const gClamped = Math.min(g, h);
+
+    const panelW = 330;
+    const panels = [
+      { label: 'MHA', kvCount: h, color: '#f87171', x: 40 },
+      { label: 'MQA', kvCount: 1, color: '#4ade80', x: 40 + panelW + 35 },
+      { label: 'GQA (g=' + gClamped + ')', kvCount: gClamped, color: '#a78bfa', x: 40 + 2*(panelW + 35) },
+    ];
+
+    const topY = 60;
+    const headH = 28;
+    const headGap = 6;
+    const maxHeads = Math.max(h, 8);
+
+    panels.forEach(panel => {
+      const cx = panel.x + panelW / 2;
+      let y = topY;
+
+      // Panel title
+      ctx.fillStyle = panel.color;
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(panel.label, cx, y);
+      y += 30;
+
+      // Panel border
+      ctx.strokeStyle = panel.color + '44';
+      ctx.lineWidth = 1;
+      const panelH = Math.max(320, maxHeads * (headH + headGap) * 2 + 100);
+      ctx.strokeRect(panel.x, y - 4, panelW, panelH);
+      ctx.fillStyle = panel.color + '08';
+      ctx.fillRect(panel.x, y - 4, panelW, panelH);
+
+      // ── Q heads (left side) ──
+      y += 10;
+      ctx.fillStyle = '#8e96a9';
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText('Q 头 (' + h + '个)', panel.x + 10, y + headH/2 + 4);
+
+      const qStartX = panel.x + 10;
+      const qW = 110;
+      for (let i = 0; i < h; i++) {
+        const qx = qStartX;
+        const qy = y + 28 + i * (headH + headGap);
+        // Q head box
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(qx, qy, qW, headH);
+        ctx.strokeStyle = '#7dd3fc';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(qx, qy, qW, headH);
+        ctx.fillStyle = '#0b0e14';
+        ctx.textAlign = 'left';
+        ctx.font = '16px "JetBrains Mono", monospace';
+        ctx.fillText('Q' + (i+1) + '  Wᵢ^Q', qx + 8, qy + headH - 9);
+      }
+
+      // ── KV heads (right side) ──
+      const kvStartX = panel.x + panelW - 120;
+      ctx.fillStyle = '#8e96a9';
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText('KV 头 (' + panel.kvCount + '个)', panel.x + panelW - 10, y + headH/2 + 4);
+
+      for (let j = 0; j < panel.kvCount; j++) {
+        const headsPerKV = Math.ceil(h / panel.kvCount);
+        const kvY = y + 28 + j * headsPerKV * (headH + headGap);
+        const kvH = headsPerKV * (headH + headGap) - headGap;
+
+        // KV block
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(kvStartX, kvY, 110, kvH);
+        ctx.strokeStyle = '#fcd34d';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(kvStartX, kvY, 110, kvH);
+        ctx.fillStyle = '#0b0e14';
+        ctx.textAlign = 'center';
+        ctx.font = '16px "JetBrains Mono", monospace';
+        ctx.fillText('K' + (j+1) + ' / V' + (j+1), kvStartX + 55, kvY + kvH/2 + 4);
+      }
+
+      // ── Connection lines ──
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < h; i++) {
+        const kvIdx = Math.min(Math.floor(i * panel.kvCount / h), panel.kvCount - 1);
+        const headsPerKV = Math.ceil(h / panel.kvCount);
+        const qy = y + 28 + i * (headH + headGap) + headH / 2;
+        const kvY = y + 28 + kvIdx * headsPerKV * (headH + headGap) +
+                    (headsPerKV * (headH + headGap) - headGap) / 2;
+
+        const fromX = qStartX + qW;
+        const toX = kvStartX;
+        ctx.strokeStyle = panel.color + '66';
+        ctx.beginPath();
+        const midX = (fromX + toX) / 2;
+        ctx.moveTo(fromX, qy);
+        ctx.bezierCurveTo(midX, qy, midX, kvY, toX, kvY);
+        ctx.stroke();
+      }
+
+      // ── KV Cache info ──
+      const infoY = y + 28 + h * (headH + headGap) + 20;
+      ctx.fillStyle = '#8e96a9';
+      ctx.textAlign = 'center';
+      ctx.font = '16px "JetBrains Mono", monospace';
+      const cacheElems = panel.kvCount * dk * 2;
+      ctx.fillText('KV Cache: ' + cacheElems + ' elem/token', cx, infoY);
+      ctx.fillText('(' + (panel.kvCount/h*100).toFixed(1) + '% of MHA)', cx, infoY + 22);
+    });
+
+    // Update info cards
+    document.getElementById('val-h').textContent = h;
+    document.getElementById('val-g').textContent = gClamped;
+    document.getElementById('val-dk').textContent = dk;
+    document.getElementById('info-arch').innerHTML = `
+      <div class="info-card">MHA KV 投影 <div class="val" style="color:#f87171">${h} 对</div></div>
+      <div class="info-card">MQA KV 投影 <div class="val" style="color:#4ade80">1 对</div></div>
+      <div class="info-card">GQA KV 投影 <div class="val" style="color:#a78bfa">${gClamped} 对</div></div>
+      <div class="info-card">MQA 压缩比 <div class="val" style="color:#4ade80">${h}:1</div></div>
+      <div class="info-card">GQA 压缩比 <div class="val" style="color:#a78bfa">${(h/gClamped).toFixed(1)}:1</div></div>
+    `;
+  }
+
+  ['slider-h','slider-g','slider-dk'].forEach(id => {
+    document.getElementById(id).addEventListener('input', draw);
+  });
+  draw();
+})();
+</script>
+
+<!-- ═══ SECTION 3: KV Cache Bar Chart ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasCache');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function formatBytes(elems, dk) {
+    const bytes = elems * dk * 2; // fp16 = 2 bytes
+    if (bytes >= 1e9) return (bytes/1e9).toFixed(2) + ' GB';
+    if (bytes >= 1e6) return (bytes/1e6).toFixed(1) + ' MB';
+    if (bytes >= 1e3) return (bytes/1e3).toFixed(1) + ' KB';
+    return bytes.toFixed(0) + ' B';
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const N = +document.getElementById('slider-N-cache').value;
+    const h = +document.getElementById('slider-h-cache').value;
+    const g = +document.getElementById('slider-g-cache').value;
+    const dk = +document.getElementById('slider-dk-cache').value;
+    const gClamped = Math.min(g, h);
+
+    const mhaElems = 2 * N * h * dk;
+    const mqaElems = 2 * N * 1 * dk;
+    const gqaElems = 2 * N * gClamped * dk;
+
+    const bars = [
+      { label: 'MHA', val: mhaElems, color: '#f87171', accentHex: '#f87171' },
+      { label: 'MQA', val: mqaElems, color: '#4ade80', accentHex: '#4ade80' },
+      { label: 'GQA (g='+gClamped+')', val: gqaElems, color: '#a78bfa', accentHex: '#a78bfa' },
+    ];
+
+    const margin = { top: 50, left: 80, right: 40, bottom: 60 };
+    const bw = W - margin.left - margin.right;
+    const bh = H - margin.top - margin.bottom;
+    const barCount = bars.length;
+    const barW = Math.min(180, (bw - 60) / barCount);
+    const gap = (bw - barCount * barW) / (barCount + 1);
+    const maxVal = bars[0].val;
+
+    bars.forEach((bar, i) => {
+      const x = margin.left + gap + i * (barW + gap);
+      const hBar = Math.max(10, (bar.val / maxVal) * bh);
+      const y = margin.top + bh - hBar;
+
+      // Bar gradient
+      const grad = ctx.createLinearGradient(x, y, x, margin.top + bh);
+      grad.addColorStop(0, bar.color);
+      grad.addColorStop(1, bar.color + '33');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, barW, hBar);
+      ctx.strokeStyle = bar.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, barW, hBar);
+
+      // Value on top
+      ctx.fillStyle = '#e1e4eb';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 20px "JetBrains Mono", monospace';
+      ctx.fillText(formatBytes(bar.val, dk), x + barW/2, y - 10);
+
+      // Percentage
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '16px "JetBrains Mono", monospace';
+      ctx.fillText((bar.val / maxVal * 100).toFixed(1) + '%', x + barW/2, y - 32);
+
+      // Label
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(bar.label, x + barW/2, margin.top + bh + 30);
+
+      // Savings annotation
+      if (i > 0) {
+        const saving = ((1 - bar.val / maxVal) * 100).toFixed(1);
+        ctx.fillStyle = bar.color;
+        ctx.font = '17px "Segoe UI", "PingFang SC", sans-serif';
+        ctx.fillText('节省 ' + saving + '%', x + barW/2, margin.top + bh + 52);
+      }
+    });
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('KV Cache 大小对比 (N='+N+', h='+h+', dₖ='+dk+')', W/2, margin.top - 15);
+
+    // Update info
+    document.getElementById('val-N-cache').textContent = N;
+    document.getElementById('val-h-cache').textContent = h;
+    document.getElementById('val-g-cache').textContent = gClamped;
+    document.getElementById('val-dk-cache').textContent = dk;
+    document.getElementById('info-cache').innerHTML = `
+      <div class="info-card">MHA <div class="val" style="color:#f87171">${formatBytes(mhaElems, dk)}</div></div>
+      <div class="info-card">MQA <div class="val" style="color:#4ade80">${formatBytes(mqaElems, dk)}</div></div>
+      <div class="info-card">GQA <div class="val" style="color:#a78bfa">${formatBytes(gqaElems, dk)}</div></div>
+      <div class="info-card">GQA vs MHA <div class="val" style="color:#22d3ee">${(gqaElems/mhaElems*100).toFixed(1)}%</div></div>
+    `;
+  }
+
+  ['slider-N-cache','slider-h-cache','slider-g-cache','slider-dk-cache'].forEach(id => {
+    document.getElementById(id).addEventListener('input', draw);
+  });
+  draw();
+})();
+</script>
+
+<!-- ═══ SECTION 5: Head-to-KV Mapping Canvas ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasMapping');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const modeNames = ['并排对比 (ALL)', '仅 MHA', '仅 MQA', '仅 GQA'];
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const h = +document.getElementById('slider-h-map').value;
+    const g = +document.getElementById('slider-g-map').value;
+    const mode = +document.getElementById('slider-mode').value;
+    const gClamped = Math.min(g, h);
+
+    document.getElementById('val-h-map').textContent = h;
+    document.getElementById('val-g-map').textContent = gClamped;
+    document.getElementById('val-mode').textContent = ['ALL', 'MHA', 'MQA', 'GQA'][mode];
+
+    const configs = [];
+    if (mode === 0) {
+      configs.push({ label: 'MHA', color: '#f87171', kvCount: h, x: 30, w: 350 });
+      configs.push({ label: 'MQA', color: '#4ade80', kvCount: 1, x: 410, w: 350 });
+      configs.push({ label: 'GQA (g='+gClamped+')', color: '#a78bfa', kvCount: gClamped, x: 790, w: 350 });
+    } else if (mode === 1) {
+      configs.push({ label: 'MHA', color: '#f87171', kvCount: h, x: 150, w: 900 });
+    } else if (mode === 2) {
+      configs.push({ label: 'MQA', color: '#4ade80', kvCount: 1, x: 150, w: 900 });
+    } else {
+      configs.push({ label: 'GQA (g='+gClamped+')', color: '#a78bfa', kvCount: gClamped, x: 150, w: 900 });
+    }
+
+    const topY = 50;
+    const qNodeW = 80, qNodeH = 24;
+    const kvNodeW = 80, kvNodeH = 24;
+    const qGap = 6;
+
+    const maxH = Math.max(h, 8);
+
+    configs.forEach(cfg => {
+      let y = topY;
+
+      // Title
+      ctx.fillStyle = cfg.color;
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(cfg.label, cfg.x + cfg.w/2, y);
+      y += 20;
+
+      // Panel bg
+      const panelH = Math.max(250, maxH * (qNodeH + qGap) + 100);
+      ctx.strokeStyle = cfg.color + '44';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cfg.x, y, cfg.w, panelH);
+      ctx.fillStyle = cfg.color + '06';
+      ctx.fillRect(cfg.x, y, cfg.w, panelH);
+
+      // Section label
+      y += 10;
+      ctx.fillStyle = '#8e96a9';
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText('Q Heads (' + h + '个)', cfg.x + 15, y + qNodeH/2 + 2);
+
+      // Q heads position
+      const qX = cfg.x + 15;
+      const kvX = cfg.x + cfg.w - kvNodeW - 15;
+      const startY = y + 28;
+      const totalQH = h * (qNodeH + qGap);
+
+      // Q head nodes
+      for (let i = 0; i < h; i++) {
+        const qy = startY + i * (qNodeH + qGap);
+        const grad = ctx.createLinearGradient(qX, qy, qX, qy + qNodeH);
+        grad.addColorStop(0, '#1e3a5f');
+        grad.addColorStop(1, '#0f1f3a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(qX, qy, qNodeW, qNodeH);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(qX, qy, qNodeW, qNodeH);
+        ctx.fillStyle = '#e1e4eb';
+        ctx.textAlign = 'center';
+        ctx.font = '16px "JetBrains Mono", monospace';
+        ctx.fillText('Q'+(i+1), qX + qNodeW/2, qy + qNodeH - 7);
+      }
+
+      // KV head nodes
+      const kvCount = cfg.kvCount;
+      ctx.fillStyle = '#8e96a9';
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText('KV (' + kvCount + '个)', cfg.x + cfg.w - 15, startY - 28 + qNodeH/2 + 2);
+
+      for (let j = 0; j < kvCount; j++) {
+        const headsPerKV = Math.ceil(h / kvCount);
+        const kvH = headsPerKV * (qNodeH + qGap) - qGap;
+        const kvY = startY + j * headsPerKV * (qNodeH + qGap);
+
+        const grad = ctx.createLinearGradient(kvX, kvY, kvX, kvY + kvH);
+        grad.addColorStop(0, '#3d2e0a');
+        grad.addColorStop(1, '#1f1805');
+        ctx.fillStyle = grad;
+        ctx.fillRect(kvX, kvY, kvNodeW, kvH);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(kvX, kvY, kvNodeW, kvH);
+        ctx.fillStyle = '#e1e4eb';
+        ctx.textAlign = 'center';
+        ctx.font = '16px "JetBrains Mono", monospace';
+        ctx.fillText('K'+(j+1)+' V'+(j+1), kvX + kvNodeW/2, kvY + kvH/2 + 3);
+      }
+
+      // Connection curves
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < h; i++) {
+        const kvIdx = Math.min(Math.floor(i * kvCount / h), kvCount - 1);
+        const headsPerKV = Math.ceil(h / kvCount);
+        const qy = startY + i * (qNodeH + qGap) + qNodeH / 2;
+        const kvStartY = startY + kvIdx * headsPerKV * (qNodeH + qGap);
+        const kvH = headsPerKV * (qNodeH + qGap) - qGap;
+        const kvCy = kvStartY + kvH / 2;
+
+        const fromX = qX + qNodeW;
+        const toX = kvX;
+        ctx.strokeStyle = cfg.color + '88';
+        ctx.beginPath();
+        ctx.moveTo(fromX, qy);
+        const midX = (fromX + toX) / 2;
+        ctx.bezierCurveTo(midX, qy, midX, kvCy, toX, kvCy);
+        ctx.stroke();
+      }
+    });
+
+    // Update insight
+    const insight = document.getElementById('insight-map');
+    if (insight) {
+      const mhaKV = h;
+      const mqaKV = 1;
+      const gqaKV = gClamped;
+      insight.innerHTML = '💡 <strong>映射关系：</strong>MHA = ' + mhaKV + ' 对 KV（每头独立），' +
+        'MQA = 1 对 KV（全头共享），GQA = ' + gqaKV + ' 对 KV（' +
+        Math.ceil(h/gClamped) + ' 头/组）。<strong>连线越少 → 缓存越小 → 推理越快</strong>，但注意力多样性也随之降低。';
+    }
+  }
+
+  ['slider-h-map','slider-g-map','slider-mode'].forEach(id => {
+    document.getElementById(id).addEventListener('input', draw);
+  });
+  draw();
+})();
+</script>
+
+<!-- ═══ Slider progress fill ═══ -->
+<script>
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+</body>
+</html>

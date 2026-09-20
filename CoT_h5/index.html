@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>思维链与思维树 — Chain-of-Thought · Tree-of-Thoughts 推理策略交互式讲解</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #161822;
+    --card2: #1a1c2a;
+    --text: #e1e4ed;
+    --text2: #8b8fa8;
+    --accent: #6366f1;
+    --accent2: #818cf8;
+    --cot: #f59e0b;
+    --tot: #22c55e;
+    --got: #ec4899;
+    --aot: #3b82f6;
+    --border: #252840;
+    --radius: 14px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #161822 0%, #1a1040 30%, #162238 60%, #161822 100%);
+    border-bottom: 2px solid var(--border);
+    padding: 40px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 30% 50%, rgba(245,158,11,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(99,102,241,0.05) 0%, transparent 50%),
+      radial-gradient(circle at 70% 50%, rgba(34,197,94,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 31px; font-weight: 800;
+    background: linear-gradient(135deg, var(--cot), var(--cot), #fbbf24, var(--tot), var(--tot));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 17px;
+    position: relative;
+  }
+  .header .tag-row {
+    display: flex; justify-content: center; gap: 10px;
+    margin-top: 14px; flex-wrap: wrap; position: relative;
+  }
+  .header .tag {
+    padding: 4px 14px; border-radius: 20px;
+    font-size: 16px; font-weight: 600; border: 1px solid;
+  }
+  .tag.tag-cot { color: var(--cot); border-color: var(--cot); background: rgba(245,158,11,0.08); }
+  .tag.tag-tot { color: var(--tot); border-color: var(--tot); background: rgba(34,197,94,0.08); }
+  .tag.tag-got { color: var(--got); border-color: var(--got); background: rgba(236,72,153,0.08); }
+  .tag.tag-aot { color: var(--aot); border-color: var(--aot); background: rgba(59,130,246,0.08); }
+
+  /* ── Main ── */
+  .main {
+    max-width: 1480px; margin: 0 auto; padding: 24px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+  }
+  .toc h3 {
+    font-size: 17px; color: var(--text2); margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .toc-nav {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .toc-nav a {
+    padding: 8px 16px; border-radius: 20px;
+    text-decoration: none; font-size: 16px; font-weight: 500;
+    border: 1px solid var(--border); color: var(--text2);
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .toc-nav a:hover { border-color: var(--accent2); color: var(--text); background: rgba(99,102,241,0.08); }
+  .toc-nav a.cot-link:hover { border-color: var(--cot); background: rgba(245,158,11,0.08); }
+  .toc-nav a.tot-link:hover { border-color: var(--tot); background: rgba(34,197,94,0.08); }
+  .toc-nav a.got-link:hover { border-color: var(--got); background: rgba(236,72,153,0.08); }
+  .toc-nav a.aot-link:hover { border-color: var(--aot); background: rgba(59,130,246,0.08); }
+
+  /* ── Section ── */
+  .section {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 32px;
+    scroll-margin-top: 20px;
+  }
+  .section h2 {
+    font-size: 24px; font-weight: 700;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section h3 {
+    font-size: 19px; font-weight: 600;
+    margin: 24px 0 12px;
+    color: #cbd5e1;
+  }
+  .section p {
+    color: var(--text2); font-size: 16px;
+    margin-bottom: 14px;
+  }
+  .section ul, .section ol {
+    color: var(--text2); font-size: 16px;
+    padding-left: 24px; margin-bottom: 14px;
+  }
+  .section li { margin-bottom: 6px; }
+  .section .highlight {
+    color: var(--text); font-weight: 600;
+  }
+
+  /* ── Highlight Callout ── */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(99,102,241,0.06);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  .callout.cot-callout { border-left-color: var(--cot); background: rgba(245,158,11,0.06); }
+  .callout.tot-callout { border-left-color: var(--tot); background: rgba(34,197,94,0.06); }
+  .callout strong { color: var(--text); }
+
+  /* ── Mermaid Container ── */
+  /* ── Two Column ── */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+
+  .col-card {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+  }
+  .col-card h4 {
+    font-size: 18px; font-weight: 600; margin-bottom: 10px;
+  }
+  .col-card.cot-border { border-top: 3px solid var(--cot); }
+  .col-card.tot-border { border-top: 3px solid var(--tot); }
+
+  /* ── Strategy Table ── */
+  .strategy-table {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-size: 16px;
+  }
+  .strategy-table thead th {
+    background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(124,58,237,0.08));
+    color: var(--text);
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-size: 15px;
+  }
+  .strategy-table td, .strategy-table th {
+    padding: 12px 16px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .strategy-table td { color: var(--text2); }
+  .strategy-table tbody tr:hover td {
+    background: rgba(99,102,241,0.04);
+    color: var(--text);
+  }
+
+  /* ── Reasoning Trace Box ── */
+  .trace-box {
+    background: #0d1117; border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 24px;
+    margin: 16px 0; font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 15px; line-height: 1.8;
+    overflow-x: auto;
+  }
+  .trace-box .step {
+    padding: 4px 0;
+  }
+  .trace-box .step-num {
+    display: inline-block; width: 28px; height: 28px;
+    line-height: 28px; text-align: center; border-radius: 50%;
+    background: rgba(245,158,11,0.15); color: var(--cot);
+    font-weight: 700; font-size: 13px; margin-right: 10px;
+    flex-shrink: 0;
+  }
+  .trace-box .step-text { color: #9ca3af; }
+  .trace-box .step-answer {
+    color: var(--tot); font-weight: 600;
+    padding: 8px 0 0 38px;
+  }
+
+  /* ── ToT Tree ── */
+  .tot-tree {
+    overflow-x: auto; margin: 16px 0;
+    padding: 16px 0;
+  }
+  .tot-tree pre { margin: 0; }
+
+  /* ── Code Editor ── */
+  .code-editor {
+    background: #0d0f17;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 24px 0;
+  }
+  .code-header {
+    background: #11131c;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-body {
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #e1e4ed;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; padding: 32px;
+    color: var(--text2); font-size: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 960px) {
+    .section { padding: 20px 18px; }
+    .header { padding: 28px 16px; }
+    .header h1 { font-size: 24px; }
+    .strategy-table { font-size: 14px; }
+    .strategy-table td, .strategy-table th { padding: 8px 10px; }
+  }
+  @media (max-width: 520px) {
+    .main { padding: 12px; }
+    .header h1 { font-size: 20px; }
+    .section h2 { font-size: 20px; }
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* ── highlight.js code blocks ── */
+  .hljs {
+    background: #0d1117 !important;
+    border-radius: 10px;
+    padding: 18px 22px !important;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  pre code.hljs {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<!-- ═══ Header ═══ -->
+<header class="header">
+  <h1>思维链与思维树</h1>
+  <p>Chain-of-Thought · Tree-of-Thoughts — 从线性推演到分支探索的大模型推理策略</p>
+  <div class="tag-row">
+    <span class="tag tag-cot">🔗 Chain-of-Thought
+    <span class="tag tag-tot">🌳 Tree-of-Thoughts
+    <span class="tag tag-got">🕸️ Graph-of-Thoughts
+    <span class="tag tag-aot">🔍 Algorithm-of-Thoughts
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ═══ TOC ═══ -->
+  <nav class="toc">
+    <h3>📑 目录导航</h3>
+    <div class="toc-nav">
+      <a href="#intro">💡 背景</a>
+      <a href="#cot" class="cot-link">🔗 Chain-of-Thought</a>
+      <a href="#cot-variants" class="cot-link">🧩 CoT 变体</a>
+      <a href="#cot-how" class="cot-link">⚙️ CoT 为什么有效</a>
+      <a href="#tot" class="tot-link">🌳 Tree-of-Thoughts</a>
+      <a href="#tot-strategy" class="tot-link">🧭 搜索策略</a>
+      <a href="#comparison" class="got-link">⚖️ 对比总结</a>
+      <a href="#langgraph" class="aot-link">💻 代码实践</a>
+      <a href="#got" class="got-link">🕸️ 前沿扩展</a>
+    </div>
+  </nav>
+
+  <!-- ═══ Intro ═══ -->
+  <section id="intro" class="section">
+    <h2>💡 从提示工程到推理策略</h2>
+    <p>
+      大语言模型（LLM）在直接回答复杂推理问题时，常常产生<strong class="highlight">"一步到位"式的错误答案</strong>——模型在单次前向传播中试图直接从输入跳到输出，缺乏中间推理步骤的显式引导。
+    </p>
+    <p>
+      <strong>Chain-of-Thought（思维链）</strong>和 <strong>Tree-of-Thoughts（思维树）</strong> 是两种关键的推理增强技术，核心思想是：<strong>让模型把推理过程"说"出来，并在推理空间中搜索最优路径</strong>。它们分别代表了从线性推演到树形分支搜索的思维跃迁。
+    </p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif' }}}%%
+flowchart LR
+    A["❓ 复杂推理问题"] --> B["📝 直接回答<br/>❌ 高错误率"]
+    A --> C["🔗 Chain-of-Thought<br/>线性推演"]
+    A --> D["🌳 Tree-of-Thoughts<br/>分支搜索"]
+    C --> E["✅ 更准确"]
+    D --> F["✅ 更可靠<br/>（代价更高）"]
+
+    style A fill:#6366f1,stroke:#818cf8,color:#fff
+    style B fill:#ef4444,stroke:#f87171,color:#fff
+    style C fill:#f59e0b,stroke:#fbbf24,color:#0f1117
+    style D fill:#22c55e,stroke:#4ade80,color:#0f1117
+    style E fill:#f59e0b,stroke:#fbbf24,color:#0f1117
+    style F fill:#22c55e,stroke:#4ade80,color:#0f1117
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══ Chain of Thought ═══ -->
+  <section id="cot" class="section">
+    <h2>🔗 Chain-of-Thought（思维链）</h2>
+
+    <h3>核心思想</h3>
+    <p>
+      Chain-of-Thought（CoT）由 <strong>Wei et al. (2022)</strong> 提出，核心思想是：<strong>在 prompt 中提供逐步推理的示例（few-shot），或直接指示模型"让我们一步一步思考"（zero-shot），引导模型生成中间推理步骤后再给出最终答案</strong>。
+    </p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif' }}}%%
+flowchart TB
+    subgraph Direct["❌ 直接回答（Standard Prompting）"]
+        D1["问题：Roger 有 5 个网球。<br/>他又买了 2 罐，每罐 3 个。<br/>他现在有多少个？"] --> D2["直接输出答案"]
+        D2 --> D3["💥 答案: 可能是错的"]
+    end
+
+    subgraph CoT["✅ Chain-of-Thought Prompting"]
+        C1["问题：Roger 有 5 个网球。<br/>他又买了 2 罐，每罐 3 个。<br/>他现在有多少个？"] --> C2["Step 1: Roger 最初有 5 个"]
+        C2 --> C3["Step 2: 2 罐 × 3 个 = 6 个"]
+        C3 --> C4["Step 3: 5 + 6 = 11 个"]
+        C4 --> C5["🎯 答案: 11"]
+    end
+
+    style Direct fill:#7f1d1d,stroke:#ef4444,color:#fca5a5
+    style D1 fill:#991b1b,stroke:#ef4444,color:#fca5a5
+    style D2 fill:#991b1b,stroke:#ef4444,color:#fca5a5
+    style D3 fill:#7f1d1d,stroke:#ef4444,color:#fca5a5
+    style CoT fill:#1a2e05,stroke:#22c55e,color:#bbf7d0
+    style C1 fill:#14532d,stroke:#22c55e,color:#bbf7d0
+    style C2 fill:#14532d,stroke:#22c55e,color:#bbf7d0
+    style C3 fill:#14532d,stroke:#22c55e,color:#bbf7d0
+    style C4 fill:#14532d,stroke:#22c55e,color:#bbf7d0
+    style C5 fill:#166534,stroke:#4ade80,color:#fff
+      </pre>
+    </div>
+
+    <div class="callout cot-callout">
+      <strong>🔑 关键洞察：</strong> 当 LLM 被要求 "逐步输出" 推理过程时，每个后续 token 都能<strong>"关注到"</strong>前面已经推导出的中间结果——这相当于在每个推理步骤上都做了一次隐式的检索/复核，让模型有更多机会纠正初始直觉的偏差。
+    </div>
+
+    <h3>数学直觉</h3>
+    <p>
+      标准自回归生成是直接最大化：
+    </p>
+    <div class="formula-block">
+      <span id="eq1">$$P(\text{answer} \mid \text{question})$$
+    </div>
+    <p>
+      而 CoT 将推理过程显式分解为中间步骤序列 \(z_1, z_2, \dots, z_k\)，再基于这些步骤得出答案：
+    </p>
+    <div class="formula-block">
+      <span id="eq2">$$P(\text{answer} \mid \text{question}) = \sum_{z_1, \dots, z_k} P(\text{answer} \mid z_k, \dots, z_1, \text{question}) \cdot \prod_{t=1}^{k} P(z_t \mid z_{&lt;t}, \text{question})$$
+    </div>
+    <p>
+      这种分解使模型能在每个子问题上分配单独的"计算预算"，从而显著提升复杂推理的准确率。
+    </p>
+  </section>
+
+  <!-- ═══ CoT Variants ═══ -->
+  <section id="cot-variants" class="section">
+    <h2>🧩 CoT 变体：Few-Shot · Zero-Shot · Auto-CoT</h2>
+
+    <div class="two-col">
+      <div class="col-card cot-border">
+        <h4 style="color:var(--cot)">📋 Few-Shot CoT</h4>
+        <p>
+          在 prompt 中手写 2-8 个包含详细推理步骤的示例，模型通过<strong>上下文学习（In-Context Learning）</strong>模仿推理模式。
+        </p>
+        <div class="trace-box" style="font-size:14px; padding:12px 16px;">
+          <div style="color:var(--text2); margin-bottom:4px;">示例 prompt：</div>
+          <div style="color:#9ca3af;">Q: 小明有 3 个苹果，又买了 4 个...</div>
+          <div style="color:var(--tot);">A: 第一步... 第二步... 最终 7 个。</div>
+          <div style="color:#9ca3af; margin-top:4px;">Q: &lt;实际提问&gt;</div>
+          <div style="color:var(--tot);">A:</div>
+        </div>
+        <p style="margin-top:8px; font-size:15px;">
+          ✅ 效果最稳定 &nbsp;|&nbsp; ❌ 需要人工编写高质量示例
+        </p>
+      </div>
+
+      <div class="col-card cot-border">
+        <h4 style="color:var(--cot)">🪄 Zero-Shot CoT</h4>
+        <p>
+          不需要示例，只需在问题末尾追加一句 <strong>"Let's think step by step"</strong>，就能触发模型输出推理链。
+        </p>
+        <div class="trace-box" style="font-size:14px; padding:12px 16px;">
+          <div style="color:#9ca3af;">Q: 小明有 3 个苹果，又买了 4 个...</div>
+          <div style="color:var(--cot); font-weight:600;">Let&#39;s think step by step.</div>
+          <div style="color:var(--tot);">Step 1: ... Step 2: ... Therefore...</div>
+        </div>
+        <p style="margin-top:8px; font-size:15px;">
+          ✅ 零成本部署 &nbsp;|&nbsp; ❌ 对指令措辞较敏感
+        </p>
+      </div>
+    </div>
+
+    <div class="col-card" style="background:var(--card2); border-top:3px solid var(--accent); margin-bottom:16px;">
+      <h4 style="color:var(--accent2)">🤖 Auto-CoT（自动思维链）</h4>
+      <p>
+        由 <strong>Zhang et al. (2023)</strong> 提出：自动从问题库中聚类抽取出<strong>多样化</strong>的示例问题，再对每个示例问题用 Zero-Shot CoT 生成推理链，最终构造出无需人工标注的 Few-Shot prompt。
+      </p>
+      <div class="mermaid-wrap">
+        <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif' }}}%%
+flowchart LR
+    A["📚 问题库"] --> B["🔬 聚类<br/>K-Means"]
+    B --> C["📋 各簇选代表问题"]
+    C --> D["🪄 Zero-Shot CoT<br/>生成推理链"]
+    D --> E["📝 构造 Few-Shot Prompt"]
+    E --> F["🎯 回答新问题"]
+
+    style A fill:#6366f1,stroke:#818cf8,color:#fff
+    style B fill:#3b82f6,stroke:#60a5fa,color:#fff
+    style C fill:#3b82f6,stroke:#60a5fa,color:#fff
+    style D fill:#f59e0b,stroke:#fbbf24,color:#0f1117
+    style E fill:#f59e0b,stroke:#fbbf24,color:#0f1117
+    style F fill:#22c55e,stroke:#4ade80,color:#0f1117
+        </pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CoT: Why it works ═══ -->
+  <section id="cot-how" class="section">
+    <h2>⚙️ CoT 为什么有效？</h2>
+
+    <p>Cot 有效的原因可以从几个角度解释：</p>
+    <ol>
+      <li><strong class="highlight">计算预算扩展：</strong> Transformer 中每个 token 的计算量是固定的（一次前向传播），CoT 通过生成更多中间 token，相当于增加了处理该问题的总 FLOPs，从而提升了模型的"思考深度"。</li>
+      <li><strong class="highlight">中间结果可被注意力利用：</strong> 自回归生成时，后续 token 可以通过注意力机制"看到"前面推导出的所有中间结果。这相当于<strong>模型在推理过程中不断复核自己的推导</strong>，减少了累积错误。</li>
+      <li><strong class="highlight">语言即推理媒介：</strong> 预训练语料中包含大量人类书写的推理过程（数学证明、解题步骤、逻辑推导等），CoT 的格式触发了模型对这些推理模式的模仿。</li>
+      <li><strong class="highlight">错误回溯：</strong> 如果推理链中某一步出错，模型在后续步骤中有一定概率进行自我纠正——这在直接输出中是不可能的。</li>
+    </ol>
+
+    <div class="callout">
+      <strong>📊 实验证据：</strong> 在 GSM8K 数学推理基准上，PaLM 540B 使用 CoT 将准确率从约 <strong>17%</strong> 提升到 <strong>58%</strong>；在 StrategyQA 上提升幅度同样显著（约 +20pp）。模型规模越大，CoT 的增益越突出——这是一种<strong>涌现能力</strong>。
+    </div>
+  </section>
+
+  <!-- ═══ Tree of Thoughts ═══ -->
+  <section id="tot" class="section">
+    <h2>🌳 Tree-of-Thoughts（思维树）</h2>
+
+    <h3>从链到树：为什么需要分支？</h3>
+    <p>
+      CoT 的本质是<strong>线性推理</strong>：一条路走到黑。但人类解决困难问题时，往往会在关键节点上<strong>"想出几个不同的方向，逐一评估，选择最有希望的方向继续探索"</strong>。这就如同下棋——棋手不会只算一条线，而是在头脑中展开一棵"搜索树"。
+    </p>
+    <p>
+      <strong>Tree-of-Thoughts（ToT）</strong> 由 <strong>Yao et al. (2023)</strong> 提出，将 LLM 的推理建模为<strong>在思维空间中的树搜索</strong>——每个"思维节点"是一段文本（一个中间想法），模型同时扮演<strong>生成器</strong>（产生下一步候选思维）和<strong>评估器</strong>（判断每个思维的价值）。
+    </p>
+
+    <h3>ToT 四阶段框架</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif' }}}%%
+flowchart TB
+    subgraph s1["① 思维生成 Thought Generation"]
+        G1["给定当前状态 s"] --> G2["LLM 提出 k 个候选下一步思维<br/>z(1), z(2), ..., z(k)"]
+        G2 --> G3["可以是独立采样<br/>或基于「提议-排序」策略"]
+    end
+
+    subgraph s2["② 状态评估 State Evaluation"]
+        E1["对每个候选思维评分"] --> E2["两种方式：<br/>🔹 价值评估 Value: 独立打分<br/>🔹 投票评估 Vote: 多选一"]
+    end
+
+    subgraph s3["③ 搜索策略 Search Strategy"]
+        S1["BFS 广度优先<br/>每层保留 top-b"]
+        S2["DFS 深度优先<br/>沿最优路径深入"]
+    end
+
+    subgraph s4["④ 最终决策 Final Decision"]
+        F1["搜索终止后"] --> F2["从所有已访问节点中<br/>选择最优思维路径"]
+    end
+
+    s1 --> s2 --> s3 --> s4
+
+    style s1 fill:#14532d,stroke:#22c55e,color:#bbf7d0
+    style s2 fill:#1e3a5f,stroke:#3b82f6,color:#bfdbfe
+    style s3 fill:#5c1d3f,stroke:#ec4899,color:#fbcfe8
+    style s4 fill:#4a1d0d,stroke:#f59e0b,color:#fde68a
+      </pre>
+    </div>
+
+    <h3>ToT 搜索示例：24 点游戏</h3>
+    <p>
+      以下是 ToT 解决"用 4 个数通过加减乘除得到 24"这类问题时的搜索树示意（简化版，展示 BFS 策略下每一步保留 3 个最优状态）：
+    </p>
+
+    <div class="tot-tree">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif' }}}%%
+flowchart TD
+    ROOT["🎯 目标: 用 4, 9, 8, 4 算出 24"]
+
+    ROOT --> S1A["💡 4×8=32<br/>剩余 9,4 → 32-(9-?)"];
+    ROOT --> S1B["💡 9-4=5<br/>剩余 4,8 → 5×?"];
+    ROOT --> S1C["💡 9×4=36<br/>剩余 4,8 → 36-12=24? ✅"]
+
+    S1A --> S2A1["❌ 32-(9-4)=27≠24"];
+    S1A --> S2A2["❌ 32-(9+4)=19≠24"];
+
+    S1B --> S2B1["❌ 5×8=40≠24"];
+    S1B --> S2B2["5×4=20<br/>剩余 8 → 20+4? ❌"];
+
+    S1C --> S2C1["36-(4+8)=24 ✅✅✅"];
+
+    style ROOT fill:#6366f1,stroke:#818cf8,color:#fff
+    style S1A fill:#f59e0b,stroke:#fbbf24,color:#0f1117
+    style S1B fill:#f59e0b,stroke:#fbbf24,color:#0f1117
+    style S1C fill:#22c55e,stroke:#4ade80,color:#0f1117
+    style S2A1 fill:#7f1d1d,stroke:#ef4444,color:#fca5a5
+    style S2A2 fill:#7f1d1d,stroke:#ef4444,color:#fca5a5
+    style S2B1 fill:#7f1d1d,stroke:#ef4444,color:#fca5a5
+    style S2B2 fill:#7f1d1d,stroke:#ef4444,color:#fca5a5
+    style S2C1 fill:#166534,stroke:#4ade80,color:#fff
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══ ToT Search Strategy ═══ -->
+  <section id="tot-strategy" class="section">
+    <h2>🧭 ToT 搜索策略详解</h2>
+
+    <p>
+      ToT 的搜索策略是经典 AI 搜索算法（BFS/DFS）与大语言模型的结合。核心区别在于：<strong>传统搜索中，状态转移函数是确定性的；ToT 中，状态扩展（生成候选思维）和状态评估都由 LLM 完成</strong>。
+    </p>
+
+    <table class="strategy-table">
+      <thead>
+        <tr>
+          <th>策略</th>
+          <th>核心机制</th>
+          <th>优点</th>
+          <th>缺点</th>
+          <th>适用场景</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--cot); font-weight:700;">BFS<br/> 广度优先</td>
+          <td>每层生成 b 个候选思维，保留价值最高的 Top-k 个，再展开下一层</td>
+          <td>不易陷入局部最优，全局性好</td>
+          <td>每层调用 LLM 次数多（b×评估次数），token 成本高</td>
+          <td>创造性写作、方案设计等需要<strong>多样性</strong>的任务</td>
+        </tr>
+        <tr>
+          <td style="color:var(--tot); font-weight:700;">DFS<br/> 深度优先</td>
+          <td>每次只沿当前最优路径深入探索，直到叶节点或评估分数过低时回溯</td>
+          <td>快速到达可行解，token 消耗较少</td>
+          <td>可能陷入死胡同，需要强启发式函数</td>
+          <td>数学证明、代码调试等<strong>纵向深度</strong>重要的任务</td>
+        </tr>
+        <tr>
+          <td style="color:var(--aot); font-weight:700;">Beam Search</td>
+          <td>每层保留 n 条最候选路径同时推进；可视为"受限 BFS"</td>
+          <td>BFS 的高效替代，在成本和多样性间取得平衡</td>
+          <td>Beam 内路径可能趋向同质化</td>
+          <td>通用推理（ToT 论文中在 24 点任务上使用 b=5）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>状态评估的两种模式</h3>
+    <div class="two-col">
+      <div class="col-card" style="border-top:3px solid var(--accent);">
+        <h4 style="color:var(--accent2)">📏 价值评估 (Value)</h4>
+        <p>LLM 对每个候选思维独立打分，如 "sure/ likely/ impossible"（确定/可能/不可能）或 1-10 分。保留得分高的思维。</p>
+        <div class="trace-box" style="font-size:14px;">
+          <div style="color:var(--text2);">Prompt:</div>
+          <div style="color:#9ca3af;">Evaluate if this partial solution is promising (sure/likely/impossible)...</div>
+          <div style="color:var(--tot);">→ likely (score: 0.7)</div>
+        </div>
+        <p style="font-size:15px; margin-top:8px;">
+          💰 成本：每个候选 1 次 LLM 调用
+        </p>
+      </div>
+      <div class="col-card" style="border-top:3px solid var(--accent);">
+        <h4 style="color:var(--accent2)">🗳️ 投票评估 (Vote)</h4>
+        <p>LLM 在多个候选思维中投票选出最优的，天然实现排序和筛选。</p>
+        <div class="trace-box" style="font-size:14px;">
+          <div style="color:var(--text2);">Prompt:</div>
+          <div style="color:#9ca3af;">Given these 5 candidate next steps, which is the best?...</div>
+          <div style="color:var(--tot);">→ Step 3 is the best, Step 1 is runner-up</div>
+        </div>
+        <p style="font-size:15px; margin-top:8px;">
+          💰 成本：每次投票比较 n 个候选
+        </p>
+      </div>
+    </div>
+
+    <div class="callout tot-callout">
+      <strong>🧪 实验结果：</strong> 在 24 点游戏中，标准提示（IO prompt）准确率仅 <strong>7.3%</strong>，CoT 为 <strong>4.0%</strong>（此问题上 CoT 不如 IO），而 ToT（b=5, 每层保留 5 个候选）达到 <strong>74%</strong>。在创造性写作任务中，人类评估者也普遍偏好 ToT 的输出。
+    </div>
+  </section>
+
+  <!-- ═══ Comparison ═══ -->
+  <section id="comparison" class="section">
+    <h2>⚖️ 思维链 vs 思维树：全面对比</h2>
+
+    <table class="strategy-table">
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>🔗 Chain-of-Thought</th>
+          <th>🌳 Tree-of-Thoughts</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--text); font-weight:700;">推理结构</td>
+          <td>线性链式（1→2→3→...→答案）</td>
+          <td>树形分支（每个节点可有多条出边）</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text); font-weight:700;">搜索方式</td>
+          <td>无搜索（贪婪解码 / 温度采样）</td>
+          <td>显式搜索（BFS / DFS / Beam Search）</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text); font-weight:700;">状态评估</td>
+          <td>不评估中间状态</td>
+          <td>每步评估思维价值，剪枝低分路径</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text); font-weight:700;">回溯能力</td>
+          <td>弱 — 偶尔自纠正，但不可回退</td>
+          <td>强 — 可在任意节点回溯到祖先状态</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text); font-weight:700;">LLM 调用量</td>
+          <td>1 次调用（1 条完整推理链）</td>
+          <td>多次调用（生成 + 评估 × 搜索步数）</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text); font-weight:700;">Token 开销</td>
+          <td>低（≈1×输出长度）</td>
+          <td>高（可能 10-100×于 CoT）</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text); font-weight:700;">适用场景</td>
+          <td>算术推理、常识问答、简单逻辑题</td>
+          <td>复杂规划、数学搜索、创造性写作、博弈决策</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text); font-weight:700;">代表论文</td>
+          <td>Wei et al., 2022; Kojima et al., 2022</td>
+          <td>Yao et al., 2023; Long, 2023</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif' }}}%%
+flowchart TB
+    subgraph CoTView["🔗 Chain-of-Thought:<br/>线性路径"]
+        direction LR
+        Q1["❓"] --> T1["思维1"] --> T2["思维2"] --> T3["思维3"] --> A1["✅"]
+    end
+
+    subgraph ToTView["🌳 Tree-of-Thoughts:<br/>分支搜索"]
+        direction TB
+        Q2["❓ 问题"]
+        Q2 --> N1["思维A"]
+        Q2 --> N2["思维B"]
+        Q2 --> N3["思维C"]
+        N1 --> N1A["A→X"]
+        N1 --> N1B["A→Y"]
+        N2 --> N2A["B→P ✅"]
+        N3 --> N3A["C→Q ❌"]
+        N3 --> N3B["C→R ❌"]
+        N1A --> N1AX["❌ X死路"]
+        N1B --> N1BY["❌ Y死路"]
+    end
+
+    style CoTView fill:#1a2e05,stroke:#22c55e,color:#bbf7d0
+    style ToTView fill:#1e3a5f,stroke:#3b82f6,color:#bfdbfe
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══ LangGraph Code Practice ═══ -->
+  <section id="langgraph" class="section">
+    <h2>💻 代码实践：LangGraph 实现 CoT 与 ToT</h2>
+    <p>
+      在实际工程中，CoT、ToT 等推理策略可以通过 <strong><a href="https://langchain-ai.github.io/langgraph/" target="_blank" style="color:var(--aot)">LangGraph</a></strong> 来编排。LangGraph 是 LangChain 生态中的图状态机框架，专为构建有循环、分支、条件路由的 LLM 应用而设计。下面通过两个实例演示如何用 LangGraph 实现 CoT 和 ToT。
+    </p>
+
+    <h3>示例 1：LangGraph 实现 Chain-of-Thought 线性推理</h3>
+    <p>
+      用 LangGraph 搭建一个<strong>「思考 → 输出答案」</strong>的简单链式推理图。这是最基础的 CoT 模式——模型先生成推理步骤，再基于推理给出最终答案。
+    </p>
+    <div class="code-editor">
+      <div class="code-header">
+        <span>python
+        <span>cot_langgraph.py
+      </div>
+      <pre class="code-body"><code class="language-python">from typing import TypedDict
+from langgraph.graph import StateGraph, END
+from langchain_openai import ChatOpenAI
+
+# ── 1. 定义状态：图中流转的数据结构 ──
+class CoTState(TypedDict):
+    question: str
+    reasoning: str           # 中间推理步骤
+    answer: str              # 最终答案
+    step_count: int          # 已执行的推理步数
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
+
+# ── 2. 定义节点 Nodes ──
+def think(state: CoTState) -> CoTState:
+    """思考节点：生成一步推理"""
+    prompt = f"""请对以下问题进行逐步推理。当前是第 {state['step_count'] + 1} 步。
+问题：{state['question']}
+已有的推理：{state['reasoning'] or '（无）'}
+请输出下一步推理（一句话即可）："""
+    response = llm.invoke(prompt)
+    new_reasoning = (state["reasoning"] + "\n" + response.content).strip()
+    return {**state, "reasoning": new_reasoning, "step_count": state["step_count"] + 1}
+
+def conclude(state: CoTState) -> CoTState:
+    """总结节点：基于所有推理步骤输出最终答案"""
+    prompt = f"""基于以下推理过程，给出最终答案。
+问题：{state['question']}
+推理过程：{state['reasoning']}
+最终答案："""
+    response = llm.invoke(prompt)
+    return {**state, "answer": response.content}
+
+# ── 3. 条件路由 ──
+def should_continue(state: CoTState) -> str:
+    """判断是否需要继续思考，还是已经可以输出答案"""
+    if state["step_count"] >= 4:
+        return "conclude"       # 最多 4 步推理，然后强制总结
+    # 让 LLM 自行判断是否推理充分
+    check = llm.invoke(f"推理是否已足够回答问题？只回复 YES 或 NO。\n推理：{state['reasoning']}")
+    return "conclude" if "YES" in check.content.upper() else "think"
+
+# ── 4. 构建图 ──
+builder = StateGraph(CoTState)
+builder.add_node("think", think)
+builder.add_node("conclude", conclude)
+builder.set_entry_point("think")
+builder.add_conditional_edges("think", should_continue, {"think": "think", "conclude": "conclude"})
+builder.add_edge("conclude", END)
+
+app = builder.compile()
+
+# ── 5. 运行 ──
+result = app.invoke({"question": "如果今天是星期二，100 天后是星期几？", "reasoning": "", "answer": "", "step_count": 0})
+print("推理过程:", result["reasoning"])
+print("最终答案:", result["answer"])</code></pre>
+    </div>
+
+    <div class="callout cot-callout">
+      <strong>💡 关键设计：</strong> 条件边 <code>should_continue</code> 实现了<strong>自适应推理深度</strong>——简单问题 1-2 步即可得出结论，复杂问题则自动扩展推理步数。这比固定步数的 prompt 更灵活。
+    </div>
+
+    <h3>示例 2：LangGraph 实现 Tree-of-Thoughts BFS 搜索</h3>
+    <p>
+      接下来是一个更复杂的 ToT 实现：每层<strong>并行生成多个候选思维 → 独立评估 → 保留 Top-k → 进入下一层</strong>。这模拟了 ToT 论文中的 BFS 搜索策略。
+    </p>
+    <div class="code-editor">
+      <div class="code-header">
+        <span>python
+        <span>tot_langgraph.py
+      </div>
+      <pre class="code-body"><code class="language-python">from typing import TypedDict, List
+from dataclasses import dataclass
+from langgraph.graph import StateGraph, END
+from langchain_openai import ChatOpenAI
+
+# ── 数据结构 ──
+@dataclass
+class Thought:
+    content: str
+    score: float = 0.0
+
+class ToTState(TypedDict):
+    problem: str
+    current_layer: List[Thought]     # 当前层的候选思维
+    best_path: List[str]             # 记录最优路径
+    layer_idx: int                   # 当前搜索深度
+    max_layers: int                  # 最大深度
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0.8)
+
+# ── 节点 1: 思维生成 ──
+def generate_thoughts(state: ToTState) -> ToTState:
+    """给定当前最优思维，生成 k 个候选下一步思维"""
+    k = 3  # 每层生成 3 个候选
+    candidates: List[Thought] = []
+
+    for i in range(k):
+        prev_best = state["best_path"][-1] if state["best_path"] else "（起始）"
+        prompt = f"""问题：{state['problem']}
+当前最优思路：{prev_best}
+请提出一个不同的下一步思考方向（候选 {i+1}）："""
+        resp = llm.invoke(prompt)
+        candidates.append(Thought(content=resp.content))
+
+    return {**state, "current_layer": candidates}
+
+# ── 节点 2: 状态评估 ──
+def evaluate_thoughts(state: ToTState) -> ToTState:
+    """对每个候选思维独立打分（1-10），保留最高分的一个"""
+    for t in state["current_layer"]:
+        prompt = f"""问题：{state['problem']}
+当前思路：{t.content}
+请评估该思路的可行性，给出 1-10 的分数。只输出数字。"""
+        resp = llm.invoke(prompt)
+        try:
+            t.score = float(resp.content.strip())
+        except ValueError:
+            t.score = 5.0  # 解析失败给默认分
+
+    # 排序，选择最高分
+    state["current_layer"].sort(key=lambda t: t.score, reverse=True)
+    best = state["current_layer"][0]
+
+    return {
+        **state,
+        "best_path": state["best_path"] + [best.content],
+        "layer_idx": state["layer_idx"] + 1,
+    }
+
+# ── 节点 3: 最终综合 ──
+def synthesize(state: ToTState) -> ToTState:
+    """搜索结束后，基于最优路径给出最终答案"""
+    path_str = "\n".join(f"{i+1}. {s}" for i, s in enumerate(state["best_path"]))
+    prompt = f"""问题：{state['problem']}
+搜索到的最优推理路径：{path_str}
+请基于以上路径给出最终答案："""
+    resp = llm.invoke(prompt)
+    return {**state, "best_path": state["best_path"] + [f"🎯 最终答案: {resp.content}"]}
+
+# ── 条件路由 ──
+def should_continue(state: ToTState) -> str:
+    if state["layer_idx"] >= state["max_layers"]:
+        return "synthesize"
+    return "generate"
+
+# ── 构建图 ──
+builder = StateGraph(ToTState)
+builder.add_node("generate", generate_thoughts)
+builder.add_node("evaluate", evaluate_thoughts)
+builder.add_node("synthesize", synthesize)
+
+builder.set_entry_point("generate")
+builder.add_edge("generate", "evaluate")
+builder.add_conditional_edges("evaluate", should_continue, {
+    "generate": "generate",
+    "synthesize": "synthesize",
+})
+builder.add_edge("synthesize", END)
+
+app = builder.compile()
+
+# ── 运行 ──
+result = app.invoke({
+    "problem": "设计一个能减少城市交通拥堵的方案",
+    "current_layer": [],
+    "best_path": [],
+    "layer_idx": 0,
+    "max_layers": 3,
+})
+print("\n".join(result["best_path"]))</code></pre>
+    </div>
+
+    <div class="callout tot-callout">
+      <strong>🧠 BFS vs DFS 切换：</strong> 上述实现是 BFS（每层横向扩展多个候选再剪枝）。若改为 DFS，只需在 <code>generate_thoughts</code> 中将 k=1、替换为"沿当前最优方向深入挖掘"的 prompt 即可。这种灵活性正是 LangGraph 图编排的优势。
+    </div>
+  </section>
+
+  <!-- ═══ GoT ═══ -->
+  <section id="got" class="section">
+    <h2>🕸️ 前沿扩展：从树到图 & 算法化搜索</h2>
+
+    <h3>Graph-of-Thoughts (GoT)</h3>
+    <p>
+      由 <strong>Besta et al. (2023)</strong> 提出：如果"树"还不够表达——思维之间可以是任意<strong>图结构</strong>。GoT 允许思维节点之间进行<strong>合并（combine）、细化（refine）、聚合（aggregate）</strong>等操作，将多个推理链的结论融合成更强的中间状态。
+    </p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif' }}}%%
+flowchart LR
+    A["🧩 子问题1 的推理"] --> M["🔄 思维合并<br/>Combine"]
+    B["🧩 子问题2 的推理"] --> M
+    C["🧩 子问题3 的推理"] --> M
+    M --> R["🔀 细化 Refine"]
+    R --> S["📊 聚合 Aggregate"]
+    S --> FINAL["🎯 综合结论"]
+
+    style A fill:#6366f1,stroke:#818cf8,color:#fff
+    style B fill:#6366f1,stroke:#818cf8,color:#fff
+    style C fill:#6366f1,stroke:#818cf8,color:#fff
+    style M fill:#f59e0b,stroke:#fbbf24,color:#0f1117
+    style R fill:#ec4899,stroke:#f472b6,color:#fff
+    style S fill:#3b82f6,stroke:#60a5fa,color:#fff
+    style FINAL fill:#22c55e,stroke:#4ade80,color:#0f1117
+      </pre>
+    </div>
+
+    <h3>Algorithm-of-Thoughts (AoT)</h3>
+    <p>
+      由 <strong>Sel et al. (2023)</strong> 提出：与其让 LLM 在外部进行搜索（并反复调用自身），不如<strong>直接在模型的一次前向传播中模拟搜索过程</strong>。AoT 在 prompt 中嵌入算法式指令（如 "首先探索 X…若不行则回溯到 Y…"），利用 LLM 的上下文学习能力将搜索"内化"为自动生成的过程。
+    </p>
+    <div class="callout">
+      <strong>📊 对比：</strong> AoT 比 ToT 节省大量 LLM 调用次数（无需外部搜索循环），但要求模型有较强的指令跟随与上下文推理能力。实验显示 AoT 在 24 点任务上的性能与 ToT 接近，但 token 使用效率高出数倍。
+    </div>
+
+    <h3>🤖 代码实践：LangGraph 实现循环推理代理</h3>
+    <p>
+      在工程中，上述这些<strong>图思维</strong>或者<strong>树搜索</strong>，通常可以通过 <strong><a href="https://langchain-ai.github.io/langgraph/" target="_blank" style="color:var(--aot)">LangGraph</a></strong> 这类框架来实现状态流转和条件路由。
+    </p>
+
+    <div class="code-editor">
+      <div class="code-header">
+        <span>python
+        <span>langgraph_reasoning_agent.py
+      </div>
+      <pre class="code-body"><code class="language-python">from typing import TypedDict, List
+from langgraph.graph import StateGraph, END
+from langchain_openai import ChatOpenAI
+
+# 1. 定义状态: 图中需要流转的数据结构
+class GraphState(TypedDict):
+    question: str
+    thoughts: List[str]
+    is_resolved: bool
+
+llm = ChatOpenAI(model="gpt-4", temperature=0.7)
+
+# 2. 定义节点 (Nodes)
+def think_node(state: GraphState):
+    """节点：生成一个新的推理步骤/想法"""
+    q = state["question"]
+    thoughts = "\n".join(state["thoughts"])
+    prompt = f"问题: {q}\n以前的想法: {thoughts}\n请输出下一个合乎逻辑的想法："
+    
+    response = llm.invoke(prompt)
+    state["thoughts"].append(response.content)
+    return state
+
+def evaluate_node(state: GraphState):
+    """节点：评估当前想法是否解决了问题"""
+    prompt = f"判断以下想法是否已经完美解决了问题，只需回答 YES 或 NO：\n{state['thoughts'][-1]}"
+    response = llm.invoke(prompt)
+    state["is_resolved"] = "YES" in response.content.upper()
+    return state
+
+# 3. 定义条件边 (Conditional Edges)
+def should_continue(state: GraphState):
+    """路由函数：决定下一步走向"""
+    if state["is_resolved"]:
+        return END # 问题解决，结束图流转
+    elif len(state["thoughts"]) > 5:
+        return END # 超出最大搜索深度，强制结束
+    else:
+        return "think" # 继续思考循环
+
+# 4. 构建并编译状态图
+workflow = StateGraph(GraphState)
+
+workflow.add_node("think", think_node)
+workflow.add_node("evaluate", evaluate_node)
+
+workflow.set_entry_point("think")
+workflow.add_edge("think", "evaluate")
+workflow.add_conditional_edges(
+    "evaluate", 
+    should_continue
+)
+
+app = workflow.compile()
+
+# 运行图流转
+result = app.invoke({"question": "24点算法：使用 4, 9, 8, 4 算出 24", "thoughts": [], "is_resolved": False})
+print("最终推理路径:", result["thoughts"])
+</code></pre>
+    </div>
+
+    <h3>技术演进脉络</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif' }}}%%
+timeline
+    title LLM 推理策略演进
+    2022 : Chain-of-Thought (Wei et al.)
+         : Zero-shot CoT (Kojima et al.)
+    2023 : Auto-CoT (Zhang et al.)
+         : Tree-of-Thoughts (Yao et al.)
+         : Graph-of-Thoughts (Besta et al.)
+         : Algorithm-of-Thoughts (Sel et al.)
+    2024 : Self-Consistency (Wang et al.)
+         : Step-Back Prompting (Zheng et al.)
+         : Reflection / Self-Refine
+      </pre>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══ Footer ═══ -->
+<footer class="footer">
+  <p>📖 Chain-of-Thought &amp; Tree-of-Thoughts — 大语言模型推理策略可视化讲解 · 2026</p>
+</footer>
+
+<script>
+  // ── Mermaid Init ──
+  mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+
+  // ── KaTeX Auto-Render ──
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false
+    });
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>
+  // ── highlight.js Init ──
+  hljs.highlightAll();
+</script>
+
+</body>
+</html>

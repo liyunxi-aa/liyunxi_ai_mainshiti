@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LangGraph — LLM Agent 状态图编排框架</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #ec4899;
+    --accent2: #f472b6;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --orange: #f59e0b;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #2d1a30 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.pink   { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.cyan   { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+  .dot.green  { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Mermaid ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+
+    -webkit-appearance: none;
+
+    appearance: none;
+
+    width: 100%;
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+
+    outline: none;
+
+    cursor: pointer;
+
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: transparent;
+
+  }
+
+  input[type=range]::-moz-range-track {
+
+    height: 8px;
+
+    border-radius: 4px;
+
+    background: var(--border);
+
+    border: none;
+
+  }
+
+  input[type=range]::-moz-range-progress {
+
+    height: 8px;
+
+    border-radius: 4px 0 0 4px;
+
+    background: var(--accent);
+
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+
+    -webkit-appearance: none;
+
+    appearance: none;
+
+    width: 24px; height: 24px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    border: 2px solid var(--accent);
+
+    box-shadow: 0 0 0 4px rgba(236,72,153,0.15), 0 2px 6px rgba(0,0,0,0.25);
+
+    margin-top: -8px;
+
+    transition: box-shadow 0.2s, transform 0.15s;
+
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+
+    box-shadow: 0 0 0 8px rgba(236,72,153,0.2), 0 2px 8px rgba(0,0,0,0.3);
+
+    transform: scale(1.1);
+
+  }
+
+  input[type=range]::-moz-range-thumb {
+
+    width: 24px; height: 24px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    border: 2px solid var(--accent);
+
+    box-shadow: 0 0 0 4px rgba(236,72,153,0.15), 0 2px 6px rgba(0,0,0,0.25);
+
+  }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #2a1d30; }
+  .btn.active {
+    background: var(--accent);
+    color: #0f1219;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(236,72,153,0.3);
+  }
+  .btn.play-btn { background: var(--green); color: #0b0e14; border-color: var(--green); font-weight: 700; }
+  .btn.play-btn:hover { box-shadow: 0 0 14px rgba(74,222,128,0.3); }
+
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  .insight {
+    background: linear-gradient(135deg, rgba(236,72,153,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(236,72,153,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  .code-block {
+    margin-bottom: 16px;
+  }
+
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--green); font-weight: 600; }
+  .cmp-table .warn-cell { color: var(--red); font-weight: 600; }
+
+  /* ── Interactive state graph ── */
+  .state-graph-viz {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 32px 16px;
+    overflow-x: auto;
+    flex-wrap: wrap;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    min-height: 240px;
+    position: relative;
+  }
+  .sg-node {
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--border);
+    background: var(--surface2);
+    transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+    position: relative;
+    z-index: 2;
+    cursor: default;
+  }
+  .sg-node .sg-icon { font-size: 32px; margin-bottom: 2px; }
+  .sg-node .sg-label { font-size: 16px; font-weight: 600; color: var(--text); }
+  .sg-node.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 28px rgba(236,72,153,0.45);
+    background: #2d1a30;
+    transform: scale(1.08);
+  }
+  .sg-node.done {
+    border-color: var(--green);
+    box-shadow: 0 0 16px rgba(74,222,128,0.25);
+    background: #1a2d20;
+  }
+  .sg-arrow {
+    font-size: 32px;
+    color: var(--text2);
+    font-weight: bold;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+  .sg-arrow.active { color: var(--accent); }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+  }
+        .mermaid-wrap {
+      background: var(--surface2, #151922);
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-wrap pre.mermaid {
+      font-size: 16px;
+      background: transparent;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+    }
+    .mermaid-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    /* ── Universal Mermaid Fix ── */
+    pre.mermaid, .mermaid {
+      font-size: 16px !important;
+      background: transparent !important;
+      width: 80% !important;
+      min-width: min(80vw, 1000px) !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    svg[id^="mermaid-"] {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+  /* ── highlight.js code blocks ── */
+  .hljs {
+    background: #0d1117 !important;
+    border-radius: 10px;
+    padding: 18px 22px !important;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  pre code.hljs {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+
+  /* Table Wrap */
+  .table-wrap {
+    margin: 0 0 20px 0;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .table-wrap .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="header">
+  <h1>🕸️ LangGraph · Agent 状态图编排框架</h1>
+  <p>将 LLM Agent 建模为有向状态图（StateGraph）— 节点是计算步骤，边是条件转移，支持循环、分支、并行、检查点与人机协作</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: StateGraph — 核心抽象 -->
+<!-- ================================================================ -->
+<div class="section" id="sec-stategraph">
+  <h2><span class="dot pink"></span> 1. StateGraph 核心抽象：节点 + 边 = Agent</h2>
+  <p class="desc">
+    LangGraph 将 Agent 应用建模为一张 <b>有向图 G = (V, E)</b>：
+    <b>节点（Node）</b> 是执行计算的函数（调用 LLM、执行工具、处理结果），
+    <b>边（Edge）</b> 定义节点间的转移规则（普通边 / 条件边）。
+    整个图共享一个 <b>State</b>（TypedDict），沿边传递并在每个节点被更新。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 StateGraph 形式化定义</h3>
+    <div id="formula-stategraph"></div>
+  </div>
+
+  <!-- Mermaid: Basic StateGraph structure -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#ec4899', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#ec4899', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart LR
+    __start__([🟢 START]) --> A["🤖 agent<br/>调用 LLM 决策"]
+    A --> B["🔧 tools<br/>执行工具调用"]
+    B --> A
+    A --> __end__([🔴 END])
+
+    style __start__ fill:#1a2d20,stroke:#4ade80,stroke-width:3px,color:#4ade80
+    style __end__ fill:#2d1a20,stroke:#f87171,stroke-width:3px,color:#f87171
+    style A fill:#2d1a30,stroke:#ec4899,stroke-width:3px,color:#e1e4eb
+    style B fill:#1a2530,stroke:#f59e0b,stroke-width:3px,color:#e1e4eb
+    </pre>
+  </div>
+
+  <!-- Interactive state graph visualization -->
+  <div class="state-graph-viz" id="basicGraphViz">
+    <div class="sg-node" id="sg-start">
+      <div class="sg-icon">🟢</div>
+      <div class="sg-label">START</div>
+    </div>
+    <div class="sg-arrow" id="sg-arr1">→</div>
+    <div class="sg-node" id="sg-agent">
+      <div class="sg-icon">🤖</div>
+      <div class="sg-label">agent</div>
+    </div>
+    <div class="sg-arrow" id="sg-arr2">→</div>
+    <div class="sg-node" id="sg-tools">
+      <div class="sg-icon">🔧</div>
+      <div class="sg-label">tools</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn play-btn" id="btn-play-basic">▶ 播放状态流转</button>
+    <button class="btn" id="btn-reset-basic">↺ 重置</button>
+  </div>
+
+  <div class="info-row" id="info-basic"></div>
+
+  <div class="insight">
+    💡 <strong>图 vs 链的本质区别：</strong>LangChain 的 Chain（RunnableSequence）是<b>有向无环图（DAG）</b>，数据只能单向流动。
+    LangGraph 的 StateGraph <b>允许循环</b>——这正是 Agent 需要的：
+    模型思考 → 调用工具 → 观察结果 → 再次思考 → ...，直到任务完成。
+    <strong>循环是 Agent 自主性的核心。</strong>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: ReAct Agent Loop -->
+<!-- ================================================================ -->
+<div class="section" id="sec-react">
+  <h2><span class="dot blue"></span> 2. ReAct Agent 循环 — 最经典的 Agent 图模式</h2>
+  <p class="desc">
+    ReAct（Reasoning + Acting）是最基础的 Agent 模式。在 LangGraph 中，
+    <b>agent 节点</b>调用 LLM 决定下一步动作，<b>条件边</b>检查是否有 tool_calls：
+    如果有 → 进入 tools 节点执行；如果没有 → 直接 END。
+    tools 节点执行完毕后<b>无条件回到 agent 节点</b>，形成循环。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 ReAct 循环的形式化</h3>
+    <div id="formula-react"></div>
+  </div>
+
+  <!-- Mermaid: ReAct Agent Loop with conditional edge -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#38bdf8', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#38bdf8', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    START([🟢 START]) --> agent
+
+    agent["🤖 agent<br/>LLM 分析消息 + 决定动作"] --> should_continue{"🔀 should_continue?<br/>检查 AIMessage 中<br/>是否有 tool_calls"}
+
+    should_continue -->|"✅ 有 tool_calls"| tools["🔧 tools<br/>并行执行所有工具调用<br/>ToolNode 自动路由"]
+
+    should_continue -->|"❌ 无 tool_calls<br/>直接回复用户"| END([🔴 END])
+
+    tools --> agent
+
+    style START fill:#1a2d20,stroke:#4ade80,stroke-width:3px,color:#4ade80
+    style END fill:#2d1a20,stroke:#f87171,stroke-width:3px,color:#f87171
+    style agent fill:#1a2530,stroke:#38bdf8,stroke-width:3px,color:#e1e4eb
+    style tools fill:#2d2510,stroke:#f59e0b,stroke-width:3px,color:#e1e4eb
+    style should_continue fill:#1a1d30,stroke:#a78bfa,stroke-width:3px,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="code-block">
+<pre><code class="language-python">
+# LangGraph 构建 ReAct Agent
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode
+from langgraph.graph.message import add_messages
+
+class AgentState(TypedDict):
+    messages: Annotated[list, add_messages]  # 自动追加而非覆盖
+
+# 1. 定义节点函数
+def call_model(state: AgentState):
+    response = model.invoke(state["messages"])
+    return {"messages": [response]}
+
+# 2. 定义条件边逻辑
+def should_continue(state: AgentState) -> Literal["tools", "__end__"]:
+    last_msg = state["messages"][-1]
+    if last_msg.tool_calls:
+        return "tools"     # 继续循环
+    return "__end__"         # 结束
+
+# 3. 构建图
+workflow = StateGraph(AgentState)
+workflow.add_node("agent", call_model)
+workflow.add_node("tools", ToolNode(tools))
+workflow.set_entry_point("agent")
+workflow.add_conditional_edges("agent", should_continue)
+workflow.add_edge("tools", "agent")  # 无条件回到 agent
+
+app = workflow.compile()
+</code></pre>
+</div>
+
+  <div class="insight">
+    💡 <strong>条件边 = Agent 的"大脑"：</strong><code>should_continue</code> 函数就是 Agent 的决策路由。
+    它检查 LLM 返回的消息中是否包含 <b>tool_calls</b>（模型决定调用工具）还是普通文本（模型认为任务已完成）。
+    这个简单的二分逻辑支撑了所有单 Agent 应用。更复杂的场景可以路由到<b>多个不同的工具节点</b>甚至<b>多个不同的 Agent</b>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: Conditional Edges — Multi-Intent Router -->
+<!-- ================================================================ -->
+<div class="section" id="sec-router">
+  <h2><span class="dot cyan"></span> 3. 条件路由 — 多意图分发</h2>
+  <p class="desc">
+    LangGraph 的条件边不仅可以判断"继续/停止"，还可以根据状态将请求<b>路由到多个不同的节点</b>。
+    典型的 <b>Supervisor / Router</b> 模式：一个 supervisor Agent 分析用户意图，
+    将任务分发给不同的专业子 Agent（如：客服、搜索、数据分析），各子 Agent 独立执行后返回结果。
+  </p>
+
+  <!-- Mermaid: Supervisor Router Pattern -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#22d3ee', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#22d3ee', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    START([🟢 START]) --> supervisor
+
+    supervisor["👔 supervisor<br/>分析用户意图<br/>决定路由目标"]
+
+    supervisor -->|"📚 知识问答"| researcher["🔬 researcher<br/>搜索 + 总结<br/>RAG 检索增强"]
+    supervisor -->|"💻 写代码"| coder["💻 coder<br/>生成代码<br/>执行 + 调试"]
+    supervisor -->|"📊 数据分析"| analyst["📊 analyst<br/>查询数据库<br/>生成图表"]
+    supervisor -->|"💬 闲聊"| FINISH([🔴 END])
+
+    researcher --> supervisor
+    coder --> supervisor
+    analyst --> supervisor
+
+    style START fill:#1a2d20,stroke:#4ade80,stroke-width:3px,color:#4ade80
+    style FINISH fill:#2d1a20,stroke:#f87171,stroke-width:3px,color:#f87171
+    style supervisor fill:#1a2530,stroke:#22d3ee,stroke-width:3px,color:#e1e4eb
+    style researcher fill:#1a2d25,stroke:#4ade80,stroke-width:2px,color:#e1e4eb
+    style coder fill:#2d1a30,stroke:#ec4899,stroke-width:2px,color:#e1e4eb
+    style analyst fill:#2d2510,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="tab-router-graph">路由图</button>
+    <button class="tab-btn" data-tab="tab-router-code">代码示例</button>
+  </div>
+
+  <div id="tab-router-graph" class="tab-content">
+    <canvas id="canvasRouter" width="1200" height="520"></canvas>
+    <div class="btn-row">
+      <button class="btn play-btn" id="btn-play-router">▶ 模拟路由</button>
+      <button class="btn" id="btn-reset-router">↺ 重置</button>
+    </div>
+  </div>
+
+  <div id="tab-router-code" class="tab-content" style="display:none;">
+    <div class="code-block">
+<pre><code class="language-python">
+from typing import TypedDict, Annotated, Literal
+from langgraph.graph import StateGraph, END
+from langchain_core.messages import BaseMessage
+from langchain_core.utils.function_calling import add_messages
+from langchain_openai import ChatOpenAI
+
+# ======================
+# 1. 定义路由决策结构
+# ======================
+class RouteDecision(TypedDict):
+    agent: Literal["researcher", "coder", "analyst", "__end__"]
+
+# ======================
+# 2. 状态定义
+# ======================
+class RouterState(TypedDict):
+    messages: Annotated[list, add_messages]
+    next_agent: str  # supervisor 决定的下一个节点
+
+# ======================
+# 3. 初始化模型
+# ======================
+model = ChatOpenAI(model="gpt-3.5-turbo")
+
+# ======================
+# 4. Supervisor 节点 — LLM 分析意图，输出结构化路由决策
+# ======================
+def supervisor_node(state):
+    response = model.with_structured_output(RouteDecision).invoke(
+        "分析以下请求，决定发送给哪个专家：" + str(state["messages"])
+    )
+    return {"next_agent": response["agent"]}
+
+# ======================
+# 5. 路由函数 — 读取 supervisor 的决策，返回目标节点名
+# ======================
+def router(state) -> Literal["researcher", "coder", "analyst", "__end__"]:
+    return state["next_agent"]
+
+# ======================
+# 6. 三个专家节点 — 各自处理不同领域的任务
+# ======================
+def researcher_node(state):
+    return {"messages": [{"role": "assistant", "content": "我是研究员，负责查资料"}]}
+
+def coder_node(state):
+    return {"messages": [{"role": "assistant", "content": "我是程序员，负责写代码"}]}
+
+def analyst_node(state):
+    return {"messages": [{"role": "assistant", "content": "我是分析师，负责数据分析"}]}
+
+# ======================
+# 7. 构建工作流
+# ======================
+workflow = StateGraph(RouterState)
+
+# 添加节点
+workflow.add_node("supervisor", supervisor_node)
+workflow.add_node("researcher", researcher_node)
+workflow.add_node("coder", coder_node)
+workflow.add_node("analyst", analyst_node)
+
+# 设置起点
+workflow.set_entry_point("supervisor")
+
+# 条件路由 — supervisor → 各专家 或 END
+workflow.add_conditional_edges(
+    "supervisor",
+    router,
+    {
+        "researcher": "researcher",
+        "coder": "coder",
+        "analyst": "analyst",
+        "__end__": END,
+    }
+)
+
+# 专家执行完 → 回到 supervisor 继续决策
+workflow.add_edge("researcher", "supervisor")
+workflow.add_edge("coder", "supervisor")
+workflow.add_edge("analyst", "supervisor")
+
+# 编译
+app = workflow.compile()
+
+# ======================
+# 8. 测试运行
+# ======================
+if __name__ == "__main__":
+    result = app.invoke({
+        "messages": [{"role": "user", "content": "帮我写一个Python爬虫"}],
+        "next_agent": ""
+    })
+    print(result["messages"][-1]["content"])
+</code></pre>
+</div>
+  </div>
+
+  <div class="insight">
+    💡 <strong>Supervisor 模式 = 层次化 Agent 架构：</strong>Supervisor 本身也是一个 LLM 调用，
+    但它不直接回答问题，而是<b>输出结构化的路由决策</b>。各子 Agent 可以完全独立开发、独立部署，
+    甚至可以由不同的模型驱动（如：coder 用 Claude Opus，researcher 用 GPT-4 + 搜索工具）。
+    <strong>这是构建复杂 AI 助手（如 Copilot、客服系统）的核心模式。</strong>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Human-in-the-Loop -->
+<!-- ================================================================ -->
+<div class="section" id="sec-human-loop">
+  <h2><span class="dot purple"></span> 4. Human-in-the-Loop — 人机协作中断与审批</h2>
+  <p class="desc">
+    LangGraph 提供 <b>interrupt（中断）</b> 机制，允许在图的特定节点之前暂停执行，
+    等待人工审批或输入后再继续。这在需要安全审查、人工确认的关键环节（如：发送邮件、执行数据库写操作、调用付费 API）至关重要。
+  </p>
+
+  <!-- Mermaid: Sequence diagram for Human-in-the-loop -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#a78bfa', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#a78bfa', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+sequenceDiagram
+    actor User as 👤 用户
+    participant App as 🖥️ LangGraph App
+    participant Agent as 🤖 Agent 节点
+    participant Human as 👨‍💼 人工审批
+    participant Action as ⚡ 敏感操作
+
+    User->>App: 发送请求
+    App->>Agent: invoke(state)
+
+    loop Agent 推理循环
+        Agent->>Agent: 分析 + 决策
+        Agent-->>App: 需要执行敏感操作
+
+        Note over App,Human: 🔴 interrupt_before="sensitive_action"
+        App->>Human: 请求审批：是否允许执行？
+        Human-->>App: ✅ 批准 / ❌ 拒绝 / ✏️ 修改参数
+
+        alt 批准
+            App->>Action: 执行操作
+            Action-->>App: 操作结果
+            App->>Agent: 继续推理
+        else 拒绝
+            App->>Agent: 通知被拒，重新规划
+        else 修改
+            App->>Action: 以修改后参数执行
+            Action-->>App: 操作结果
+            App->>Agent: 继续推理
+        end
+    end
+
+    Agent-->>App: 最终回复
+    App->>User: 返回结果
+    </pre>
+  </div>
+
+  <div class="code-block">
+<pre><code class="language-python">
+# Human-in-the-Loop: 在敏感节点前中断
+app = workflow.compile(
+    interrupt_before=["send_email", "execute_sql"]
+)
+
+# 执行到中断点
+for event in app.stream(initial_state):
+    print(event)
+
+# 获取当前状态，等待人工审批
+state = app.get_state(config)
+print(state.values["pending_action"])  # 展示待审批操作
+
+# 人工审批通过后，继续执行
+app.update_state(config, {"approved": True})
+for event in app.stream(None, config):  # None = 从当前状态继续
+    print(event)
+</code></pre>
+</div>
+
+  <div class="insight">
+    💡 <strong>中断 ≠ 暂停线程：</strong>LangGraph 的中断是通过<b>检查点（Checkpoint）</b>实现的。
+    当中断发生时，图的当前状态被序列化保存到持久化存储（如 SQLite、Postgres）。
+    这意味着审批者可以在<b>数小时后</b>回来审批，系统可以从检查点无缝恢复执行。
+    <strong>这是生产级 Agent 系统的关键特性。</strong>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: Checkpointing & Time Travel -->
+<!-- ================================================================ -->
+<div class="section" id="sec-checkpoint">
+  <h2><span class="dot orange"></span> 5. 检查点与时间旅行 — Agent 的"存档/读档"</h2>
+  <p class="desc">
+    LangGraph 在每个 <b>super-step</b>（一个节点执行完成）后自动保存检查点。
+    检查点包含完整的 State 快照。这解锁了强大的能力：
+    <b>时间旅行</b>（回退到历史状态重新执行）、<b>分支</b>（从历史状态 fork 出不同路径）、
+    <b>重放</b>（用不同参数重新执行历史的某个步骤）。
+  </p>
+
+  <!-- Mermaid: Checkpointing and Time Travel -->
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#f59e0b', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#f59e0b', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    subgraph 主执行路径
+        S0["🟢 State v0<br/>初始输入"] -->|"agent 思考"| S1["📸 State v1<br/>决定调用 search"]
+        S1 -->|"tool 执行"| S2["📸 State v2<br/>获得搜索结果"]
+        S2 -->|"agent 再思考"| S3["📸 State v3<br/>决定调用 calc"]
+        S3 -->|"tool 执行"| S4["📸 State v4<br/>获得计算结果"]
+        S4 -->|"agent 最终输出"| S5["🔴 State v5<br/>最终答案"]
+    end
+
+    subgraph 时间旅行分支
+        S2 -.->|"🕰️ fork from v2<br/>使用不同搜索词"| B1["📸 State v2'<br/>新搜索结果"]
+        B1 -->|"继续执行"| B2["📸 State v3'<br/>不同最终答案"]
+    end
+
+    style S0 fill:#1a2d20,stroke:#4ade80,stroke-width:2px,color:#4ade80
+    style S5 fill:#2d1a20,stroke:#f87171,stroke-width:2px,color:#f87171
+    style S1 fill:#2d1a30,stroke:#ec4899,stroke-width:2px,color:#e1e4eb
+    style S2 fill:#2d1a30,stroke:#ec4899,stroke-width:2px,color:#e1e4eb
+    style S3 fill:#2d1a30,stroke:#ec4899,stroke-width:2px,color:#e1e4eb
+    style S4 fill:#2d1a30,stroke:#ec4899,stroke-width:2px,color:#e1e4eb
+    style B1 fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style B2 fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    </pre>
+  </div>
+
+  <div class="code-block">
+<pre><code class="language-python">
+# 时间旅行：回退到历史状态，用不同参数重试
+# 1. 获取历史状态列表
+history = list(app.get_state_history(config))
+for h in history:
+    print(h.config, h.values)  # 每个检查点都有唯一 config
+
+# 2. 回退到 checkpoint v2，修改搜索词后重新执行
+forked_config = app.update_state(
+    history[2].config,                    # 从 v2 的检查点
+    {"search_query": "new query"}        # 修改状态
+)
+for event in app.stream(None, forked_config):  # 从修改后的状态继续
+    print(event)
+</code></pre>
+</div>
+
+  <div class="insight">
+    💡 <strong>检查点是 LangGraph 最被低估的能力：</strong>它不仅支持人机协作（中断→人工审批→继续），
+    还能实现 <b>A/B 测试</b>（从同一起点 fork 出不同策略路径对比结果）、
+    <b>自我改进</b>（检测到错误后回退到出错前的状态，换个工具重试）、
+    <b>调试与可解释性</b>（完整回溯 Agent 的每一步决策过程）。
+    这一切因为 State 是普通 Python dict —— <strong>完全可序列化、可审查、可修改</strong>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: Advanced Patterns -->
+<!-- ================================================================ -->
+<div class="section" id="sec-advanced">
+  <h2><span class="dot green"></span> 6. 高级图模式：并行、Map-Reduce 与嵌套图</h2>
+  <p class="desc">
+    LangGraph 支持更复杂的图拓扑结构，使多 Agent 协作成为现实。
+    以下展示三种进阶模式及其 Mermaid 图解。
+  </p>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="tab-fanout">Fan-out / Fan-in</button>
+    <button class="tab-btn" data-tab="tab-mapreduce">Map-Reduce</button>
+    <button class="tab-btn" data-tab="tab-nested">嵌套子图</button>
+  </div>
+
+  <!-- Fan-out / Fan-in -->
+  <div id="tab-fanout" class="tab-content">
+    <h3 style="color:var(--text2); font-size:18px; margin-bottom:16px;">🔀 Fan-out → Parallel → Fan-in — 并行分发与汇聚</h3>
+    <p class="desc">
+      一个节点返回列表后，LangGraph 自动 <b>fan-out</b>：为列表中每个元素创建独立执行分支，
+      各分支<b>并行执行</b>后续节点，最后 <b>fan-in</b> 汇聚结果。
+    </p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#4ade80', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#4ade80', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    START([🟢 START]) --> prepare["📋 prepare<br/>生成任务列表<br/>return topics"]
+
+    prepare -->|"fan-out<br/>自动拆分"| p1["🔍 search:'AI'"]
+
+    prepare -->|"fan-out"| p2["🔍 search:'Blockchain'"]
+    prepare -->|"fan-out"| p3["🔍 search:'Quantum'"]
+
+    p1 -->|"每条结果"| combine["🧩 combine<br/>fan-in 汇聚<br/>合并所有搜索结果"]
+    p2 --> combine
+    p3 --> combine
+
+    combine --> summarize["📝 summarize<br/>综合生成报告"]
+    summarize --> END([🔴 END])
+
+    style START fill:#1a2d20,stroke:#4ade80,stroke-width:3px,color:#4ade80
+    style END fill:#2d1a20,stroke:#f87171,stroke-width:3px,color:#f87171
+    style prepare fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style p1 fill:#2d1a30,stroke:#ec4899,stroke-width:2px,color:#e1e4eb
+    style p2 fill:#2d1a30,stroke:#ec4899,stroke-width:2px,color:#e1e4eb
+    style p3 fill:#2d1a30,stroke:#ec4899,stroke-width:2px,color:#e1e4eb
+    style combine fill:#2d2510,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+    style summarize fill:#1a2d25,stroke:#4ade80,stroke-width:2px,color:#e1e4eb
+      </pre>
+    </div>
+    <div class="insight">
+      💡 <strong>Send API</strong> 是 LangGraph 实现 fan-out 的关键。
+      节点返回 <code>Send(node_name, arg)</code> 对象列表，LangGraph 就会为每个 Send 创建并行分支。
+      相比 ThreadPoolExecutor 手动管理，<strong>Send API 是声明式的、自动支持检查点和错误恢复</strong>。
+    </div>
+    <div class="code-block">
+      <h3 style="color:var(--text2); font-size:16px; margin:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">💻 Fan-out / Fan-in 代码示例</h3>
+<pre><code class="language-python">
+from typing import Annotated, TypedDict
+import operator
+from langgraph.graph import StateGraph, START, END
+from langgraph.constants import Send
+
+# 1. 定义全局状态和子任务状态
+class OverallState(TypedDict):
+    topics: list[str]
+    results: Annotated[list[str], operator.add]  # fan-in 汇聚
+
+class SearchState(TypedDict):
+    topic: str  # 每个并行分支的独立状态
+
+# 2. 准备任务列表 — fan-out 的起点
+def prepare_topics(state: OverallState):
+    return {"topics": ["AI Safety", "Blockchain", "Quantum"]}
+
+# 3. 单个搜索节点 — 每个 topic 并行执行
+def search_topic(state: SearchState):
+    return {"results": [f"[{state['topic']}] 搜索结果..."]}
+
+# 4. 汇聚节点 — fan-in 合并所有并行结果
+def gather_results(state: OverallState):
+    return {"results": ["\\n\\n".join(state["results"])]}
+
+# 5. 条件路由 — Send API 创建并行分支
+def fanout_router(state: OverallState):
+    return [Send("search_topic", {"topic": t}) for t in state["topics"]]
+
+# 6. 构建图
+builder = StateGraph(OverallState)
+builder.add_node("prepare_topics", prepare_topics)
+builder.add_node("search_topic", search_topic)
+builder.add_node("gather_results", gather_results)
+builder.add_edge(START, "prepare_topics")
+builder.add_conditional_edges("prepare_topics", fanout_router)
+builder.add_edge("search_topic", "gather_results")
+builder.add_edge("gather_results", END)
+graph = builder.compile()
+</code></pre>
+    </div>
+  </div>
+
+  <!-- Map-Reduce -->
+  <div id="tab-mapreduce" class="tab-content" style="display:none;">
+    <h3 style="color:var(--text2); font-size:18px; margin-bottom:16px;">🗺️ Map-Reduce — 分而治之的评估模式</h3>
+    <p class="desc">
+      Map 阶段：将大任务拆分成独立子任务并行处理。
+      Reduce 阶段：汇总子结果，进行全局综合。
+      典型应用：<b>长文档问答</b>（每段独立回答 → 综合）、<b>代码审查</b>（每文件独立审查 → 汇总报告）。
+    </p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#f59e0b', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#f59e0b', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    doc["📄 长文档<br/>100页 PDF"] --> split["✂️ split<br/>切分为 10 个段落"]
+
+    split -->|"MAP 阶段 (并行)"| m1["📝 段落1<br/>独立分析"]
+    split --> m2["📝 段落2<br/>独立分析"]
+    split --> m3["📝 ...<br/>独立分析"]
+    split --> m10["📝 段落10<br/>独立分析"]
+
+    m1 --> agg["🧩 REDUCE 阶段<br/>汇总所有段落分析<br/>去重 + 综合"]
+    m2 --> agg
+    m3 --> agg
+    m10 --> agg
+
+    agg --> answer["✅ 综合答案<br/>覆盖全文信息"]
+
+    style split fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style m1 fill:#2d1a30,stroke:#ec4899,stroke-width:1px,color:#e1e4eb
+    style m2 fill:#2d1a30,stroke:#ec4899,stroke-width:1px,color:#e1e4eb
+    style m3 fill:#2d1a30,stroke:#ec4899,stroke-width:1px,color:#e1e4eb
+    style m10 fill:#2d1a30,stroke:#ec4899,stroke-width:1px,color:#e1e4eb
+    style agg fill:#2d2510,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+    style answer fill:#1a2d25,stroke:#4ade80,stroke-width:2px,color:#e1e4eb
+    style doc fill:#151922,stroke:#8e96a9,stroke-width:2px,color:#e1e4eb
+      </pre>
+    </div>
+    <div class="code-block">
+      <h3 style="color:var(--text2); font-size:16px; margin:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">💻 Map-Reduce 代码示例：Send API 并行处理</h3>
+<pre><code class="language-python">
+from typing import Annotated, TypedDict
+import operator
+from langgraph.graph import StateGraph, START, END
+from langgraph.constants import Send
+
+# 1. 定义整体状态和子任务状态
+class OverallState(TypedDict):
+    topics: list[str]
+    essays: Annotated[list[str], operator.add]  # Reduce 汇聚
+
+class EssayState(TypedDict):
+    topic: str  # 每个 Map 分支的独立输入
+
+# 2. Map 阶段 — 拆分为独立子任务
+def generate_topics(state: OverallState):
+    return {"topics": ["Transformer", "GAN", "Diffusion"]}
+
+def generate_essay(state: EssayState):
+    """每个 topic 独立并行执行 (Map)"""
+    return {"essays": [f"[{state['topic']}] 核心原理: ..."]}
+
+# 3. Reduce 阶段 — 汇总所有子结果
+def gather_essays(state: OverallState):
+    combined = "\\n\\n".join(state["essays"])
+    return {"essays": [combined]}
+
+# 4. Send API: 动态创建并行分支
+def continue_to_essays(state: OverallState):
+    return [Send("generate_essay", {"topic": t}) for t in state["topics"]]
+
+# 5. 构建图
+builder = StateGraph(OverallState)
+builder.add_node("generate_topics", generate_topics)
+builder.add_node("generate_essay", generate_essay)
+builder.add_node("gather_essays", gather_essays)
+builder.add_edge(START, "generate_topics")
+builder.add_conditional_edges("generate_topics", continue_to_essays)
+builder.add_edge("generate_essay", "gather_essays")
+builder.add_edge("gather_essays", END)
+graph = builder.compile()
+</code></pre>
+    </div>
+  </div>
+  <div id="tab-nested" class="tab-content" style="display:none;">
+    <h3 style="color:var(--text2); font-size:18px; margin-bottom:16px;">🪆 嵌套子图 — 图即节点，节点即图</h3>
+    <p class="desc">
+      LangGraph 支持将一张图作为另一张图的一个节点（Subgraph）。
+      子图有自己独立的内部状态空间，父图只看到子图的输入和输出。
+      这实现了<b>真正的模块化 Agent 架构</b>。
+    </p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'primaryColor': '#a78bfa', 'primaryTextColor': '#e1e4eb', 'primaryBorderColor': '#a78bfa', 'lineColor': '#ffffff', 'secondaryColor': '#1e2332', 'tertiaryColor': '#0d1117'}}}%%
+flowchart TD
+    START([🟢 START]) --> orchestrator["🎼 orchestrator<br/>顶层编排图"]
+
+    orchestrator --> sub_delegation["🤖 Delegation Agent<br/>(子图: ReAct循环)"]
+
+    subgraph Delegation Agent 内部
+        sub_start[" "] -.-> sub_think["🧠 分析任务"]
+        sub_think -.-> sub_tool["🔧 使用工具"]
+        sub_tool -.-> sub_think
+        sub_think -.-> sub_end[" "]
+    end
+
+    sub_delegation --> final["📊 final_report<br/>汇总报告"]
+    final --> END([🔴 END])
+
+    style START fill:#1a2d20,stroke:#4ade80,stroke-width:3px,color:#4ade80
+    style END fill:#2d1a20,stroke:#f87171,stroke-width:3px,color:#f87171
+    style orchestrator fill:#1a2530,stroke:#38bdf8,stroke-width:2px,color:#e1e4eb
+    style sub_delegation fill:#2d1a30,stroke:#a78bfa,stroke-width:3px,color:#e1e4eb
+    style final fill:#2d2510,stroke:#f59e0b,stroke-width:2px,color:#e1e4eb
+      </pre>
+    </div>
+    <div class="insight">
+      💡 <strong>嵌套图 = Agent 的"乐高积木"：</strong>每个子图可以独立开发、测试、版本管理。
+      父图不关心子图内部是简单 Chain、ReAct 循环還是又一层嵌套——
+      只要子图实现了约定的输入/输出接口即可。这类似于<b>微服务架构</b>中服务间的契约设计。
+    </div>
+    <div class="code-block">
+      <h3 style="color:var(--text2); font-size:16px; margin:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">💻 嵌套子图代码示例：子图作为父图节点</h3>
+<pre><code class="language-python">
+from typing import TypedDict, Annotated
+from langgraph.graph import StateGraph, START, END
+from langgraph.prebuilt import ToolNode
+from langgraph.graph.message import add_messages
+
+# ========== 1. 子图：ReAct Agent ==========
+class SubAgentState(TypedDict):
+    messages: Annotated[list, add_messages]
+
+def agent_node(state: SubAgentState):
+    """LLM 分析 + 决策（可使用任意工具）"""
+    response = model.bind_tools(tools).invoke(state["messages"])
+    return {"messages": [response]}
+
+def route_tools(state: SubAgentState):
+    last_msg = state["messages"][-1]
+    return "tools" if last_msg.tool_calls else "__end__"
+
+sub_builder = StateGraph(SubAgentState)
+sub_builder.add_node("agent", agent_node)
+sub_builder.add_node("tools", ToolNode(tools))
+sub_builder.add_edge(START, "agent")
+sub_builder.add_conditional_edges("agent", route_tools)
+sub_builder.add_edge("tools", "agent")
+delegation_agent = sub_builder.compile()  # 子图编译为可调用组件
+
+# ========== 2. 父图：编排层 ==========
+class ParentState(TypedDict):
+    task: str
+    sub_result: str
+    final_report: str
+
+def delegate_to_agent(state: ParentState):
+    """将任务委托给子图 — 子图作为节点运行"""
+    result = delegation_agent.invoke({"messages": [state["task"]]})
+    return {"sub_result": result["messages"][-1].content}
+
+def generate_report(state: ParentState):
+    return {"final_report": f"综合报告:\\n{state['sub_result']}"}
+
+# ========== 3. 父图构建 ==========
+parent = StateGraph(ParentState)
+parent.add_node("delegation_agent", delegate_to_agent)  # 子图即节点
+parent.add_node("generate_report", generate_report)
+parent.add_edge(START, "delegation_agent")
+parent.add_edge("delegation_agent", "generate_report")
+parent.add_edge("generate_report", END)
+app = parent.compile()
+
+# 运行：app.invoke({"task": "分析 Transformer 注意力机制"})
+</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 7: LangChain vs LangGraph -->
+<!-- ================================================================ -->
+<div class="section" id="sec-comparison">
+  <h2><span class="dot pink"></span> 7. LangChain vs LangGraph — 何时用哪个？</h2>
+  <p class="desc">
+    LangChain 和 LangGraph 不是竞争关系，而是 <b>互补关系</b>。
+    LangChain 提供组件（LLM、工具、检索器）和简单管道；
+    LangGraph 提供复杂控制流（循环、分支、并行、人机协作）。
+    两者可以<b>混合使用</b>：在 LangGraph 的节点内使用 LangChain 的组件。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>LangChain</th>
+        <th>LangGraph</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>核心抽象</td>
+        <td>Runnable / Chain</td>
+        <td class="hl-cell">StateGraph（有向图）</td>
+      </tr>
+      <tr>
+        <td>数据流</td>
+        <td>单向、无环（DAG）</td>
+        <td class="hl-cell">任意有向图（含循环）</td>
+      </tr>
+      <tr>
+        <td>执行模型</td>
+        <td>管道串联（| 运算符）</td>
+        <td class="hl-cell">状态机转移（节点→节点）</td>
+      </tr>
+      <tr>
+        <td>条件分支</td>
+        <td class="warn-cell">有限（RunnableBranch）</td>
+        <td class="hl-cell">一等公民（条件边）</td>
+      </tr>
+      <tr>
+        <td>循环</td>
+        <td class="warn-cell">不支持</td>
+        <td class="hl-cell">原生支持</td>
+      </tr>
+      <tr>
+        <td>并行</td>
+        <td>有限（RunnableParallel）</td>
+        <td class="hl-cell">Send API Fan-out/Fan-in</td>
+      </tr>
+      <tr>
+        <td>持久化 / 检查点</td>
+        <td class="warn-cell">无内置支持</td>
+        <td class="hl-cell">内置 Checkpointer（SQLite/PG）</td>
+      </tr>
+      <tr>
+        <td>Human-in-the-Loop</td>
+        <td class="warn-cell">需自行实现</td>
+        <td class="hl-cell">interrupt / update_state 原生支持</td>
+      </tr>
+      <tr>
+        <td>时间旅行</td>
+        <td class="warn-cell">不支持</td>
+        <td class="hl-cell">get_state_history + fork</td>
+      </tr>
+      <tr>
+        <td>流式输出</td>
+        <td>.stream() / .astream()</td>
+        <td>.stream() 含节点级事件</td>
+      </tr>
+      <tr>
+        <td>适用场景</td>
+        <td>简单 RAG、单次 LLM 调用链</td>
+        <td class="hl-cell">Agent 循环、多 Agent 协作、人机审批</td>
+      </tr>
+      <tr>
+        <td>底层依赖</td>
+        <td>自包含</td>
+        <td>依赖 langchain-core（Runnable 协议）</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>最佳实践：</strong>大多数生产级 LLM 应用最终都会使用 LangGraph，因为现实的 Agent 场景几乎都需要循环和条件判断。
+    但 LangGraph <b>节点内部</b>仍然大量使用 LangChain 的组件（ChatModel、Tool、PromptTemplate 等）。
+    关键是理解两者的分工：<b>LangChain 提供"做什么"（组件），LangGraph 定义"何时做"（控制流）。</b>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  🕸️ LangGraph 交互可视化 · Created for Learning · 基于 LangGraph 官方文档 (2024-2026)
+</footer>
+
+<!-- ================================================================ -->
+<!-- KaTeX Render -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  katex.render(String.raw`
+  \begin{aligned}
+  G &= (V, E),\quad V = \{\text{node}_1, \text{node}_2, \ldots, \text{node}_n\} \\[4pt]
+  \text{State} &\in \mathcal{S} = \text{TypedDict 定义的状态空间} \\[4pt]
+  \text{node}_i &: \mathcal{S} \to \mathcal{S} \quad \text{(节点 = 状态变换函数)} \\[4pt]
+  \text{edge}_{i \to j} &: \mathcal{S} \to \{0, 1\} \quad \text{(条件边 = 状态谓词)} \\[4pt]
+  \text{compile}(G) &\to \text{CompiledGraph} \quad \text{(编译为可执行状态机)}
+  \end{aligned}
+  `, document.getElementById('formula-stategraph'), { displayMode: true });
+
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{ReAct 循环} &= \text{agent} \xrightarrow{\text{有 tool\_calls?}} \text{tools} \xrightarrow{\text{无条件}} \text{agent} \\[6pt]
+  \text{should\_continue}(s) &=
+  \begin{cases}
+  \text{"tools"} & \text{if } s.\text{messages}[-1].\text{tool\_calls} \neq \emptyset \\[4pt]
+  \text{"\_\_end\_\_"} & \text{otherwise}
+  \end{cases} \\[6pt]
+  \text{State} &= \{\text{messages}: [\text{System}, \text{Human}, \text{AI}, \text{Tool}, \text{AI}, \ldots]\}
+  \end{aligned}
+  `, document.getElementById('formula-react'), { displayMode: true });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Interactive Basic StateGraph -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const nodes = ['sg-start', 'sg-agent', 'sg-tools'];
+  const arrows = ['sg-arr1', 'sg-arr2'];
+  let step = -1;
+  let animId = null;
+
+  // Sequence: start → agent → tools → agent → tools → agent → (end)
+  const sequence = [0, 1, 2, 1, 2, 1];
+
+  function reset() {
+    step = -1;
+    nodes.forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('active', 'done');
+    });
+    arrows.forEach(id => document.getElementById(id).classList.remove('active'));
+    updateInfo();
+  }
+
+  function advance() {
+    if (step < sequence.length - 1) {
+      step++;
+      const current = sequence[step];
+
+      // Clear previous states
+      nodes.forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('active');
+      });
+      arrows.forEach(id => document.getElementById(id).classList.remove('active'));
+
+      // Mark previous as done
+      if (step > 0) {
+        for (let i = 0; i < step; i++) {
+          document.getElementById(nodes[sequence[i]]).classList.add('done');
+        }
+      }
+
+      // Activate current
+      document.getElementById(nodes[current]).classList.add('active');
+
+      // Activate relevant arrow
+      const prevNode = step > 0 ? sequence[step - 1] : -1;
+      if (prevNode === 0 && current === 1) document.getElementById('sg-arr1').classList.add('active');
+      if ((prevNode === 1 && current === 2) || (prevNode === 2 && current === 1)) document.getElementById('sg-arr2').classList.add('active');
+
+      updateInfo();
+    }
+  }
+
+  function updateInfo() {
+    const names = ['START', 'agent', 'tools'];
+    const descs = ['图执行入口', 'LLM 分析 + 决策', '执行工具调用'];
+    document.getElementById('info-basic').innerHTML = `
+      <div class="info-card">当前节点 <div class="val" style="color:#ec4899">${step>=0?names[sequence[step]]||'END':'—'}</div></div>
+      <div class="info-card">当前步骤 <div class="val">${step+1} / 7</div></div>
+      <div class="info-card">循环次数 <div class="val" style="color:#f59e0b">${step>=3?Math.floor((step-1)/2):0}</div></div>
+      <div class="info-card">描述 <div class="val">${step>=0?descs[sequence[step]]||'—':'—'}</div></div>
+    `;
+  }
+
+  document.getElementById('btn-play-basic').addEventListener('click', function() {
+    if (animId) return;
+    reset();
+    function animate() {
+      if (step < sequence.length - 1) {
+        advance();
+        animId = setTimeout(animate, 800);
+      } else {
+        nodes.forEach(id => document.getElementById(id).classList.remove('active'));
+        nodes.forEach(id => document.getElementById(id).classList.add('done'));
+        document.getElementById('info-basic').innerHTML = `
+          <div class="info-card">当前节点 <div class="val" style="color:#4ade80">END ✓</div></div>
+          <div class="info-card">当前步骤 <div class="val">完成</div></div>
+          <div class="info-card">循环次数 <div class="val" style="color:#f59e0b">3</div></div>
+          <div class="info-card">描述 <div class="val">Agent 完成任务</div></div>
+        `;
+        animId = null;
+      }
+    }
+    animate();
+  });
+  document.getElementById('btn-reset-basic').addEventListener('click', function() {
+    if (animId) { clearTimeout(animId); animId = null; }
+    reset();
+  });
+
+  updateInfo();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: Router Canvas Visualization -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasRouter');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const routes = [
+    { name: '知识问答', icon: '📚', color: '#4ade80', dest: 'researcher' },
+    { name: '写代码', icon: '💻', color: '#ec4899', dest: 'coder' },
+    { name: '数据分析', icon: '📊', color: '#f59e0b', dest: 'analyst' },
+    { name: '闲聊结束', icon: '💬', color: '#f87171', dest: 'end' },
+  ];
+
+  let activeRoute = -1;
+  let animId = null;
+
+  function reset() { activeRoute = -1; draw(); }
+  function cycleRandom() {
+    activeRoute = Math.floor(Math.random() * routes.length);
+    draw();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = W / 2;
+    const cy = 140;
+
+    // Supervisor
+    const supR = 55;
+    ctx.fillStyle = '#1a2530';
+    ctx.beginPath();
+    ctx.arc(cx, cy, supR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#22d3ee';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('👔 Supervisor', cx, cy - 5);
+    ctx.fillText('LLM 路由', cx, cy + 28);
+
+    // Route nodes
+    const nodeR = 48;
+    const startY = cy + supR + 90;
+    const cols = 4;
+    const totalW = cols * (nodeR * 2 + 16) - 16;
+    const startX = (W - totalW) / 2 + nodeR;
+
+    for (let i = 0; i < routes.length; i++) {
+      const nx = startX + i * (nodeR * 2 + 16);
+      const ny = startY;
+      const isActive = i === activeRoute;
+
+      // Line from supervisor
+      ctx.strokeStyle = isActive ? routes[i].color : '#2a3040';
+      ctx.lineWidth = isActive ? 3 : 1.5;
+      ctx.setLineDash(isActive ? [] : [5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + supR);
+      ctx.lineTo(nx, ny - nodeR);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Arrowhead
+      if (isActive) {
+        const angle = Math.atan2(ny - nodeR - (cy + supR), nx - cx);
+        const h = 10;
+        ctx.fillStyle = routes[i].color;
+        ctx.beginPath();
+        ctx.moveTo(nx, ny - nodeR);
+        ctx.lineTo(nx - h * Math.cos(angle - 0.4), ny - nodeR - h * Math.sin(angle - 0.4));
+        ctx.lineTo(nx - h * Math.cos(angle + 0.4), ny - nodeR - h * Math.sin(angle + 0.4));
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Node
+      ctx.fillStyle = isActive ? routes[i].color + '22' : '#151922';
+      ctx.beginPath();
+      ctx.arc(nx, ny, nodeR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = isActive ? routes[i].color : '#2a3040';
+      ctx.lineWidth = isActive ? 3 : 1.5;
+      ctx.stroke();
+
+      if (isActive) {
+        ctx.shadowColor = routes[i].color;
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(nx, ny, nodeR, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.font = '30px "Segoe UI", sans-serif';
+      ctx.fillText(routes[i].icon, nx, ny);
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 17px "Segoe UI", "PingFang SC", monospace';
+      ctx.fillText(routes[i].name, nx, ny + 28);
+    }
+
+    // Input text
+    const inputs = ['Transformer 注意力机制是什么？', '用 Python 写一个快速排序', '分析 sales_2024.csv 的趋势', '你好，今天过得怎么样？'];
+    if (activeRoute >= 0) {
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('📥 用户输入: "' + inputs[activeRoute] + '"', cx, 40);
+      ctx.fillStyle = routes[activeRoute].color;
+      ctx.fillText('→ 路由到: ' + routes[activeRoute].name, cx, H - 20);
+    } else {
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '20px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText('点击"模拟路由"查看 Supervisor 如何分发不同请求', cx, 40);
+    }
+  }
+
+  document.getElementById('btn-play-router').addEventListener('click', function() {
+    if (animId) return;
+    reset();
+    let count = 0;
+    function animate() {
+      cycleRandom();
+      count++;
+      if (count < 8) {
+        animId = setTimeout(animate, 1100);
+      } else {
+        animId = null;
+      }
+    }
+    animate();
+  });
+  document.getElementById('btn-reset-router').addEventListener('click', function() {
+    if (animId) { clearTimeout(animId); animId = null; }
+    reset();
+  });
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- Tab switching: Router tabs -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const section = document.getElementById('sec-router');
+  if(section) {
+    const tabs = section.querySelectorAll('.tab-btn');
+    const contents = section.querySelectorAll('.tab-content');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        const target = this.getAttribute('data-tab');
+        contents.forEach(c => c.style.display = c.id === target ? 'block' : 'none');
+      });
+    });
+  }
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- Tab switching: Advanced Patterns -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const section = document.getElementById('sec-advanced');
+  if (section) {
+    const tabs = section.querySelectorAll('.tab-btn');
+    const contents = section.querySelectorAll('.tab-content');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        const target = this.getAttribute('data-tab');
+        contents.forEach(c => c.style.display = c.id === target ? 'block' : 'none');
+      });
+    });
+  }
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- Mermaid -->
+<!-- ================================================================ -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    themeVariables: {
+      fontSize: '18px',
+    },
+  });
+
+  // 隐藏 tab 内的 mermaid 图在 display:none 容器中无法正确计算尺寸，
+  // 先移除它们的 mermaid class，让初始 run() 跳过它们，等 tab 可见时再渲染
+  const deferredMermaids = [];
+  document.querySelectorAll('.tab-content .mermaid').forEach(el => {
+    const parent = el.closest('.tab-content');
+    if (parent && parent.style.display === 'none') {
+      el.classList.remove('mermaid');
+      deferredMermaids.push(el);
+    }
+  });
+
+  await mermaid.run();
+
+  // 恢复 mermaid class，供 tab 切换时 mermaid.run() 重新找到它们
+  deferredMermaids.forEach(el => el.classList.add('mermaid'));
+  
+  // Custom switch logic to render deferred mermaid diagrams when un-hidden
+  document.querySelectorAll('.tab-btn').forEach(tab => {
+    tab.addEventListener('click', async function() {
+      const target = this.getAttribute('data-tab');
+      const targetEl = document.getElementById(target);
+      if (targetEl) {
+          const m = targetEl.querySelector('.mermaid');
+          if (m && !m.getAttribute('data-processed')) {
+             await mermaid.run({ nodes: [m] });
+          }
+      }
+    });
+  });
+
+  window.mermaid = mermaid;
+</script>
+
+
+<script>
+/* ── Slider progress fill ── */
+(function() {
+  function updateSlider(s) {
+    var pct = (s.value - s.min) / (s.max - s.min) * 100;
+    s.style.setProperty('--pct', pct + '%');
+  }
+  document.querySelectorAll('input[type=range]').forEach(function(s) {
+    updateSlider(s);
+    s.addEventListener('input', function() { updateSlider(s); });
+  });
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>
+  // ── highlight.js Init ──
+  hljs.highlightAll();
+</script>
+
+</body>
+</html>

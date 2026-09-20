@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LangChain — LLM 应用开发框架</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #10b981;
+    --accent2: #34d399;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --orange: #f59e0b;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a2d20 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.green  { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.cyan   { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(16,185,129,0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(16,185,129,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #1a2830; }
+  .btn.active {
+    background: var(--accent);
+    color: #0f1219;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(16,185,129,0.3);
+  }
+  .btn.play-btn { background: var(--green); color: #0b0e14; border-color: var(--green); font-weight: 700; }
+  .btn.play-btn:hover { box-shadow: 0 0 14px rgba(74,222,128,0.3); }
+
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  .insight {
+    background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(56,189,248,0.06));
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  .code-block {
+    margin-bottom: 16px;
+  }
+
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Pipeline component styles */
+  .pipeline-viz {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+    overflow-x: auto;
+    flex-wrap: wrap;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    min-height: 160px;
+  }
+  .pipe-comp {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 110px;
+    transition: all 0.3s;
+  }
+  .pipe-comp.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 16px rgba(16,185,129,0.25);
+    background: #1a2d25;
+  }
+  .pipe-comp .comp-icon { font-size: 28px; margin-bottom: 6px; }
+  .pipe-comp .comp-name { font-size: 16px; font-weight: 600; color: var(--text); }
+  .pipe-comp .comp-type { font-size: 14px; color: var(--text2); margin-top: 2px; }
+  .pipe-arrow {
+    font-size: 24px;
+    color: var(--accent);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+  }
+
+  /* ── highlight.js code blocks ── */
+  .hljs {
+    background: #0d1117 !important;
+    border-radius: 10px;
+    padding: 18px 22px !important;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  pre code.hljs {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="header">
+  <h1>⛓️ LangChain · LLM 应用开发框架</h1>
+  <p>通过 Chain/Runnable 抽象将 LLM、工具、检索器、记忆等组件编排为可组合的管道，支持 LCEL 声明式语法与 Agent 自主决策循环</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Core Abstraction — Runnable Interface -->
+<!-- ================================================================ -->
+<div class="section" id="sec-core">
+  <h2><span class="dot green"></span> 1. 核心抽象：Runnable 协议</h2>
+  <p class="desc">
+    LangChain 的一切都围绕 <b>Runnable</b> 协议展开。任何组件（LLM、提示词模板、检索器、工具）都实现了统一的
+    <b>.invoke() / .stream() / .batch()</b> 接口。这使得组件可以像搭积木一样任意组合，
+    并通过 <b>LCEL（LangChain Expression Language）</b> 的 <code>|</code> 管道符串联。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 Runnable 核心接口</h3>
+    <div id="formula-runnable"></div>
+  </div>
+
+  <canvas id="canvasRunnable" width="1200" height="450"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>选择步骤 <span class="val" id="val-step">invoke</label>
+      <input type="range" id="slider-step" min="0" max="3" value="0" step="1">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-runnable"></div>
+
+  <div class="insight">
+    💡 <strong>统一接口的力量：</strong>因为所有组件都遵循 Runnable 协议，你可以把 LLM 的输出直接 pipe 给下一个组件，
+    也可以用 <code>.with_retry()</code> 给任何组件加上重试、用 <code>.with_fallbacks()</code> 加上降级方案。
+    <strong>这是 LangChain 可组合性的基石。</strong>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: LCEL Pipeline — 管道语法 -->
+<!-- ================================================================ -->
+<div class="section" id="sec-lcel">
+  <h2><span class="dot blue"></span> 2. LCEL 管道语法 — 构建处理链</h2>
+  <p class="desc">
+    LCEL 使用 Python 的 <code>|</code> 运算符将 Runnable 串联起来：
+    <b><code>chain = prompt | model | output_parser</code></b>。
+    数据从左到右流动，每个组件的输出成为下一个组件的输入。LangChain 自动处理
+    中间结果的传递、异步调用、流式输出和并行化。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 LCEL 表达式结构</h3>
+    <div id="formula-lcel"></div>
+  </div>
+
+  <!-- Interactive pipeline builder -->
+  <div class="pipeline-viz" id="pipelineViz">
+    <div class="pipe-comp" id="comp-user" style="border-color:var(--purple);">
+      <div class="comp-icon">👤</div>
+      <div class="comp-name">User Input</div>
+      <div class="comp-type">str</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-comp active" id="comp-prompt">
+      <div class="comp-icon">📝</div>
+      <div class="comp-name">PromptTemplate</div>
+      <div class="comp-type">Runnable</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-comp" id="comp-model" style="border-color:var(--blue);">
+      <div class="comp-icon">🤖</div>
+      <div class="comp-name">ChatModel</div>
+      <div class="comp-type">Runnable</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-comp" id="comp-parser" style="border-color:var(--orange);">
+      <div class="comp-icon">📤</div>
+      <div class="comp-name">OutputParser</div>
+      <div class="comp-type">Runnable</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-comp" id="comp-result" style="border-color:var(--green);">
+      <div class="comp-icon">✅</div>
+      <div class="comp-name">Result</div>
+      <div class="comp-type">dict</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn play-btn" id="btn-run-pipe">▶ 运行动画</button>
+    <button class="btn" id="btn-reset-pipe">↺ 重置</button>
+  </div>
+
+  <div class="code-block" id="code-lcel">
+<pre><code class="language-python">
+# LCEL: 用管道构建 LLM 应用
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
+
+prompt = ChatPromptTemplate.from_template(
+    "用{language}解释：{concept}"
+)
+model = ChatOpenAI(model="gpt-4")
+parser = StrOutputParser()
+
+# ⬇ LCEL 管道 — 数据从左到右流动
+chain = prompt | model | parser
+
+# 调用方式完全统一
+result = chain.invoke({"language": "Python", "concept": "闭包"})
+async for chunk in chain.astream(...):
+    print(chunk, end="")  # 流式逐 token 输出
+</code></pre>
+</div>
+
+  <div class="insight">
+    💡 <strong>管道即类型安全的数据流：</strong>LCEL 会自动检查每个组件的输入/输出 schema，
+    在<b>构建时（而非运行时）</b>发现类型不匹配。此外，<code>chain</code> 本身也是 Runnable —
+    你可以将它作为子组件嵌入更大的 chain 中，形成<b>层级化组合</b>。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: RAG Pipeline -->
+<!-- ================================================================ -->
+<div class="section" id="sec-rag">
+  <h2><span class="dot cyan"></span> 3. RAG 检索增强生成 — LangChain 的旗舰应用</h2>
+  <p class="desc">
+    RAG（Retrieval-Augmented Generation）是 LangChain 最常见的用例。
+    流程分为 <b>索引阶段</b>（离线）和 <b>查询阶段</b>（在线）：
+    文档 → 切分 → 嵌入 → 向量库 → 检索 → 注入提示词 → LLM 生成。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 RAG 两阶段流程</h3>
+    <div id="formula-rag"></div>
+  </div>
+
+  <canvas id="canvasRAG" width="1200" height="580"></canvas>
+
+  <div class="btn-row">
+    <button class="btn play-btn" id="btn-play-rag">▶ 播放 RAG 流程</button>
+    <button class="btn" id="btn-reset-rag">↺ 重置</button>
+    <button class="btn" id="btn-step-rag">→ 单步前进</button>
+  </div>
+
+  <div class="info-row" id="info-rag"></div>
+
+  <div class="insight">
+    💡 <strong>为什么 RAG 如此重要：</strong>LLM 的知识截止于训练日期，且无法访问私有数据。
+    RAG 将<b>检索系统</b>与<b>生成模型</b>解耦：向量库可以随时更新（无需微调模型），
+    并能通过 metadata 过滤实现<b>权限控制</b>和<b>时间范围筛选</b>。
+    LangChain 提供了从 Document Loader → Text Splitter → Embeddings → VectorStore → Retriever 的完整工具链。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Tool-calling Agent -->
+<!-- ================================================================ -->
+<div class="section" id="sec-agent">
+  <h2><span class="dot purple"></span> 4. Agent 工具调用 — ReAct 自主决策循环</h2>
+  <p class="desc">
+    Agent 是 LangChain 中最强大的模式：LLM 不再只是"回答问题"，而是<b>自主决定</b>
+    调用哪个工具、以什么参数调用、何时停止。经典的 <b>ReAct（Reasoning + Acting）</b>
+    模式让模型交替进行"思考→行动→观察"的循环，直到得出最终答案。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 ReAct Agent 循环</h3>
+    <div id="formula-react"></div>
+  </div>
+
+  <canvas id="canvasAgent" width="1200" height="560"></canvas>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="tab-agent-flow">状态流转图</button>
+    <button class="tab-btn" data-tab="tab-agent-code">代码示例</button>
+  </div>
+
+  <div id="tab-agent-flow" class="tab-content">
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn play-btn" id="btn-play-agent">▶ 播放 Agent 循环</button>
+      <button class="btn" id="btn-reset-agent">↺ 重置</button>
+    </div>
+  </div>
+
+  <div id="tab-agent-code" class="tab-content" style="display:none;">
+    <div class="code-block">
+<pre><code class="language-python">
+# LangChain Agent 定义
+from langchain_openai import ChatOpenAI
+from langgraph.prebuilt import create_react_agent
+
+tools = [search_tool, calculator_tool, weather_tool]
+
+agent = create_react_agent(
+    model=ChatOpenAI(model="gpt-4"),
+    tools=tools,
+)
+
+# Agent 自主决策循环：
+# Thought → Action → Observation → Thought → ... → Final Answer
+result = agent.invoke({
+    "messages": ["北京今天天气怎么样？用这个温度计算华氏度"]
+})
+# Agent 会：1) 调用 weather_tool 获取气温
+#         2) 调用 calculator_tool 转换华氏度
+#         3) 返回自然语言答案
+</code></pre>
+</div>
+  </div>
+
+  <div class="info-row" id="info-agent"></div>
+
+  <div class="insight">
+    💡 <strong>Agent ≠ Chain：</strong>Chain 的执行路径是<b>预定义的</b>（编译时确定），
+    而 Agent 的执行路径是<b>动态的</b>（运行时由 LLM 决定）。
+    Agent 可以调用工具的<b>结果</b>影响下一步决策，形成真正的自主循环。
+    LangGraph 进一步将 Agent 循环实现为<b>状态图（StateGraph）</b>，使循环可检查点保存、可中断、可回溯。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: Component Ecosystem -->
+<!-- ================================================================ -->
+<div class="section" id="sec-ecosystem">
+  <h2><span class="dot orange"></span> 5. LangChain 组件生态全景</h2>
+  <p class="desc">
+    LangChain 围绕 LLM 应用开发提供了完整的组件矩阵。
+    每个组件类别都有多个实现（与不同厂商/后端集成），且都遵循 Runnable 协议。
+  </p>
+
+  <canvas id="canvasEcosystem" width="1200" height="560"></canvas>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>组件类别</th>
+        <th>核心职责</th>
+        <th>典型实现</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Chat Models</td>
+        <td>接收消息列表，返回 AI 消息</td>
+        <td>ChatOpenAI, ChatAnthropic, ChatGoogle, ChatOllama</td>
+      </tr>
+      <tr>
+        <td>LLMs</td>
+        <td>接收文本字符串，返回文本</td>
+        <td>OpenAI, Anthropic, HuggingFacePipeline</td>
+      </tr>
+      <tr>
+        <td>Prompts</td>
+        <td>模板化提示词构建</td>
+        <td>ChatPromptTemplate, MessagesPlaceholder, FewShot</td>
+      </tr>
+      <tr>
+        <td>Document Loaders</td>
+        <td>从各种来源加载文档</td>
+        <td>PyPDF, WebBase, CSV, Notion, GitHub, S3</td>
+      </tr>
+      <tr>
+        <td>Text Splitters</td>
+        <td>将长文档切分为语义块</td>
+        <td>RecursiveCharacter, Markdown, Code, Semantic</td>
+      </tr>
+      <tr>
+        <td>Embeddings</td>
+        <td>将文本转为稠密向量</td>
+        <td>OpenAIEmbeddings, HuggingFaceEmbeddings, Cohere</td>
+      </tr>
+      <tr>
+        <td>Vector Stores</td>
+        <td>存储和检索向量</td>
+        <td>Chroma, Pinecone, Weaviate, Milvus, FAISS, Qdrant</td>
+      </tr>
+      <tr>
+        <td>Retrievers</td>
+        <td>给定查询，返回相关文档</td>
+        <td>VectorStoreRetriever, MultiQuery, Self-Query, MMR</td>
+      </tr>
+      <tr>
+        <td>Tools</td>
+        <td>LLM 可调用的外部功能</td>
+        <td>@tool 装饰器, StructuredTool, DuckDuckGo, API 封装</td>
+      </tr>
+      <tr>
+        <td>Memory</td>
+        <td>跨对话轮次的状态管理</td>
+        <td>ConversationBuffer, Summary, TokenBuffer, VectorStore</td>
+      </tr>
+      <tr>
+        <td>Callbacks</td>
+        <td>生命周期钩子与可观测性</td>
+        <td>LangSmith tracing, 自定义回调, 成本追踪</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>LangChain 的定位演变：</strong>LangChain 最初是一个"万能框架"，试图集成一切。
+    2024 年后，LangChain 团队将其拆分为：<b>langchain-core</b>（核心抽象）、
+    <b>langchain-community</b>（社区集成）、<b>langgraph</b>（Agent 编排）、
+    <b>LangSmith</b>（可观测性平台）。这种模块化让开发者可以<b>按需引入</b>，避免依赖膨胀。
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  ⛓️ LangChain 交互可视化 · Created for Learning · 基于 LangChain 官方文档 (2024-2026)
+</footer>
+
+<script>
+// ==============================
+// KaTeX Render
+// ==============================
+(function() {
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{Runnable.invoke}(x) &\to y &
+  \text{Runnable.stream}(x) &\to \text{Iterator}[y] \\[4pt]
+  \text{Runnable.batch}([x_1, x_2, \ldots]) &\to [y_1, y_2, \ldots] &
+  \text{Runnable.ainvoke}(x) &\to \text{Coroutine}[y] \\[4pt]
+  \text{chain} &= A \mid B \mid C \quad\Rightarrow\quad \text{chain.invoke}(x) = C(B(A(x)))
+  \end{aligned}
+  `, document.getElementById('formula-runnable'), { displayMode: true });
+
+  katex.render(String.raw`
+  \begin{aligned}
+  \text{chain} &= \underbrace{\text{prompt}}_{\text{格式化输入}} \;
+                 \mid \; \underbrace{\text{model}}_{\text{LLM 推理}} \;
+                 \mid \; \underbrace{\text{parser}}_{\text{结构化输出}} \\[6pt]
+  \text{chain.invoke}(\{\text{vars}\}) &= \text{parser}\!\left(\text{model}\!\left(\text{prompt}(\{\text{vars}\})\right)\right) \\[4pt]
+  \text{chain} &\equiv \text{RunnableSequence} \equiv \text{可嵌套的原子操作单元}
+  \end{aligned}
+  `, document.getElementById('formula-lcel'), { displayMode: true });
+
+  katex.render(String.raw`
+  \begin{aligned}
+  &\textbf{索引阶段（离线）：} \\
+  &\quad \text{文档集} \xrightarrow{\text{Loader}} \text{Document} \xrightarrow{\text{Splitter}} \text{Chunks} \xrightarrow{\text{Embedding}} \text{Vectors} \xrightarrow{\text{Store}} \text{VectorDB} \\[6pt]
+  &\textbf{查询阶段（在线）：} \\
+  &\quad \text{Query} \xrightarrow{\text{Embedding}} \vec{q} \xrightarrow{\text{Retrieve}} \text{Top-K Docs} \xrightarrow{\text{注入Prompt}} \text{LLM} \xrightarrow{\text{生成}} \text{Answer}
+  \end{aligned}
+  `, document.getElementById('formula-rag'), { displayMode: true });
+
+  katex.render(String.raw`
+  \begin{aligned}
+  &\textbf{ReAct 循环：} \\
+  &\text{Thought: } &\text{我需要查天气，所以调用 weather\_tool} \\
+  &\text{Action: } &\text{weather\_tool("北京")} \\
+  &\text{Observation: } &\text{"北京 22°C 晴"} \\
+  &\text{Thought: } &\text{需要把 22°C 转为华氏度} \\
+  &\text{Action: } &\text{calculator("22 * 9/5 + 32")} \\
+  &\text{Observation: } &\text{71.6} \\
+  &\text{Answer: } &\text{"北京今天 22°C (71.6°F)，晴天"}
+  \end{aligned}
+  `, document.getElementById('formula-react'), { displayMode: true });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 1 Canvas: Runnable Protocol -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasRunnable');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const steps = ['invoke', 'stream', 'batch', 'ainvoke'];
+  const colors = ['#10b981', '#38bdf8', '#a78bfa', '#f59e0b'];
+  const icons = ['▶', '🌊', '📦', '⏳'];
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const slider = document.getElementById('slider-step');
+    const stepIdx = +slider.value;
+    const stepName = steps[stepIdx];
+    const pct = (stepIdx - slider.min) / (slider.max - slider.min) * 100;
+    slider.style.setProperty('--pct', pct + '%');
+
+    const margin = { top: 40, left: 60, right: 60, bottom: 30 };
+
+    // Draw central "Runnable" box
+    const boxW = 260, boxH = 110;
+    const boxX = (W - boxW) / 2;
+    const boxY = margin.top + 60;
+
+    // Input arrow
+    const inputX = boxX - 200;
+    const inputY = boxY + boxH / 2;
+
+    // Input box
+    ctx.fillStyle = '#1e2332';
+    ctx.strokeStyle = colors[stepIdx];
+    ctx.lineWidth = 2;
+    roundRect(ctx, inputX - 80, inputY - 25, 160, 50, 10);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(stepIdx === 2 ? '[x₁, x₂, ...]' : 'x', inputX, inputY + 5);
+
+    // Output box
+    const outputX = boxX + boxW + 40;
+    ctx.fillStyle = '#1e2332';
+    ctx.strokeStyle = colors[stepIdx];
+    ctx.lineWidth = 2;
+    roundRect(ctx, outputX, inputY - 25, 160, 50, 10);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#e1e4eb';
+    ctx.fillText(stepIdx === 2 ? '[y₁, y₂, ...]' : 'y', outputX + 80, inputY + 5);
+
+    // Runnable box
+    const grad = ctx.createLinearGradient(boxX, boxY, boxX + boxW, boxY + boxH);
+    grad.addColorStop(0, '#151922');
+    grad.addColorStop(1, '#1a2d25');
+    ctx.fillStyle = grad;
+    ctx.strokeStyle = colors[stepIdx];
+    ctx.lineWidth = 3;
+    roundRect(ctx, boxX, boxY, boxW, boxH, 14);
+    ctx.fill();
+    ctx.stroke();
+
+    // Glow
+    ctx.shadowColor = colors[stepIdx];
+    ctx.shadowBlur = 20;
+    ctx.strokeStyle = colors[stepIdx];
+    ctx.lineWidth = 2;
+    roundRect(ctx, boxX, boxY, boxW, boxH, 14);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 26px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Runnable', boxX + boxW/2, boxY + 36);
+    ctx.fillStyle = colors[stepIdx];
+    ctx.font = 'bold 32px "JetBrains Mono", monospace';
+    ctx.fillText('.' + stepName + '()', boxX + boxW/2, boxY + 76);
+
+    // Arrows
+    drawArrow(ctx, inputX, inputY, boxX, boxY + boxH/2, colors[stepIdx]);
+    drawArrow(ctx, boxX + boxW, boxY + boxH/2, outputX, inputY, colors[stepIdx]);
+
+    // Method descriptions
+    const descs = [
+      '调用一次，返回一个结果',
+      '流式返回，逐 token 输出',
+      '并行处理多个输入',
+      '异步调用，不阻塞事件循环',
+    ];
+    const descY = boxY + boxH + 60;
+
+    // 4 method pills
+    const pillW = 160, pillGap = 20;
+    const totalW = 4 * pillW + 3 * pillGap;
+    const pillStartX = (W - totalW) / 2;
+
+    for (let i = 0; i < 4; i++) {
+      const px = pillStartX + i * (pillW + pillGap);
+      const isActive = i === stepIdx;
+
+      ctx.fillStyle = isActive ? colors[i] : '#1e2332';
+      ctx.strokeStyle = isActive ? colors[i] : '#2a3040';
+      ctx.lineWidth = isActive ? 3 : 1;
+      roundRect(ctx, px, descY, pillW, 56, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = isActive ? '#0b0e14' : colors[i];
+      ctx.font = 'bold 18px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('.' + steps[i] + '()', px + pillW/2, descY + 24);
+
+      ctx.fillStyle = isActive ? '#0b0e14' : '#8e96a9';
+      ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(descs[i], px + pillW/2, descY + 46);
+    }
+
+    // Subtitle
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '21px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('所有 LangChain 组件都是 Runnable — 统一的 invoke/stream/batch/ainvoke 接口', W/2, margin.top);
+
+    document.getElementById('val-step').textContent = stepName;
+    document.getElementById('info-runnable').innerHTML = `
+      <div class="info-card">方法 <div class="val" style="color:${colors[stepIdx]}">.${stepName}()</div></div>
+      <div class="info-card">返回类型 <div class="val">${stepIdx===0?'T':stepIdx===1?'Iterator[T]':stepIdx===2?'list[T]':'Coroutine[T]'}</div></div>
+      <div class="info-card">阻塞 <div class="val">${stepIdx===3?'❌ 异步':'✅ 同步'}</div></div>
+      <div class="info-card">适用场景 <div class="val">${['单次调用','流式UI','批量处理','异步服务'][stepIdx]}</div></div>
+    `;
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function drawArrow(ctx, x1, y1, x2, y2, color) {
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const headLen = 14;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2 - headLen * 0.6 * Math.cos(angle), y2 - headLen * 0.6 * Math.sin(angle));
+    ctx.stroke();
+    // Arrowhead
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - 0.5), y2 - headLen * Math.sin(angle - 0.5));
+    ctx.lineTo(x2 - headLen * Math.cos(angle + 0.5), y2 - headLen * Math.sin(angle + 0.5));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  document.getElementById('slider-step').addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: LCEL Pipeline Animation -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const comps = ['comp-prompt', 'comp-model', 'comp-parser'];
+  let activeIdx = -1;
+  let animId = null;
+
+  function reset() {
+    activeIdx = -1;
+    comps.forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById('comp-prompt').classList.add('active');
+  }
+
+  function runAnimation() {
+    if (animId) return;
+    reset();
+    activeIdx = 0;
+    document.getElementById('comp-prompt').classList.add('active');
+
+    function advance() {
+      if (activeIdx < comps.length) {
+        comps.forEach((id, i) => {
+          const el = document.getElementById(id);
+          if (i === activeIdx) el.classList.add('active');
+          else if (i < activeIdx) {
+            el.classList.remove('active');
+            el.style.borderColor = 'var(--green)';
+            el.style.background = '#1a2d25';
+          }
+        });
+        activeIdx++;
+        animId = setTimeout(advance, 900);
+      } else {
+        // All done
+        comps.forEach(id => {
+          const el = document.getElementById(id);
+          el.style.borderColor = 'var(--green)';
+          el.style.background = '#1a2d25';
+        });
+        document.getElementById('comp-result').style.borderColor = 'var(--green)';
+        document.getElementById('comp-result').style.background = '#1a2d25';
+        document.getElementById('comp-result').style.boxShadow = '0 0 16px rgba(16,185,129,0.4)';
+        animId = null;
+      }
+    }
+    advance();
+  }
+
+  document.getElementById('btn-run-pipe').addEventListener('click', runAnimation);
+
+  document.getElementById('btn-reset-pipe').addEventListener('click', function() {
+    if (animId) { clearTimeout(animId); animId = null; }
+    comps.forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('active');
+      el.style.borderColor = 'var(--border)';
+      el.style.background = 'var(--surface2)';
+    });
+    document.getElementById('comp-result').style.borderColor = 'var(--green)';
+    document.getElementById('comp-result').style.background = 'var(--surface2)';
+    document.getElementById('comp-result').style.boxShadow = 'none';
+    activeIdx = -1;
+  });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 3 Canvas: RAG Pipeline -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasRAG');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const stages = [
+    { icon: '📄', name: 'Load', desc: '文档加载', color: '#38bdf8', phase: '索引' },
+    { icon: '✂️', name: 'Split', desc: '文本切分', color: '#a78bfa', phase: '索引' },
+    { icon: '🔢', name: 'Embed', desc: '向量嵌入', color: '#f472b6', phase: '索引' },
+    { icon: '🗄️', name: 'Store', desc: '向量存储', color: '#f59e0b', phase: '索引' },
+    { icon: '🔍', name: 'Retrieve', desc: '相似检索', color: '#4ade80', phase: '查询' },
+    { icon: '📝', name: 'Prompt', desc: '注入提示词', color: '#22d3ee', phase: '查询' },
+    { icon: '🤖', name: 'Generate', desc: 'LLM 生成', color: '#10b981', phase: '查询' },
+  ];
+
+  let currentStage = -1;
+  let animId = null;
+
+  function reset() {
+    currentStage = -1;
+    draw();
+  }
+
+  function stepForward() {
+    if (currentStage < stages.length - 1) {
+      currentStage++;
+      draw();
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const margin = { top: 50, left: 40, right: 40, bottom: 50 };
+    const stageW = 120, stageH = 110;
+    const arrowGap = 50;
+    const totalW = stages.length * stageW + (stages.length - 1) * arrowGap;
+    const startX = (W - totalW) / 2;
+
+    // Two rows: indexing (top), query (bottom)
+    const idxStages = stages.slice(0, 4);
+    const qryStages = stages.slice(4);
+
+    // Indexing row
+    const idxY = margin.top + 20;
+    const idxTotalW = idxStages.length * stageW + (idxStages.length - 1) * arrowGap;
+    const idxStartX = (W - idxTotalW) / 2;
+
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('📥 索引阶段（离线）', margin.left + 10, idxY - 8);
+
+    for (let i = 0; i < idxStages.length; i++) {
+      const sx = idxStartX + i * (stageW + arrowGap);
+      drawStage(sx, idxY, stageW, stageH, idxStages[i], i, currentStage);
+      if (i < idxStages.length - 1) {
+        drawConnector(sx + stageW, idxY + stageH/2, sx + stageW + arrowGap, idxY + stageH/2,
+          i < currentStage ? '#4ade80' : '#2a3040');
+      }
+    }
+
+    // Down arrow from Store to Retrieve
+    const storeX = idxStartX + 3 * (stageW + arrowGap) + stageW/2;
+    const storeY = idxY + stageH;
+    const retrieveX = (W - qryStages.length * stageW - (qryStages.length - 1) * arrowGap) / 2;
+
+    const qryY = storeY + 70;
+    ctx.fillStyle = '#8e96a9';
+    ctx.fillText('📤 查询阶段（在线）', margin.left + 10, qryY - 8);
+
+    const qryTotalW = qryStages.length * stageW + (qryStages.length - 1) * arrowGap;
+    const qryStartX = (W - qryTotalW) / 2;
+
+    // Vertical connector
+    ctx.strokeStyle = currentStage >= 3 ? '#4ade80' : '#2a3040';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(storeX, storeY + 6);
+    ctx.lineTo(storeX, qryY + stageH/2 - 6);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    for (let i = 0; i < qryStages.length; i++) {
+      const sx = qryStartX + i * (stageW + arrowGap);
+      drawStage(sx, qryY, stageW, stageH, qryStages[i], i + 4, currentStage);
+      if (i < qryStages.length - 1) {
+        drawConnector(sx + stageW, qryY + stageH/2, sx + stageW + arrowGap, qryY + stageH/2,
+          (i + 4) < currentStage ? '#4ade80' : '#2a3040');
+      }
+    }
+
+    // Status text
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    if (currentStage >= 0 && currentStage < stages.length) {
+      ctx.fillText('当前: ' + stages[currentStage].icon + ' ' + stages[currentStage].name + ' — ' + stages[currentStage].desc,
+        W/2, qryY + stageH + 36);
+    }
+
+    updateInfoRAG();
+  }
+
+  function drawStage(x, y, w, h, stage, globalIdx, current) {
+    const isActive = globalIdx === current;
+    const isDone = globalIdx < current;
+
+    ctx.fillStyle = isActive ? 'rgba(16,185,129,0.15)' : isDone ? 'rgba(74,222,128,0.08)' : '#151922';
+    ctx.strokeStyle = isActive ? stage.color : isDone ? '#4ade80' : '#2a3040';
+    ctx.lineWidth = isActive ? 3 : 1.5;
+    roundRectStage(ctx, x, y, w, h, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    if (isActive) {
+      ctx.shadowColor = stage.color;
+      ctx.shadowBlur = 16;
+      ctx.strokeStyle = stage.color;
+      roundRectStage(ctx, x, y, w, h, 10);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    ctx.font = '32px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(stage.icon, x + w/2, y + 34);
+
+    ctx.fillStyle = isDone ? '#4ade80' : '#e1e4eb';
+    ctx.font = 'bold 19px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText(stage.name, x + w/2, y + 66);
+
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText(stage.desc, x + w/2, y + 92);
+
+    if (isDone) {
+      ctx.fillStyle = '#4ade80';
+      ctx.font = '20px "Segoe UI", sans-serif';
+      ctx.fillText('✓', x + w - 22, y + 22);
+    }
+  }
+
+  function drawConnector(x1, y1, x2, y2, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    // Arrow
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const h = 8;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - h * Math.cos(angle - 0.5), y2 - h * Math.sin(angle - 0.5));
+    ctx.lineTo(x2 - h * Math.cos(angle + 0.5), y2 - h * Math.sin(angle + 0.5));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function roundRectStage(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function updateInfoRAG() {
+    document.getElementById('info-rag').innerHTML = `
+      <div class="info-card">总步骤 <div class="val">${stages.length}</div></div>
+      <div class="info-card">索引阶段 <div class="val" style="color:#38bdf8">${Math.min(currentStage+1, 4)} / 4</div></div>
+      <div class="info-card">查询阶段 <div class="val" style="color:#4ade80">${Math.max(0, currentStage-3)} / 3</div></div>
+      <div class="info-card">当前组件 <div class="val" style="color:${currentStage>=0?stages[currentStage]?.color:'#8e96a9'}">${currentStage>=0?stages[currentStage].name:'—'}</div></div>
+    `;
+  }
+
+  document.getElementById('btn-play-rag').addEventListener('click', function() {
+    if (animId) return;
+    reset();
+    function animate() {
+      if (currentStage < stages.length - 1) {
+        stepForward();
+        animId = setTimeout(animate, 750);
+      } else {
+        animId = null;
+      }
+    }
+    animate();
+  });
+  document.getElementById('btn-reset-rag').addEventListener('click', function() {
+    if (animId) { clearTimeout(animId); animId = null; }
+    reset();
+  });
+  document.getElementById('btn-step-rag').addEventListener('click', function() {
+    if (animId) { clearTimeout(animId); animId = null; }
+    stepForward();
+  });
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4 Canvas: Agent Loop -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasAgent');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const states = [
+    { name: 'User Input', icon: '👤', color: '#a78bfa', x: 0.5, y: 0.1 },
+    { name: 'Agent\nThink', icon: '🧠', color: '#38bdf8', x: 0.25, y: 0.42 },
+    { name: 'Tool\nExecute', icon: '🔧', color: '#f59e0b', x: 0.75, y: 0.42 },
+    { name: 'Observe', icon: '👁️', color: '#f472b6', x: 0.75, y: 0.68 },
+    { name: 'Final\nAnswer', icon: '✅', color: '#10b981', x: 0.5, y: 0.88 },
+  ];
+
+  const edges = [
+    [0, 1], [1, 2], [2, 3], [3, 1], [1, 4],
+  ];
+  const edgeLabels = ['开始', '选择工具', '返回结果', '继续思考', '输出答案'];
+
+  let currentState = -1;
+  let loopCount = 0;
+  let animId = null;
+
+  function reset() {
+    currentState = -1; loopCount = 0;
+    draw();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw edges first
+    edges.forEach(([from, to], ei) => {
+      const fx = states[from].x * W;
+      const fy = states[from].y * H;
+      const tx = states[to].x * W;
+      const ty = states[to].y * H;
+
+      const isActive = currentState === from && (
+        (from === 1 && to === 2) || (from === 2 && to === 3) ||
+        (from === 3 && to === 1) || (from === 1 && to === 4) ||
+        (from === 0 && to === 1)
+      );
+      const isTraversed = currentState > to || (currentState >= 3 && to === 1 && loopCount > 0);
+
+      // Curve for the loop-back edge
+      if (from === 3 && to === 1) {
+        ctx.strokeStyle = isActive ? '#f59e0b' : (loopCount > 0 ? '#4ade80' : '#2a3040');
+        ctx.lineWidth = isActive ? 3 : 1.5;
+        ctx.setLineDash(isActive ? [] : (loopCount > 0 ? [] : [5, 4]));
+        ctx.beginPath();
+        ctx.moveTo(tx - 60, ty - 40);
+        ctx.bezierCurveTo(tx - 180, ty - 160, fx - 60, fy + 30, fx + 70, fy - 20);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (loopCount > 0) {
+          ctx.fillStyle = '#4ade80';
+          ctx.font = '18px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('loop ×' + loopCount, (tx + fx)/2 - 120, (ty + fy)/2 - 70);
+        }
+      } else {
+        const isDirectlyActive = (isActive && edges[ei][0] === from && edges[ei][1] === to);
+        ctx.strokeStyle = isTraversed && !isActive ? '#4ade80' : (isDirectlyActive ? '#f59e0b' : '#2a3040');
+        ctx.lineWidth = isDirectlyActive ? 3 : 1.5;
+        ctx.setLineDash(isDirectlyActive || isTraversed ? [] : [5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(fx, fy);
+        ctx.lineTo(tx, ty);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    });
+
+    // Draw nodes
+    states.forEach((s, i) => {
+      const sx = s.x * W, sy = s.y * H;
+      const r = 52;
+      const isActive = i === currentState;
+      const isDone = (i === 0 && currentState >= 0) || (i === 4 && currentState >= 4);
+
+      ctx.fillStyle = isActive ? 'rgba(16,185,129,0.2)' : isDone ? 'rgba(74,222,128,0.1)' : '#151922';
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = isActive ? s.color : (isDone ? '#4ade80' : '#2a3040');
+      ctx.lineWidth = isActive ? 3 : 1.5;
+      ctx.stroke();
+
+      if (isActive) {
+        ctx.shadowColor = s.color;
+        ctx.shadowBlur = 24;
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.font = '30px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(s.icon, sx, sy - 4);
+
+      ctx.fillStyle = isDone ? '#4ade80' : '#e1e4eb';
+      ctx.font = 'bold 18px "Segoe UI", "PingFang SC", sans-serif';
+      const lines = s.name.split('\n');
+      lines.forEach((line, li) => {
+        ctx.fillText(line, sx, sy + 22 + li * 20);
+      });
+
+      if (isDone && i > 0) {
+        ctx.fillStyle = '#4ade80';
+        ctx.font = '18px "Segoe UI", sans-serif';
+        ctx.fillText('✓', sx + r - 14, sy - r + 22);
+      }
+    });
+
+    // Loop count display
+    if (loopCount > 0) {
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('🔄 Agent 循环次数: ' + loopCount, 30, H - 20);
+    }
+
+    updateInfoAgent();
+  }
+
+  function updateInfoAgent() {
+    const stateNames = ['等待输入', 'Agent 思考', '执行工具', '观察结果', '输出答案'];
+    document.getElementById('info-agent').innerHTML = `
+      <div class="info-card">当前状态 <div class="val" style="color:${currentState>=0?states[currentState]?.color:'#8e96a9'}">${currentState>=0?stateNames[currentState]:'—'}</div></div>
+      <div class="info-card">循环次数 <div class="val" style="color:#f59e0b">${loopCount}</div></div>
+      <div class="info-card">是否使用工具 <div class="val">${currentState>=2?'✅ 是':'—'}</div></div>
+      <div class="info-card">决策模式 <div class="val">ReAct</div></div>
+    `;
+  }
+
+  const agentSequence = [0, 1, 2, 3, 1, 4]; // user → think → tool → observe → think → answer
+
+  function step() {
+    if (currentStage < agentSequence.length) {
+      currentStage++;
+      const target = agentSequence[currentStage];
+      if (target === undefined) return;
+      // If we go back to think (state 1) from observe (state 3), increment loop
+      if (currentState === 3 && target === 1) loopCount++;
+      currentState = target;
+      draw();
+    }
+  }
+  let currentStage = -1;
+
+  function stepForward() {
+    if (currentStage < agentSequence.length - 1) {
+      currentStage++;
+      const target = agentSequence[currentStage];
+      if (currentState === 3 && target === 1) loopCount++;
+      currentState = target;
+      draw();
+    }
+  }
+
+  document.getElementById('btn-play-agent').addEventListener('click', function() {
+    if (animId) return;
+    reset();
+    currentStage = -1;
+    function animate() {
+      if (currentStage < agentSequence.length - 1) {
+        stepForward();
+        animId = setTimeout(animate, 900);
+      } else {
+        animId = null;
+      }
+    }
+    animate();
+  });
+  document.getElementById('btn-reset-agent').addEventListener('click', function() {
+    if (animId) { clearTimeout(animId); animId = null; }
+    reset();
+    currentStage = -1;
+  });
+
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- Tab switching -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const tabs = document.querySelectorAll('#sec-agent .tab-btn');
+  const contents = document.querySelectorAll('#sec-agent .tab-content');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.getAttribute('data-tab');
+      contents.forEach(c => c.style.display = c.id === target ? 'block' : 'none');
+    });
+  });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 5 Canvas: Component Ecosystem -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasEcosystem');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const margin = { top: 30, left: 40, right: 40, bottom: 20 };
+
+    // Central hub: LangChain
+    const cx = W / 2, cy = H / 2;
+
+    // Component categories orbiting
+    const categories = [
+      { name: 'Chat Models', icon: '🤖', color: '#38bdf8', items: 'GPT-4, Claude, Gemini' },
+      { name: 'Prompts', icon: '📝', color: '#a78bfa', items: 'Template, FewShot, Chat' },
+      { name: 'Document\nLoaders', icon: '📄', color: '#f59e0b', items: 'PDF, Web, CSV, GitHub' },
+      { name: 'Text\nSplitters', icon: '✂️', color: '#f472b6', items: 'Recursive, Semantic, Code' },
+      { name: 'Embeddings', icon: '🔢', color: '#22d3ee', items: 'OpenAI, HF, Cohere' },
+      { name: 'Vector Stores', icon: '🗄️', color: '#4ade80', items: 'Chroma, Pinecone, FAISS' },
+      { name: 'Retrievers', icon: '🔍', color: '#10b981', items: 'Vector, MMR, Self-Query' },
+      { name: 'Tools', icon: '🔧', color: '#ef4444', items: 'Search, Calculator, API' },
+      { name: 'Memory', icon: '🧠', color: '#8b5cf6', items: 'Buffer, Summary, Token' },
+    ];
+
+    const radius = 190;
+    const catR = 70;
+
+    categories.forEach((cat, i) => {
+      const angle = (i / categories.length) * Math.PI * 2 - Math.PI / 2;
+      const x = cx + Math.cos(angle) * radius;
+      const y = cy + Math.sin(angle) * radius;
+
+      // Line to center
+      ctx.strokeStyle = cat.color + '33';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(cx, cy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Node
+      const grad = ctx.createRadialGradient(x, y, catR * 0.3, x, y, catR);
+      grad.addColorStop(0, cat.color + '22');
+      grad.addColorStop(1, '#151922');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, catR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = cat.color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = '24px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(cat.icon, x, y - 8);
+
+      ctx.fillStyle = '#e1e4eb';
+      ctx.font = 'bold 16px "Segoe UI", "PingFang SC", sans-serif';
+      const lines = cat.name.split('\n');
+      lines.forEach((line, li) => {
+        ctx.fillText(line, x, y + 18 + li * 18);
+      });
+
+      // Items on hover-like display
+      ctx.fillStyle = cat.color;
+      ctx.font = '16px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.fillText(cat.items, x, y + catR - 12);
+    });
+
+    // Center
+    const centerGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 80);
+    centerGrad.addColorStop(0, '#10b981');
+    centerGrad.addColorStop(1, '#10b98144');
+    ctx.fillStyle = centerGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 70, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#0b0e14';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⛓️', cx, cy - 8);
+    ctx.fillText('LangChain', cx, cy + 28);
+
+    // Title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('LangChain 组件生态 — 一切皆为 Runnable', cx, margin.top);
+  }
+
+  draw();
+})();
+</script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>
+  // ── highlight.js Init ──
+  hljs.highlightAll();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LayerNorm vs BatchNorm — 3D 魔方矩阵可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --text: #eee;
+    --text2: #a0a0b8;
+    --gold: #f0c040;
+    --green: #4ecca3;
+    --blue: #4ea8f6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+  }
+
+  #three-container { flex: 1; position: relative; cursor: grab; }
+  #three-container:active { cursor: grabbing; }
+  #three-container canvas { display: block; }
+
+  #panel {
+    width: 750px;
+    background: var(--card);
+    border-left: 2px solid #2a2a4a;
+    display: flex; flex-direction: column;
+    z-index: 10; overflow-y: auto;
+    box-shadow: -4px 0 30px rgba(0,0,0,.5);
+  }
+  #panel::-webkit-scrollbar { width: 4px; }
+  #panel::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 2px; }
+
+  .p-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid #2a2a4a;
+  }
+  .p-section h2 { font-size: 24.0px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .p-section h3 { font-size: 16.0px; color: var(--text2); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 10px;
+    font-size: 16px; font-weight: 700;
+  }
+  .badge-bn { background: #4ea8f644; color: var(--blue); }
+  .badge-ln { background: #4ecca344; color: var(--green); }
+
+  .mode-toggle { display: flex; gap: 8px; }
+  .mode-btn {
+    flex: 1; padding: 12px; border: 2px solid #3a3a5a; border-radius: 10px;
+    background: transparent; color: var(--text); cursor: pointer;
+    font-size: 17px; font-weight: 600; transition: all .2s; text-align: center;
+  }
+  .mode-btn:hover { border-color: #5a5a7a; }
+  .mode-btn.active-bn { border-color: var(--blue); background: #4ea8f622; box-shadow: 0 0 20px #4ea8f633; }
+  .mode-btn.active-ln { border-color: var(--green); background: #4ecca322; box-shadow: 0 0 20px #4ecca333; }
+
+  .step-row { display: flex; gap: 4px; flex-wrap: wrap; }
+  .step-btn {
+    padding: 7px 12px; border-radius: 8px; border: 1px solid #3a3a5a;
+    background: #1a1a3e; color: var(--text); cursor: pointer;
+    font-size: 16px; font-weight: 600; transition: all .15s; white-space: nowrap;
+  }
+  .step-btn:hover { background: #2a2a5e; border-color: #5a5a7a; }
+  .step-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: 0 0 12px #e9456066; }
+
+  /* Formula blocks */
+  .formula-card {
+    background: #0d0d22; padding: 12px 14px; margin-bottom: 8px;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border: 1px solid #2a2a4a;
+  }
+  .formula-card.bn-card { border-left: 3px solid var(--blue); }
+  .formula-card.ln-card { border-left: 3px solid var(--green); }
+  .formula-card h4 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+  .formula-card h4.bn { color: var(--blue); }
+  .formula-card h4.ln { color: var(--green); }
+  .formula-card .katex-display { margin: 4px 0; }
+  .formula-card .katex { font-size: 1.15em; }
+
+  /* Step formula box */
+  .step-formula {
+    background: #0d0d22;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 16px;
+    line-height: 1.8;
+    color: #ccc;
+    border: 1px solid #2a2a4a;
+  }
+  .step-formula .hl { color: var(--gold); font-weight: 700; }
+  .step-formula .hl-bn { color: var(--blue); font-weight: 700; }
+  .step-formula .hl-ln { color: var(--green); font-weight: 700; }
+  .step-formula .dim { color: #888; font-size: 16px; }
+
+  .val-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 16px; font-family: 'JetBrains Mono', monospace;
+  }
+  .val-table th, .val-table td {
+    padding: 4px 8px; text-align: center; border: 1px solid #2a2a4a;
+  }
+  .val-table th { background: #0f0f2e; color: var(--text2); font-weight: 600; }
+  .val-table .row-hl { background: #4ecca318; }
+  .val-table .col-hl { background: #4ea8f618; }
+  .val-table .cell-hl { background: var(--accent); color: #fff; font-weight: 700; }
+
+  .legend-row { display: flex; gap: 14px; flex-wrap: wrap; font-size: 17px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  .stat-bar { display: flex; gap: 8px; }
+  .stat-chip {
+    flex: 1; background: #0d0d22; border-radius: 8px; padding: 10px;
+    text-align: center; border: 1px solid #2a2a4a;
+  }
+  .stat-chip .val { font-size: 20.0px; font-weight: 700; }
+  .stat-chip .lbl { font-size: 17px; color: var(--text2); margin-top: 2px; }
+  .stat-chip.chip-bn .val { color: var(--blue); }
+  .stat-chip.chip-ln .val { color: var(--green); }
+
+  .info-tip {
+    font-size: 16px; color: #666; line-height: 1.6;
+    background: #0d0d22; border-radius: 6px; padding: 10px 14px;
+  }
+</style>
+</head>
+<body>
+
+<div id="three-container"></div>
+
+<div id="panel">
+
+  <div class="p-section">
+    <h2>🧊 Normalization 3D 魔方</h2>
+    <h3>矩阵: 4 样本 (Y轴) × 8 特征 (X轴) &nbsp;|&nbsp; 拖拽旋转 · 点击方块切换维度</h3>
+  </div>
+
+  <!-- Mode Switch -->
+  <div class="p-section">
+    <div class="mode-toggle">
+      <button class="mode-btn active-bn" id="btn-bn" onclick="setMode('bn')">
+        🔵 BatchNorm<br><span style="font-size: 17px">竖着算 (按列)</span>
+      </button>
+      <button class="mode-btn" id="btn-ln" onclick="setMode('ln')">
+        🟢 LayerNorm<br><span style="font-size: 17px">横着算 (按行)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== BATCHNORM FORMULA ===== -->
+  <div class="p-section">
+    <h3>📐 BatchNorm 公式</h3>
+    <div class="formula-card bn-card">
+      <h4 class="bn">🔵 Batch Normalization — 对每个特征维度，跨所有样本</h4>
+      <div id="formula-bn"></div>
+    </div>
+  </div>
+
+  <!-- ===== LAYERNORM FORMULA ===== -->
+  <div class="p-section">
+    <h3>📐 LayerNorm 公式</h3>
+    <div class="formula-card ln-card">
+      <h4 class="ln">🟢 Layer Normalization — 对每个样本，跨所有特征维度</h4>
+      <div id="formula-ln"></div>
+    </div>
+  </div>
+
+  <!-- ===== RMSNorm FORMULA ===== -->
+  <div class="p-section">
+    <h3>📐 RMSNorm 公式 (扩展)</h3>
+    <div class="formula-card" style="border-left: 3px solid var(--gold);">
+      <h4 style="color:var(--gold)">🟡 RMS Normalization — 仅用均方根，省略均值中心化</h4>
+      <div id="formula-rms"></div>
+    </div>
+  </div>
+
+  <!-- Step Controls -->
+  <div class="p-section">
+    <h3 style="margin-bottom:8px;">📐 逐步计算</h3>
+    <div class="step-row" id="step-buttons">
+      <button class="step-btn active" onclick="setStep(0)">0.原始</button>
+      <button class="step-btn" onclick="setStep(1)">1.计算 μ</button>
+      <button class="step-btn" onclick="setStep(2)">2.计算 σ²</button>
+      <button class="step-btn" onclick="setStep(3)">3.归一化</button>
+      <button class="step-btn" onclick="setStep(4)">4.缩放平移</button>
+    </div>
+  </div>
+
+  <!-- Current step formula -->
+  <div class="p-section">
+    <h3 style="margin-bottom:8px;">📝 当前步骤</h3>
+    <div class="step-formula" id="formula-box"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="p-section">
+    <h3 style="margin-bottom:8px;">📊 统计量</h3>
+    <div class="stat-bar" id="stat-bar">
+      <div class="stat-chip chip-bn"><div class="val" id="stat-mu">—</div><div class="lbl">均值 μ</div></div>
+      <div class="stat-chip chip-ln"><div class="val" id="stat-var">—</div><div class="lbl">方差 σ²</div></div>
+      <div class="stat-chip"><div class="val" id="stat-norm">—</div><div class="lbl">归一化后</div></div>
+    </div>
+  </div>
+
+  <!-- 2D Table -->
+  <div class="p-section">
+    <h3 style="margin-bottom:8px;">📋 数值矩阵</h3>
+    <div style="overflow-x:auto;" id="table-container"></div>
+  </div>
+
+  <!-- Legend -->
+  <div class="p-section">
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-dot" style="background:#4ea8f6;"></div> BatchNorm (列)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ecca3;"></div> LayerNorm (行)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div> 当前焦点</div>
+    </div>
+  </div>
+
+  <div class="p-section">
+    <div class="info-tip">
+      💡 <b>键盘快捷键</b><br>
+      B/L = 切换 BN/LN 模式 &nbsp;|&nbsp; ←→ = 切换维度<br>
+      ↑↓ = 切换计算步骤 &nbsp;|&nbsp; <b>点击方块</b> = 切换高亮维度
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ========== Render KaTeX formulas ==========
+function renderFormulas() {
+  const formulas = {
+    'formula-bn': String.raw`
+      \begin{aligned}
+      \mu_{\mathcal{B}} &= \frac{1}{m}\sum_{i=1}^{m} x_i &&\text{小批量均值（沿特征维度）} \\[3pt]
+      \sigma_{\mathcal{B}}^2 &= \frac{1}{m}\sum_{i=1}^{m} (x_i - \mu_{\mathcal{B}})^2 &&\text{小批量方差} \\[3pt]
+      \hat{x}_i &= \frac{x_i - \mu_{\mathcal{B}}}{\sqrt{\sigma_{\mathcal{B}}^2 + \varepsilon}} &&\text{归一化} \\[3pt]
+      y_i &= \gamma \cdot \hat{x}_i + \beta &&\text{缩放平移（可学习参数）} \\[3pt]
+      \mathbb{E}[x] &\leftarrow \alpha \cdot \mathbb{E}[x] + (1-\alpha)\mu_{\mathcal{B}} &&\text{推理时使用滑动平均}
+      \end{aligned}
+    `,
+    'formula-ln': String.raw`
+      \begin{aligned}
+      \mu^{(l)} &= \frac{1}{d}\sum_{j=1}^{d} x_j &&\text{层均值（沿特征维度）} \\[3pt]
+      \sigma^{(l)2} &= \frac{1}{d}\sum_{j=1}^{d} (x_j - \mu^{(l)})^2 &&\text{层方差} \\[3pt]
+      \hat{x}_j &= \frac{x_j - \mu^{(l)}}{\sqrt{\sigma^{(l)2} + \varepsilon}} &&\text{归一化} \\[3pt]
+      y_j &= \gamma \cdot \hat{x}_j + \beta &&\text{元素级仿射变换} \\[3pt]
+      \text{BN: } \mu &= f(\text{batch}) \quad \text{LN: } \mu = f(\text{features}) &&\text{关键区别：统计量计算维度}
+      \end{aligned}
+    `,
+    'formula-rms': String.raw`
+      \begin{aligned}
+      \text{RMS}(x) &= \sqrt{\frac{1}{d}\sum_{j=1}^{d} x_j^2} &&\text{均方根（无均值中心化）} \\[3pt]
+      \hat{x}_j &= \frac{x_j}{\text{RMS}(x)} \cdot \gamma_j &&\text{仅缩放，不平移} \\[3pt]
+      \text{优势}&: \text{比 LN 快 } \approx 15\% \text{（省去均值计算）} &&\text{用于 Llama, Gemma 等}
+      \end{aligned}
+    `,
+  };
+  for (const [id, tex] of Object.entries(formulas)) {
+    try {
+      katex.render(tex, document.getElementById(id), { displayMode: true, throwOnError: false });
+    } catch(e) { document.getElementById(id).textContent = tex; }
+  }
+}
+renderFormulas();
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+// ==================== DATA ====================
+const N_SAMPLES = 4;
+const N_FEATURES = 8;
+
+const RAW_DATA = [
+  [  2.1,   5.3,   1.8,   9.2,   3.5,   7.1,   4.0,   8.5 ],
+  [  3.2,   4.8,   2.5,   8.9,   4.1,   6.5,   3.8,   9.1 ],
+  [  1.9,   5.1,   2.0,   9.5,   3.2,   6.9,   4.3,   8.0 ],
+  [  2.8,   5.5,   2.2,   8.6,   3.9,   7.3,   3.5,   8.7 ],
+];
+
+const GAMMA = 1.0;
+const BETA  = 0.0;
+
+// ==================== STATE ====================
+let mode = 'bn';
+let step = 0;
+let highlightIdx = 1;
+
+function getRegionValues() {
+  if (mode === 'bn') return RAW_DATA.map(row => row[highlightIdx]);
+  else return [...RAW_DATA[highlightIdx]];
+}
+function computeMean(arr) { return arr.reduce((a,b)=>a+b,0)/arr.length; }
+function computeVar(arr, mean) { return arr.reduce((s,v)=>s+(v-mean)*(v-mean),0)/arr.length; }
+function normalize(val, mean, var_) { return (val-mean)/Math.sqrt(var_+1e-8); }
+
+// ==================== THREE.JS ====================
+const container = document.getElementById('three-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#1a1a2e');
+scene.fog = new THREE.Fog('#1a1a2e', 10, 40);
+
+const camera = new THREE.PerspectiveCamera(50, container.clientWidth/container.clientHeight, 0.5, 80);
+camera.position.set(8, 5, 10);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+container.appendChild(renderer.domElement);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(container.clientWidth, container.clientHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+container.appendChild(labelRenderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 5;
+controls.maxDistance = 25;
+controls.maxPolarAngle = Math.PI * 0.7;
+controls.update();
+
+// Lights
+scene.add(new THREE.AmbientLight('#4466aa', 2.5));
+const keyLight = new THREE.DirectionalLight('#ffffff', 6);
+keyLight.position.set(10, 14, 8);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(1024, 1024);
+keyLight.shadow.camera.near = 0.5;
+keyLight.shadow.camera.far = 60;
+keyLight.shadow.camera.left = -15;
+keyLight.shadow.camera.right = 15;
+keyLight.shadow.camera.top = 15;
+keyLight.shadow.camera.bottom = -15;
+keyLight.shadow.bias = -0.0001;
+scene.add(keyLight);
+scene.add(new THREE.DirectionalLight('#8899cc', 2).position.set(-3, 2, -4));
+scene.add(new THREE.DirectionalLight('#ff8844', 1.5).position.set(0, -1, 8));
+
+// Ground
+const groundGeo = new THREE.PlaneGeometry(30, 30);
+const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ color: '#1a1a30', roughness: 0.9, metalness: 0.1 }));
+ground.rotation.x = -Math.PI/2;
+ground.position.y = -5;
+ground.receiveShadow = true;
+scene.add(ground);
+const polarGrid = new THREE.PolarGridHelper(10, 32, 20, 128, '#333355', '#222244'); polarGrid.position.y = -3; scene.add(polarGrid);
+
+// ==================== CUBES ====================
+const cubeGroup = new THREE.Group();
+// 居中: 矩阵中心偏移到原点
+cubeGroup.position.set(-3.5, -1.5, 0);
+scene.add(cubeGroup);
+
+function valueToColor(val) {
+  const t = Math.max(0, Math.min(1, (val-1.5)/8.5));
+  return new THREE.Color().setHSL(0.66 - t*0.66, 0.75, 0.35 + t*0.35);
+}
+
+function createNumberTexture(value, baseColor) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  // Colored background
+  ctx.fillStyle = '#' + baseColor.getHexString();
+  ctx.fillRect(0, 0, 128, 128);
+  // Subtle bevel
+  const grad = ctx.createLinearGradient(0, 0, 128, 128);
+  grad.addColorStop(0, 'rgba(255,255,255,0.12)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.25)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+  // Number with shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = '#0a0a1a';
+  ctx.font = 'bold 40px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(value.toFixed(1), 64, 64);
+  return new THREE.CanvasTexture(canvas);
+}
+
+const cubes = [];
+const cubeMeshes = [];
+
+for (let s = 0; s < N_SAMPLES; s++) {
+  cubes[s] = [];
+  for (let f = 0; f < N_FEATURES; f++) {
+    const geo = new THREE.BoxGeometry(0.72, 0.72, 0.72, 2, 2, 2);
+    const color = valueToColor(RAW_DATA[s][f]);
+    const baseMat = new THREE.MeshStandardMaterial({ color, roughness: 0.25, metalness: 0.15 });
+    // Front face (+Z, index 4) gets numbered texture
+    const numTex = createNumberTexture(RAW_DATA[s][f], color);
+    const frontMat = new THREE.MeshStandardMaterial({ map: numTex, color: 0xffffff, roughness: 0.3, metalness: 0.1 });
+    const mats = [baseMat.clone(), baseMat.clone(), baseMat.clone(), baseMat.clone(), frontMat, baseMat.clone()];
+    const mesh = new THREE.Mesh(geo, mats);
+    mesh.position.set(f, N_SAMPLES-1-s, 0);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    mesh.userData = { x: f, y: N_SAMPLES-1-s, value: RAW_DATA[s][f], baseColor: color.clone(), baseMats: mats };
+    cubes[s][f] = mesh;
+    cubeMeshes.push(mesh);
+    cubeGroup.add(mesh);
+  }
+}
+
+// Labels
+function createLabel(text, position, color = '#888') {
+  const div = document.createElement('div');
+  div.textContent = text;
+  div.style.cssText = `color:${color};font-size: 16px;font-weight:700;font-family:'JetBrains Mono',monospace;`;
+  const label = new CSS2DObject(div);
+  label.position.copy(position);
+  return label;
+}
+for (let f = 0; f < N_FEATURES; f++) cubeGroup.add(createLabel(`f${f}`, new THREE.Vector3(f, -0.7, 0), '#4ea8f6'));
+for (let s = 0; s < N_SAMPLES; s++) cubeGroup.add(createLabel(`s${s}`, new THREE.Vector3(-0.7, N_SAMPLES-1-s, 0), '#4ecca3'));
+
+// Highlight wireframes
+const highlightGroup = new THREE.Group();
+cubeGroup.add(highlightGroup);
+
+function clearHighlights() { while (highlightGroup.children.length>0) highlightGroup.remove(highlightGroup.children[0]); }
+function applyHighlights() {
+  clearHighlights();
+  if (step === 0) return;
+  if (mode === 'bn') {
+    for (let s = 0; s < N_SAMPLES; s++) {
+      const y = N_SAMPLES-1-s;
+      const geo = new THREE.BoxGeometry(0.78, 0.78, 0.08);
+      const edges = new THREE.EdgesGeometry(geo);
+      const mat = new THREE.LineBasicMaterial({ color: '#4ea8f6', transparent: true, opacity: 0.9, depthTest: false });
+      const wire = new THREE.LineSegments(edges, mat);
+      wire.position.set(highlightIdx, y, 0.05);
+      wire.renderOrder = 999;
+      highlightGroup.add(wire);
+    }
+  } else {
+    for (let f = 0; f < N_FEATURES; f++) {
+      const geo = new THREE.BoxGeometry(0.78, 0.78, 0.08);
+      const edges = new THREE.EdgesGeometry(geo);
+      const mat = new THREE.LineBasicMaterial({ color: '#4ecca3', transparent: true, opacity: 0.9, depthTest: false });
+      const wire = new THREE.LineSegments(edges, mat);
+      wire.position.set(f, N_SAMPLES-1-highlightIdx, 0.05);
+      wire.renderOrder = 999;
+      highlightGroup.add(wire);
+    }
+  }
+}
+
+// Arrow indicator
+const arrowGroup = new THREE.Group();
+cubeGroup.add(arrowGroup);
+
+function updateArrow() {
+  while (arrowGroup.children.length>0) arrowGroup.remove(arrowGroup.children[0]);
+  if (step === 0) return;
+  if (mode === 'bn') {
+    const planeGeo = new THREE.PlaneGeometry(0.85, N_SAMPLES*0.85);
+    const plane = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({ color: '#4ea8f6', transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthTest: true, depthWrite: false }));
+    plane.position.set(highlightIdx, (N_SAMPLES-1)/2, 0.42);
+    plane.renderOrder = 1;
+    arrowGroup.add(plane);
+  } else {
+    const planeGeo = new THREE.PlaneGeometry(N_FEATURES*0.85, 0.85);
+    const plane = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({ color: '#4ecca3', transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthTest: true, depthWrite: false }));
+    plane.position.set((N_FEATURES-1)/2, N_SAMPLES-1-highlightIdx, 0.42);
+    plane.renderOrder = 1;
+    arrowGroup.add(plane);
+  }
+}
+
+function updateCubeAppearance() {
+  for (const mesh of cubeMeshes) {
+    const { x, y, baseColor } = mesh.userData;
+    const mats = mesh.material; // array of 6 materials, index 4 = front face
+
+    if (step === 0) {
+      for (let i = 0; i < 6; i++) {
+        if (i === 4) { mats[i].color.set(0xffffff); mats[i].emissive?.set(0x000000); }
+        else mats[i].color.copy(baseColor);
+        mats[i].emissive?.set(0x000000);
+      }
+    } else {
+      const isHL = (mode === 'bn') ? (x === highlightIdx) : (y === N_SAMPLES-1-highlightIdx);
+      if (isHL) {
+        for (let i = 0; i < 6; i++) {
+          if (i === 4) {
+            mats[i].color.set(0xffffff);
+          } else {
+            mats[i].color.copy(baseColor).multiplyScalar(1.3);
+          }
+          mats[i].emissive = mats[i].emissive || new THREE.Color();
+          mats[i].emissive.set(mode === 'bn' ? '#4ea8f6' : '#4ecca3');
+          mats[i].emissiveIntensity = 0.5;
+        }
+      } else {
+        for (let i = 0; i < 6; i++) {
+          if (i === 4) { mats[i].color.set(0x666666); }
+          else mats[i].color.copy(baseColor).multiplyScalar(0.4);
+          mats[i].emissive?.set(0x000000);
+        }
+      }
+    }
+  }
+  applyHighlights();
+  updateArrow();
+}
+
+// ==================== PARTICLES ====================
+const particleGroup = new THREE.Group();
+scene.add(particleGroup);
+
+function spawnParticles(from, to, color, count=30) {
+  for (let i=0; i<count; i++) {
+    const geo = new THREE.SphereGeometry(0.04, 4, 4);
+    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 });
+    const p = new THREE.Mesh(geo, mat);
+    p.position.copy(from).add(new THREE.Vector3((Math.random()-0.5)*0.4, (Math.random()-0.5)*0.4, (Math.random()-0.5)*0.4));
+    p.userData = { from: from.clone(), to: to.clone(), progress: 0, speed: 0.3+Math.random()*0.7, life: 1.0 };
+    particleGroup.add(p);
+  }
+}
+
+function updateParticles(dt) {
+  for (const p of [...particleGroup.children]) {
+    p.userData.progress += p.userData.speed*dt;
+    p.userData.life -= dt;
+    if (p.userData.progress >= 1 || p.userData.life <= 0) { particleGroup.remove(p); continue; }
+    p.position.lerpVectors(p.userData.from, p.userData.to, p.userData.progress);
+    p.material.opacity = 0.9 * p.userData.life;
+  }
+}
+
+function spawnComputeParticles() {
+  if (step === 0) return;
+  if (mode === 'bn') {
+    for (let s = 0; s < N_SAMPLES; s++) {
+      spawnParticles(
+        new THREE.Vector3(highlightIdx, N_SAMPLES-1-s, 0.6),
+        new THREE.Vector3(highlightIdx, (N_SAMPLES-1)/2, 1.5),
+        '#4ea8f6', 8
+      );
+    }
+  } else {
+    for (let f = 0; f < N_FEATURES; f++) {
+      spawnParticles(
+        new THREE.Vector3(f, N_SAMPLES-1-highlightIdx, 0.6),
+        new THREE.Vector3((N_FEATURES-1)/2, N_SAMPLES-1-highlightIdx, 1.5),
+        '#4ecca3', 8
+      );
+    }
+  }
+}
+
+// ==================== PANEL UPDATE ====================
+function updatePanel() {
+  const regionVals = getRegionValues();
+  const mean = computeMean(regionVals);
+  const variance = computeVar(regionVals, mean);
+  const normalized = regionVals.map(v => normalize(v, mean, variance));
+  const scaled = normalized.map(v => v*GAMMA + BETA);
+
+  document.getElementById('stat-mu').textContent = mean.toFixed(3);
+  document.getElementById('stat-var').textContent = variance.toFixed(3);
+  document.getElementById('stat-norm').textContent = normalized.map(v=>v.toFixed(3)).join(', ');
+
+  const formulaEl = document.getElementById('formula-box');
+  if (step === 0) {
+    formulaEl.innerHTML = `<span class="dim">// 原始矩阵 X ∈ ℝ<sup>${N_SAMPLES}×${N_FEATURES}</sup></span><br><span class="dim">// 行 = 样本, 列 = 特征</span><br>X = [x<sub>ij</sub>] &nbsp; <span class="dim">点击步骤查看计算过程</span>`;
+  } else if (step === 1) {
+    if (mode === 'bn') {
+      formulaEl.innerHTML = `<span class="dim">// BN: 对特征 f${highlightIdx}，跨所有样本</span><br><span class="hl-bn">μ<sub>f${highlightIdx}</sub></span> = <span class="hl">1/N</span> Σ x<sub>i,f${highlightIdx}</sub><br>= (${regionVals.map(v=>v.toFixed(1)).join(' + ')}) / ${regionVals.length}<br>= <span class="hl-bn">${mean.toFixed(3)}</span>`;
+    } else {
+      formulaEl.innerHTML = `<span class="dim">// LN: 对样本 s${highlightIdx}，跨所有特征</span><br><span class="hl-ln">μ<sub>s${highlightIdx}</sub></span> = <span class="hl">1/D</span> Σ x<sub>s${highlightIdx},j</sub><br>= (${regionVals.map(v=>v.toFixed(1)).join(' + ')}) / ${regionVals.length}<br>= <span class="hl-ln">${mean.toFixed(3)}</span>`;
+    }
+  } else if (step === 2) {
+    formulaEl.innerHTML = `<span class="dim">// 计算方差</span><br><span class="hl">σ²</span> = <span class="hl">1/N</span> Σ (x<sub>i</sub> - μ)²<br>= [(${regionVals.map(v=>`(${v.toFixed(1)}-${mean.toFixed(2)})²`).join(' + ')})] / ${regionVals.length}<br>= <span class="hl">${variance.toFixed(3)}</span>`;
+  } else if (step === 3) {
+    formulaEl.innerHTML = `<span class="dim">// 归一化: 减均值，除标准差</span><br><span class="hl">x̂<sub>i</sub></span> = (x<sub>i</sub> - μ) / √(σ² + ε)<br>${regionVals.map((v,i)=>`x̂<sub>${i}</sub> = (${v.toFixed(1)}-${mean.toFixed(2)})/√(${variance.toFixed(3)}) = <span class="hl">${normalized[i].toFixed(3)}</span>`).join('<br>')}`;
+  } else if (step === 4) {
+    formulaEl.innerHTML = `<span class="dim">// 缩放平移 (γ, β 可学习)</span><br><span class="hl">y<sub>i</sub></span> = γ · x̂<sub>i</sub> + β &nbsp; (γ=${GAMMA}, β=${BETA})<br>${scaled.map((v,i)=>`y<sub>${i}</sub> = ${GAMMA}×${normalized[i].toFixed(3)}+${BETA} = <span class="hl">${v.toFixed(3)}</span>`).join('<br>')}`;
+  }
+
+  // Table
+  const tableEl = document.getElementById('table-container');
+  let html = '<table class="val-table"><thead><tr><th></th>';
+  for (let f = 0; f < N_FEATURES; f++) {
+    html += `<th style="${mode==='bn'&&f===highlightIdx&&step>0?'color:#4ea8f6;font-weight:900':''}">f${f}</th>`;
+  }
+  html += '</tr></thead><tbody>';
+  for (let s = 0; s < N_SAMPLES; s++) {
+    const isRowHL = mode === 'ln' && s === highlightIdx && step > 0;
+    html += `<tr><th style="${isRowHL?'color:#4ecca3;font-weight:900':''}">s${s}</th>`;
+    for (let f = 0; f < N_FEATURES; f++) {
+      const isColHL = mode === 'bn' && f === highlightIdx && step > 0;
+      let cls = (isRowHL && isColHL) ? 'cell-hl' : isRowHL ? 'row-hl' : isColHL ? 'col-hl' : '';
+      const val = RAW_DATA[s][f];
+      const mu = step >= 1 ? computeMean(getRegionValues()) : 0;
+      const va = step >= 2 ? computeVar(getRegionValues(), mu) : 1;
+      const nv = step >= 3 ? normalize(val, mu, va) : val;
+      const fv = step >= 4 ? nv*GAMMA + BETA : nv;
+      html += `<td class="${cls}">${(step===0?val:fv).toFixed(step===0?1:3)}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  tableEl.innerHTML = html;
+}
+
+// ==================== MODE / STEP ====================
+window.setMode = function(newMode) {
+  mode = newMode;
+  highlightIdx = 1;
+  document.getElementById('btn-bn').className = mode==='bn' ? 'mode-btn active-bn' : 'mode-btn';
+  document.getElementById('btn-ln').className = mode==='ln' ? 'mode-btn active-ln' : 'mode-btn';
+  updateCubeAppearance();
+  updatePanel();
+  spawnComputeParticles();
+};
+
+window.setStep = function(newStep) {
+  step = newStep;
+  document.querySelectorAll('.step-btn').forEach((btn, i) => {
+    btn.className = i === step ? 'step-btn active' : 'step-btn';
+  });
+  updateCubeAppearance();
+  updatePanel();
+  if (step > 0) spawnComputeParticles();
+};
+
+// ==================== KEYBOARD ====================
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') { highlightIdx = Math.max(0, highlightIdx-1); }
+  else if (e.key === 'ArrowRight') { highlightIdx = Math.min((mode==='bn'?N_FEATURES:N_SAMPLES)-1, highlightIdx+1); }
+  else if (e.key === 'ArrowUp') { if (step<4) window.setStep(step+1); }
+  else if (e.key === 'ArrowDown') { if (step>0) window.setStep(step-1); }
+  else if (e.key === 'b' || e.key === 'B') { window.setMode('bn'); return; }
+  else if (e.key === 'l' || e.key === 'L') { window.setMode('ln'); return; }
+  else return;
+  updateCubeAppearance();
+  updatePanel();
+  if (step > 0) spawnComputeParticles();
+});
+
+// ==================== CLICK ====================
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+container.addEventListener('click', (event) => {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX-rect.left)/rect.width)*2-1;
+  mouse.y = -((event.clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(cubeMeshes);
+  if (intersects.length > 0) {
+    const { x, y } = intersects[0].object.userData;
+    highlightIdx = mode==='bn' ? x : (N_SAMPLES-1-y);
+    updateCubeAppearance();
+    updatePanel();
+    if (step>0) spawnComputeParticles();
+  }
+});
+
+// ==================== ANIMATION ====================
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  controls.update();
+  updateParticles(dt);
+  if (step > 0) {
+    const t = performance.now()*0.001;
+    for (const mesh of cubeMeshes) {
+      const { x, y } = mesh.userData;
+      const isHL = (mode==='bn') ? (x===highlightIdx) : (y===N_SAMPLES-1-highlightIdx);
+      mesh.position.z = isHL ? Math.sin(t*3+x+y)*0.15 : mesh.position.z*0.9;
+    }
+  }
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  labelRenderer.setSize(container.clientWidth, container.clientHeight);
+});
+
+updateCubeAppearance();
+updatePanel();
+animate();
+</script>
+</body>
+</html>

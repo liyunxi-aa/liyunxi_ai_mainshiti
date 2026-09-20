@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex的项目展示</title>
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --card-bg: #fff;
+    --text: #1e1e2e;
+    --text-secondary: #6b7280;
+    --accent: #4f46e5;
+    --accent2: #7c3aed;
+    --accent-light: #eef2ff;
+    --border: #e5e7eb;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.05);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(79,70,229,0.04) 0%, transparent 100%),
+      radial-gradient(ellipse 60% 50% at 80% 100%, rgba(124,58,237,0.03) 0%, transparent 100%);
+    color: var(--text); line-height: 1.6;
+    min-height: 100vh; display: flex; flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 1300px; margin: 0 auto; width: 100%; padding: 48px 24px 0; flex: 1; }
+
+  /* ── Header ── */
+  .header {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #1e293b 70%, #0f172a 100%);
+    color: #fff; border-radius: var(--radius); padding: 52px 56px; margin-bottom: 40px;
+    box-shadow: 0 8px 32px rgba(15,23,42,0.25), 0 2px 8px rgba(0,0,0,0.12);
+    text-align: center;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(99,102,241,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(124,58,237,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header::after {
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  }
+  .header > * { position: relative; z-index: 1; }
+  .header h1 {
+    font-size: 40px; font-weight: 800; letter-spacing: 3px;
+    background: linear-gradient(135deg, #fff 0%, #c7d2fe 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle { font-size: 15px; color: rgba(255,255,255,0.5); margin-top: 10px; letter-spacing: 1px; font-weight: 400; }
+
+  /* ── Category Tabs ── */
+  .category-tabs {
+    display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .cat-tab {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 20px; border-radius: 24px;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    background: var(--card-bg); color: var(--text-secondary);
+    border: 1px solid var(--border);
+    transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+    user-select: none; white-space: nowrap;
+  }
+  .cat-tab:hover {
+    color: var(--accent); border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .cat-tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 14px rgba(79,70,229,0.28);
+  }
+  .cat-tab .cat-count {
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px;
+    background: rgba(0,0,0,0.06);
+  }
+  .cat-tab.active .cat-count {
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* card hide transition */
+  .card.hidden-cat {
+    display: none;
+  }
+  /* search hide */
+  .card.hidden-search {
+    display: none;
+  }
+
+  /* ── Search Bar ── */
+  .search-wrap {
+    position: relative; margin-bottom: 24px;
+  }
+  .search-wrap .search-icon {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    font-size: 18px; color: #9ca3af; pointer-events: none;
+    transition: color 0.2s;
+  }
+  .search-input {
+    width: 100%; padding: 14px 20px 14px 48px;
+    font-size: 15px; font-family: inherit;
+    background: var(--card-bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+    outline: none;
+  }
+  .search-input::placeholder { color: #b0b7c3; }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.12), var(--shadow-sm);
+  }
+  .search-input:focus ~ .search-icon,
+  .search-wrap:focus-within .search-icon { color: var(--accent); }
+  .search-clear {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 50%; border: none;
+    background: #e5e7eb; color: #6b7280;
+    font-size: 14px; line-height: 1; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .search-clear:hover { background: #d1d5db; color: #374151; }
+  .search-clear.visible { display: flex; }
+
+  /* no-results message */
+  .no-results {
+    display: none; text-align: center; padding: 48px 20px;
+    color: #9ca3af; font-size: 15px;
+  }
+  .no-results.visible { display: block; }
+  .no-results .no-results-icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 2px; color: #9ca3af; margin-bottom: 20px;
+  }
+
+  /* ── Card Grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 12px;
+  }
+
+  .card {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    padding: 32px 28px 28px;
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1), border-color 0.25s;
+    text-decoration: none; color: inherit; display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+  .card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: #d1d5db;
+  }
+  .card:hover::after { opacity: 1; }
+  .card.dim {
+    background: #fafbfc;
+    border-style: dashed;
+  }
+  .card.dim .card-icon { opacity: 0.35; }
+  .card.dim h2 { color: #9ca3af; }
+  .card.dim .desc { color: #b0b7c3; }
+
+  .card-icon {
+    font-size: 42px; margin-bottom: 16px; line-height: 1;
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .card:hover .card-icon { transform: scale(1.08); }
+
+  .card h2 { font-size: 19px; font-weight: 700; margin-bottom: 8px; color: #1a1a2e; letter-spacing: -0.01em; }
+  .card .desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+
+  /* badge */
+  .card-badge {
+    display: inline-block; align-self: flex-start;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 12px; margin-bottom: 14px;
+    background: #ecfdf5; color: #059669;
+  }
+  .card-badge.purple { background: #f5f3ff; color: #7c3aed; }
+
+  /* ── H5 tags ── */
+  .h5-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .h5-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12.5px; font-weight: 500; text-decoration: none;
+    background: #f4f6fb; color: #4b5563; border: 1px solid #e5e7eb;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .h5-tag:hover {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(79,70,229,0.25);
+  }
+  .h5-tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot.c1 { background: #6366f1; } .dot.c2 { background: #8b5cf6; }
+  .dot.c3 { background: #ec4899; } .dot.c4 { background: #f59e0b; }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: flex; gap: 16px; margin-bottom: 36px; flex-wrap: wrap;
+  }
+  .stat-pill {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card-bg); border-radius: 12px; padding: 14px 20px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+    font-size: 14px; color: var(--text-secondary);
+  }
+  .stat-pill strong { color: var(--text); font-size: 18px; }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 56px;
+    background: #0f172a;
+    color: #fff; padding: 40px 24px 28px;
+    position: relative; overflow: hidden;
+  }
+  .footer::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 10% 90%, rgba(99,102,241,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 90% 10%, rgba(124,58,237,0.06) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  .footer-inner { max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
+
+  .footer-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    flex-wrap: wrap; gap: 32px; margin-bottom: 28px;
+  }
+  .footer-brand h3 {
+    font-size: 20px; font-weight: 700; letter-spacing: 1px;
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .footer-brand p { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+  .footer-nav { display: flex; gap: 40px; flex-wrap: wrap; }
+  .footer-col h4 {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.5px; color: rgba(255,255,255,0.35); margin-bottom: 12px;
+  }
+  .footer-col a {
+    display: block; font-size: 14px; color: rgba(255,255,255,0.6);
+    text-decoration: none; margin-bottom: 8px; transition: color 0.15s;
+  }
+  .footer-col a:hover { color: #fff; }
+
+  .footer-divider {
+    height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    margin-bottom: 20px;
+  }
+  .footer-bottom {
+    display: flex; justify-content: center; align-items: center;
+    flex-wrap: wrap; gap: 16px; font-size: 13px; color: rgba(255,255,255,0.3);
+  }
+  .footer-bottom .sep { color: rgba(255,255,255,0.12); }
+
+  /* ── Animations ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card { animation: fadeInUp 0.5s ease backwards; }
+  .card:nth-child(1) { animation-delay: 0.03s; }
+  .card:nth-child(2) { animation-delay: 0.07s; }
+  .card:nth-child(3) { animation-delay: 0.11s; }
+  .card:nth-child(4) { animation-delay: 0.15s; }
+  .card:nth-child(5) { animation-delay: 0.19s; }
+  .card:nth-child(6) { animation-delay: 0.23s; }
+  .card:nth-child(7) { animation-delay: 0.27s; }
+  .card:nth-child(8) { animation-delay: 0.31s; }
+  .card:nth-child(9) { animation-delay: 0.35s; }
+  .card:nth-child(10) { animation-delay: 0.39s; }
+  .card:nth-child(11) { animation-delay: 0.43s; }
+  .card:nth-child(12) { animation-delay: 0.47s; }
+  .card:nth-child(13) { animation-delay: 0.51s; }
+  .card:nth-child(14) { animation-delay: 0.55s; }
+  .card:nth-child(15) { animation-delay: 0.59s; }
+  .card:nth-child(16) { animation-delay: 0.63s; }
+
+  /* ── Responsive ── */
+  @media (max-width: 960px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .header { padding: 36px 32px; }
+    .header h1 { font-size: 30px; }
+    .footer-top { flex-direction: column; gap: 24px; }
+  }
+  @media (max-width: 520px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .header { padding: 28px 20px; border-radius: 12px; }
+    .header h1 { font-size: 24px; letter-spacing: 1px; }
+    .container { padding: 32px 12px 0; }
+    .footer { padding: 28px 16px 20px; }
+    .footer-nav { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══ Header ═══ -->
+  <header class="header">
+    <h1>Alex 的项目展示</h1>
+    <p class="subtitle">AI · 深度学习 · 交互式可视化</p>
+  </header>
+
+  <!-- ═══ Stats pills ═══ -->
+  <div class="stats-row">
+    <div class="stat-pill">📂 <span>项目总数 <strong>39</strong></span></div>
+    <div class="stat-pill">🎨 <span>H5 可视化 <strong>38</strong></span></div>
+    <div class="stat-pill">📝 <span>面试题目 <strong>35+</strong> 分类</span></div>
+  </div>
+
+  <!-- ═══ Category Tabs ═══ -->
+  <div class="category-tabs">
+    <button class="cat-tab active" data-cat="all">🌐 全部 <span class="cat-count">38</span></button>
+    <button class="cat-tab" data-cat="nn">🧠 神经网络 <span class="cat-count">14</span></button>
+    <button class="cat-tab" data-cat="nlp">📝 NLP &amp; 检索 <span class="cat-count">14</span></button>
+    <button class="cat-tab" data-cat="ml">📊 经典ML <span class="cat-count">13</span></button>
+    <button class="cat-tab" data-cat="eng">⚙️ 系统工程 <span class="cat-count">15</span></button>
+    <button class="cat-tab" data-cat="blockchain">⛓️ 区块链 <span class="cat-count">1</span></button>
+    <button class="cat-tab" data-cat="other">📝 面试题库 <span class="cat-count">2</span></button>
+  </div>
+
+  <!-- ═══ Search Bar ═══ -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="searchInput" placeholder="搜索项目 — 标题 / 关键词 …" autocomplete="off">
+    <button class="search-clear" id="searchClear" title="清除">✕</button>
+  </div>
+
+  <!-- ═══ Card Grid ═══ -->
+  <div class="card-grid">
+
+    <!-- Card 1: 面试题库 -->
+    <a href="interview.html" class="card" data-cat="other" data-keywords="AI Python 深度学习 LLM NLP 计算机视觉 面试 题库">
+      <span class="card-badge purple">核心项目</span>
+      <div class="card-icon">📝</div>
+      <h2>AI &amp; Python 面试题库</h2>
+      <p class="desc">涵盖深度学习、LLM、NLP、计算机视觉等 35+ 分类，含答案与代码高亮，支持搜索与分类筛选。</p>
+    </a>
+
+    <!-- Card 2: RoPE & ALiBi -->
+    <a href="AlibiRoPE_h5/" class="card" data-cat="nn nlp" data-keywords="RoPE ALiBi 位置编码 Transformer 注意力 旋转位置编码 线性偏置">
+      <span class="card-badge">位置编码</span>
+      <div class="card-icon">🔷</div>
+      <h2>RoPE &amp; ALiBi</h2>
+      <p class="desc">旋转位置编码与注意力线性偏置的交互式可视化对比，深入理解 Transformer 位置编码机制。</p>
+    </a>
+
+    <!-- Card: FlashAttention -->
+    <a href="FlashAttention_h5/" class="card" data-cat="nn eng" data-keywords="FlashAttention 注意力 IO-Aware 显存 加速 Kernel Fusion 分块 在线Softmax">
+      <span class="card-badge purple">注意力优化</span>
+      <div class="card-icon">⚡</div>
+      <h2>FlashAttention · IO-Aware 精确注意力</h2>
+      <p class="desc">通过分块计算、在线 Softmax 与 Kernel Fusion，将 HBM 读写从 O(N²) 降至线性级别，实现 2-7× 加速与显存节省。</p>
+    </a>
+
+    <!-- Card 3: 混淆矩阵 -->
+    <a href="ConfusionMatrix_h5/" class="card" data-cat="ml" data-keywords="混淆矩阵 分类 精准率 召回率 F1 ROC AUC 评估指标">
+      <span class="card-badge">分类评估</span>
+      <div class="card-icon">📊</div>
+      <h2>混淆矩阵与分类评估指标</h2>
+      <p class="desc">精准率、召回率、F1、ROC/AUC 等指标的交互式可视化，直观理解分类模型评估体系。</p>
+    </a>
+
+    <!-- Card 4: LayerNorm vs BatchNorm -->
+    <a href="LayerNormalization_h5/" class="card" data-cat="nn" data-keywords="LayerNorm BatchNorm 归一化 Transformer 3D 魔方">
+      <span class="card-badge">归一化</span>
+      <div class="card-icon">🧊</div>
+      <h2>LayerNorm vs BatchNorm</h2>
+      <p class="desc">3D 魔方矩阵可视化对比两种归一化方法，理解 LayerNorm 在 Transformer 中的优势。</p>
+    </a>
+
+    <!-- Card 5: TF-IDF · BM25 -->
+    <a href="TF-IDF_h5/" class="card" data-cat="nlp" data-keywords="TF-IDF BM25 Skip-Gram 文本检索 特征提取 Uni-Gram CoW">
+      <span class="card-badge">文本检索</span>
+      <div class="card-icon">📐</div>
+      <h2>TF-IDF · BM25 · Skip-Gram</h2>
+      <p class="desc">经典文本特征提取与检索算法的交互式演示，涵盖 TF-IDF、BM25、Skip-Gram、Uni-Gram、CoW。</p>
+    </a>
+
+    <!-- Card 6: 参数初始化 -->
+    <a href="ParameterInitialization_h5/" class="card" data-cat="nn" data-keywords="参数初始化 Xavier He Kaiming LeCun Orthogonal Sparse Truncated Normal 方差传播">
+      <span class="card-badge purple">参数初始化</span>
+      <div class="card-icon">🎲</div>
+      <h2>神经网络参数初始化方法</h2>
+      <p class="desc">涵盖 17 种初始化方案的交互式对比：Xavier、He/Kaiming、LeCun、Orthogonal、Sparse、Truncated Normal 等，含分布直方图与方差传播分析。</p>
+    </a>
+
+    <!-- Card 7: RNN -->
+    <a href="RNN_h5/" class="card" data-cat="nn nlp" data-keywords="RNN LSTM GRU Bi-RNN 序列建模 循环神经网络 架构图解">
+      <span class="card-badge purple">序列建模</span>
+      <div class="card-icon">🔄</div>
+      <h2>RNN 循环神经网络</h2>
+      <p class="desc">从经典RNN到LSTM、GRU、Bi-RNN再到Transformer，涵盖架构图解、公式推导与交互式对比。</p>
+    </a>
+
+    <!-- Card 8: 激活函数 -->
+    <a href="ActivationFunctions_h5/" class="card" data-cat="nn" data-keywords="激活函数 ReLU GELU Swish SwiGLU Sigmoid Tanh 曲线">
+      <span class="card-badge">激活函数</span>
+      <div class="card-icon">⚡</div>
+      <h2>激活函数全览</h2>
+      <p class="desc">涵盖 27 种激活函数的交互式对比可视化：S型、ReLU家族、GELU、Swish/SwiGLU 等，基于 AntV G2 绘制曲线，支持参数调节。</p>
+    </a>
+
+    <!-- Card 9: 数据并行 vs 模型并行 -->
+    <a href="Parallelism_h5/" class="card" data-cat="eng" data-keywords="数据并行 模型并行 分布式训练 DP TP PP 显存 通信">
+      <span class="card-badge purple">分布式训练</span>
+      <div class="card-icon">🔀</div>
+      <h2>数据并行 vs 模型并行</h2>
+      <p class="desc">大模型分布式训练策略的交互式可视化，对比数据并行（DP）与模型并行（MP/TP/PP）的原理、通信模式与显存分布。</p>
+    </a>
+
+    <!-- Card 10: CNN 卷积神经网络 -->
+    <a href="CNN_h5/" class="card" data-cat="nn" data-keywords="CNN 卷积 Padding Stride Dilation 池化 感受野 计算机视觉">
+      <span class="card-badge">计算机视觉</span>
+      <div class="card-icon">🔲</div>
+      <h2>CNN 卷积神经网络</h2>
+      <p class="desc">卷积运算的交互式可视化演示：核滑动、Padding/Stride/Dilation、多通道卷积、池化、感受野与经典架构演进。</p>
+    </a>
+
+    <!-- Card 11: SVM -->
+    <a href="SVM_h5/" class="card" data-cat="ml" data-keywords="SVM 支持向量机 最大间隔 核方法 Hinge Loss 决策边界">
+      <span class="card-badge">经典ML</span>
+      <div class="card-icon">🎯</div>
+      <h2>SVM 支持向量机</h2>
+      <p class="desc">最大间隔分类器、软间隔、核方法与 Hinge Loss 的交互式可视化，支持拖拽数据点实时观察决策边界变化。</p>
+    </a>
+
+    <!-- Card 12: 决策树 -->
+    <a href="DecisionTree_h5/" class="card" data-cat="ml" data-keywords="决策树 信息熵 基尼系数 信息增益 贪心 分裂">
+      <span class="card-badge">经典ML</span>
+      <div class="card-icon">🌳</div>
+      <h2>决策树 — 信息熵与递归分裂</h2>
+      <p class="desc">信息熵、基尼系数、信息增益与递归分裂的交互式可视化，直观理解决策树的贪心分裂策略与决策边界形成过程。</p>
+    </a>
+
+    <!-- Card 13: 随机森林 -->
+    <a href="RandomForest_h5/" class="card" data-cat="ml" data-keywords="随机森林 Bootstrap Bagging 集成学习 OOB 决策树">
+      <span class="card-badge purple">集成学习</span>
+      <div class="card-icon">🌲</div>
+      <h2>随机森林 — Bootstrap 与集成投票</h2>
+      <p class="desc">Bootstrap 采样、特征随机性、Bagging 集成投票与 OOB 误差估计的交互式可视化，对比单树与森林的决策边界差异。</p>
+    </a>
+
+    <!-- Card 14: XGBoost -->
+    <a href="XGBoost_h5/" class="card" data-cat="ml" data-keywords="XGBoost 梯度提升 正则化 Gradient Boosting 残差 泰勒展开">
+      <span class="card-badge purple">梯度提升</span>
+      <div class="card-icon">🚀</div>
+      <h2>XGBoost — 梯度提升与正则化</h2>
+      <p class="desc">Gradient Boosting 残差拟合、二阶泰勒展开、L1/L2 正则化与三种树模型全面对比的交互式可视化。</p>
+    </a>
+
+    <!-- Card 15: K-Means -->
+    <a href="KMeans_h5/" class="card" data-cat="ml" data-keywords="K-Means 聚类 无监督学习 肘部法则 轮廓系数 质心">
+      <span class="card-badge">经典ML</span>
+      <div class="card-icon">🧩</div>
+      <h2>K-Means 聚类</h2>
+      <p class="desc">质心分配-更新迭代、K-Means++ 初始化、肘部法则与轮廓系数的交互式可视化，深入理解无监督聚类的核心原理与局限性。</p>
+    </a>
+
+    <!-- Card 16: Transformer -->
+    <a href="Transformer_h5/" class="card" data-cat="nn nlp" data-keywords="Transformer Self-Attention Multi-Head Encoder-Decoder 位置编码 LLM 注意力">
+      <span class="card-badge purple">深度学习</span>
+      <div class="card-icon">🤖</div>
+      <h2>Transformer 架构详解</h2>
+      <p class="desc">从 Self-Attention、Multi-Head、位置编码到 Encoder-Decoder 完整架构，深入理解 Attention Is All You Need 的设计精髓与 LLM 基础。</p>
+    </a>
+
+    <!-- Card 17: Pathfinding -->
+    <a href="Pathfinding_h5/" class="card" data-cat="ml" data-keywords="路径规划 A* Dijkstra BFS DFS 搜索算法 迷宫">
+      <span class="card-badge purple">路径规划</span>
+      <div class="card-icon">🗺️</div>
+      <h2>路径规划算法 — A* · Dijkstra · BFS</h2>
+      <p class="desc">A*、Dijkstra、贪心最佳优先、BFS、DFS 五种经典路径搜索算法的交互式对比可视化，支持画墙、迷宫生成与逐步执行。</p>
+    </a>
+
+    <!-- Card 18: ZeRO -->
+    <a href="ZeRO_h5/" class="card" data-cat="eng" data-keywords="ZeRO 零冗余 优化器 显存 分布式训练 DeepSpeed 分片 优化器状态 梯度 参数">
+      <span class="card-badge purple">显存优化</span>
+      <div class="card-icon">🧩</div>
+      <h2>ZeRO · 零冗余优化器</h2>
+      <p class="desc">将优化器状态、梯度、参数分片到不同设备上，消除数据并行中的显存冗余，支持训练远超单卡容量的超大模型。</p>
+    </a>
+
+    <!-- Card 19: CoT & ToT -->
+    <a href="CoT_h5/" class="card" data-cat="nn nlp" data-keywords="Chain-of-Thought Tree-of-Thoughts 思维链 思维树 推理 ToT CoT LLM 提示工程 搜索策略 BFS DFS 大模型推理">
+      <span class="card-badge purple">推理策略</span>
+      <div class="card-icon">💭</div>
+      <h2>思维链与思维树 · CoT &amp; ToT</h2>
+      <p class="desc">从 Chain-of-Thought 线性推理到 Tree-of-Thoughts 分支搜索的完整讲解，含流程图、搜索策略对比与前沿扩展。</p>
+    </a>
+
+    <!-- Card 20: Reinforcement Learning -->
+    <a href="ReinforcementLearning_h5/" class="card" data-cat="ml nn" data-keywords="强化学习 Q-Learning Bellman 方程 MDP 马尔可夫决策过程 DQN 深度强化学习 策略梯度 探索利用 TD误差 SARSA">
+      <span class="card-badge purple">强化学习</span>
+      <div class="card-icon">🤖</div>
+      <h2>强化学习 — Q-Learning · DQN</h2>
+      <p class="desc">从 MDP、Bellman 方程到 Q-Learning、DQN 的交互式可视化，在 Grid World 中直观体验 Agent 如何从试错中学习最优策略。</p>
+    </a>
+
+    <!-- Card 21: LangChain -->
+    <a href="LangChain_h5/" class="card" data-cat="eng nlp" data-keywords="LangChain LLM Chain LCEL RAG Agent 工具调用 Runnable Prompt">
+      <span class="card-badge purple">LLM 框架</span>
+      <div class="card-icon">⛓️</div>
+      <h2>LangChain · LLM 应用开发框架</h2>
+      <p class="desc">Chain/Runnable 抽象、LCEL 管道语法、RAG 检索增强生成、Agent 工具调用循环的交互式可视化与完整代码示例。</p>
+    </a>
+
+    <!-- Card 22: LangGraph -->
+    <a href="LangGraph_h5/" class="card" data-cat="eng" data-keywords="LangGraph StateGraph Agent 状态图 ReAct 条件边 检查点 Human-in-the-loop 人机协作 时间旅行 Mermaid">
+      <span class="card-badge purple">Agent 编排</span>
+      <div class="card-icon">🕸️</div>
+      <h2>LangGraph · Agent 状态图编排</h2>
+      <p class="desc">Mermaid 流程图深入讲解 StateGraph、ReAct 循环、条件路由、人机协作中断、检查点时间旅行、并行 Fan-out 等核心概念。</p>
+    </a>
+
+    <!-- Card 23: LightGBM -->
+    <a href="LightGBM_h5/" class="card" data-cat="ml" data-keywords="LightGBM GOSS EFB 直方图 梯度提升 Leaf-wise 决策树 Boosting 特征捆绑 单边采样">
+      <span class="card-badge purple">梯度提升</span>
+      <div class="card-icon">🌿</div>
+      <h2>LightGBM — 直方图 · GOSS · EFB · Leaf-wise</h2>
+      <p class="desc">深入理解 LightGBM 四大核心创新：直方图算法、GOSS 梯度单边采样、EFB 互斥特征捆绑与 Leaf-wise 生长策略的交互式可视化。</p>
+    </a>
+
+    <!-- Card 24: ROC 曲线与 AUC -->
+    <a href="ROC_h5/" class="card" data-cat="ml" data-keywords="ROC AUC 曲线 TPR FPR 阈值 分类评估 二分类 模型评估 Precision-Recall 混淆矩阵">
+      <span class="card-badge purple">分类评估</span>
+      <div class="card-icon">📈</div>
+      <h2>ROC 曲线与 AUC</h2>
+      <p class="desc">从混淆矩阵到 ROC 空间、AUC 面积含义、阈值调节与多分类器对比的交互式可视化，深入理解二分类模型评估体系。</p>
+    </a>
+
+    <!-- Card 25: Finetuning · RLHF & LoRA -->
+    <a href="Finetuning_h5/" class="card" data-cat="nn nlp eng" data-keywords="微调 大模型微调 RLHF LoRA PEFT 奖励模型 DPO PPO 对齐训练 低秩适应 参数高效微调 偏好对齐 监督微调 SFT Bradley-Terry QLoRA">
+      <span class="card-badge purple">LLM 训练</span>
+      <div class="card-icon">🔧</div>
+      <h2>大模型微调 · RLHF &amp; LoRA</h2>
+      <p class="desc">从全量微调到参数高效微调（PEFT），从 SFT 到 RLHF 对齐训练——深入理解 LoRA 低秩适应、奖励模型、PPO 优化与 DPO 等现代 LLM 训练范式。</p>
+    </a>
+
+    <!-- Card 26: MoE -->
+    <a href="MoE_h5/" class="card" data-cat="nn nlp" data-keywords="MoE 混合专家 稀疏门控 路由器 Top-K 负载均衡 条件计算 Mixtral DeepSeek 专家网络 SwiGLU 辅助损失 容量因子 路由坍塌">
+      <span class="card-badge purple">LLM 架构</span>
+      <div class="card-icon">🧩</div>
+      <h2>MoE 混合专家模型</h2>
+      <p class="desc">稀疏门控与条件计算——每个 Token 只激活 Top-K 个专家，在参数总量爆炸式增长的同时保持推理成本可控，深入理解路由、负载均衡与专家网络。</p>
+    </a>
+
+    <!-- Card 27: MCP -->
+    <a href="MCP_h5/" class="card" data-cat="eng" data-keywords="MCP Model Context Protocol 模型上下文协议 工具调用 Tools Resources Prompts Sampling JSON-RPC stdio SSE Client Server OAuth 开源协议 Function Calling 集成 即插即用">
+      <span class="card-badge purple">LLM 协议</span>
+      <div class="card-icon">🔌</div>
+      <h2>MCP · Model Context Protocol</h2>
+      <p class="desc">连接 AI 模型与外部世界的开放标准协议——统一 Tools、Resources、Prompts 三大原语，变 M×N 集成为 M+N，让 LLM 像 USB-C 一样即插即用任何工具与数据源。</p>
+    </a>
+
+    <!-- Card 28: Reranker -->
+    <a href="Reranker_h5/" class="card" data-cat="nlp eng nn" data-keywords="Reranker 重排 重排序 Cross-Encoder Bi-Encoder 检索 精排 RAG Cohere BGE ColBERT RankGPT LLM 级联 分数融合 RRF 大模型">
+      <span class="card-badge purple">检索精排</span>
+      <div class="card-icon">🔄</div>
+      <h2>Reranker 重排序 · 大模型检索精排</h2>
+      <p class="desc">两阶段检索引擎的核心——从 Bi-Encoder 粗筛到 Cross-Encoder 精排，涵盖分数融合、级联重排、LLM-as-Reranker 与主流模型对比的交互式可视化。</p>
+    </a>
+
+
+	    <!-- Card 29: Milvus -->
+	    <a href="Milvus_h5/" class="card" data-cat="eng nlp" data-keywords="Milvus 向量数据库 Vector Database ANN 近似近邻检索 HNSW IVF 混合搜索 RAG 嵌入 Dense Sparse 标量过滤 范围搜索 分组搜索 多向量 索引 相似度 L2 IP COSINE Zilliz 开源">
+	      <span class="card-badge purple">向量数据库</span>
+	      <div class="card-icon">🔍</div>
+	      <h2>Milvus · 向量数据库 — 检索方式全解</h2>
+	      <p class="desc">从架构设计到 7 种检索方法——涵盖 ANN Top-K、范围搜索、混合搜索（Dense+Sparse）、标量过滤、多向量、分组搜索与迭代器，含 Python SDK 完整示例与交互式可视化。</p>
+	    </a>
+
+	    <!-- Card 30: MHA · MQA · GQA -->
+	    <a href="MHA_MQA_GQA_h5/" class="card" data-cat="eng nlp" data-keywords="MHA MQA GQA Attention Multi-Head Multi-Query Grouped-Query KV Cache 注意力 多头 多查询 分组查询 推理加速 Llama PaLM 缓存压缩">
+	      <span class="card-badge blue">注意力机制</span>
+	      <div class="card-icon">🔬</div>
+	      <h2>MHA · MQA · GQA 注意力进化</h2>
+	      <p class="desc">从多头注意力到分组查询注意力——通过共享 KV 投影压缩推理缓存，涵盖架构对比、KV Cache 分析、Head-to-KV 映射的交互式可视化。</p>
+	    </a>
+
+	    <!-- Card 31: Multi-Agent System -->
+	    <a href="MultiAgent_h5/" class="card" data-cat="eng nlp" data-keywords="Multi-Agent 多智能体 MAS 多Agent系统 Agent 协作 合同网协议 博弈论 Agent通信 FIPA ACL 黑板系统 拍卖协议 共识算法 A2A A2U A2Tool MCP 分布式 涌现 纳什均衡 CNP 囚徒困境 去中心化 层次化 集中式">
+	      <span class="card-badge purple">Agent 系统</span>
+	      <div class="card-icon">🤝</div>
+	      <h2>Multi-Agent · 多智能体系统</h2>
+	      <p class="desc">从架构拓扑到通信协议——涵盖 A2A、MCP、A2U、A2Tool 现代协议栈，合同网协议交互模拟，博弈论分析，以及 LLM 多 Agent 框架全景对比。</p>
+	    </a>
+	    <!-- Card 32: KNN -->
+	    <a href="KNN_h5/" class="card" data-cat="ml" data-keywords="KNN K近邻 K-近邻 最近邻 距离 度量 欧氏距离 曼哈顿距离 投票 分类 懒惰学习 非参数 决策边界 Bias-Variance K值选择 切比雪夫">
+	      <span class="card-badge">经典ML</span>
+	      <div class="card-icon">🎯</div>
+	      <h2>KNN K近邻算法</h2>
+	      <p class="desc">距离度量、K值选择与多数投票的交互式可视化，直观理解懒惰学习与非参数分类的决策边界、Bias-Variance 权衡与维度灾难。</p>
+	    </a>
+		    <!-- Card 33: Bitcoin -->
+		    <a href="Bitcoin_h5/" class="card" data-cat="blockchain eng" data-keywords="Bitcoin 比特币 区块链 Merkle树 默克尔树 UTXO PoW 工作量证明 ECDSA secp256k1 SPV 共识 挖矿 椭圆曲线 数据结构 Nakamoto SHA-256 加密货币">
+		      <span class="card-badge cyan">密码学·区块链</span>
+		      <div class="card-icon">₿</div>
+		      <h2>Bitcoin · 比特币协议</h2>
+		      <p class="desc">从区块数据结构、Merkle 树、UTXO 模型到椭圆曲线密码学与 PoW 共识——拆解中本聪白皮书的每一层协议设计，含交互式挖矿模拟与 SPV 验证。</p>
+		    </a>
+		    <!-- Card 34: Homomorphic Encryption -->
+		    <a href="HomomorphicEncryption_h5/" class="card" data-cat="eng" data-keywords="同态加密 全同态 FHE PHE 部分同态 SWHE LWE RLWE 格密码 CKKS TFHE BFV BGV Bootstrapping 自举 密文计算 隐私计算 安全多方计算 Paillier RSA 加密">
+		      <span class="card-badge purple">密码学</span>
+		      <div class="card-icon">🔐</div>
+		      <h2>同态加密 · Homomorphic Encryption</h2>
+		      <p class="desc">从 RSA 乘性同态到 Gentry 全同态蓝图——涵盖 PHE/SWHE/FHE 三代方案、RLWE 格密码基础、CKKS 近似算术、TFHE 快速自举，含噪声增长模拟与方案选型指南。</p>
+            </a>
+            <!-- Card 35: LlamaIndex -->
+            <a href="LlamaIndex_h5/" class="card" data-cat="nlp eng" data-keywords="LlamaIndex RAG 检索增强生成 数据索引 VectorStoreIndex 嵌入 Embedding 分块 数据摄取 混合检索 查询引擎 Agent 工具调用 QueryFusion 重排序 RRF IngestionPipeline LlamaHub 框架对比 LangChain Haystack 知识图谱">
+              <span class="card-badge purple">RAG 框架</span>
+              <div class="card-icon">🦙</div>
+              <h2>LlamaIndex · RAG 数据框架</h2>
+              <p class="desc">从数据摄取、五种索引类型、高级检索策略到查询引擎与 Agent 推理——深入理解 LlamaIndex 如何将 LLM 连接到私有数据，构建生产级 RAG 系统。</p>
+            </a>
+		    <!-- Card 36: 1-Bit Quantization -->
+		    <a href="OneBitQuantization_h5/" class="card" data-cat="eng" data-keywords="1-bit 1bit 1比特 量化 二值化 三值化 BitNet b1.58 Bonsai OneBit 模型压缩 STE 端侧部署 手机 低精度 极限压缩">
+		      <span class="card-badge">模型量化</span>
+		      <div class="card-icon">🧊</div>
+		      <h2>1-Bit 量化 · 极限压缩</h2>
+		      <p class="desc">从 FP16 到 ±1：纯 1-Bit 与 1.58-Bit 三值量化的交互式对比，涵盖 BitNet、Bonsai、STE 训练与端侧部署实战。</p>
+		    </a>
+            <!-- Card 37: Normalization -->
+            <a href="Normalization_h5/" class="card" data-cat="nn ml" data-keywords="归一化 Normalization BatchNorm LayerNorm RMSNorm GroupNorm InstanceNorm BN LN GN 标准化 批归一化 层归一化 分组归一化 统计量 均值 方差 内部协变量偏移 Transformer LLaMA">
+              <span class="card-badge purple">归一化</span>
+              <div class="card-icon">⚖️</div>
+              <h2>归一化方法全景 · Batch / Layer / RMS / Group Norm</h2>
+              <p class="desc">统一视角理解四种归一化：核心区别仅在于 μ 和 σ 沿哪些轴计算，配合交互式张量轴可视化与统计稳定性热力图对比。</p>
+            </a>
+  </div>
+
+  <!-- ═══ No Results ═══ -->
+  <div class="no-results" id="noResults">
+    <div class="no-results-icon">🔍</div>
+    <p>没有找到匹配的项目，试试其他关键词。</p>
+  </div>
+</div>
+
+<!-- ═══ Footer ═══ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-bottom" style="justify-content:center;">
+      <span>© 2026 Alex</span>
+      <span class="sep">·</span>
+      <span>Built with ❤️ &amp; Claude</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function() {
+    var tabs = document.querySelectorAll('.cat-tab');
+    var cards = document.querySelectorAll('.card-grid .card');
+    var searchInput = document.getElementById('searchInput');
+    var searchClear = document.getElementById('searchClear');
+    var noResults = document.getElementById('noResults');
+
+    var activeCat = 'all';
+    var query = '';
+
+    function applyFilters() {
+      var visibleCount = 0;
+
+      cards.forEach(function(card) {
+        var catMatch = activeCat === 'all' || (card.getAttribute('data-cat') || '').split(' ').indexOf(activeCat) !== -1;
+
+        var searchMatch = true;
+        if (query) {
+          var haystack = ((card.getAttribute('data-keywords') || '') + ' ' + (card.querySelector('h2') ? card.querySelector('h2').textContent : '') + ' ' + (card.querySelector('.desc') ? card.querySelector('.desc').textContent : '')).toLowerCase();
+          searchMatch = haystack.indexOf(query) !== -1;
+        }
+
+        if (catMatch && searchMatch) {
+          card.classList.remove('hidden-cat', 'hidden-search');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden-cat');
+        }
+      });
+
+      // Toggle no-results message
+      if (visibleCount === 0) {
+        noResults.classList.add('visible');
+      } else {
+        noResults.classList.remove('visible');
+      }
+    }
+
+    // Category tab clicks
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        activeCat = this.getAttribute('data-cat');
+        tabs.forEach(function(t) { t.classList.remove('active'); });
+        this.classList.add('active');
+        applyFilters();
+      });
+    });
+
+    // Search input
+    searchInput.addEventListener('input', function() {
+      query = this.value.trim().toLowerCase();
+      if (query) {
+        searchClear.classList.add('visible');
+      } else {
+        searchClear.classList.remove('visible');
+      }
+      applyFilters();
+    });
+
+    // Clear button
+    searchClear.addEventListener('click', function() {
+      searchInput.value = '';
+      query = '';
+      searchClear.classList.remove('visible');
+      applyFilters();
+      searchInput.focus();
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大模型微调 — RLHF · LoRA · PEFT</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #151922;
+    --surface2: #1e2332;
+    --text: #e1e4eb;
+    --text2: #8e96a9;
+    --accent: #f59e0b;
+    --accent2: #fbbf24;
+    --blue: #38bdf8;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --orange: #fb923c;
+    --border: #2a3040;
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f1219 0%, #1a1d30 50%, #12141f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--pink), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 18px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Section blocks ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 2.0rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .dot {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot.yellow { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot.blue   { background: var(--blue);   box-shadow: 0 0 10px var(--blue); }
+  .dot.green  { background: var(--green);  box-shadow: 0 0 10px var(--green); }
+  .dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .dot.cyan   { background: var(--cyan);   box-shadow: 0 0 10px var(--cyan); }
+  .dot.pink   { background: var(--pink);   box-shadow: 0 0 10px var(--pink); }
+  .dot.orange { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+
+  .section .desc {
+    color: var(--text2);
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* ── Formula ── */
+  .formula-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .formula-block h3 {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula-block .katex-display { margin: 8px 0; }
+  .formula-block .katex { font-size: 1.15em; }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Sliders ── */
+  .sliders {
+    display: grid;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .slider-group label .val {
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 17px;
+    min-width: 48px;
+    text-align: right;
+  }
+  input[type=range] {
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--border) var(--pct, 0%));
+    outline: none;
+    cursor: pointer;
+  }
+  /* WebKit track */
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent;
+  }
+  /* Firefox track + progress */
+  input[type=range]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--border);
+    border: none;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 8px;
+    border-radius: 4px 0 0 4px;
+    background: var(--accent);
+  }
+  /* WebKit thumb */
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15), 0 2px 6px rgba(0,0,0,0.25);
+    margin-top: -8px;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.2), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+  }
+  /* Firefox thumb */
+  input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15), 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); background: #2a2830; }
+  .btn.active {
+    background: var(--accent);
+    color: #0f1219;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(245,158,11,0.3);
+  }
+  .btn.play-btn { background: var(--green); color: #0b0e14; border-color: var(--green); font-weight: 700; }
+  .btn.play-btn:hover { box-shadow: 0 0 14px rgba(74,222,128,0.3); }
+
+  /* ── Tabs ── */
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0b0e14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Info grid ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .info-card .val { color: var(--text); font-weight: 600; }
+
+  /* ── Insight ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(167,139,250,0.06));
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .insight strong { color: var(--text); }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 16px;
+    line-height: 1.9;
+    color: var(--text2);
+    overflow-x: auto;
+    white-space: pre;
+    margin-bottom: 16px;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .co { color: #8b949e; }
+  .code-block .nm { color: #79c0ff; }
+
+  /* ── Comparison table ── */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .cmp-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    font-size: 17px;
+  }
+  .cmp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cmp-table .hl-cell { color: var(--green); font-weight: 600; }
+  .cmp-table .warn-cell { color: var(--red); font-weight: 600; }
+
+  /* ── Step indicator ── */
+  .step-indicator {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 17px;
+    flex-wrap: wrap;
+    color: var(--text2);
+  }
+  .step-indicator .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .step-indicator .step-num.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0b0e14;
+    box-shadow: 0 0 12px rgba(245,158,11,0.4);
+  }
+  .step-indicator .step-arrow { font-size: 20px; color: var(--text2); }
+
+  /* ── Pipeline boxes ── */
+  .pipeline-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .pipeline-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    transition: all 0.3s;
+  }
+  .pipeline-box.highlight {
+    border-color: var(--accent);
+    box-shadow: 0 0 16px rgba(245,158,11,0.15);
+  }
+  .pipeline-box h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pipeline-box .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .status-badge.sft  { background: rgba(56,189,248,0.15); color: var(--blue); }
+  .status-badge.rm   { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .status-badge.ppo  { background: rgba(74,222,128,0.15); color: var(--green); }
+
+  /* ── Legend ── */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 16px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 18px; height: 18px; border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    .header h1 { font-size: 1.6rem; }
+    .section { padding: 18px; }
+    .sliders { grid-template-columns: 1fr; }
+    .section h2 { font-size: 1.4rem; }
+    .pipeline-row { grid-template-columns: 1fr; }
+  }
+
+  /* Table Wrap */
+  .table-wrap {
+    width: 80% !important;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    padding: 10px;
+  }
+  .cmp-table {
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔧 大模型微调 · RLHF & LoRA</h1>
+  <p>从全量微调到参数高效微调（PEFT），从 SFT 到 RLHF 对齐训练——深入理解现代 LLM 训练范式的核心原理与交互式可视化</p>
+</div>
+
+<div class="container">
+
+<!-- ================================================================ -->
+<!-- SECTION 1: Fine-tuning Landscape -->
+<!-- ================================================================ -->
+<div class="section" id="sec-landscape">
+  <h2><span class="dot yellow"></span> 1. 大模型微调全景：全量 vs PEFT</h2>
+  <p class="desc">
+    预训练大模型获得通用语言能力后，需要<strong>微调（Fine-tuning）</strong>使其适配特定任务。
+    全量微调更新所有参数，显存和计算开销巨大；<b>参数高效微调（PEFT）</b>仅更新少量参数，
+    使单卡即可微调 7B-70B 级别模型。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>方法</th>
+        <th>可训练参数量</th>
+        <th>显存需求 (7B)</th>
+        <th>训练速度</th>
+        <th>推理开销</th>
+        <th>代表作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>全量微调</strong></td>
+        <td class="warn-cell">100% (7B)</td>
+        <td class="warn-cell">~56 GB (fp16)</td>
+        <td class="warn-cell">慢</td>
+        <td class="hl-cell">无额外开销</td>
+        <td>GPT-3 Fine-tune</td>
+      </tr>
+      <tr>
+        <td><strong>Adapter</strong></td>
+        <td class="hl-cell">~1-5%</td>
+        <td class="hl-cell">~15 GB</td>
+        <td>中等</td>
+        <td class="warn-cell">有推理延迟</td>
+        <td>AdapterHub</td>
+      </tr>
+      <tr>
+        <td><strong>Prefix Tuning</strong></td>
+        <td class="hl-cell">~0.1%</td>
+        <td class="hl-cell">~14 GB</td>
+        <td>快</td>
+        <td>轻微开销</td>
+        <td>P-Tuning v2</td>
+      </tr>
+      <tr>
+        <td><strong>LoRA</strong></td>
+        <td class="hl-cell">~0.1-1%</td>
+        <td class="hl-cell">~14 GB</td>
+        <td class="hl-cell">快</td>
+        <td class="hl-cell">可合并无开销</td>
+        <td>LoRA, QLoRA</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="insight">
+    💡 <strong>核心思想：</strong>预训练模型已经学到了丰富的特征表示，微调所需的"任务适配"可能只需要低秩的权重调整。
+    LoRA 正是基于这一假设，将权重增量 ΔW 分解为两个低秩矩阵的乘积。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: LoRA — Low-Rank Adaptation -->
+<!-- ================================================================ -->
+<div class="section" id="sec-lora">
+  <h2><span class="dot blue"></span> 2. LoRA · 低秩适应 — 两个小矩阵撬动大模型</h2>
+  <p class="desc">
+    LoRA 的核心思想：<b>冻结预训练权重 W₀ ∈ R<sup>d×k</sup></b>，在其旁路注入可训练的
+    <b>低秩分解矩阵 B ∈ R<sup>d×r</sup> 和 A ∈ R<sup>r×k</sup></b>（r ≪ min(d,k)）。
+    前向传播变为 <b>h = W₀x + BAx</b>，只有 B 和 A 参与梯度更新。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 LoRA 核心公式</h3>
+    <div id="formula-lora"></div>
+  </div>
+
+  <canvas id="canvasLora" width="1200" height="520"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>原始维度 d <span class="val" id="val-d">768</span></label>
+      <input type="range" id="slider-d" min="256" max="4096" value="768" step="128">
+    </div>
+    <div class="slider-group">
+      <label>输出维度 k <span class="val" id="val-k">768</span></label>
+      <input type="range" id="slider-k" min="256" max="4096" value="768" step="128">
+    </div>
+    <div class="slider-group">
+      <label>LoRA 秩 r <span class="val" id="val-r">16</span></label>
+      <input type="range" id="slider-r" min="1" max="128" value="16" step="1">
+    </div>
+    <div class="slider-group">
+      <label>缩放因子 α <span class="val" id="val-alpha">16</span></label>
+      <input type="range" id="slider-alpha" min="1" max="64" value="16" step="1">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-lora"></div>
+
+  <div class="insight">
+    💡 <strong>参数量对比：</strong>原始 W₀ 大小为 d×k；LoRA 的 B(d×r) + A(r×k) = r·(d+k) 个参数。
+    当 r=16, d=k=4096 时，<strong>LoRA 仅需 131K 参数 vs 原始 16.8M——压缩 128 倍</strong>。
+    QLoRA 进一步将 W₀ 量化为 4-bit NormalFloat，使得在 48GB GPU 上即可微调 65B 模型。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: RLHF Pipeline — 3-Step Alignment -->
+<!-- ================================================================ -->
+<div class="section" id="sec-rlhf-pipeline">
+  <h2><span class="dot purple"></span> 3. RLHF 三阶段对齐训练</h2>
+  <p class="desc">
+    RLHF（Reinforcement Learning from Human Feedback）是 InstructGPT / ChatGPT 背后的核心对齐技术。
+    通过<b>人类偏好反馈</b>微调模型，使其输出更符合人类的价值观和意图。
+    整个流程分为三个关键阶段——
+  </p>
+
+  <div class="step-indicator" id="rlhf-step-indicator">
+    <span class="step-num active" data-step="0">1</span><span class="step-arrow">→</span>
+    <span class="step-num" data-step="1">2</span><span class="step-arrow">→</span>
+    <span class="step-num" data-step="2">3</span>
+  </div>
+
+  <div class="pipeline-row" id="pipeline-boxes">
+    <div class="pipeline-box highlight" id="box-sft">
+      <span class="status-badge sft">阶段一</span>
+      <h3>🎓 SFT · 监督微调</h3>
+      <p style="color:var(--text2); font-size:16px;">
+        用高质量人工标注的（指令, 回答）对微调预训练模型。
+        模型学习遵循指令格式，获得基本的指令遵循能力。
+      </p>
+      <div class="info-card" style="margin-top:12px;">
+        数据规模 <span class="val" style="color:var(--blue)">~10K-100K 条</span>
+      </div>
+    </div>
+    <div class="pipeline-box" id="box-rm">
+      <span class="status-badge rm">阶段二</span>
+      <h3>🏆 奖励模型训练</h3>
+      <p style="color:var(--text2); font-size:16px;">
+        用人类偏好排序数据训练奖励模型 r(x,y)。
+        对同一 prompt 的两个回答，人类标注哪个更好，模型学习评分。
+      </p>
+      <div class="info-card" style="margin-top:12px;">
+        数据格式 <span class="val" style="color:var(--purple)">(prompt, 胜, 负) 对</span>
+      </div>
+    </div>
+    <div class="pipeline-box" id="box-ppo">
+      <span class="status-badge ppo">阶段三</span>
+      <h3>🎯 PPO 强化学习</h3>
+      <p style="color:var(--text2); font-size:16px;">
+        用奖励模型作为 reward signal，通过 PPO 算法优化 SFT 模型。
+        加入 KL 惩罚防止模型偏离太远（reward hacking）。
+      </p>
+      <div class="info-card" style="margin-top:12px;">
+        优化目标 <span class="val" style="color:var(--green)">max E[r] − β·KL</span>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="canvasRlhf" width="1200" height="440"></canvas>
+
+  <div class="insight">
+    💡 <strong>为什么需要 RLHF？</strong>直接使用人类标注数据做 SFT 存在分布不匹配——模型在训练时"背诵"标准答案，
+    但实际使用中会遇到大量分布外问题。RLHF 通过偏好排序 + 强化学习，让模型学会泛化"什么是好的回答"，
+    而非记忆特定答案。InstructGPT (1.3B) 通过 RLHF 在人类评估中击败了 175B 的 GPT-3。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: Reward Model — Bradley-Terry -->
+<!-- ================================================================ -->
+<div class="section" id="sec-reward">
+  <h2><span class="dot pink"></span> 4. 奖励模型 · Bradley-Terry 偏好建模</h2>
+  <p class="desc">
+    奖励模型将偏好排序转化为监督学习问题：对于 prompt x，给定一对回答 (y<sub>w</sub>, y<sub>l</sub>)（w=win 胜, l=lose 负），
+    模型需要学习一个 <b>标量评分函数 r(x, y)</b>，使得<b>胜者得分更高</b>。
+    这通常通过 Bradley-Terry 模型建模胜负概率。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 Bradley-Terry 偏好模型 & 损失函数</h3>
+    <div id="formula-bt"></div>
+  </div>
+
+  <canvas id="canvasReward" width="1200" height="470"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>胜者评分 r<sub>w</sub> <span class="val" id="val-rw">2.0</span></label>
+      <input type="range" id="slider-rw" min="-3" max="3" value="2.0" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>负者评分 r<sub>l</sub> <span class="val" id="val-rl">-1.0</span></label>
+      <input type="range" id="slider-rl" min="-3" max="3" value="-1.0" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>样本数量 N <span class="val" id="val-n-reward">50</span></label>
+      <input type="range" id="slider-n-reward" min="10" max="200" value="50" step="10">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-bt"></div>
+
+  <div class="insight">
+    💡 <strong>奖励模型的训练数据：</strong>标注者看到同一个 prompt 的多个模型回答，进行排序（而非直接打分）。
+    排序比打分更容易、更一致——<strong>比较比绝对值更可靠</strong>。
+    Anthropic 的 Preference Model 和 OpenAI 的 RM 都采用类似策略。
+    损失函数本质上是逻辑回归：最大化 P(win &gt; lose) 的对数似然。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: PPO for RLHF -->
+<!-- ================================================================ -->
+<div class="section" id="sec-ppo">
+  <h2><span class="dot green"></span> 5. PPO · 近端策略优化 + KL 约束</h2>
+  <p class="desc">
+    RLHF 的最后一阶段使用 <b>PPO（Proximal Policy Optimization）</b> 算法，将语言模型视为策略 π(y|x)。
+    奖励模型提供 reward，同时加入 <b>KL 散度惩罚</b>防止模型为追求高分而输出无意义文本（reward hacking）。
+    优化目标是三者的加权平衡。
+  </p>
+
+  <div class="formula-block">
+    <h3>📐 PPO + KL 优化目标</h3>
+    <div id="formula-ppo"></div>
+  </div>
+
+  <canvas id="canvasPpo" width="1200" height="500"></canvas>
+
+  <div class="sliders">
+    <div class="slider-group">
+      <label>KL 惩罚系数 β <span class="val" id="val-beta">0.1</span></label>
+      <input type="range" id="slider-beta" min="0" max="1" value="0.1" step="0.01">
+    </div>
+    <div class="slider-group">
+      <label>奖励信号 r(x,y) <span class="val" id="val-reward">1.5</span></label>
+      <input type="range" id="slider-reward" min="-2" max="3" value="1.5" step="0.1">
+    </div>
+    <div class="slider-group">
+      <label>KL 散度 D<sub>KL</sub> <span class="val" id="val-kl">0.5</span></label>
+      <input type="range" id="slider-kl" min="0" max="5" value="0.5" step="0.1">
+    </div>
+  </div>
+
+  <div class="info-row" id="info-ppo"></div>
+
+  <div class="code-block">
+<span class="co">// PPO RLHF 训练循环 (简化)</span>
+<span class="kw">for</span> each batch <span class="kw">of</span> prompts x:
+    y = π_θ(x)                      <span class="co">// 当前策略生成回答</span>
+    r = r_φ(x, y)                   <span class="co">// 奖励模型打分</span>
+    kl = log(π_θ(y|x)/π_ref(y|x))   <span class="co">// KL 散度 vs 参考策略 (SFT 模型)</span>
+
+    <span class="co">// 价值函数 V(x) 估计期望回报，计算优势 A = r - V(x)</span>
+    advantage = r - β·kl - V(x)
+
+    <span class="co">// PPO Clipped 损失：限制更新幅度，防止策略崩溃</span>
+    ratio = π_θ(y|x) / π_θ_old(y|x)
+    loss = -min(ratio·advantage, clip(ratio, 1-ε, 1+ε)·advantage)
+
+    θ = θ - lr · ∇_θ loss           <span class="co">// 梯度下降</span>
+  </div>
+
+  <div class="insight">
+    💡 <strong>KL 惩罚为什么关键？</strong>如果不加 KL 约束，策略可能学会输出乱码或重复文本去"骗取"高奖励——
+    即 <strong>Reward Hacking</strong>（奖励攻击）。奖励模型只在训练分布内可靠，OOD 的输出评分毫无意义。
+    KL 惩罚强制模型不要偏离 SFT 模型太远，相当于在可信区域内优化。β 越大，模型越保守。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SECTION 6: Full Comparison & DPO -->
+<!-- ================================================================ -->
+<div class="section" id="sec-compare">
+  <h2><span class="dot orange"></span> 6. 对齐方法全景对比：RLHF · DPO · SFT</h2>
+  <p class="desc">
+    近年来出现了多种对齐训练方法，从经典的三阶段 RLHF 到更简化的 DPO（直接偏好优化），
+    再到基于排序的 KTO、ORPO 等。不同方法在<b>复杂度、稳定性、数据效率</b>上各有取舍。
+  </p>
+
+  <div class="table-wrap">
+<table class="cmp-table">
+    <thead>
+      <tr>
+        <th>方法</th>
+        <th>需要 RM？</th>
+        <th>需要 RL？</th>
+        <th>数据格式</th>
+        <th>训练稳定性</th>
+        <th>代表工作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>SFT</strong></td>
+        <td class="hl-cell">否</td>
+        <td class="hl-cell">否</td>
+        <td>(x, y) 示范</td>
+        <td class="hl-cell">高</td>
+        <td>Alpaca, Vicuna</td>
+      </tr>
+      <tr>
+        <td><strong>RLHF</strong></td>
+        <td class="warn-cell">是 (需要)</td>
+        <td class="warn-cell">是 (PPO)</td>
+        <td>偏好排序</td>
+        <td class="warn-cell">低 (需调参)</td>
+        <td>InstructGPT, ChatGPT</td>
+      </tr>
+      <tr>
+        <td><strong>DPO</strong></td>
+        <td class="hl-cell">否 (隐式)</td>
+        <td class="hl-cell">否</td>
+        <td>偏好对 (y<sub>w</sub>, y<sub>l</sub>)</td>
+        <td class="hl-cell">高</td>
+        <td>DPO, Zephyr</td>
+      </tr>
+      <tr>
+        <td><strong>KTO</strong></td>
+        <td class="hl-cell">否</td>
+        <td class="hl-cell">否</td>
+        <td>单样本 (±标注)</td>
+        <td class="hl-cell">高</td>
+        <td>Kahneman-Tversky</td>
+      </tr>
+      <tr>
+        <td><strong>ORPO</strong></td>
+        <td class="hl-cell">否 (联合)</td>
+        <td class="hl-cell">否</td>
+        <td>偏好对</td>
+        <td class="hl-cell">高</td>
+        <td>ORPO (单阶段)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <div class="formula-block">
+    <h3>📐 DPO — 绕过奖励模型的直接偏好优化</h3>
+    <div id="formula-dpo"></div>
+  </div>
+
+  <canvas id="canvasSummary" width="1200" height="460"></canvas>
+
+  <div class="insight">
+    💡 <strong>DPO 简化了什么？</strong>省去了单独训练 Reward Model 的过程，也不再需要复杂的 PPO 强化学习循环。它证明了：<strong>奖励建模和策略优化其实是同一个硬币的两面</strong>，可以直接用奖励函数的目标去解析求解策略模型的最优更新方向。
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<footer style="margin-top:48px; padding:24px; text-align:center; color:var(--text2); font-size:15px; border-top:1px solid var(--border);">
+  🎯 LLM 微调技术演进交互可视化 · Created for Learning · 基于 InstructGPT & LoRA & DPO 论文设计
+</footer>
+
+<script>
+// ── Slider Progress Initialization & Event Delegation ──
+function initSliders() {
+  const sliders = document.querySelectorAll('input[type=range]');
+  sliders.forEach(s => {
+    const updatePct = () => {
+      const pct = (s.value - s.min) / (Math.max(s.max - s.min, 1)) * 100;
+      s.style.setProperty('--pct', pct + '%');
+    };
+    updatePct();
+    s.addEventListener('input', updatePct);
+  });
+}
+document.addEventListener("DOMContentLoaded", initSliders);
+</script>
+
+<script>
+// ==============================
+// KaTeX Render
+// ==============================
+// LoRA formula
+katex.render(String.raw`
+\begin{aligned}
+\mathbf{h} &= \mathbf{W}_0 \mathbf{x} + \Delta\mathbf{W} \mathbf{x} = \mathbf{W}_0 \mathbf{x} + \boxed{\mathbf{B}\mathbf{A}} \, \mathbf{x} \\[6pt]
+\text{其中 } &\mathbf{W}_0 \in \mathbb{R}^{d \times k} \text{ (冻结)},\quad
+\mathbf{B} \in \mathbb{R}^{d \times r},\quad \mathbf{A} \in \mathbb{R}^{r \times k},\quad r \ll \min(d,k) \\[6pt]
+\mathbf{B} &\sim \mathcal{N}(0, \sigma^2),\quad \mathbf{A} = \mathbf{0} \quad \text{(初始化: B随机, A=0 保证增量从0开始)}
+\end{aligned}
+`, document.getElementById('formula-lora'), { displayMode: true });
+
+// Bradley-Terry
+katex.render(String.raw`
+\begin{aligned}
+P(y_w \succ y_l \mid x) &= \frac{\exp[r(x, y_w)]}{\exp[r(x, y_w)] + \exp[r(x, y_l)]} = \sigma\big(r(x, y_w) - r(x, y_l)\big) \\[6pt]
+\mathcal{L}_{\text{RM}} &= -\mathbb{E}_{(x, y_w, y_l)}\big[\log \sigma\big(r_\phi(x, y_w) - r_\phi(x, y_l)\big)\big]
+\end{aligned}
+`, document.getElementById('formula-bt'), { displayMode: true });
+
+// PPO objective
+katex.render(String.raw`
+\begin{aligned}
+\max_{\theta}\; &\mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta(\cdot \mid x)}\Big[ r_\phi(x, y) - \beta \cdot \mathrm{KL}\big(\pi_\theta(\cdot \mid x) \;\|\; \pi_{\text{ref}}(\cdot \mid x)\big) \Big] \\[6pt]
+\mathrm{KL}&(p\|q) = \sum_y p(y|x) \log\frac{p(y|x)}{q(y|x)} \\[4pt]
+\text{PPO Clip: } &\mathcal{L}_{\text{PPO}} = \mathbb{E}\Big[ \min\big( \rho_t A_t,\; \operatorname{clip}(\rho_t, 1-\epsilon, 1+\epsilon) A_t \big) \Big],\quad \rho_t = \frac{\pi_\theta(y_t|x)}{\pi_{\theta_{\text{old}}}(y_t|x)}
+\end{aligned}
+`, document.getElementById('formula-ppo'), { displayMode: true });
+
+// DPO formula
+katex.render(String.raw`
+\begin{aligned}
+\mathcal{L}_{\text{DPO}} &= -\mathbb{E}_{(x, y_w, y_l)}\left[ \log \sigma\!\left( \beta \log\frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} - \beta \log\frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)} \right) \right] \\[6pt]
+&= -\mathbb{E}_{(x, y_w, y_l)}\!\left[ \log \sigma\!\left( \beta \cdot \left[ \log\frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \log\frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} \right] \right) \right]
+\end{aligned}
+`, document.getElementById('formula-dpo'), { displayMode: true });
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 1 Canvas: PEFT Landscape Bar Chart -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasLora');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const d = +document.getElementById('slider-d').value;
+    const k = +document.getElementById('slider-k').value;
+    const r = +document.getElementById('slider-r').value;
+    const alpha = +document.getElementById('slider-alpha').value;
+
+    const scale = alpha / r;
+    const origParams = d * k;
+    const loraParams = r * (d + k);
+    const ratio = (origParams / loraParams).toFixed(0);
+
+    const margin = { top: 30, left: 60, right: 250, bottom: 80 };
+    const cw = W - margin.left - margin.right;
+    const ch = H - margin.top - margin.bottom;
+
+    // ── Left Panel: Matrix visualization ──
+    const matAreaW = (cw - 40) * 0.65;
+    const matAreaH = ch;
+    const matX = margin.left;
+    const matY = margin.top;
+
+    // Draw original matrix W0
+    const cellMax = 24;
+    const scaleD = Math.min(matAreaW * 0.35 / Math.min(k, 200), matAreaH * 0.8 / Math.min(d, 200), cellMax);
+    const w0W = Math.min(k, 200) * scaleD;
+    const w0H = Math.min(d, 200) * scaleD;
+    const w0X = matX + 10;
+    const w0Y = matY + (matAreaH - w0H) / 2;
+
+    // W0 grid
+    for (let ri = 0; ri < Math.min(d, 200); ri++) {
+      for (let ci = 0; ci < Math.min(k, 200); ci++) {
+        const val = 0.3 + 0.5 * Math.random();
+        ctx.fillStyle = `rgba(56,189,248,${0.15 + val * 0.25})`;
+        ctx.fillRect(w0X + ci * scaleD, w0Y + ri * scaleD, scaleD + 0.3, scaleD + 0.3);
+      }
+    }
+    ctx.strokeStyle = 'rgba(56,189,248,0.4)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(w0X, w0Y, w0W, w0H);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('W₀ (冻结)', w0X + w0W/2, w0Y - 10);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '20px "JetBrains Mono", monospace';
+    ctx.fillText(`${d}×${k}`, w0X + w0W/2, w0Y + w0H + 22);
+
+    // arrow from W0
+    const arrowX1 = w0X + w0W + 16;
+    const arrowY1 = w0Y + w0H/2;
+    const arrowX2 = arrowX1 + 30;
+
+    // Plus sign
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 32px "Segoe UI", sans-serif';
+    ctx.fillText('+', (arrowX1 + arrowX2)/2, arrowY1 + 8);
+
+    // B matrix
+    const bW = Math.min(r, 64) * scaleD * 1.2;
+    const bH = Math.min(d, 200) * scaleD;
+    const bX = arrowX2 + 10;
+    const bY = w0Y;
+
+    for (let ri = 0; ri < Math.min(d, 200); ri++) {
+      for (let ci = 0; ci < Math.min(r, 64); ci++) {
+        const val = Math.random();
+        ctx.fillStyle = `rgba(245,158,11,${0.15 + val * 0.3})`;
+        ctx.fillRect(bX + ci * scaleD * 1.2, bY + ri * scaleD, scaleD * 1.2 + 0.3, scaleD + 0.3);
+      }
+    }
+    ctx.strokeStyle = 'rgba(245,158,11,0.5)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bX, bY, bW, bH);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('B', bX + bW/2, bY - 10);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '20px "JetBrains Mono", monospace';
+    ctx.fillText(`${d}×${r}`, bX + bW/2, bY + bH + 22);
+
+    // multiply sign
+    const multX = bX + bW + 10;
+    const multY = bY + bH/2 + 16;
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 20px "Segoe UI", sans-serif';
+    ctx.fillText('×', multX, multY);
+
+    // A matrix
+    const aW = Math.min(k, 200) * scaleD;
+    const aH = Math.min(r, 64) * scaleD * 1.2;
+    const aX = multX + 18;
+    const aY = bY;
+
+    for (let ri = 0; ri < Math.min(r, 64); ri++) {
+      for (let ci = 0; ci < Math.min(k, 200); ci++) {
+        const val = Math.random();
+        ctx.fillStyle = `rgba(167,139,250,${0.15 + val * 0.3})`;
+        ctx.fillRect(aX + ci * scaleD, aY + ri * scaleD * 1.2, scaleD + 0.3, scaleD * 1.2 + 0.3);
+      }
+    }
+    ctx.strokeStyle = 'rgba(167,139,250,0.5)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(aX, aY, aW, aH);
+    ctx.fillStyle = '#a78bfa';
+    ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText('A', aX + aW/2, aY - 10);
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '20px "JetBrains Mono", monospace';
+    ctx.fillText(`${r}×${k}`, aX + aW/2, aY + aH + 22);
+
+    // ── Right Panel: Parameter comparison ──
+    const rx = aX + aW + 40;
+    const barW = 90;
+    const barX = rx + 30;
+    const barMaxH = 200;
+    const barBase = matY + matAreaH - 40;
+
+    // Section title
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('参数对比', rx + 10, matY + 24);
+
+    // Max bar height for original
+    const maxH = Math.min(barMaxH, 300);
+    const origH = maxH;
+    const loraH = Math.max(10, maxH * Math.min(loraParams / origParams, 1));
+
+    // W0 bar
+    const barY_w0 = barBase - origH;
+    ctx.fillStyle = 'rgba(56,189,248,0.5)';
+    ctx.fillRect(barX, barY_w0, barW, origH);
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 18px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(origParams.toLocaleString(), barX + barW/2, barY_w0 - 12);
+    ctx.fillText('W₀', barX + barW/2, barBase + 22);
+    ctx.font = '16px "PingFang SC", sans-serif';
+    ctx.fillText('(冻结)', barX + barW/2, barBase + 44);
+
+    // LoRA bar
+    const barX_lora = barX + barW + 30;
+    const barY_lora = barBase - loraH;
+    ctx.fillStyle = loraH < 30 ? 'rgba(74,222,128,0.7)' : 'rgba(245,158,11,0.5)';
+    ctx.fillRect(barX_lora, barY_lora, barW, loraH);
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 18px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(loraParams.toLocaleString(), barX_lora + barW/2, barY_lora - 12);
+    ctx.fillStyle = '#e1e4eb';
+    ctx.fillText('B+A', barX_lora + barW/2, barBase + 22);
+    ctx.font = '16px "PingFang SC", sans-serif';
+    ctx.fillText('(可训练)', barX_lora + barW/2, barBase + 44);
+
+    // Compression ratio
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.fillText(`压缩比: ${ratio}×`, barX + 20, barBase - 20);
+
+    // Rank label at bottom
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "PingFang SC", sans-serif';
+    ctx.fillText(`秩 r=${r}  |  缩放 α/r=${scale}`, rx + 10, barBase + 80);
+  }
+
+  // Update info cards
+  function updateInfo() {
+    const d = +document.getElementById('slider-d').value;
+    const k = +document.getElementById('slider-k').value;
+    const r = +document.getElementById('slider-r').value;
+    const origParams = d * k;
+    const loraParams = r * (d + k);
+    const ratio = (origParams / loraParams).toFixed(0);
+    document.getElementById('info-lora').innerHTML = `
+      <div class="info-card">W₀ 参数 <div class="val" style="color:var(--blue)">${origParams.toLocaleString()}</div></div>
+      <div class="info-card">LoRA (B+A) <div class="val" style="color:var(--green)">${loraParams.toLocaleString()}</div></div>
+      <div class="info-card">压缩比 <div class="val" style="color:var(--green)">${ratio}×</div></div>
+      <div class="info-card">可训练占比 <div class="val" style="color:var(--accent)">${(100/ratio).toFixed(2)}%</div></div>
+    `;
+  }
+
+  document.getElementById('slider-d').addEventListener('input', function() {
+    document.getElementById('val-d').textContent = this.value;
+    updateInfo(); draw();
+  });
+  document.getElementById('slider-k').addEventListener('input', function() {
+    document.getElementById('val-k').textContent = this.value;
+    updateInfo(); draw();
+  });
+  document.getElementById('slider-r').addEventListener('input', function() {
+    document.getElementById('val-r').textContent = this.value;
+    updateInfo(); draw();
+  });
+  document.getElementById('slider-alpha').addEventListener('input', function() {
+    document.getElementById('val-alpha').textContent = this.value;
+    updateInfo(); draw();
+  });
+
+  updateInfo();
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 3 Canvas: RLHF Pipeline Flow -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasRlhf');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const phases = [
+      { label: 'SFT 模型', color: '#38bdf8', x: 80, desc: '指令微调\n基础模型', data: '标注示范' },
+      { label: '生成回答', color: '#a78bfa', x: 360, desc: '对 prompt\n采样多个回答', data: 'π(y|x)' },
+      { label: '奖励打分', color: '#f472b6', x: 640, desc: '奖励模型\n给回答评分', data: 'r(x,y)' },
+      { label: 'PPO 更新', color: '#4ade80', x: 920, desc: '最大化奖励\n+KL约束', data: '∇L_PPO' },
+    ];
+
+    const boxW = 200, boxH = 80;
+    const y0 = 80;
+
+    phases.forEach((p, i) => {
+      // Box
+      ctx.fillStyle = `${p.color}18`;
+      ctx.fillRect(p.x, y0, boxW, boxH);
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(p.x, y0, boxW, boxH);
+
+      // Label
+      ctx.fillStyle = p.color;
+      ctx.font = 'bold 24px "Segoe UI", "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.label, p.x + boxW/2, y0 + 36);
+
+      // Desc
+      ctx.fillStyle = '#8e96a9';
+      ctx.font = '18px "PingFang SC", sans-serif';
+      ctx.fillText(p.data, p.x + boxW/2, y0 + 60);
+
+      // Arrow
+      if (i < phases.length - 1) {
+        const ax = p.x + boxW;
+        const ay = y0 + boxH/2;
+        ctx.strokeStyle = '#4a5568';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(phases[i+1].x, ay);
+        ctx.stroke();
+        // Arrowhead
+        ctx.fillStyle = '#4a5568';
+        ctx.beginPath();
+        ctx.moveTo(phases[i+1].x - 8, ay - 5);
+        ctx.lineTo(phases[i+1].x, ay);
+        ctx.lineTo(phases[i+1].x - 8, ay + 5);
+        ctx.fill();
+      }
+    });
+
+    // Bottom: SFT reference for KL
+    const refY = y0 + boxH + 60;
+    ctx.fillStyle = 'rgba(56,189,248,0.08)';
+    ctx.fillRect(80, refY, 240, 50);
+    ctx.strokeStyle = 'rgba(56,189,248,0.3)';
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(80, refY, 240, 50);
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('π_ref (SFT 冻结) — KL 约束参考点', 200, refY + 32);
+
+    // Arrow from ref to PPO
+    ctx.strokeStyle = 'rgba(56,189,248,0.4)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(320, refY + 25);
+    ctx.lineTo(920, refY + 25);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = '18px "PingFang SC", sans-serif';
+    ctx.fillText('KL 惩罚: β·D_KL(π || π_ref)', 620, refY + 25);
+
+    // Feedback loop arrow (curved)
+    const loopStartX = 920 + boxW;
+    const loopStartY = y0 + boxH/2 - 20;
+    const loopEndX = 360 + boxW/2;
+    const loopEndY = y0 - 10;
+
+    ctx.strokeStyle = 'rgba(74,222,128,0.5)';
+    ctx.setLineDash([6, 4]);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(loopStartX, loopStartY);
+    ctx.quadraticCurveTo(loopStartX + 40, y0 - 40, loopEndX, loopEndY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 18px "PingFang SC", sans-serif';
+    ctx.fillText('🔄 策略更新后重新采样', 1060, y0 - 16);
+  }
+
+  draw();
+
+  // Step indicator interaction
+  const steps = document.querySelectorAll('#rlhf-step-indicator .step-num');
+  const boxes = [document.getElementById('box-sft'), document.getElementById('box-rm'), document.getElementById('box-ppo')];
+
+  steps.forEach(step => {
+    step.addEventListener('click', function() {
+      const idx = +this.getAttribute('data-step');
+      steps.forEach(s => s.classList.remove('active'));
+      this.classList.add('active');
+      boxes.forEach((b, i) => {
+        b.classList.toggle('highlight', i === idx);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 4 Canvas: Reward Model — Bradley-Terry Visualization -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasReward');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const rw = +document.getElementById('slider-rw').value;
+    const rl = +document.getElementById('slider-rl').value;
+    const N = +document.getElementById('slider-n-reward').value;
+
+    const margin = { top: 30, left: 80, right: 250, bottom: 50 };
+    const pw = W - margin.left - margin.right;
+    const ph = H - margin.top - margin.bottom;
+
+    // Sigmoid curve: P(win) = σ(rw - rl + noise)
+    const x0 = margin.left;
+    const y0 = margin.top;
+    const xRange = pw;
+    const yRange = ph;
+
+    // Draw axes
+    ctx.strokeStyle = '#4a5568';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0); ctx.lineTo(x0, y0 + yRange); ctx.lineTo(x0 + xRange, y0 + yRange);
+    ctx.stroke();
+
+    // Y axis label
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '18px "PingFang SC", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('P(wins)', x0 - 10, y0 - 6);
+    ctx.fillText('1.0', x0 - 10, y0 + 16);
+    ctx.fillText('0.5', x0 - 10, y0 + yRange/2 + 6);
+    ctx.fillText('0.0', x0 - 10, y0 + yRange + 12);
+
+    // X axis label
+    ctx.textAlign = 'center';
+    ctx.fillText('Δr = r_w − r_l', x0 + xRange/2, y0 + yRange + 32);
+
+    // Draw sigmoid
+    ctx.strokeStyle = '#f472b6';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let px = 0; px <= xRange; px += 2) {
+      const dr = (px / xRange - 0.5) * 8; // range from -4 to 4
+      const sigmoid = 1 / (1 + Math.exp(-dr));
+      const py = y0 + yRange - sigmoid * yRange;
+      if (px === 0) ctx.moveTo(x0 + px, py);
+      else ctx.lineTo(x0 + px, py);
+    }
+    ctx.stroke();
+
+    // Draw probability bar at current rw-rl
+    const dr = rw - rl;
+    const prob = 1 / (1 + Math.exp(-dr));
+    const barX = x0 + xRange/2;
+    const barY = y0 + yRange - prob * yRange;
+
+    // Horizontal dashed line
+    ctx.strokeStyle = 'rgba(245,158,11,0.5)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x0, barY);
+    ctx.lineTo(x0 + xRange, barY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Point
+    const ptX = x0 + xRange * (dr + 4) / 8;
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(ptX, barY, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label at point
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`P(win) = ${(prob*100).toFixed(1)}%`, x0 + xRange - 280, barY - 16);
+
+    // Right panel: sample points
+    const rx = x0 + xRange + 30;
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 20px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('偏好数据样本', rx, y0 + 16);
+
+    // Show sample preference data points
+    const sampleAreaY = y0 + 40;
+    const sampleAreaH = yRange - 40;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(rx, sampleAreaY, 200, sampleAreaH);
+    ctx.strokeStyle = '#4a5568';
+    ctx.strokeRect(rx, sampleAreaY, 200, sampleAreaH);
+
+    // Simulated samples
+    const rwRowY = sampleAreaY + 30;
+    const rlRowY = sampleAreaY + sampleAreaH/2;
+
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 17px "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('✓ 胜者评分 r_w', rx + 10, rwRowY);
+    ctx.fillStyle = '#f87171';
+    ctx.fillText('✗ 负者评分 r_l', rx + 10, rlRowY);
+
+    // Draw N small bars
+    for (let i = 0; i < Math.min(N, 30); i++) {
+      const col = i % 15;
+      const row = Math.floor(i / 15);
+      const sx = rx + 12 + col * 13;
+      const noise = (Math.random() - 0.5) * 0.5;
+      const wVal = rw + noise;
+      const lVal = rl + (Math.random() - 0.5) * 0.5;
+      const barMaxH = 40;
+
+      // Win bar
+      const wH = Math.max(4, (wVal + 3) / 6 * barMaxH);
+      ctx.fillStyle = `rgba(74,222,128,${0.5 + 0.5 * (wVal + 3)/6})`;
+      ctx.fillRect(sx, rwRowY + 20 - wH, 10, wH);
+
+      // Lose bar
+      const lH = Math.max(4, (lVal + 3) / 6 * barMaxH);
+      ctx.fillStyle = `rgba(248,113,113,${0.5 + 0.5 * (lVal + 3)/6})`;
+      ctx.fillRect(sx, rlRowY + 20 - lH, 10, lH);
+    }
+
+    // Loss value
+    const loss = -Math.log(prob);
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Loss: ${loss.toFixed(4)}`, rx + 10, sampleAreaY + sampleAreaH - 10);
+  }
+
+  function updateBT() {
+    const rw = +document.getElementById('slider-rw').value;
+    const rl = +document.getElementById('slider-rl').value;
+    const prob = 1 / (1 + Math.exp(-(rw - rl)));
+    const loss = -Math.log(prob);
+    document.getElementById('info-bt').innerHTML = `
+      <div class="info-card">Δr = r<sub>w</sub> − r<sub>l</sub> <div class="val">${(rw - rl).toFixed(1)}</div></div>
+      <div class="info-card">P(win) <div class="val" style="color:var(--pink)">${(prob*100).toFixed(1)}%</div></div>
+      <div class="info-card">-log P(win) <div class="val" style="color:var(--red)">${loss.toFixed(4)}</div></div>
+      <div class="info-card">梯度信号 <div class="val" style="color:var(--accent)">${(1 - prob).toFixed(4)}</div></div>
+    `;
+  }
+
+  document.getElementById('slider-rw').addEventListener('input', function() {
+    document.getElementById('val-rw').textContent = parseFloat(this.value).toFixed(1);
+    updateBT(); draw();
+  });
+  document.getElementById('slider-rl').addEventListener('input', function() {
+    document.getElementById('val-rl').textContent = parseFloat(this.value).toFixed(1);
+    updateBT(); draw();
+  });
+  document.getElementById('slider-n-reward').addEventListener('input', function() {
+    document.getElementById('val-n-reward').textContent = this.value;
+    draw();
+  });
+
+  updateBT();
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 5 Canvas: PPO Objective Landscape -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasPpo');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const beta = +document.getElementById('slider-beta').value;
+    const reward = +document.getElementById('slider-reward').value;
+    const kl = +document.getElementById('slider-kl').value;
+
+    const obj = reward - beta * kl;
+
+    const margin = { top: 20, left: 70, right: 250, bottom: 50 };
+    const pw = W - margin.left - margin.right;
+    const ph = H - margin.top - margin.bottom;
+    const x0 = margin.left;
+    const y0 = margin.top;
+
+    // ── Left: Bar chart of objective components ──
+    const barW = 80;
+    const barGap = 30;
+    const barMaxH = ph - 60;
+    const barBase = y0 + ph - 10;
+    const barStartX = x0 + 40;
+
+    // Reward bar
+    const rH = Math.max(10, Math.min((reward + 2) / 5 * barMaxH, barMaxH));
+    const rBarX = barStartX;
+    const rColor = reward > 0 ? '#4ade80' : '#f87171';
+    ctx.fillStyle = rColor + '80';
+    ctx.fillRect(rBarX, barBase - rH, barW, rH);
+    ctx.strokeStyle = rColor;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(rBarX, barBase - rH, barW, rH);
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 22px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('奖励 r', rBarX + barW/2, barBase + 24);
+    ctx.fillText(reward.toFixed(1), rBarX + barW/2, barBase - rH - 12);
+
+    // KL bar
+    const klX = rBarX + barW + barGap;
+    const klH = Math.min(kl / 3 * barMaxH, barMaxH);
+    ctx.fillStyle = 'rgba(248,113,113,0.4)';
+    ctx.fillRect(klX, barBase - klH, barW, klH);
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(klX, barBase - klH, barW, klH);
+    ctx.fillStyle = '#e1e4eb';
+    ctx.fillText('−β·KL', klX + barW/2, barBase + 24);
+    ctx.fillText((beta * kl).toFixed(2), klX + barW/2, barBase - klH - 12);
+
+    // Total objective bar
+    const objX = klX + barW + barGap;
+    const objH = Math.max(10, Math.min((obj + 2) / 5 * barMaxH, barMaxH));
+    const objColor = obj > 0 ? '#38bdf8' : '#f87171';
+    ctx.fillStyle = objColor + '80';
+    ctx.fillRect(objX, barBase - objH, barW, objH);
+    ctx.strokeStyle = objColor;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(objX, barBase - objH, barW, objH);
+    ctx.fillStyle = '#e1e4eb';
+    ctx.fillText('总目标', objX + barW/2, barBase + 24);
+    ctx.fillStyle = objColor;
+    ctx.font = 'bold 24px "JetBrains Mono", monospace';
+    ctx.fillText(obj.toFixed(2), objX + barW/2, barBase - objH - 14);
+
+    // ── Right: KL divergence curve ──
+    const rx = objX + barW + 60;
+    const ry = y0 + 20;
+    const rw = W - rx - 20;
+    const rh = ph - 30;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(rx, ry, rw, rh);
+    ctx.strokeStyle = '#4a5568';
+    ctx.strokeRect(rx, ry, rw, rh);
+
+    // Draw KL curve
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+      const x = rx + i * rw / 200;
+      const klVal = (i / 100 - 0.5) * 6; // from -3 to 3 mapped to KL
+      const y = ry + rh/2 - klVal * rh / 8;
+      if (i === 0) ctx.moveTo(x, Math.max(ry, Math.min(ry+rh, y)));
+      else ctx.lineTo(x, Math.max(ry, Math.min(ry+rh, y)));
+    }
+    ctx.stroke();
+
+    // Current KL point
+    const klPx = rx + rw/2;
+    const klPy = ry + rh/2 - kl * rh / 8;
+    ctx.fillStyle = '#f87171';
+    ctx.beginPath();
+    ctx.arc(klPx, Math.max(ry, Math.min(ry+rh, klPy)), 7, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 17px "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('D_KL(π || π_ref)', rx + rw/2, ry + rh - 8);
+
+    // Optimal region label
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 18px "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('✓ 最优平衡: 高奖励+低KL', rx + 10, ry + 24);
+
+    // Current status
+    ctx.fillStyle = obj > 0 ? '#4ade80' : '#f87171';
+    ctx.textAlign = 'left';
+    ctx.fillText(obj > 0 ? '✓ 正向优化' : '✗ 负向(需调整)', rx + 10, ry + rh - 30);
+  }
+
+  function updatePPO() {
+    const beta = +document.getElementById('slider-beta').value;
+    const reward = +document.getElementById('slider-reward').value;
+    const kl = +document.getElementById('slider-kl').value;
+    const obj = reward - beta * kl;
+    document.getElementById('info-ppo').innerHTML = `
+      <div class="info-card">奖励 r <div class="val" style="color:var(--green)">${reward.toFixed(2)}</div></div>
+      <div class="info-card">KL 惩罚 β·D_KL <div class="val" style="color:var(--red)">${(beta * kl).toFixed(3)}</div></div>
+      <div class="info-card">总目标 R − β·KL <div class="val" style="color:${obj>0?'var(--blue)':'var(--red)'}">${obj.toFixed(3)}</div></div>
+      <div class="info-card">β 系数 <div class="val" style="color:var(--accent)">${beta.toFixed(2)}</div></div>
+    `;
+  }
+
+  document.getElementById('slider-beta').addEventListener('input', function() {
+    document.getElementById('val-beta').textContent = parseFloat(this.value).toFixed(2);
+    updatePPO(); draw();
+  });
+  document.getElementById('slider-reward').addEventListener('input', function() {
+    document.getElementById('val-reward').textContent = parseFloat(this.value).toFixed(1);
+    updatePPO(); draw();
+  });
+  document.getElementById('slider-kl').addEventListener('input', function() {
+    document.getElementById('val-kl').textContent = parseFloat(this.value).toFixed(2);
+    updatePPO(); draw();
+  });
+
+  updatePPO();
+  draw();
+})();
+</script>
+
+<!-- ================================================================ -->
+<!-- SECTION 6 Canvas: Method Comparison Radar/Summary -->
+<!-- ================================================================ -->
+<script>
+(function() {
+  const canvas = document.getElementById('canvasSummary');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const margin = { top: 20, left: 220, right: 40, bottom: 30 };
+    const pw = W - margin.left - margin.right;
+    const ph = H - margin.top - margin.bottom;
+    const x0 = margin.left;
+    const y0 = margin.top;
+
+    // Horizontal bar chart comparing methods across dimensions
+    const methods = [
+      { name: 'SFT', color: '#38bdf8', values: [1.0, 0.9, 0.1, 0.9, 0.3] },
+      { name: 'RLHF', color: '#f59e0b', values: [0.9, 0.3, 0.9, 0.4, 1.0] },
+      { name: 'DPO', color: '#a78bfa', values: [0.8, 0.8, 0.0, 0.8, 0.7] },
+      { name: 'KTO', color: '#4ade80', values: [0.7, 0.9, 0.0, 0.8, 0.5] },
+      { name: 'ORPO', color: '#f472b6', values: [0.6, 0.8, 0.0, 0.7, 0.6] },
+    ];
+    const dims = ['对齐效果', '训练稳定', '训练复杂度', '易用性', '数据效率'];
+
+    const barH = 30;
+    const barGap = 22;
+    const totalH = methods.length * (barH + barGap);
+    const startY = y0 + 10;
+
+    // Dimension headers
+    const dimSections = Math.min(5, Math.floor(pw / 120));
+    const secW = pw / dims.length;
+
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '17px "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    dims.forEach((d, i) => {
+      ctx.fillText(d, x0 + secW * i + secW/2, startY - 8);
+    });
+
+    methods.forEach((m, mi) => {
+      const my = startY + 20 + mi * (barH + barGap);
+
+      // Method label
+      ctx.fillStyle = m.color;
+      ctx.font = 'bold 20px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(m.name, x0 - 14, my + barH/2 + 6);
+
+      // Bar segments
+      m.values.forEach((v, vi) => {
+        const segX = x0 + secW * vi + 4;
+        const segW = secW - 8;
+        const segH = barH * v;
+        const segY = my + barH - segH;
+
+        ctx.fillStyle = m.color + '40';
+        ctx.fillRect(segX, my, segW, barH);
+        ctx.fillStyle = m.color;
+        ctx.fillRect(segX, segY, segW, segH);
+        ctx.strokeStyle = m.color + '80';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(segX, segY, segW, segH);
+      });
+    });
+
+    // Legend
+    const legY = startY + totalH + 30;
+    ctx.fillStyle = '#8e96a9';
+    ctx.font = '16px "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('色条长度 = 指标表现 (相对值)  |  对齐效果反映人类偏好胜率，复杂度越低越好', x0, legY);
+
+    // Key insight
+    ctx.fillStyle = '#e1e4eb';
+    ctx.font = 'bold 21px "Segoe UI", "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('DPO 在大多数场景下是 RLHF 的最佳替代，但 RLHF 在需要在线探索的场景下仍有优势', x0, legY + 36);
+  }
+
+  draw();
+})();
+</script>
+
+</body>
+</html>

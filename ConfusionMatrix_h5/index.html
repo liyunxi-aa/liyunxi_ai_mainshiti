@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>混淆矩阵与分类评估指标 — 交互式可视化</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --text: #eee;
+    --text2: #a0a0b8;
+    --gold: #f0c040;
+    --green: #4ecca3;
+    --red: #e94560;
+    --blue: #4ea8f6;
+    --orange: #f59342;
+    --purple: #a855f7;
+    --tp: #4ecca3;
+    --tn: #4ea8f6;
+    --fp: #f59342;
+    --fn: #e94560;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #16213e 0%, #1a1a3e 50%, #0f3460 100%);
+    border-bottom: 2px solid #2a2a4a;
+    padding: 24px 32px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 28.0px;
+    background: linear-gradient(135deg, var(--tp), var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header p { color: var(--text2); font-size: 17px; }
+
+  /* Main layout */
+  .main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 1100px) { .main { grid-template-columns: 1fr; } }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .card h3 {
+    font-size: 17px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 {
+    font-size: 18.0px;
+    margin-bottom: 4px;
+  }
+
+  /* Confusion Matrix Grid */
+  .cm-grid {
+    display: grid;
+    grid-template-columns: 40px 80px 1fr 1fr;
+    grid-template-rows: 40px 40px 1fr 1fr;
+    gap: 4px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .cm-cell {
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    min-height: 90px;
+  }
+  .cm-cell:hover { transform: scale(1.03); z-index: 2; }
+  .cm-cell .label { font-size: 16px; opacity: 0.85; margin-bottom: 4px; }
+  .cm-cell .val { font-size: 28.0px; font-weight: 900; }
+  .cm-cell .desc { font-size: 16px; opacity: 0.7; margin-top: 2px; }
+
+  .cm-tp { background: linear-gradient(135deg, #1a4a3a, #2a6a4a); border: 2px solid var(--tp); }
+  .cm-tn { background: linear-gradient(135deg, #1a2a4a, #1a3a6a); border: 2px solid var(--tn); }
+  .cm-fp { background: linear-gradient(135deg, #3a2a1a, #4a3a1a); border: 2px solid var(--fp); }
+  .cm-fn { background: linear-gradient(135deg, #3a1a2a, #4a1a2a); border: 2px solid var(--fn); }
+
+  .cm-label { display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--text2); }
+  .cm-label.actual { writing-mode: vertical-lr; text-orientation: sideways; }
+
+  /* Input section */
+  .input-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .input-group {
+    flex: 1;
+    min-width: 100px;
+  }
+  .input-group label {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .input-group input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #3a3a5a;
+    background: #0d0d22;
+    color: var(--text);
+    font-size: 16.0px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+  }
+  .input-group input:focus { outline: none; border-color: var(--accent); }
+  .label-tp { color: var(--tp); }
+  .label-tn { color: var(--tn); }
+  .label-fp { color: var(--fp); }
+  .label-fn { color: var(--fn); }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #3a3a5a;
+    background: #1a1a3e;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: #2a2a5e; border-color: #5a5a7a; }
+  .btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+  /* Metric bars */
+  .metric-list { display: flex; flex-direction: column; gap: 10px; }
+  .metric-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .metric-name {
+    width: 120px;
+    font-size: 17px;
+    font-weight: 700;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .metric-bar-bg {
+    flex: 1;
+    height: 28px;
+    background: #0d0d22;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .metric-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.4s ease;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .metric-value {
+    width: 70px;
+    font-size: 16.0px;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .bar-tp { background: var(--tp); color: #0a1a10; }
+  .bar-tn { background: var(--tn); color: #0a1020; }
+  .bar-fp { background: var(--fp); color: #1a0a00; }
+  .bar-fn { background: var(--fn); color: #1a0a10; }
+  .bar-acc { background: var(--purple); color: #fff; }
+  .bar-prec { background: var(--blue); color: #fff; }
+  .bar-recall { background: var(--gold); color: #1a1a00; }
+  .bar-f1 { background: var(--green); color: #0a1a10; }
+  .bar-spec { background: var(--orange); color: #1a0a00; }
+
+  /* Formula card */
+  .formula-card {
+    background: #0d0d22;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border-left: 3px solid var(--accent);
+  }
+  .formula-card h4 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+  .formula-card .katex-display { margin: 4px 0; }
+  .formula-card .katex { font-size: 1.2em; }
+
+  /* Sankey-like flow */
+  .flow-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 16px 0;
+  }
+  .flow-box {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 17px;
+    text-align: center;
+  }
+  .flow-arrow { font-size: 24.0px; color: var(--text2); }
+
+  /* Legend */
+  .legend-row { display: flex; gap: 14px; flex-wrap: wrap; font-size: 16px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* Info tip */
+  .info-tip {
+    font-size: 16px; color: #888; line-height: 1.8;
+    background: #0d0d22; border-radius: 6px; padding: 10px 14px;
+    margin-top: 12px;
+  }
+  .info-tip b { color: var(--text2); }
+
+  /* Full-width card for formula collection */
+  .full-width { grid-column: 1 / -1; }
+
+  /* Gauge circle */
+  .gauge-row { display: flex; gap: 20px; justify-content: space-around; flex-wrap: wrap; margin-bottom: 24px; }
+  .gauge {
+    text-align: center;
+    position: relative;
+    width: 100px;
+    min-height: 130px;
+  }
+  .gauge svg { transform: rotate(-90deg); }
+  .gauge .bg { fill: none; stroke: #2a2a4a; stroke-width: 8; }
+  .gauge .fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+  .gauge .inner-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20.0px;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .gauge .gauge-label { font-size: 16px; color: var(--text2); margin-top: 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎯 混淆矩阵与分类评估指标</h1>
+  <p>Confusion Matrix · Precision · Recall · F1-Score · Accuracy · Specificity</p>
+</div>
+
+<div class="main">
+
+  <!-- ========== LEFT: Confusion Matrix + Inputs ========== -->
+  <div class="card">
+    <h2>📊 混淆矩阵</h2>
+    <h3>点击单元格编辑数值 &nbsp;|&nbsp; 绿色=正确 &nbsp;|&nbsp; 橙/红=错误</h3>
+
+    <div class="cm-grid">
+      <!-- Titles -->
+      <div class="cm-label" style="grid-row:1; grid-column:3 / span 2; font-size:16px;">预测类别 ▼</div>
+      <div class="cm-label actual" style="grid-row:3 / span 2; grid-column:1; font-size:16px;">实际类别 ▶</div>
+
+      <!-- Column Headers (Predicted) -->
+      <div class="cm-label" style="grid-row:2; grid-column:3;">预测为正</div>
+      <div class="cm-label" style="grid-row:2; grid-column:4;">预测为负</div>
+
+      <!-- Row Headers (Actual) -->
+      <div class="cm-label" style="grid-row:3; grid-column:2;">实际为正</div>
+      <div class="cm-label" style="grid-row:4; grid-column:2;">实际为负</div>
+
+      <!-- Data Cells -->
+      <div class="cm-cell cm-tp" id="cell-tp" onclick="focusInput('tp')" style="grid-row:3; grid-column:3;">
+        <span class="label">TP ✓</span>
+        <span class="val" id="val-tp">80</span>
+        <span class="desc">真正例</span>
+      </div>
+      <div class="cm-cell cm-fn" id="cell-fn" onclick="focusInput('fn')" style="grid-row:3; grid-column:4;">
+        <span class="label">FN ✗</span>
+        <span class="val" id="val-fn">20</span>
+        <span class="desc">假负例 (漏报)</span>
+      </div>
+      <div class="cm-cell cm-fp" id="cell-fp" onclick="focusInput('fp')" style="grid-row:4; grid-column:3;">
+        <span class="label">FP ✗</span>
+        <span class="val" id="val-fp">15</span>
+        <span class="desc">假正例 (误报)</span>
+      </div>
+      <div class="cm-cell cm-tn" id="cell-tn" onclick="focusInput('tn')" style="grid-row:4; grid-column:4;">
+        <span class="label">TN ✓</span>
+        <span class="val" id="val-tn">85</span>
+        <span class="desc">真负例</span>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <div class="input-group">
+        <label class="label-tp">TP 真正例</label>
+        <input type="number" id="inp-tp" value="80" min="0" oninput="onInputChange()">
+      </div>
+      <div class="input-group">
+        <label class="label-fn">FN 假负例</label>
+        <input type="number" id="inp-fn" value="20" min="0" oninput="onInputChange()">
+      </div>
+      <div class="input-group">
+        <label class="label-fp">FP 假正例</label>
+        <input type="number" id="inp-fp" value="15" min="0" oninput="onInputChange()">
+      </div>
+      <div class="input-group">
+        <label class="label-tn">TN 真负例</label>
+        <input type="number" id="inp-tn" value="85" min="0" oninput="onInputChange()">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="setPreset('balanced')">⚖️ 均衡样例</button>
+      <button class="btn" onclick="setPreset('imbalanced')">📉 不均衡样例</button>
+      <button class="btn" onclick="setPreset('perfect')">✨ 完美分类</button>
+      <button class="btn" onclick="setPreset('worst')">💀 最差分类</button>
+      <button class="btn" onclick="setPreset('high_prec')">🎯 高精确率</button>
+      <button class="btn" onclick="setPreset('high_recall')">🔍 高召回率</button>
+    </div>
+  </div>
+
+  <!-- ========== RIGHT: Metric Dashboard ========== -->
+  <div class="card">
+    <h2>📈 实时指标面板</h2>
+    <h3>拖动输入框或点击预设样例查看指标变化</h3>
+
+    <div class="gauge-row">
+      <div class="gauge">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle class="bg" cx="50" cy="50" r="42"/>
+          <circle class="fill" id="gauge-acc" cx="50" cy="50" r="42" stroke="#a855f7" stroke-dasharray="263.89" stroke-dashoffset="80"/>
+        </svg>
+        <div class="inner-text" id="gauge-acc-text">70%</div>
+        <div class="gauge-label">Accuracy 准确率</div>
+      </div>
+      <div class="gauge">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle class="bg" cx="50" cy="50" r="42"/>
+          <circle class="fill" id="gauge-f1" cx="50" cy="50" r="42" stroke="#4ecca3" stroke-dasharray="263.89" stroke-dashoffset="52"/>
+        </svg>
+        <div class="inner-text" id="gauge-f1-text">80%</div>
+        <div class="gauge-label">F1 Score</div>
+      </div>
+      <div class="gauge">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle class="bg" cx="50" cy="50" r="42"/>
+          <circle class="fill" id="gauge-prec" cx="50" cy="50" r="42" stroke="#4ea8f6" stroke-dasharray="263.89" stroke-dashoffset="40"/>
+        </svg>
+        <div class="inner-text" id="gauge-prec-text">85%</div>
+        <div class="gauge-label">Precision 精确率</div>
+      </div>
+      <div class="gauge">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle class="bg" cx="50" cy="50" r="42"/>
+          <circle class="fill" id="gauge-recall" cx="50" cy="50" r="42" stroke="#f0c040" stroke-dasharray="263.89" stroke-dashoffset="55"/>
+        </svg>
+        <div class="inner-text" id="gauge-recall-text">79%</div>
+        <div class="gauge-label">Recall 召回率</div>
+      </div>
+    </div>
+
+    <div class="metric-list" style="margin-top: 20px;">
+      <div class="metric-item">
+        <div class="metric-name" style="color:var(--purple);">Accuracy</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill bar-acc" id="bar-acc">—</div></div>
+        <div class="metric-value" id="txt-acc" style="color:var(--purple);">—</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-name" style="color:var(--blue);">Precision</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill bar-prec" id="bar-prec">—</div></div>
+        <div class="metric-value" id="txt-prec" style="color:var(--blue);">—</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-name" style="color:var(--gold);">Recall</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill bar-recall" id="bar-recall">—</div></div>
+        <div class="metric-value" id="txt-recall" style="color:var(--gold);">—</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-name" style="color:var(--green);">F1 Score</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill bar-f1" id="bar-f1">—</div></div>
+        <div class="metric-value" id="txt-f1" style="color:var(--green);">—</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-name" style="color:var(--orange);">Specificity</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill bar-spec" id="bar-spec">—</div></div>
+        <div class="metric-value" id="txt-spec" style="color:var(--orange);">—</div>
+      </div>
+      <div class="metric-item" style="margin-top:4px;">
+        <div class="metric-name" style="color:var(--red);font-size: 16px;">FPR (误报率)</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill bar-fn" id="bar-fpr">—</div></div>
+        <div class="metric-value" style="font-size: 17px;color:var(--red);" id="txt-fpr">—</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-name" style="color:var(--fp);font-size: 16px;">FNR (漏报率)</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill bar-fp" id="bar-fnr">—</div></div>
+        <div class="metric-value" style="font-size: 17px;color:var(--fp);" id="txt-fnr">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FULL WIDTH: All Formulas ========== -->
+  <div class="card full-width">
+    <h2>📐 核心公式汇总</h2>
+    <h3>所有公式均基于混淆矩阵中的 TP / FP / FN / TN</h3>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div class="formula-card" style="border-left-color: var(--tp);">
+        <h4 style="color:var(--tp);">✅ 混淆矩阵定义</h4>
+        <div id="formula-cm"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--purple);">
+        <h4 style="color:var(--purple);">🟣 Accuracy 准确率</h4>
+        <div id="formula-acc"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--blue);">
+        <h4 style="color:var(--blue);">🔵 Precision 精确率 / PPV</h4>
+        <div id="formula-prec"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--gold);">
+        <h4 style="color:var(--gold);">🟡 Recall 召回率 / Sensitivity (TPR)</h4>
+        <div id="formula-recall"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--green);">
+        <h4 style="color:var(--green);">🟢 F1 Score — 精确率与召回率的调和均值</h4>
+        <div id="formula-f1"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--orange);">
+        <h4 style="color:var(--orange);">🟠 Specificity 特异度 (TNR)</h4>
+        <div id="formula-spec"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--red);">
+        <h4 style="color:var(--red);">🔴 FPR / FNR 错误率</h4>
+        <div id="formula-fpr"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--purple);">
+        <h4 style="color:var(--purple);">⚖️ Fβ Score — 加权 F-Score 通用形式</h4>
+        <div id="formula-fbeta"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FULL WIDTH: Interpretation Guide ========== -->
+  <div class="card full-width">
+    <h2>💡 指标选择指南</h2>
+    <h3>不同场景下应优先关注哪些指标</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+      <div class="formula-card" style="border-left-color: var(--red);">
+        <h4 style="color:var(--red);">🏥 医疗诊断 / 疾病筛查</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          优先 <b style="color:var(--gold);">Recall (召回率)</b> — 宁可误诊，不可漏诊。<br>
+          漏掉一个癌症患者比误报一个健康人代价大得多。<br>
+          也关注 <b style="color:var(--blue);">NPV (阴性预测值)</b> — 阴性结果是否可信。
+        </p>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--blue);">
+        <h4 style="color:var(--blue);">📧 垃圾邮件检测</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          优先 <b style="color:var(--blue);">Precision (精确率)</b> — 不要把重要邮件标记为垃圾。<br>
+          误杀一封老板的邮件比漏过滤一封垃圾邮件更严重。<br>
+          配合 <b style="color:var(--green);">F1 Score</b> 在二者间取得平衡。
+        </p>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--green);">
+        <h4 style="color:var(--green);">🛡️ 欺诈检测 / 安防</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          需要同时关注 <b style="color:var(--blue);">Precision</b> 和 <b style="color:var(--gold);">Recall</b>。<br>
+          漏掉欺诈 → 财务损失（需要高 Recall）<br>
+          误报欺诈 → 客户投诉（需要高 Precision）<br>
+          通常用 <b style="color:var(--green);">F2 Score</b> (β=2) 偏重召回。
+        </p>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--orange);">
+        <h4 style="color:var(--orange);">📊 不均衡数据集</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          不要用 Accuracy！正负比 1:99 时，全猜负类 Accuracy=99% 但毫无意义。<br>
+          优先 <b style="color:var(--green);">F1 Score</b>、<b style="color:var(--blue);">Precision-Recall AUC</b>、<br>
+          <b style="color:var(--purple);">MCC (Matthews相关系数)</b> 等对不平衡鲁棒的指标。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FULL WIDTH: Confusion Matrix Anatomy ========== -->
+  <div class="card full-width">
+    <h2>🔍 混淆矩阵含义详解</h2>
+    <h3>直观理解四个象限的含义及实际影响</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;">
+      <div style="background:#0d0d22;border-radius:8px;padding:14px;border-left:3px solid var(--tp);">
+        <h4 style="color:var(--tp);margin-bottom:6px;">✅ TP (True Positive) 真正例</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          预测为正，实际也为正。模型正确识别出的正类样本。<br>
+          例：模型判断患者有病，确实有病 ✅<br>
+          <b>TP 越高，召回率越高。</b>
+        </p>
+      </div>
+      <div style="background:#0d0d22;border-radius:8px;padding:14px;border-left:3px solid var(--tn);">
+        <h4 style="color:var(--tn);margin-bottom:6px;">✅ TN (True Negative) 真负例</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          预测为负，实际也为负。模型正确排除的负类样本。<br>
+          例：模型判断健康人没病，确实没病 ✅<br>
+          <b>TN 越高，特异度越高。</b>
+        </p>
+      </div>
+      <div style="background:#0d0d22;border-radius:8px;padding:14px;border-left:3px solid var(--fp);">
+        <h4 style="color:var(--fp);margin-bottom:6px;">⚠️ FP (False Positive) 假正例 / Type I Error</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          预测为正，实际为负。模型误报——"狼来了"🐺。<br>
+          例：模型说健康人有病，实际没病 ❌<br>
+          <b>FP 越高，精确率越低。误报越多。</b>
+        </p>
+      </div>
+      <div style="background:#0d0d22;border-radius:8px;padding:14px;border-left:3px solid var(--fn);">
+        <h4 style="color:var(--fn);margin-bottom:6px;">❌ FN (False Negative) 假负例 / Type II Error</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          预测为负，实际为正。模型漏报——最危险的错误⚠️。<br>
+          例：模型说患者没病，实际有病——耽误治疗 ❌<br>
+          <b>FN 越高，召回率越低。漏报越多。</b>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FULL WIDTH: ROC and PR Curves ========== -->
+  <div class="card full-width">
+    <h2>📈 扩展指标与曲线</h2>
+    <h3>超越单一阈值的评估方法</h3>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div class="formula-card" style="border-left-color: var(--blue);">
+        <h4 style="color:var(--blue);">📐 ROC 曲线 (Receiver Operating Characteristic)</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          横轴: FPR = FP/(FP+TN) &nbsp;|&nbsp; 纵轴: TPR = Recall<br>
+          曲线下面积 = <b style="color:var(--purple);">AUC-ROC</b> (Area Under Curve)<br>
+          AUC = 1.0 → 完美分类；AUC = 0.5 → 随机猜测<br>
+          适用于<b>正负样本相对均衡</b>的场景。
+        </p>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--gold);">
+        <h4 style="color:var(--gold);">🎯 PR 曲线 (Precision-Recall Curve)</h4>
+        <div id="formula-pr"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--purple);">
+        <h4 style="color:var(--purple);">🧮 MCC (Matthews Correlation Coefficient)</h4>
+        <div id="formula-mcc"></div>
+      </div>
+      <div class="formula-card" style="border-left-color: var(--green);">
+        <h4 style="color:var(--green);">🔄 多分类问题的混淆矩阵</h4>
+        <p style="font-size: 16px;color:var(--text2);line-height:1.7;">
+          对于 N 个类别，混淆矩阵是 N×N 矩阵：<br>
+          对角线 = 各类别的 TP（正确分类）<br>
+          非对角线 = 误分类（A 被误判为 B）<br>
+          <b>Macro-F1</b>: 每个类别独立计算 F1 再求平均<br>
+          <b>Micro-F1</b>: 汇总所有类别的 TP/FP/FN 后计算<br>
+          <b>Weighted-F1</b>: 加权平均，权重为各类别样本数
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center;padding:20px;color:#555;font-size: 16px;">
+  💡 拖动输入框或点击预设按钮体验指标变化 &nbsp;|&nbsp; 混淆矩阵是理解所有分类评估指标的基石
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+// ========== Render KaTeX formulas ==========
+function renderFormulas() {
+  const formulas = {
+    'formula-cm': String.raw`
+      \begin{bmatrix}
+      \textcolor{#4ecca3}{\text{TP}} & \textcolor{#e94560}{\text{FN}} \\
+      \textcolor{#f59342}{\text{FP}} & \textcolor{#4ea8f6}{\text{TN}}
+      \end{bmatrix}
+      \quad
+      \begin{aligned}
+      &\text{行 = 实际类别} \\
+      &\text{列 = 预测类别} \\
+      &\text{对角线 = 正确预测}
+      \end{aligned}
+    `,
+    'formula-acc': String.raw`
+      \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+      \quad\text{正确预测占所有预测的比例}
+    `,
+    'formula-prec': String.raw`
+      \text{Precision (PPV)} = \frac{TP}{TP + FP}
+      \quad\text{预测为正的样本中有多少真正为正}
+    `,
+    'formula-recall': String.raw`
+      \text{Recall (TPR)} = \frac{TP}{TP + FN}
+      \quad\text{实际为正的样本中有多少被正确识别}
+    `,
+    'formula-f1': String.raw`
+      F_1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+      = \frac{2 \cdot TP}{2 \cdot TP + FP + FN}
+      \quad\text{调和均值，平衡 P 和 R}
+    `,
+    'formula-spec': String.raw`
+      \text{Specificity (TNR)} = \frac{TN}{TN + FP}
+      \quad\text{实际为负的样本中有多少被正确排除}
+    `,
+    'formula-fpr': String.raw`
+      \begin{aligned}
+      \text{FPR (Type I Error)} &= \frac{FP}{FP + TN} = 1 - \text{Specificity} \\[4pt]
+      \text{FNR (Type II Error)} &= \frac{FN}{FN + TP} = 1 - \text{Recall}
+      \end{aligned}
+    `,
+    'formula-fbeta': String.raw`
+      \begin{aligned}
+      F_\beta &= (1+\beta^2) \cdot \frac{P \cdot R}{\beta^2 \cdot P + R} \\[4pt]
+      \beta=1 &\to F_1 \text{ (P和R同等重要)} \\[2pt]
+      \beta=2 &\to F_2 \text{ (Recall权重是Precision的2倍)} \\[2pt]
+      \beta=0.5 &\to F_{0.5} \text{ (Precision权重是Recall的2倍)}
+      \end{aligned}
+    `,
+    'formula-pr': String.raw`
+      \begin{aligned}
+      &\text{横轴: Recall}, \text{纵轴: Precision} \\[4pt]
+      &\text{AUC-PR}: \text{PR曲线下面积} \\[2pt]
+      &\text{对不均衡数据集比ROC更敏感} \\[2pt]
+      &\text{Baseline} \approx \text{正样本占比 (非0.5)}
+      \end{aligned}
+    `,
+    'formula-mcc': String.raw`
+      \begin{aligned}
+      MCC &= \frac{TP \cdot TN - FP \cdot FN}{\sqrt{(TP+FP)(TP+FN)(TN+FP)(TN+FN)}} \\[4pt]
+      &\text{值域: } [-1, +1] \quad 0 = \text{随机猜测} \\[2pt]
+      &\text{考虑了所有四类结果，不均衡数据下更可靠} \\[2pt]
+      &\text{二分类中 MCC 等价于 } \phi \text{ 相关系数}
+      \end{aligned}
+    `,
+  };
+  for (const [id, tex] of Object.entries(formulas)) {
+    try {
+      katex.render(tex, document.getElementById(id), { displayMode: true, throwOnError: false });
+    } catch(e) { document.getElementById(id).textContent = tex; }
+  }
+}
+renderFormulas();
+
+// ==================== STATE AND COMPUTATION ====================
+const CIRCUMFERENCE = 2 * Math.PI * 42; // ~263.89
+
+function getValues() {
+  return {
+    tp: parseInt(document.getElementById('inp-tp').value) || 0,
+    fn: parseInt(document.getElementById('inp-fn').value) || 0,
+    fp: parseInt(document.getElementById('inp-fp').value) || 0,
+    tn: parseInt(document.getElementById('inp-tn').value) || 0,
+  };
+}
+
+function safeDiv(a, b) { return b === 0 ? 0 : a / b; }
+
+function computeMetrics(v) {
+  const total = v.tp + v.fn + v.fp + v.tn;
+  const acc = safeDiv(v.tp + v.tn, total);
+  const prec = safeDiv(v.tp, v.tp + v.fp);
+  const recall = safeDiv(v.tp, v.tp + v.fn);
+  const f1 = safeDiv(2 * prec * recall, prec + recall);
+  const spec = safeDiv(v.tn, v.tn + v.fp);
+  const fpr = safeDiv(v.fp, v.fp + v.tn);
+  const fnr = safeDiv(v.fn, v.fn + v.tp);
+  const mcc = safeDiv(
+    v.tp * v.tn - v.fp * v.fn,
+    Math.sqrt((v.tp + v.fp) * (v.tp + v.fn) * (v.tn + v.fp) * (v.tn + v.fn))
+  );
+  // F-beta with beta=2
+  const beta = 2;
+  const f2 = safeDiv((1 + beta * beta) * prec * recall, beta * beta * prec + recall);
+  return { total, acc, prec, recall, f1, spec, fpr, fnr, mcc, f2 };
+}
+
+function fmtPct(v) { return (v * 100).toFixed(1) + '%'; }
+function fmtVal(v) { return v.toFixed(4); }
+
+function setGauge(id, pct) {
+  const offset = CIRCUMFERENCE * (1 - Math.min(1, Math.max(0, pct / 100)));
+  const el = document.getElementById(id);
+  if (el) el.setAttribute('stroke-dashoffset', offset);
+}
+
+function updateAll() {
+  const v = getValues();
+  const m = computeMetrics(v);
+
+  // Update confusion matrix cells
+  document.getElementById('val-tp').textContent = v.tp;
+  document.getElementById('val-fn').textContent = v.fn;
+  document.getElementById('val-fp').textContent = v.fp;
+  document.getElementById('val-tn').textContent = v.tn;
+
+  // Update gauges
+  setGauge('gauge-acc', m.acc * 100);
+  setGauge('gauge-f1', m.f1 * 100);
+  setGauge('gauge-prec', m.prec * 100);
+  setGauge('gauge-recall', m.recall * 100);
+  document.getElementById('gauge-acc-text').textContent = fmtPct(m.acc);
+  document.getElementById('gauge-f1-text').textContent = fmtPct(m.f1);
+  document.getElementById('gauge-prec-text').textContent = fmtPct(m.prec);
+  document.getElementById('gauge-recall-text').textContent = fmtPct(m.recall);
+
+  // Update metric bars
+  function setBar(id, val, pct) {
+    const bar = document.getElementById(id);
+    bar.style.width = Math.min(100, pct * 100) + '%';
+    bar.textContent = fmtPct(val);
+  }
+  setBar('bar-acc', m.acc, m.acc);
+  setBar('bar-prec', m.prec, m.prec);
+  setBar('bar-recall', m.recall, m.recall);
+  setBar('bar-f1', m.f1, m.f1);
+  setBar('bar-spec', m.spec, m.spec);
+  setBar('bar-fpr', m.fpr, m.fpr);
+  setBar('bar-fnr', m.fnr, m.fnr);
+
+  // Update text values
+  document.getElementById('txt-acc').textContent = fmtPct(m.acc);
+  document.getElementById('txt-prec').textContent = fmtPct(m.prec);
+  document.getElementById('txt-recall').textContent = fmtPct(m.recall);
+  document.getElementById('txt-f1').textContent = fmtPct(m.f1);
+  document.getElementById('txt-spec').textContent = fmtPct(m.spec);
+  document.getElementById('txt-fpr').textContent = fmtPct(m.fpr);
+  document.getElementById('txt-fnr').textContent = fmtPct(m.fnr);
+}
+
+function onInputChange() {
+  updateAll();
+}
+
+function focusInput(id) {
+  document.getElementById('inp-' + id).focus();
+}
+
+// ==================== PRESETS ====================
+window.setPreset = function(name) {
+  const presets = {
+    balanced:    { tp: 80, fn: 20, fp: 15, tn: 85 },
+    imbalanced:  { tp: 10, fn: 5,  fp: 20, tn: 965 },
+    perfect:     { tp: 100, fn: 0,  fp: 0,   tn: 100 },
+    worst:       { tp: 0,   fn: 100, fp: 100, tn: 0 },
+    high_prec:   { tp: 90, fn: 30, fp: 3,   tn: 77 },
+    high_recall: { tp: 95, fn: 5,  fp: 40,  tn: 60 },
+  };
+  const p = presets[name];
+  if (!p) return;
+  document.getElementById('inp-tp').value = p.tp;
+  document.getElementById('inp-fn').value = p.fn;
+  document.getElementById('inp-fp').value = p.fp;
+  document.getElementById('inp-tn').value = p.tn;
+
+  // Highlight active button
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  // Find the button that was clicked
+  const buttons = document.querySelectorAll('.btn');
+  buttons.forEach(b => {
+    if (b.textContent.includes(getPresetLabel(name))) b.classList.add('active');
+  });
+
+  updateAll();
+};
+
+function getPresetLabel(name) {
+  const map = {
+    balanced: '均衡', imbalanced: '不均衡', perfect: '完美',
+    worst: '最差', high_prec: '高精确率', high_recall: '高召回率'
+  };
+  return map[name] || '';
+}
+
+// ==================== INIT ====================
+updateAll();
+</script>
+
+</body>
+</html>

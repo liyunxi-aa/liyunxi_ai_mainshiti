@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI & 后端技术 面试题库 · 含答案</title>
+<!-- LaTeX 渲染 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<!-- 代码语法高亮 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+  :root {
+    --bg: #f2f3f7; --card-bg: #ffffff; --text: #1a1a2e; --text-secondary: #555;
+    --accent: #3b49df; --accent-light: #eef0ff; --border: #e0e0e0; --tag-bg: #e8eaf6;
+    --tag-text: #3b49df; --code-bg: #1e1e2e; --code-text: #cdd6f4; --divider: #eee;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07); --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.75; padding: 24px 16px; font-size: 17px;
+  }
+  .container { max-width: 1750px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff; border-radius: 14px; padding: 36px 40px; margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 6px; }
+  .header .subtitle { font-size: 15px; opacity: 0.7; }
+
+  .toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .search-box {
+    flex: 1; min-width: 260px; padding: 10px 16px; border-radius: 8px;
+    border: 1px solid var(--border); font-size: 15px; background: var(--card-bg);
+    box-shadow: var(--shadow);
+  }
+  .btn {
+    padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card-bg); cursor: pointer; font-size: 14px;
+    transition: all 0.15s; color: var(--text); box-shadow: var(--shadow);
+  }
+  .btn:hover { background: var(--accent-light); border-color: var(--accent); }
+  .btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.accent:hover { opacity: 0.88; }
+  .result-count { font-size: 14px; color: var(--text-secondary); margin-left: auto; white-space: nowrap; }
+
+  .stats { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .stat-group { background: var(--card-bg); border-radius: 10px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
+  .stat-group-header {
+    display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+    cursor: pointer; transition: background 0.15s; user-select: none;
+  }
+  .stat-group-header:hover { background: #f8f9fb; }
+  .stat-group-header .sg-icon { font-size: 22px; }
+  .stat-group-header .sg-name { font-weight: 700; font-size: 17px; flex: 1; }
+  .stat-group-header .sg-total { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .stat-group-header .sg-arrow { font-size: 14px; color: #aaa; transition: transform 0.2s; }
+  .stat-group.open .stat-group-header .sg-arrow { transform: rotate(90deg); }
+  .stat-group-body { display: none; padding: 0 18px 14px 18px; }
+  .stat-group.open .stat-group-body { display: block; }
+  .stat-sub-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  @media (max-width: 900px) { .stat-sub-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 600px) { .stat-sub-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat-sub {
+    background: #f8f9fb; border-radius: 6px; padding: 8px 10px;
+    text-align: center; cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .stat-sub:hover { background: var(--accent-light); border-color: var(--accent); transform: translateY(-1px); }
+  .stat-sub .sub-num { font-size: 18px; font-weight: 700; color: var(--accent); }
+  .stat-sub .sub-name { font-size: 13px; color: var(--text-secondary); line-height: 1.3; }
+  .stat-group.total-group { background: var(--accent); border-color: var(--accent); }
+  .stat-group.total-group .stat-group-header { cursor: default; }
+  .stat-group.total-group .sg-name, .stat-group.total-group .sg-total { color: #fff; }
+  .stat-group.total-group .sg-icon { font-size: 24px; }
+
+  .section {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    margin-bottom: 12px; overflow: hidden;
+  }
+  .section-header {
+    padding: 12px 20px; border-bottom: 1px solid var(--divider);
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+  }
+  .section-header:hover { background: #fafbfd; }
+  .section-header h3 { font-size: 16px; font-weight: 600; }
+  .section-header .count { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+
+  .accordion { border-bottom: 1px solid var(--divider); transition: background 0.3s; }
+  .accordion:last-child { border-bottom: none; }
+  .accordion.viewed { background: #e3f5e9; }
+  .accordion.viewed .accordion-toggle:hover { background: #c8e8d2; }
+  .accordion.viewed .q-num { background: #bbf7d0; color: #14532d; }
+  .accordion-toggle {
+    display: flex; align-items: flex-start; gap: 10px;
+    width: 100%; background: none; border: none;
+    padding: 13px 24px; cursor: pointer;
+    text-align: left; font: inherit; color: inherit;
+    transition: background 0.15s;
+  }
+  .accordion-toggle:hover { background: #d4f0dc; }
+  .q-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; min-width: 28px;
+    background: var(--accent-light); color: var(--accent);
+    border-radius: 6px; font-size: 14px; font-weight: 700;
+  }
+  .q-body { flex: 1; min-width: 0; }
+  .q-title { font-size: 18px; font-weight: 600; color: var(--text); user-select: text; }
+  .q-tags { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    display: inline-block; border-radius: 4px; padding: 1px 7px;
+    font-size: 12px; font-weight: 500;
+    background: var(--tag-bg); color: var(--tag-text);
+  }
+  .arrow {
+    font-size: 16px; color: #aaa; transition: transform 0.2s;
+    flex-shrink: 0; margin-top: 10px;
+  }
+  .accordion.open .arrow { transform: rotate(90deg); }
+
+  .answer {
+    display: none; padding: 0 24px 16px 62px; user-select: text;
+    font-size: 18px; color: var(--text-secondary); line-height: 1.85;
+  }
+  .accordion.open .answer { display: block; user-select: text; }
+  .answer p { margin-bottom: 8px; }
+  .answer ul, .answer ol { margin: 4px 0 8px 20px; }
+  .answer li { margin-bottom: 3px; }
+  .answer strong { color: #1a1a2e; font-weight: 700; }
+  .answer code {
+    font-family: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
+    background: #eef0f5; color: #c62828; padding: 1px 6px; border-radius: 3px; font-size: 0.9em;
+  }
+  .answer pre {
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px; padding: 14px 18px; overflow-x: auto;
+    font-size: 14px; line-height: 1.6; margin: 10px 0;
+  }
+  .answer pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .answer table {
+    width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px;
+  }
+  .answer th, .answer td {
+    border: 1px solid var(--border); padding: 8px 12px; text-align: left;
+  }
+  .answer th { background: #f5f6fa; font-weight: 600; color: var(--text); }
+  .answer blockquote {
+    border-left: 3px solid var(--accent); padding: 4px 14px; margin: 8px 0;
+    background: var(--accent-light); color: var(--text); border-radius: 0 6px 6px 0;
+  }
+  .answer h3 { font-size: 15px; color: var(--text); margin: 12px 0 6px; }
+  .answer h4 { font-size: 14px; color: var(--text); margin: 10px 0 4px; }
+  .answer hr { border: none; border-top: 1px solid var(--divider); margin: 14px 0; }
+  .answer a { color: var(--accent); }
+  /* 答案区 H5 项目链接 */
+  .answer-h5-links {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  }
+  .answer-h5-links .h5-label {
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    white-space: nowrap;
+  }
+  .answer-h5-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 6px;
+    font-size: 13px; font-weight: 500; text-decoration: none;
+    background: var(--accent-light); color: var(--accent);
+    border: 1px solid transparent; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .answer-h5-link:hover {
+    background: var(--accent); color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 6px rgba(59,73,223,0.2);
+  }
+  .answer-h5-link .hl-emoji { font-size: 14px; }
+  .answer-h5-link .hl-badge {
+    font-size: 10px; padding: 1px 5px; border-radius: 3px;
+    background: rgba(0,0,0,0.08); margin-left: 2px;
+  }
+  /* KaTeX */
+  .katex { font-size: 1.05em; }
+  .katex-display { margin: 10px 0; }
+
+  .loading { text-align: center; padding: 60px; color: var(--text-secondary); font-size: 16px; }
+  .loading .spinner { display: inline-block; width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .no-results { text-align: center; padding: 40px; color: var(--text-secondary); }
+
+  .footer { text-align: center; padding: 20px; color: #999; font-size: 14px; }
+
+  /* H5 项目链接区 */
+  .h5-section {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    margin-bottom: 20px; overflow: hidden;
+  }
+  .h5-section.open .h5-header .h5-arrow { transform: rotate(90deg); }
+  .h5-header {
+    display: flex; align-items: center; gap: 10px; padding: 14px 20px;
+    cursor: pointer; user-select: none; transition: background 0.15s;
+    border-bottom: 1px solid transparent;
+  }
+  .h5-header:hover { background: #f8f9fb; }
+  .h5-section.open .h5-header { border-bottom-color: var(--divider); }
+  .h5-header .h5-icon { font-size: 22px; }
+  .h5-header .h5-title { font-weight: 700; font-size: 17px; flex: 1; }
+  .h5-header .h5-count { font-size: 14px; color: var(--text-secondary); }
+  .h5-header .h5-arrow { font-size: 14px; color: #aaa; transition: transform 0.2s; }
+  .h5-body { display: none; padding: 18px 20px; }
+  .h5-section.open .h5-body { display: block; }
+  .h5-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+  }
+  @media (max-width: 1200px) { .h5-grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 768px) { .h5-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .h5-grid { grid-template-columns: 1fr; } }
+  .h5-link {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    background: #f8f9fb; border-radius: 8px; text-decoration: none;
+    color: var(--text); font-size: 14px; font-weight: 500;
+    border: 1px solid transparent; transition: all 0.2s;
+  }
+  .h5-link:hover {
+    background: var(--accent-light); border-color: var(--accent);
+    transform: translateY(-2px); box-shadow: 0 2px 8px rgba(59,73,223,0.12);
+  }
+  .h5-link .h5-emoji { font-size: 18px; flex-shrink: 0; }
+  .h5-link .h5-name { line-height: 1.3; }
+  .h5-link .h5-badge {
+    font-size: 10px; background: var(--accent); color: #fff;
+    padding: 1px 6px; border-radius: 4px; margin-left: auto; flex-shrink: 0;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .section { box-shadow: none; break-inside: avoid; }
+    .header { box-shadow: none; }
+    .answer { display: block !important; }
+    .accordion-toggle { pointer-events: none; }
+    .arrow { display: none; }
+  }
+  @media (max-width: 640px) {
+    .header { padding: 22px 18px; }
+    .header h1 { font-size: 20px; }
+    .accordion-toggle { padding: 12px 14px; }
+    .answer { padding: 0 14px 14px 42px; }
+    .stats { gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>🧠 AI & 后端技术面试题库 · 含答案</h1>
+  <div class="subtitle">AI·Python·MySQL·Linux·网络·设计模式·Git·面试软实力 &nbsp;|&nbsp; 答案：DeepSeek AI 生成 &nbsp;|&nbsp; <span id="updateDate">2026-06-07</span></div>
+</div>
+
+<div class="toolbar">
+  <input class="search-box" id="searchBox" placeholder="🔍 搜索题目...（支持分类、标签、关键词）" oninput="doSearch()">
+  <button class="btn accent" onclick="expandAll()">展开全部</button>
+  <button class="btn" onclick="collapseAll()">折叠全部</button>
+  <button class="btn" onclick="clearViewed()" title="清除已读记录">🔄 重置进度</button>
+  <span class="result-count" id="resultCount"></span>
+</div>
+
+<div class="stats" id="statsCards"></div>
+
+<!-- ========== H5 交互式可视化项目链接区 ========== -->
+<div class="h5-section open" id="h5Section">
+  <div class="h5-header" onclick="document.getElementById('h5Section').classList.toggle('open')">
+    <span class="h5-icon">📊</span>
+    <span class="h5-title">H5 交互式可视化</span>
+    <span class="h5-count">37 个项目</span>
+    <span class="h5-arrow">▶</span>
+  </div>
+  <div class="h5-body">
+    <div class="h5-grid">
+      <!-- 深度学习基础 -->
+      <a href="ActivationFunctions_h5/" class="h5-link" target="_blank"><span class="h5-emoji">📈</span><span class="h5-name">激活函数全览</span><span class="h5-badge">DL</span></a>
+      <a href="ParameterInitialization_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🎲</span><span class="h5-name">参数初始化</span><span class="h5-badge">DL</span></a>
+      <a href="LayerNormalization_h5/" class="h5-link" target="_blank"><span class="h5-emoji">📐</span><span class="h5-name">LayerNorm vs BatchNorm</span><span class="h5-badge">DL</span></a>
+      <a href="CNN_h5/" class="h5-link" target="_blank"><span class="h5-emoji">👁️</span><span class="h5-name">CNN 卷积神经网络</span><span class="h5-badge">CV</span></a>
+      <a href="RNN_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🔄</span><span class="h5-name">RNN · LSTM · GRU</span><span class="h5-badge">NLP</span></a>
+      <a href="Transformer_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🏗️</span><span class="h5-name">Transformer 详解</span><span class="h5-badge">核心</span></a>
+      <!-- 注意力机制 -->
+      <a href="MHA_MQA_GQA_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🎯</span><span class="h5-name">MHA · MQA · GQA</span><span class="h5-badge">注意力</span></a>
+      <a href="FlashAttention_h5/" class="h5-link" target="_blank"><span class="h5-emoji">⚡</span><span class="h5-name">FlashAttention</span><span class="h5-badge">注意力</span></a>
+      <a href="AlibiRoPE_h5/" class="h5-link" target="_blank"><span class="h5-emoji">📍</span><span class="h5-name">位置编码 RoPE & ALiBi</span><span class="h5-badge">注意力</span></a>
+      <!-- 大模型 -->
+      <a href="CoT_h5/" class="h5-link" target="_blank"><span class="h5-emoji">💭</span><span class="h5-name">思维链 CoT · ToT</span><span class="h5-badge">LLM</span></a>
+      <a href="MoE_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🧩</span><span class="h5-name">MoE 混合专家</span><span class="h5-badge">LLM</span></a>
+      <a href="Finetuning_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🔧</span><span class="h5-name">大模型微调</span><span class="h5-badge">LLM</span></a>
+      <a href="ZeRO_h5/" class="h5-link" target="_blank"><span class="h5-emoji">💾</span><span class="h5-name">ZeRO 零冗余优化</span><span class="h5-badge">LLM</span></a>
+      <a href="Parallelism_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🔀</span><span class="h5-name">数据并行 vs 模型并行</span><span class="h5-badge">分布式</span></a>
+      <!-- 传统 ML -->
+      <a href="SVM_h5/" class="h5-link" target="_blank"><span class="h5-emoji">〰️</span><span class="h5-name">SVM 支持向量机</span><span class="h5-badge">ML</span></a>
+      <a href="DecisionTree_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🌳</span><span class="h5-name">决策树</span><span class="h5-badge">ML</span></a>
+      <a href="RandomForest_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🌲</span><span class="h5-name">随机森林</span><span class="h5-badge">ML</span></a>
+      <a href="XGBoost_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🚀</span><span class="h5-name">XGBoost</span><span class="h5-badge">ML</span></a>
+      <a href="LightGBM_h5/" class="h5-link" target="_blank"><span class="h5-emoji">💡</span><span class="h5-name">LightGBM</span><span class="h5-badge">ML</span></a>
+      <a href="KMeans_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🔵</span><span class="h5-name">K-Means 聚类</span><span class="h5-badge">ML</span></a>
+      <!-- 评估与指标 -->
+      <a href="ConfusionMatrix_h5/" class="h5-link" target="_blank"><span class="h5-emoji">📋</span><span class="h5-name">混淆矩阵</span><span class="h5-badge">评估</span></a>
+      <a href="ROC_h5/" class="h5-link" target="_blank"><span class="h5-emoji">📉</span><span class="h5-name">ROC 曲线与 AUC</span><span class="h5-badge">评估</span></a>
+      <!-- NLP / 检索 -->
+      <a href="TF-IDF_h5/" class="h5-link" target="_blank"><span class="h5-emoji">📝</span><span class="h5-name">TF-IDF · BM25</span><span class="h5-badge">NLP</span></a>
+      <a href="Reranker_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🔍</span><span class="h5-name">Reranker 重排序</span><span class="h5-badge">检索</span></a>
+      <!-- AI 工程 -->
+      <a href="LangChain_h5/" class="h5-link" target="_blank"><span class="h5-emoji">⛓️</span><span class="h5-name">LangChain</span><span class="h5-badge">框架</span></a>
+      <a href="LangGraph_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🕸️</span><span class="h5-name">LangGraph</span><span class="h5-badge">框架</span></a>
+      <a href="MCP_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🔌</span><span class="h5-name">MCP 模型上下文协议</span><span class="h5-badge">协议</span></a>
+      <a href="MultiAgent_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🤝</span><span class="h5-name">Multi-Agent 多智能体</span><span class="h5-badge">Agent</span></a>
+      <!-- 其他 -->
+      <a href="ReinforcementLearning_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🎮</span><span class="h5-name">强化学习</span><span class="h5-badge">RL</span></a>
+      <a href="Pathfinding_h5/" class="h5-link" target="_blank"><span class="h5-emoji">🗺️</span><span class="h5-name">路径规划算法</span><span class="h5-badge">算法</span></a>
+    </div>
+  </div>
+</div>
+
+<div id="content"><div class="loading"><div class="spinner"></div><p>加载题库中...</p></div></div>
+
+<div class="footer">Generated on 2026-06-07 · 题目来源：超级码客 & 字节面试题 · 答案：AI 生成 · 新增后端技术面试系列</div>
+
+</div>
+
+<script>
+// ========== 全局状态 ==========
+let allData = null;
+let searchTerm = '';
+
+// ========== 加载数据 ==========
+async function loadData() {
+  try {
+    // 先加载索引导航
+    const cacheBust = '?v=' + Date.now();
+    const indexResp = await fetch('data/index.json' + cacheBust);
+    const index = await indexResp.json();
+
+    // 并行加载所有分类，保留文件名用于排序
+    const promises = index.map(cat =>
+      fetch('data/' + cat.file + cacheBust).then(r => r.json()).then(data => { data._file = cat.file; return data; })
+    );
+    const categories = await Promise.all(promises);
+
+    allData = {
+      categories: categories,
+      totalQuestions: index.reduce((s, c) => s + c.count, 0),
+      totalCategories: index.length
+    };
+    // 按照 index.json 中的原始顺序排列
+    const orderMap = new Map(index.map((c, i) => [c.file, i]));
+    allData.categories.sort((a, b) => (orderMap.get(a._file) ?? 999) - (orderMap.get(b._file) ?? 999));
+
+    // 大类分组（用于统计卡片和内容区折叠）
+    const GROUPS = [
+      { name: 'Python 编程基础', icon: '🐍', keys: ['Python', 'FastAPI'] },
+      { name: '大语言模型 LLM', icon: '🤖', keys: ['大语言模型', 'Claude_LLM', 'OpenAI_GPT4', 'LLama_LLM', '文心一言', 'Deepseek', '大模型笔试题综合', '大模型面试题综合', '大模型算法面试题', '2026大模型面试新题', '大厂校招', '多模态'] },
+      { name: '机器学习基础', icon: '📊', keys: ['人工智能理论', 'Scikit', 'XGBoost', 'LightGBM', 'AI通用行业', 'AI通用面试题库', '机器学习面试八股', '机器学习面试八股升级版', '机器学习八股综合', '机器学习深度学习进阶', '强化学习', 'Stable'] },
+      { name: '深度学习框架', icon: '🔬', keys: ['PyTorch', 'TensorFlow', 'Keras'] },
+      { name: '计算机视觉', icon: '👁️', keys: ['计算机视觉', 'OpenCV', 'Pillow'] },
+      { name: '自然语言处理', icon: '💬', keys: ['自然语言NLP', '自然语义HFT', '自然语义SpaCy', '自然语义NLTK'] },
+      { name: '数据处理', icon: '🐼', keys: ['Pandas', 'NumPy', 'Polars'] },
+      { name: '模型优化与部署', icon: '🎛️', keys: ['LoRA', 'P-Tuning', 'Model_Pruning', 'ONNX', '推理优化GGML', 'Llama_cpp'] },
+      { name: 'AI 工程与工具', icon: '⛓️', keys: ['LangChain', 'LlamaIndex', 'OpenAI_API', 'TensorBoard'] },
+      { name: '硬件与基础设施', icon: '💻', keys: ['硬件GPU'] },
+      { name: '字节面试真题精选', icon: '🎯', keys: ['字节面试'] },
+      { name: '数据库', icon: '🗄️', keys: ['MySQL', 'Neo4j', 'Redis'] },
+      { name: 'Linux 系统管理', icon: '🐧', keys: ['Linux'] },
+      { name: '计算机网络', icon: '🌐', keys: ['计算机网络'] },
+      { name: '设计模式', icon: '🎨', keys: ['设计模式'] },
+      { name: 'Git 版本控制', icon: '📝', keys: ['Git'] },
+      { name: '面试软实力', icon: '💼', keys: ['面试软实力'] }
+    ];
+    // 为每个分类分配 group
+    function findGroup(catName) {
+      for (const g of GROUPS) {
+        for (const k of g.keys) { if (catName.indexOf(k) >= 0) return g; }
+      }
+      return { name: '其他', icon: '📋' };
+    }
+    allData._groups = GROUPS.map(g => ({
+      ...g,
+      categories: allData.categories.filter(c => findGroup(c.category).name === g.name),
+      total: allData.categories.filter(c => findGroup(c.category).name === g.name).reduce((s, c) => s + c.questions.length, 0)
+    })).filter(g => g.categories.length > 0);
+    document.getElementById('updateDate').textContent = '2026-06-07';
+    renderStats();
+    renderAll();
+  } catch (e) {
+    document.getElementById('content').innerHTML = '<div class="no-results"><p>⚠️ 题库加载失败: ' + e.message + '</p><p style="font-size:12px;color:#999">请确认 data/ 文件夹与本页面在同一目录下</p></div>';
+  }
+}
+
+// ========== 统计卡片 ==========
+function renderStats() {
+  const container = document.getElementById('statsCards');
+  let html = '';
+  for (const g of allData._groups) {
+    html += '<div class="stat-group open" onclick="event.stopPropagation(); this.classList.toggle(\'open\')">';
+    html += '<div class="stat-group-header">';
+    html += '<span class="sg-icon">' + g.icon + '</span>';
+    html += '<span class="sg-name">' + g.name + '</span>';
+    html += '<span class="sg-total">' + g.total + '</span>';
+    html += '<span class="sg-arrow">▶</span>';
+    html += '</div>';
+    html += '<div class="stat-group-body"><div class="stat-sub-grid">';
+    for (const cat of g.categories) {
+      html += '<div class="stat-sub" onclick="event.stopPropagation(); scrollToCategory(\'' + catSlug(cat.category) + '\')">';
+      html += '<span class="sub-num">' + cat.questions.length + '</span>';
+      html += '<span class="sub-name">' + cat.category.replace(/_/g, ' ') + '</span>';
+      html += '</div>';
+    }
+    html += '</div></div></div>';
+  }
+  html += '<div class="stat-group total-group"><div class="stat-group-header">';
+  html += '<span class="sg-icon">📚</span><span class="sg-name">总计</span><span class="sg-total">' + allData.totalQuestions + '</span>';
+  html += '<span style="font-size:12px;color:rgba(255,255,255,0.7)">' + allData.totalCategories + ' 分类</span>';
+  html += '</div></div>';
+  container.innerHTML = html;
+}
+
+// ========== H5 项目 → 分类映射 ==========
+const H5_CATEGORY_MAP = {
+  '人工智能理论核心题库': [
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'K-Means', url:'KMeans_h5/', emoji:'🔵', badge:'ML' },
+    { name:'KNN', url:'KNN_h5/', emoji:'🎯', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+    { name:'强化学习', url:'ReinforcementLearning_h5/', emoji:'🎮', badge:'RL' },
+  ],
+  '大语言模型LLM': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'RoPE & ALiBi', url:'AlibiRoPE_h5/', emoji:'📍', badge:'位置编码' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'ZeRO', url:'ZeRO_h5/', emoji:'💾', badge:'分布式' },
+    { name:'并行策略', url:'Parallelism_h5/', emoji:'🔀', badge:'分布式' },
+  ],
+  'Claude_LLM': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+    { name:'MCP', url:'MCP_h5/', emoji:'🔌', badge:'协议' },
+  ],
+  'OpenAI_GPT4': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+    { name:'MCP', url:'MCP_h5/', emoji:'🔌', badge:'协议' },
+  ],
+  'LLama_LLM': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'RoPE & ALiBi', url:'AlibiRoPE_h5/', emoji:'📍', badge:'位置编码' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+  ],
+  'Deepseek_API': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+  ],
+  '文心一言_LLM': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+  ],
+  'LangChain': [
+    { name:'LangChain', url:'LangChain_h5/', emoji:'⛓️', badge:'框架' },
+    { name:'LangGraph', url:'LangGraph_h5/', emoji:'🕸️', badge:'编排' },
+    { name:'MCP', url:'MCP_h5/', emoji:'🔌', badge:'协议' },
+    { name:'Multi-Agent', url:'MultiAgent_h5/', emoji:'🤝', badge:'Agent' },
+    { name:'Reranker', url:'Reranker_h5/', emoji:'🔍', badge:'检索' },
+  ],
+  'LlamaIndex': [
+    { name:'LlamaIndex', url:'LlamaIndex_h5/', emoji:'🦙', badge:'RAG' },
+    { name:'Reranker', url:'Reranker_h5/', emoji:'🔍', badge:'检索' },
+    { name:'Milvus', url:'Milvus_h5/', emoji:'🔍', badge:'向量库' },
+  ],
+  'LoRA模型微调': [
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+  ],
+  'P-Tuning': [
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+  ],
+  'Model_Pruning': [
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+    { name:'ZeRO', url:'ZeRO_h5/', emoji:'💾', badge:'分布式' },
+  ],
+  '推理优化GGML': [
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+  ],
+  '大模型笔试题综合': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+  ],
+  '大模型面试题综合': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'RoPE & ALiBi', url:'AlibiRoPE_h5/', emoji:'📍', badge:'位置编码' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+    { name:'ZeRO', url:'ZeRO_h5/', emoji:'💾', badge:'分布式' },
+    { name:'并行策略', url:'Parallelism_h5/', emoji:'🔀', badge:'分布式' },
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+  ],
+  '大模型算法面试题': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+  ],
+  '2026大模型面试新题': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+  ],
+  '大厂校招面试真题': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'MHA·MQA·GQA', url:'MHA_MQA_GQA_h5/', emoji:'🎯', badge:'注意力' },
+    { name:'RoPE & ALiBi', url:'AlibiRoPE_h5/', emoji:'📍', badge:'位置编码' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'ZeRO', url:'ZeRO_h5/', emoji:'💾', badge:'分布式' },
+    { name:'并行策略', url:'Parallelism_h5/', emoji:'🔀', badge:'分布式' },
+    { name:'LangChain', url:'LangChain_h5/', emoji:'⛓️', badge:'框架' },
+    { name:'Reranker', url:'Reranker_h5/', emoji:'🔍', badge:'检索' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+  ],
+  'AI通用面试题库': [
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'K-Means', url:'KMeans_h5/', emoji:'🔵', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+  ],
+  '机器学习面试八股升级版': [
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'K-Means', url:'KMeans_h5/', emoji:'🔵', badge:'ML' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'激活函数', url:'ActivationFunctions_h5/', emoji:'📈', badge:'DL' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+  ],
+  'Llama_cpp': [
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+  ],
+  'ONNX': [
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+  ],
+  'PyTorch深度学习': [
+    { name:'激活函数', url:'ActivationFunctions_h5/', emoji:'📈', badge:'DL' },
+    { name:'参数初始化', url:'ParameterInitialization_h5/', emoji:'🎲', badge:'DL' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+  ],
+  'TensorFlow': [
+    { name:'激活函数', url:'ActivationFunctions_h5/', emoji:'📈', badge:'DL' },
+    { name:'参数初始化', url:'ParameterInitialization_h5/', emoji:'🎲', badge:'DL' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+  ],
+  'Keras深度学习': [
+    { name:'激活函数', url:'ActivationFunctions_h5/', emoji:'📈', badge:'DL' },
+    { name:'参数初始化', url:'ParameterInitialization_h5/', emoji:'🎲', badge:'DL' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+  ],
+  '自然语言NLP': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'TF-IDF·BM25', url:'TF-IDF_h5/', emoji:'📝', badge:'检索' },
+    { name:'Reranker', url:'Reranker_h5/', emoji:'🔍', badge:'检索' },
+    { name:'LangChain', url:'LangChain_h5/', emoji:'⛓️', badge:'框架' },
+    { name:'LlamaIndex', url:'LlamaIndex_h5/', emoji:'🦙', badge:'RAG' },
+  ],
+  '自然语义HFT': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'TF-IDF·BM25', url:'TF-IDF_h5/', emoji:'📝', badge:'检索' },
+  ],
+  '自然语义SpaCy': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'TF-IDF·BM25', url:'TF-IDF_h5/', emoji:'📝', badge:'检索' },
+  ],
+  '自然语义NLTK': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'TF-IDF·BM25', url:'TF-IDF_h5/', emoji:'📝', badge:'检索' },
+  ],
+  '计算机视觉应用': [
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+  ],
+  'OpenCV视觉处理': [
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+  ],
+  'Pillow视觉处理': [
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+  ],
+  'Scikit-learn': [
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'K-Means', url:'KMeans_h5/', emoji:'🔵', badge:'ML' },
+    { name:'KNN', url:'KNN_h5/', emoji:'🎯', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+  ],
+  'XGBoost机器学习': [
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+  ],
+  'LightGBM': [
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+  ],
+  'AI通用行业应用': [
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'K-Means', url:'KMeans_h5/', emoji:'🔵', badge:'ML' },
+    { name:'KNN', url:'KNN_h5/', emoji:'🎯', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+    { name:'强化学习', url:'ReinforcementLearning_h5/', emoji:'🎮', badge:'RL' },
+  ],
+  '硬件GPU_TPU': [
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'并行策略', url:'Parallelism_h5/', emoji:'🔀', badge:'分布式' },
+    { name:'ZeRO', url:'ZeRO_h5/', emoji:'💾', badge:'分布式' },
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+  ],
+  'OpenAI_API': [
+    { name:'MCP', url:'MCP_h5/', emoji:'🔌', badge:'协议' },
+    { name:'LangChain', url:'LangChain_h5/', emoji:'⛓️', badge:'框架' },
+  ],
+  '字节面试真题精选': [
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'FlashAttention', url:'FlashAttention_h5/', emoji:'⚡', badge:'注意力' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'激活函数', url:'ActivationFunctions_h5/', emoji:'📈', badge:'DL' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+    { name:'MoE', url:'MoE_h5/', emoji:'🧩', badge:'架构' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'MCP', url:'MCP_h5/', emoji:'🔌', badge:'协议' },
+    { name:'LangGraph', url:'LangGraph_h5/', emoji:'🕸️', badge:'编排' },
+    { name:'Multi-Agent', url:'MultiAgent_h5/', emoji:'🤝', badge:'Agent' },
+  ],
+  '机器学习面试八股': [
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'K-Means', url:'KMeans_h5/', emoji:'🔵', badge:'ML' },
+    { name:'KNN', url:'KNN_h5/', emoji:'🎯', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+    { name:'强化学习', url:'ReinforcementLearning_h5/', emoji:'🎮', badge:'RL' },
+  ],
+  '强化学习面试题': [
+    { name:'强化学习', url:'ReinforcementLearning_h5/', emoji:'🎮', badge:'RL' },
+    { name:'MDP·POMDP', url:'ReinforcementLearning_h5/', emoji:'🎮', badge:'RL' },
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+  ],
+  '机器学习八股综合': [
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'K-Means', url:'KMeans_h5/', emoji:'🔵', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'激活函数', url:'ActivationFunctions_h5/', emoji:'📈', badge:'DL' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'CoT·ToT', url:'CoT_h5/', emoji:'💭', badge:'推理' },
+  ],
+  '机器学习深度学习进阶面试题': [
+    { name:'SVM', url:'SVM_h5/', emoji:'〰️', badge:'ML' },
+    { name:'决策树', url:'DecisionTree_h5/', emoji:'🌳', badge:'ML' },
+    { name:'随机森林', url:'RandomForest_h5/', emoji:'🌲', badge:'ML' },
+    { name:'K-Means', url:'KMeans_h5/', emoji:'🔵', badge:'ML' },
+    { name:'XGBoost', url:'XGBoost_h5/', emoji:'🚀', badge:'ML' },
+    { name:'LightGBM', url:'LightGBM_h5/', emoji:'💡', badge:'ML' },
+    { name:'CNN', url:'CNN_h5/', emoji:'👁️', badge:'CV' },
+    { name:'RNN', url:'RNN_h5/', emoji:'🔄', badge:'NLP' },
+    { name:'Transformer', url:'Transformer_h5/', emoji:'🏗️', badge:'核心' },
+    { name:'激活函数', url:'ActivationFunctions_h5/', emoji:'📈', badge:'DL' },
+    { name:'LayerNorm', url:'LayerNormalization_h5/', emoji:'📐', badge:'DL' },
+    { name:'混淆矩阵', url:'ConfusionMatrix_h5/', emoji:'📋', badge:'评估' },
+    { name:'ROC/AUC', url:'ROC_h5/', emoji:'📉', badge:'评估' },
+    { name:'微调·RLHF·LoRA', url:'Finetuning_h5/', emoji:'🔧', badge:'训练' },
+    { name:'并行策略', url:'Parallelism_h5/', emoji:'🔀', badge:'分布式' },
+    { name:'1-Bit 量化', url:'OneBitQuantization_h5/', emoji:'🧊', badge:'压缩' },
+    { name:'强化学习', url:'ReinforcementLearning_h5/', emoji:'🎮', badge:'RL' },
+  ],
+  'NumPy数据分析': [],
+  'Pandas数据分析': [],
+  'Polars数据处理': [],
+  'TensorBoard': [],
+  'Python核心语法': [],
+};
+function h5LinksForCategory(cat) {
+  const links = H5_CATEGORY_MAP[cat] || [];
+  if (!links.length) return '';
+  let h = '<div class="answer-h5-links"><span class="h5-label">📊 相关H5可视化：</span>';
+  for (const l of links) {
+    h += '<a class="answer-h5-link" href="' + l.url + '" target="_blank" rel="noopener">';
+    h += '<span class="hl-emoji">' + l.emoji + '</span>';
+    h += l.name;
+    h += '<span class="hl-badge">' + l.badge + '</span>';
+    h += '</a>';
+  }
+  h += '</div>';
+  return h;
+}
+
+// ========== 渲染所有分类 ==========
+function renderAll() {
+  const container = document.getElementById('content');
+  const term = searchTerm.toLowerCase();
+  let totalVisible = 0;
+  let html = '';
+
+  for (const cat of allData.categories) {
+    const visibleQs = cat.questions.filter(q => {
+      if (!term) return true;
+      return q.question.toLowerCase().includes(term) ||
+             q.answer.toLowerCase().includes(term) ||
+             cat.category.toLowerCase().includes(term) ||
+             (q.tags || []).some(t => t.toLowerCase().includes(term));
+    });
+    if (visibleQs.length === 0) continue;
+    totalVisible += visibleQs.length;
+
+    html += '<div class="section" id="cat-' + catSlug(cat.category) + '">';
+    html += '<div class="section-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
+    html += '<h3>' + cat.category + '</h3>';
+    html += '<span class="count">' + visibleQs.length + ' / ' + cat.questions.length + ' 题</span>';
+    html += '</div>';
+
+    for (const q of visibleQs) {
+      html += '<div class="accordion' + (isViewed(q.id) ? ' viewed' : '') + '" data-qid="' + q.id + '">';
+      html += '<button class="accordion-toggle" onclick="toggleQuestion(this, \'' + q.id + '\')">';
+      html += '<span class="q-num">' + q.number + '</span>';
+      html += '<span class="q-body">';
+      html += '<span class="q-title">' + escapeHtml(q.question) + '</span>';
+      if (q.tags && q.tags.length > 0) {
+        html += '<span class="q-tags">';
+        for (const tag of q.tags) html += '<span class="tag">' + escapeHtml(tag) + '</span>';
+        html += '</span>';
+      }
+      html += '</span>';
+      html += '<span class="arrow">▶</span>';
+      html += '</button>';
+      html += '<div class="answer">' + renderMarkdown(q.answer) + h5LinksForCategory(cat.category) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  if (totalVisible === 0) {
+    html = '<div class="no-results"><p>🔍 没有匹配的题目，换个关键词试试</p></div>';
+  }
+
+  container.innerHTML = html;
+  // 语法高亮
+  if (typeof hljs !== 'undefined') {
+    container.querySelectorAll('pre code').forEach(function(block) { hljs.highlightElement(block); });
+  }
+  document.getElementById('resultCount').textContent = '显示 ' + totalVisible + ' / ' + allData.totalQuestions + ' 题';
+}
+
+// ========== 搜索 ==========
+function doSearch() {
+  searchTerm = document.getElementById('searchBox').value.trim();
+  renderAll();
+}
+
+// ========== 展开/折叠 ==========
+function expandAll() {
+  document.querySelectorAll('.accordion').forEach(a => a.classList.add('open'));
+}
+function collapseAll() {
+  document.querySelectorAll('.accordion').forEach(a => a.classList.remove('open'));
+}
+
+// ========== 已读状态 (localStorage) ==========
+const VIEWED_KEY = 'interview_viewed_qids';
+function getViewed() { try { return JSON.parse(localStorage.getItem(VIEWED_KEY) || '[]'); } catch(e) { return []; } }
+function isViewed(qid) { return getViewed().includes(qid); }
+function markViewed(qid) {
+  const viewed = getViewed();
+  if (!viewed.includes(qid)) { viewed.push(qid); localStorage.setItem(VIEWED_KEY, JSON.stringify(viewed)); }
+}
+function clearViewed() { if (confirm('确定清除所有已读记录？')) { localStorage.removeItem(VIEWED_KEY); location.reload(); } }
+
+function toggleQuestion(btn, qid) {
+  const accordion = btn.parentElement;
+  accordion.classList.toggle('open');
+  if (accordion.classList.contains('open')) {
+    accordion.classList.add('viewed');
+    markViewed(qid);
+  }
+}
+function catSlug(name) {
+  return name.replace(/[^a-zA-Z0-9一-龥]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
+function scrollToCategory(slug) {
+  const el = document.getElementById(slug.startsWith('group-') ? slug : 'cat-' + slug);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function dedentCode(text) {
+  var lines = text.split('\n');
+  
+  // Find first non-empty, non-comment line
+  var firstIdx = -1, firstIndent = 0, firstLine = '';
+  for (var i = 0; i < lines.length; i++) {
+    var t = lines[i].trim();
+    if (t.length > 0 && t[0] !== '#') {
+      firstIdx = i; firstIndent = lines[i].match(/^ */)[0].length;
+      firstLine = t; break;
+    }
+  }
+  if (firstIdx < 0) return text;
+  
+  // If first line has 0 indent and is NOT a block starter (def/class/if/for/...)
+  // but subsequent lines are indented, remove the extra indentation
+  if (firstIndent === 0 && !/:\s*$/.test(firstLine) && !/^(class|def|if|elif|else|for|while|try|except|finally|with|async|match|case)\b/.test(firstLine)) {
+    var minOther = Infinity;
+    for (var i = firstIdx + 1; i < lines.length; i++) {
+      if (lines[i].trim().length === 0) continue;
+      var ind = lines[i].match(/^ */)[0].length;
+      if (ind < minOther) minOther = ind;
+    }
+    if (minOther >= 4 && minOther < Infinity) {
+      for (var i = firstIdx + 1; i < lines.length; i++) {
+        if (lines[i].trim().length > 0 && lines[i].match(/^ */)[0].length >= minOther) {
+          lines[i] = lines[i].slice(minOther);
+        }
+      }
+    }
+    return lines.join('\n');
+  }
+  
+  // Standard dedent: find minimum indentation across all non-empty lines
+  var minIndent = Infinity;
+  for (var i = 0; i < lines.length; i++) {
+    if (lines[i].trim().length === 0) continue;
+    var indent = lines[i].match(/^ */)[0].length;
+    if (indent < minIndent) minIndent = indent;
+  }
+  if (minIndent > 0 && minIndent < Infinity) {
+    for (var i = 0; i < lines.length; i++) {
+      if (lines[i].trim().length > 0) lines[i] = lines[i].slice(minIndent);
+    }
+  }
+  return lines.join('\n');
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ========== 内置 Markdown 渲染（无外部依赖） ==========
+function renderMarkdown(text) {
+  if (!text) return '';
+  // 1. HTML 实体解码
+  let html = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+  // 2. 修复空引用块
+  html = html.replace(/^>\s*\n+(?=[^*\s>])/gm, '> ');
+  html = html.replace(/^\"(>?\s*)/gm, '$1');
+  // 3. LaTeX 保护：$$...$$ 和 $...$
+  const latexBlocks = [];
+  html = html.replace(/\$\$([\s\S]*?)\$\$/g, (_, l) => { latexBlocks.push({t:'block',v:l.trim()}); return '%%LB'+(latexBlocks.length-1)+'%%'; });
+  html = html.replace(/\$(.+?)\$/g, (_, l) => { latexBlocks.push({t:'inline',v:l.trim()}); return '%%LI'+(latexBlocks.length-1)+'%%'; });
+  // 4. 代码块保护：```...```
+  const codeBlocks = [];
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => { var langClass = lang ? ' class="language-' + lang + '"' : ''; codeBlocks.push('<pre><code' + langClass + '>' + escapeHtml(dedentCode(code)) + '</code></pre>'); return '%%CB'+(codeBlocks.length-1)+'%%'; });
+  // 5. 行内代码保护：`...`
+  html = html.replace(/`([^`]+)`/g, (_, code) => { codeBlocks.push('<code>' + escapeHtml(code) + '</code>'); return '%%CB'+(codeBlocks.length-1)+'%%'; });
+  // 5.5. 链接 [text](url)
+  html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>');
+  // 6. 粗体 **...**
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // 7. 斜体 *...*
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // 8. 块引用 > ...
+  html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+  // 9. 标题 ### / ##
+  html = html.replace(/^### (.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+  // 10. 分割线 ---
+  html = html.replace(/^---$/gm, '<hr>');
+  // 11. 无序列表 - ...（连续行合并成 <ul>）
+  html = html.replace(/((?:^- .+\n?)+)/gm, function(m) {
+    var items = m.trim().split(/\n/).map(function(s) { return '<li>' + s.replace(/^- /, '') + '</li>'; }).join('');
+    return '<ul>' + items + '</ul>';
+  });
+  // 12. 有序列表 1. ...（连续行合并成 <ol>）
+  html = html.replace(/((?:^\d+\. .+\n?)+)/gm, function(m) {
+    var items = m.trim().split(/\n/).map(function(s) { return '<li>' + s.replace(/^\d+\. /, '') + '</li>'; }).join('');
+    return '<ol>' + items + '</ol>';
+  });
+  // 13. 表格 |...|...|
+  html = html.replace(/((?:^\|.+\|\n?)+)/gm, function(m) {
+    var rows = m.trim().split(/\n/).filter(function(r) { return r.includes('|'); });
+    if (rows.length < 2) return m;
+    var isHeader = true;
+    var table = '<table>';
+    for (var ri = 0; ri < rows.length; ri++) {
+      if (rows[ri].match(/^\|[\s\-:|]+\|$/)) { isHeader = false; continue; }
+      var cells = rows[ri].split('|').filter(function(c) { return c.trim(); });
+      var tag = isHeader ? 'th' : 'td';
+      table += '<tr>' + cells.map(function(c) { return '<' + tag + '>' + c.trim() + '</' + tag + '>'; }).join('') + '</tr>';
+      if (isHeader) isHeader = false;
+    }
+    table += '</table>';
+    return table;
+  });
+  // 14. 双换行 → 段落分隔
+  html = html.replace(/\n\n/g, '</p><p>');
+  // 15. 单换行 → <br>
+  html = html.replace(/\n/g, '<br>');
+  // 19. 所有链接新窗口打开
+  html = html.replace(/<a /g, '<a target="_blank" rel="noopener" ');
+  // 20. 包裹段落
+  html = '<p>' + html + '</p>';
+  // 17. 恢复代码块
+  html = html.replace(/%%CB(\d+)%%/g, function(_, i) { return codeBlocks[parseInt(i)]; });
+  // 18. 恢复 LaTeX
+  html = html.replace(/%%LB(\d+)%%/g, function(_, i) {
+    var b = latexBlocks[parseInt(i)];
+    try { return katex.renderToString(b.v, { displayMode: true, throwOnError: false }); }
+    catch(e) { return '<code>LaTeX: ' + b.v + '</code>'; }
+  });
+  html = html.replace(/%%LI(\d+)%%/g, function(_, i) {
+    var b = latexBlocks[parseInt(i)];
+    try { return katex.renderToString(b.v, { displayMode: false, throwOnError: false }); }
+    catch(e) { return '<code>LaTeX: ' + b.v + '</code>'; }
+  });
+  return html;
+}
+
+// ========== 启动 ==========
+loadData();
+</script>
+</body>
+</html>

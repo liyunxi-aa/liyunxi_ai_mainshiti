@@ -1,0 +1,3372 @@
+{
+  "category": "MySQL 数据库",
+  "questions": [
+    {
+      "number": 1,
+      "id": "MySQL 数据库-001",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何开启或停止 MySQL 服务？"
+    },
+    {
+      "number": 2,
+      "id": "MySQL 数据库-002",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何通过 Shell 登入 MySQL？"
+    },
+    {
+      "number": 3,
+      "id": "MySQL 数据库-003",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL如何列出所有数据库？"
+    },
+    {
+      "number": 4,
+      "id": "MySQL 数据库-004",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何MySQL切换到某个数据库并在上面工作？"
+    },
+    {
+      "number": 5,
+      "id": "MySQL 数据库-005",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL如何列出某个数据库内所有表？"
+    },
+    {
+      "number": 6,
+      "id": "MySQL 数据库-006",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 如何获取表内所有 Field 对象的名称和类型？"
+    },
+    {
+      "number": 7,
+      "id": "MySQL 数据库-007",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "MYSQL支持事务吗？"
+    },
+    {
+      "number": 8,
+      "id": "MySQL 数据库-008",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MYSQL相比于其他数据库有哪些特点？"
+    },
+    {
+      "number": 9,
+      "id": "MySQL 数据库-009",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "请简洁地描述下MySQL中InnoDB支持的四种事务隔离级别名称，以及逐级之间的区别？"
+    },
+    {
+      "number": 10,
+      "id": "MySQL 数据库-010",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL有关权限的表 ？"
+    },
+    {
+      "number": 11,
+      "id": "MySQL 数据库-011",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQLl存储引擎有哪些？"
+    },
+    {
+      "number": 12,
+      "id": "MySQL 数据库-012",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MYSQL数据库服务器性能分析的方法命令有哪些?"
+    },
+    {
+      "number": 13,
+      "id": "MySQL 数据库-013",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL里记录货币用什么字段类型好？"
+    },
+    {
+      "number": 14,
+      "id": "MySQL 数据库-014",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "MYISAM和INNODB的不同？"
+    },
+    {
+      "number": 15,
+      "id": "MySQL 数据库-015",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何提高MySQL insert的性能？"
+    },
+    {
+      "number": 16,
+      "id": "MySQL 数据库-016",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "如果insert等dml语句的性能有问题的话，或者其他问题的存在，可能造成同步延迟，所以如何有效避免同步延迟的出现？"
+    },
+    {
+      "number": 17,
+      "id": "MySQL 数据库-017",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述MySQ GTID的理解 ？"
+    },
+    {
+      "number": 18,
+      "id": "MySQL 数据库-018",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "锁"
+      ],
+      "question": "Innodb是行锁，那什么时候会产生行锁，什么情况下会变成表锁？"
+    },
+    {
+      "number": 19,
+      "id": "MySQL 数据库-019",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "新创建的MySQL数据库，需要调整哪些参数？"
+    },
+    {
+      "number": 20,
+      "id": "MySQL 数据库-020",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MYSQL 如果发现CPU，或者IO压力很大，怎么定位问题？"
+    },
+    {
+      "number": 21,
+      "id": "MySQL 数据库-021",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "描述MySQL中，索引，主键，唯一索引，联合索引的区别？"
+    },
+    {
+      "number": 22,
+      "id": "MySQL 数据库-022",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "mysql_fetch_row()和mysql_fetch_array()的区别 ？"
+    },
+    {
+      "number": 23,
+      "id": "MySQL 数据库-023",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 如何使用SELECT语句找到你正在运行的服务器的版本并打印出当前数据库的名称?"
+    },
+    {
+      "number": 24,
+      "id": "MySQL 数据库-024",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "使用非运算符(!)从表”Tecmint”中列出除了”SAM”以外的所有user记录？"
+    },
+    {
+      "number": 25,
+      "id": "MySQL 数据库-025",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL_pconnect是什么? MySQL_connect有什么区别?"
+    },
+    {
+      "number": 26,
+      "id": "MySQL 数据库-026",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "查看MySQL数据库版本及当前登录用户是什么？"
+    },
+    {
+      "number": 27,
+      "id": "MySQL 数据库-027",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述什么是MySQL多实例，如何配置MySQL多实例？"
+    },
+    {
+      "number": 28,
+      "id": "MySQL 数据库-028",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 中 wait_timeout和interactive_timeout总结？"
+    },
+    {
+      "number": 29,
+      "id": "MySQL 数据库-029",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL binlog的工作模式有哪些？"
+    },
+    {
+      "number": 30,
+      "id": "MySQL 数据库-030",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何用MySQL命令进行备份和恢复？"
+    },
+    {
+      "number": 31,
+      "id": "MySQL 数据库-031",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "简述MYSQL数据库锁 ？"
+    },
+    {
+      "number": 32,
+      "id": "MySQL 数据库-032",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "详细阐述MySQL联合索引?"
+    },
+    {
+      "number": 33,
+      "id": "MySQL 数据库-033",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何判断当前MySQL是否支持分区？"
+    },
+    {
+      "number": 34,
+      "id": "MySQL 数据库-034",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL支持的分区类型有哪些？"
+    },
+    {
+      "number": 35,
+      "id": "MySQL 数据库-035",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL查询优化的方案简述 ？"
+    },
+    {
+      "number": 36,
+      "id": "MySQL 数据库-036",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL常见的三种存储引擎（InnoDB、MyISAM、MEMORY）的区别?"
+    },
+    {
+      "number": 37,
+      "id": "MySQL 数据库-037",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL存储引擎MyISAM与InnoDB如何选择？"
+    },
+    {
+      "number": 38,
+      "id": "MySQL 数据库-038",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务",
+        "锁"
+      ],
+      "question": "MySQL的MyISAM与InnoDB两种存储引擎在，事务、锁级别，各自的适用场景?"
+    },
+    {
+      "number": 39,
+      "id": "MySQL 数据库-039",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "MySQL如何使用Explain优化SQL和索引?"
+    },
+    {
+      "number": 40,
+      "id": "MySQL 数据库-040",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL慢查询怎么解决?"
+    },
+    {
+      "number": 41,
+      "id": "MySQL 数据库-041",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "MySQL 死锁机制 ？ 死锁判定原理和具体场景，死锁怎么解决?"
+    },
+    {
+      "number": 42,
+      "id": "MySQL 数据库-042",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL数据库的主从复制机制简述 ？"
+    },
+    {
+      "number": 43,
+      "id": "MySQL 数据库-043",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "事务"
+      ],
+      "question": "详细描述数据库崩溃时事务的恢复机制（REDO日志和UNDO日志）？"
+    },
+    {
+      "number": 44,
+      "id": "MySQL 数据库-044",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL master的写操作，slaves被动的进行一样的操作，保持数据一致性，那么slave是否可以主动的进行写操作？"
+    },
+    {
+      "number": 45,
+      "id": "MySQL 数据库-045",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 主从复制中，可以有N个slave,可是这些slave又不能进行写操作，要他们干嘛？"
+    },
+    {
+      "number": 46,
+      "id": "MySQL 数据库-046",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 主从复制中有master,slave1,slave2,…等等这么多MySQL数据库，那比如一个JAVA WEB应用到底应该连接哪个数据库?"
+    },
+    {
+      "number": 47,
+      "id": "MySQL 数据库-047",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL 和 MariaDB 的区别 ？"
+    },
+    {
+      "number": 48,
+      "id": "MySQL 数据库-048",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何查看 MySQL 当前版本号？"
+    },
+    {
+      "number": 49,
+      "id": "MySQL 数据库-049",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL 有哪些数据类型？"
+    },
+    {
+      "number": 50,
+      "id": "MySQL 数据库-050",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL CHAR 和 VARCHAR的区别？"
+    },
+    {
+      "number": 51,
+      "id": "MySQL 数据库-051",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "VARCHAR(50) 能存放几个 UTF8 编码的汉字？"
+    },
+    {
+      "number": 52,
+      "id": "MySQL 数据库-052",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "解释int(10) 和 bigint(10) 能存储的数据大小一样吗？"
+    },
+    {
+      "number": 53,
+      "id": "MySQL 数据库-053",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述InnoDB 存储引擎应用场景是什么？"
+    },
+    {
+      "number": 54,
+      "id": "MySQL 数据库-054",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL的InnoDB 引擎的四大特性是什么？"
+    },
+    {
+      "number": 55,
+      "id": "MySQL 数据库-055",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "MyISAM存储引擎应用场景有哪些？"
+    },
+    {
+      "number": 56,
+      "id": "MySQL 数据库-056",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述MyISAM存储引擎特性有哪些？"
+    },
+    {
+      "number": 57,
+      "id": "MySQL 数据库-057",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "SQL"
+      ],
+      "question": "简述 SQL 语句有哪些分类？"
+    },
+    {
+      "number": 58,
+      "id": "MySQL 数据库-058",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述什么是 MySQL 视图？"
+    },
+    {
+      "number": 59,
+      "id": "MySQL 数据库-059",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySql 服务默认端口号是多少 ？"
+    },
+    {
+      "number": 60,
+      "id": "MySQL 数据库-060",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL存储过程的机制 ？"
+    },
+    {
+      "number": 61,
+      "id": "MySQL 数据库-061",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL的存储过程常见命令 ？"
+    },
+    {
+      "number": 62,
+      "id": "MySQL 数据库-062",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL游标 ？"
+    },
+    {
+      "number": 63,
+      "id": "MySQL 数据库-063",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL游标常见执行命令 ？"
+    },
+    {
+      "number": 64,
+      "id": "MySQL 数据库-064",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL触发器 ？"
+    },
+    {
+      "number": 65,
+      "id": "MySQL 数据库-065",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL触发器常见执行命令 ？"
+    },
+    {
+      "number": 66,
+      "id": "MySQL 数据库-066",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "简述MySQL的事务处理机制 ？"
+    },
+    {
+      "number": 67,
+      "id": "MySQL 数据库-067",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "MySQL事务的特征 ？"
+    },
+    {
+      "number": 68,
+      "id": "MySQL 数据库-068",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "MySQL并发事务可能产生的问题 ？"
+    },
+    {
+      "number": 69,
+      "id": "MySQL 数据库-069",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "MySQL的事务的隔离级别 ？"
+    },
+    {
+      "number": 70,
+      "id": "MySQL 数据库-070",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 主键使用自增ID还是UUID？"
+    },
+    {
+      "number": 71,
+      "id": "MySQL 数据库-071",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL数据库CPU飙升到100%的话怎么处理？"
+    },
+    {
+      "number": 72,
+      "id": "MySQL 数据库-072",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL的GTID？"
+    },
+    {
+      "number": 73,
+      "id": "MySQL 数据库-073",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL备份计划如何制定 ？"
+    },
+    {
+      "number": 74,
+      "id": "MySQL 数据库-074",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "Innodb为什么要用自增id作为主键？"
+    },
+    {
+      "number": 75,
+      "id": "MySQL 数据库-075",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "索引"
+      ],
+      "question": "Hash 索引和 B+ 树索引有什么区别 ？"
+    },
+    {
+      "number": 76,
+      "id": "MySQL 数据库-076",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "索引"
+      ],
+      "question": "MyISAM和InnoDB实现B+树索引方式的区别是什么？"
+    },
+    {
+      "number": 77,
+      "id": "MySQL 数据库-077",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "简述MySQL中有几种索引类型？"
+    },
+    {
+      "number": 78,
+      "id": "MySQL 数据库-078",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "简述MySQL 聚簇索引和非聚簇索引的区别 ？"
+    },
+    {
+      "number": 79,
+      "id": "MySQL 数据库-079",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "索引"
+      ],
+      "question": "简述非聚簇索引一定会回表查询吗？"
+    },
+    {
+      "number": 80,
+      "id": "MySQL 数据库-080",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "MySQL中为什么要有事务回滚机制？"
+    },
+    {
+      "number": 81,
+      "id": "MySQL 数据库-081",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "Innodb使用的是哪种隔离级别 ？"
+    },
+    {
+      "number": 82,
+      "id": "MySQL 数据库-082",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 不可重复读和幻读区别 ？"
+    },
+    {
+      "number": 83,
+      "id": "MySQL 数据库-083",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "MySQL 行级锁、表级锁、页级锁的描述与特点 ？"
+    },
+    {
+      "number": 84,
+      "id": "MySQL 数据库-084",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "简述MySQL共享锁 、 排他锁 ？"
+    },
+    {
+      "number": 85,
+      "id": "MySQL 数据库-085",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "简述MySQL 悲观锁与乐观锁 ？"
+    },
+    {
+      "number": 86,
+      "id": "MySQL 数据库-086",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "简述MySQL常用存储引擎的锁机制？"
+    },
+    {
+      "number": 87,
+      "id": "MySQL 数据库-087",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "锁"
+      ],
+      "question": "简述InnoDB 存储引擎有几种锁算法？"
+    },
+    {
+      "number": 88,
+      "id": "MySQL 数据库-088",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "锁"
+      ],
+      "question": "Innodb默认是如何对待死锁的？"
+    },
+    {
+      "number": 89,
+      "id": "MySQL 数据库-089",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "MySQL如何开启死锁检测？"
+    },
+    {
+      "number": 90,
+      "id": "MySQL 数据库-090",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "锁"
+      ],
+      "question": "简述什么是全局锁？它的应用场景有哪些？"
+    },
+    {
+      "number": 91,
+      "id": "MySQL 数据库-091",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "MySQL 使用全局锁会导致的问题？"
+    },
+    {
+      "number": 92,
+      "id": "MySQL 数据库-092",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "简述MySQL优化锁方面你有什么建议？"
+    },
+    {
+      "number": 93,
+      "id": "MySQL 数据库-093",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL字段为什么要求定义为not null ？"
+    },
+    {
+      "number": 94,
+      "id": "MySQL 数据库-094",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述如果要存储用户的密码散列,应该使用什么字段进行存储？"
+    },
+    {
+      "number": 95,
+      "id": "MySQL 数据库-095",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 数据库中的主键、超键、候选键、外键是什么？"
+    },
+    {
+      "number": 96,
+      "id": "MySQL 数据库-096",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL的binlog有有几种录入格式分别有什么区别 ?"
+    },
+    {
+      "number": 97,
+      "id": "MySQL 数据库-097",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL 超大分页怎么处理 ？"
+    },
+    {
+      "number": 98,
+      "id": "MySQL 数据库-098",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL left join、right join以及inner join的区别 ？"
+    },
+    {
+      "number": 99,
+      "id": "MySQL 数据库-099",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述什么是MySQL 数据库约束,常见的约束有哪几种 ？"
+    },
+    {
+      "number": 100,
+      "id": "MySQL 数据库-100",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述数据库的读写分离？"
+    },
+    {
+      "number": 101,
+      "id": "MySQL 数据库-101",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述count(1)、count(*)与count(列名)的执行区别 ?"
+    },
+    {
+      "number": 102,
+      "id": "MySQL 数据库-102",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL中null与空值的区别 ？"
+    },
+    {
+      "number": 103,
+      "id": "MySQL 数据库-103",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL是如何执行SQL ？"
+    },
+    {
+      "number": 104,
+      "id": "MySQL 数据库-104",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "SQL",
+        "索引"
+      ],
+      "question": "MSQL设计索引的时候，我们一般需要考虑哪些因素？"
+    },
+    {
+      "number": 105,
+      "id": "MySQL 数据库-105",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述什么是堆表？"
+    },
+    {
+      "number": 106,
+      "id": "MySQL 数据库-106",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "Oracle相比，MySQL的优势是什么？"
+    },
+    {
+      "number": 107,
+      "id": "MySQL 数据库-107",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "如何区分 FLOAT 和 DOUBLE？"
+    },
+    {
+      "number": 108,
+      "id": "MySQL 数据库-108",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "如何区分 CHAR_LENGTH 和 LENGTH？"
+    },
+    {
+      "number": 109,
+      "id": "MySQL 数据库-109",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 中 ENUM 的用途是什么？"
+    },
+    {
+      "number": 110,
+      "id": "MySQL 数据库-110",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述TIMESTAMP 对 UPDATE CURRENT_TIMESTAMP 数据类型有什么作用？"
+    },
+    {
+      "number": 111,
+      "id": "MySQL 数据库-111",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述myisamchk 命令的作用 ？"
+    },
+    {
+      "number": 112,
+      "id": "MySQL 数据库-112",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "如何控制 HEAP 表的最大大小？"
+    },
+    {
+      "number": 113,
+      "id": "MySQL 数据库-113",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "MyISAM 静态和 MyISAM 动态有什么区别？"
+    },
+    {
+      "number": 114,
+      "id": "MySQL 数据库-114",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "当列设置为 AUTO INCREMENT 并且在表中达到最大值时会发生什么？"
+    },
+    {
+      "number": 115,
+      "id": "MySQL 数据库-115",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "如何找出最后插入时分配了哪个自动增量？"
+    },
+    {
+      "number": 116,
+      "id": "MySQL 数据库-116",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "MySQL 如何查看为表定义的所有索引？"
+    },
+    {
+      "number": 117,
+      "id": "MySQL 数据库-117",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "解释LIKE 语句中的 % 和 _ 是什么意思？"
+    },
+    {
+      "number": 118,
+      "id": "MySQL 数据库-118",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何在 Unix 和 MySQL 时间戳之间进行转换？"
+    },
+    {
+      "number": 119,
+      "id": "MySQL 数据库-119",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 查询是否区分大小写？"
+    },
+    {
+      "number": 120,
+      "id": "MySQL 数据库-120",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL LIKE 和 REGEXP 运算符有什么区别？"
+    },
+    {
+      "number": 121,
+      "id": "MySQL 数据库-121",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 中BLOB 和 TEXT 有什么区别？"
+    },
+    {
+      "number": 122,
+      "id": "MySQL 数据库-122",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "请问mysql_fetch_array 和 mysql_fetch_object 有什么区别？"
+    },
+    {
+      "number": 123,
+      "id": "MySQL 数据库-123",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何在 MySQL 中运行批处理模式？"
+    },
+    {
+      "number": 124,
+      "id": "MySQL 数据库-124",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述MyISAM 表将存储在哪里，并给出它们的存储格式？"
+    },
+    {
+      "number": 125,
+      "id": "MySQL 数据库-125",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述什么是 ISAM ?"
+    },
+    {
+      "number": 126,
+      "id": "MySQL 数据库-126",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 如何优化 DISTINCT？"
+    },
+    {
+      "number": 127,
+      "id": "MySQL 数据库-127",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 如何将字符输入为 HEX 数字？"
+    },
+    {
+      "number": 128,
+      "id": "MySQL 数据库-128",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "MySQL 创建索引可以使用多少列？"
+    },
+    {
+      "number": 129,
+      "id": "MySQL 数据库-129",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL函数NOW() 和 CURRENT_DATE() 有什么区别？"
+    },
+    {
+      "number": 130,
+      "id": "MySQL 数据库-130",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL表中允许有多少个 TRIGGERS（触发器）？"
+    },
+    {
+      "number": 131,
+      "id": "MySQL 数据库-131",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 什么是非标准字符串类型？"
+    },
+    {
+      "number": 132,
+      "id": "MySQL 数据库-132",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "SQL"
+      ],
+      "question": "请列举常见的 SQL 函数有哪些？"
+    },
+    {
+      "number": 133,
+      "id": "MySQL 数据库-133",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述访问控制列表ACL ？"
+    },
+    {
+      "number": 134,
+      "id": "MySQL 数据库-134",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL 架构中的三层服务？"
+    },
+    {
+      "number": 135,
+      "id": "MySQL 数据库-135",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL数据库并发场景 ？"
+    },
+    {
+      "number": 136,
+      "id": "MySQL 数据库-136",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL主从复制原理和机制 ？"
+    },
+    {
+      "number": 137,
+      "id": "MySQL 数据库-137",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "阐述MySQL主从复制同步方式 ？"
+    },
+    {
+      "number": 138,
+      "id": "MySQL 数据库-138",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL主从同步延时 ？"
+    },
+    {
+      "number": 139,
+      "id": "MySQL 数据库-139",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL数据库是否支持emoji表情存储，如果不支持，如何操作？"
+    },
+    {
+      "number": 140,
+      "id": "MySQL 数据库-140",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述什么是最左前缀原则？什么是最左匹配原则？"
+    },
+    {
+      "number": 141,
+      "id": "MySQL 数据库-141",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL分库与分表的设计思路（ 重要 ） ？"
+    },
+    {
+      "number": 142,
+      "id": "MySQL 数据库-142",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "索引"
+      ],
+      "question": "简述什么情况下设置了索引但无法使用？"
+    },
+    {
+      "number": 143,
+      "id": "MySQL 数据库-143",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "MySQL如何删除索引 ?"
+    },
+    {
+      "number": 144,
+      "id": "MySQL 数据库-144",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述数据库连接池?为什么需要数据库连接池呢?"
+    },
+    {
+      "number": 145,
+      "id": "MySQL 数据库-145",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "SQL"
+      ],
+      "question": "如何定位及优化SQL语句的性能问题 ？"
+    },
+    {
+      "number": 146,
+      "id": "MySQL 数据库-146",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 的binLog是什么？"
+    },
+    {
+      "number": 147,
+      "id": "MySQL 数据库-147",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何查询MySQL的binlog日志默认存放在哪儿？"
+    },
+    {
+      "number": 148,
+      "id": "MySQL 数据库-148",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL自增主键出现不连续的原因?"
+    },
+    {
+      "number": 149,
+      "id": "MySQL 数据库-149",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL的慢查询默认时间为多长？"
+    },
+    {
+      "number": 150,
+      "id": "MySQL 数据库-150",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "Delete from 语句与truncate语句的区别?"
+    },
+    {
+      "number": 151,
+      "id": "MySQL 数据库-151",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL limit 1000000 加载很慢的话，怎么解决 ？"
+    },
+    {
+      "number": 152,
+      "id": "MySQL 数据库-152",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "在高并发情况下，如何做到安全的修改同一行数据？"
+    },
+    {
+      "number": 153,
+      "id": "MySQL 数据库-153",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述select for update ？"
+    },
+    {
+      "number": 154,
+      "id": "MySQL 数据库-154",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 如果某个表有近千万数据，CRUD比较慢，如何优化 ？"
+    },
+    {
+      "number": 155,
+      "id": "MySQL 数据库-155",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "MySQL如何写SQL能够有效的使用到复合索引?"
+    },
+    {
+      "number": 156,
+      "id": "MySQL 数据库-156",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL中in 和exists的区别？"
+    },
+    {
+      "number": 157,
+      "id": "MySQL 数据库-157",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL数据库自增主键可能遇到什么问题 ？"
+    },
+    {
+      "number": 158,
+      "id": "MySQL 数据库-158",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MYSQL的主从延迟，怎么解决？"
+    },
+    {
+      "number": 159,
+      "id": "MySQL 数据库-159",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL数据库存储日期格式时，如何考虑时区转换问题？"
+    },
+    {
+      "number": 160,
+      "id": "MySQL 数据库-160",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL数据库服务器性能分析的方法命令有哪些?"
+    },
+    {
+      "number": 161,
+      "id": "MySQL 数据库-161",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "百万级别或以上的数据，你是如何删除的？"
+    },
+    {
+      "number": 162,
+      "id": "MySQL 数据库-162",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "B树和B+树的区别，数据库为什么使用B+树而不是B树？"
+    },
+    {
+      "number": 163,
+      "id": "MySQL 数据库-163",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "索引"
+      ],
+      "question": "B+树在满足聚簇索引和覆盖索引的时候不需要回表查询数据？"
+    },
+    {
+      "number": 164,
+      "id": "MySQL 数据库-164",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "MySQL列值为NULL时，查询是否会用到索引？"
+    },
+    {
+      "number": 165,
+      "id": "MySQL 数据库-165",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中TEXT数据类型的最大长度"
+    },
+    {
+      "number": 166,
+      "id": "MySQL 数据库-166",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 如何保证缓存-db一致性？"
+    },
+    {
+      "number": 167,
+      "id": "MySQL 数据库-167",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "阐述数据库分片的两种常见方案 ？"
+    },
+    {
+      "number": 168,
+      "id": "MySQL 数据库-168",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL5.7 与 MySQL8.0的差异?"
+    },
+    {
+      "number": 169,
+      "id": "MySQL 数据库-169",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "将MySQL转换到Oracle需要考虑的因素？"
+    },
+    {
+      "number": 170,
+      "id": "MySQL 数据库-170",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL Online DDL ？"
+    },
+    {
+      "number": 171,
+      "id": "MySQL 数据库-171",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL如何实现字符串长度计算实现代码(gb2312+utf8) ？"
+    },
+    {
+      "number": 172,
+      "id": "MySQL 数据库-172",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL如何支持中文排序的实现方法？"
+    },
+    {
+      "number": 173,
+      "id": "MySQL 数据库-173",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL kill 指令的执行原理？"
+    },
+    {
+      "number": 174,
+      "id": "MySQL 数据库-174",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述Identity基本定义？"
+    },
+    {
+      "number": 175,
+      "id": "MySQL 数据库-175",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述mysqldump数据库备份参数详解？"
+    },
+    {
+      "number": 176,
+      "id": "MySQL 数据库-176",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL内部临时表 ？"
+    },
+    {
+      "number": 177,
+      "id": "MySQL 数据库-177",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "阐述详解MySQL单列索引和联合索引？"
+    },
+    {
+      "number": 178,
+      "id": "MySQL 数据库-178",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL数据库安全配置的常规设定 ？"
+    },
+    {
+      "number": 179,
+      "id": "MySQL 数据库-179",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL如何创建并执行事件？"
+    },
+    {
+      "number": 180,
+      "id": "MySQL 数据库-180",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL的join buffer原理？"
+    },
+    {
+      "number": 181,
+      "id": "MySQL 数据库-181",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL如何处理无效数据值？"
+    },
+    {
+      "number": 182,
+      "id": "MySQL 数据库-182",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "简述MySQL InnoDB的3种行锁定方式 ？"
+    },
+    {
+      "number": 183,
+      "id": "MySQL 数据库-183",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL日志管理和备份与恢复？"
+    },
+    {
+      "number": 184,
+      "id": "MySQL 数据库-184",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何MySQL中查询、删除重复记录的方法 ？"
+    },
+    {
+      "number": 185,
+      "id": "MySQL 数据库-185",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "阐述Mysql数据库的QPS和TPS的意义和计算方法？"
+    },
+    {
+      "number": 186,
+      "id": "MySQL 数据库-186",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "主从集群模式下如何为MySQL 增加从库 ？"
+    },
+    {
+      "number": 187,
+      "id": "MySQL 数据库-187",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "MySQL中如何对Full Text Search全文索引优化?"
+    },
+    {
+      "number": 188,
+      "id": "MySQL 数据库-188",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "简述如何对MySQL优化器对索引和JOIN顺序选择 ？"
+    },
+    {
+      "number": 189,
+      "id": "MySQL 数据库-189",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "请复述MySQL缓存的查询和清除命令？"
+    },
+    {
+      "number": 190,
+      "id": "MySQL 数据库-190",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "SQL"
+      ],
+      "question": "如何实施SQL性能测试 ？"
+    },
+    {
+      "number": 191,
+      "id": "MySQL 数据库-191",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "综合阐述MySQL性能瓶颈排查定位实例详解？"
+    },
+    {
+      "number": 192,
+      "id": "MySQL 数据库-192",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL深度分页(千万级数据量如何快速分页) ？"
+    },
+    {
+      "number": 193,
+      "id": "MySQL 数据库-193",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "索引"
+      ],
+      "question": "MySQL如何实施Hash索引优化 ？"
+    },
+    {
+      "number": 194,
+      "id": "MySQL 数据库-194",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL key_buffer_size参数作用 ?"
+    },
+    {
+      "number": 195,
+      "id": "MySQL 数据库-195",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL COUNT函数的使用与优化 ？"
+    },
+    {
+      "number": 196,
+      "id": "MySQL 数据库-196",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL如何快速插入千万级大数据 ？"
+    },
+    {
+      "number": 197,
+      "id": "MySQL 数据库-197",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL query_cache_limit参数 ？"
+    },
+    {
+      "number": 198,
+      "id": "MySQL 数据库-198",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL同步问题Slave延迟很大如何排查与解决 ？"
+    },
+    {
+      "number": 199,
+      "id": "MySQL 数据库-199",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL 命名使用规范 ？"
+    },
+    {
+      "number": 200,
+      "id": "MySQL 数据库-200",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL query_cache_size 参数作用 ?"
+    },
+    {
+      "number": 201,
+      "id": "MySQL 数据库-201",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL性能优化配置参数之thread_cache和table_cache？"
+    },
+    {
+      "number": 202,
+      "id": "MySQL 数据库-202",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL性能突然下降，如何思考排除 ？"
+    },
+    {
+      "number": 203,
+      "id": "MySQL 数据库-203",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "如何使用MySQL Slow Log来解决MySQL CPU占用高的问题 ？"
+    },
+    {
+      "number": 204,
+      "id": "MySQL 数据库-204",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "如何调整my.cnf参数配置实现InnoDB引擎性能优化 ？"
+    },
+    {
+      "number": 205,
+      "id": "MySQL 数据库-205",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "思考如何优化MYSQL中binlog ？"
+    },
+    {
+      "number": 206,
+      "id": "MySQL 数据库-206",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL thread_stack连接线程的优化策略 ？"
+    },
+    {
+      "number": 207,
+      "id": "MySQL 数据库-207",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述Semisync Replication的作用 ？"
+    },
+    {
+      "number": 208,
+      "id": "MySQL 数据库-208",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL 中常见的几种高可用架构部署方案 ？"
+    },
+    {
+      "number": 209,
+      "id": "MySQL 数据库-209",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述什么是两阶段提交 ？"
+    },
+    {
+      "number": 210,
+      "id": "MySQL 数据库-210",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL是如何保证数据不丢失的 ？"
+    },
+    {
+      "number": 211,
+      "id": "MySQL 数据库-211",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL 数据库水平切分方案及问题诠释？"
+    },
+    {
+      "number": 212,
+      "id": "MySQL 数据库-212",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MYSQL如何启用日志和查看日志？"
+    },
+    {
+      "number": 213,
+      "id": "MySQL 数据库-213",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "Linux下如何为MySQL开启更新日志 ？"
+    },
+    {
+      "number": 214,
+      "id": "MySQL 数据库-214",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "MySQL日志文件详解 ？"
+    },
+    {
+      "number": 215,
+      "id": "MySQL 数据库-215",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述 mysqldump 以及 xtranbackup 的实现原理 ？"
+    },
+    {
+      "number": 216,
+      "id": "MySQL 数据库-216",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL innodb 的读写参数优化 ？"
+    },
+    {
+      "number": 217,
+      "id": "MySQL 数据库-217",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "简述遇到Mysql死锁问题，我们应该怎么排查分析呢 ？"
+    },
+    {
+      "number": 218,
+      "id": "MySQL 数据库-218",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MySQL数据库进行大数据处理？ ？"
+    },
+    {
+      "number": 219,
+      "id": "MySQL 数据库-219",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL和Oracle：对于多语言和国际化支持的对比 ？"
+    },
+    {
+      "number": 220,
+      "id": "MySQL 数据库-220",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MySQL数据库进行关联规则挖掘？ ？"
+    },
+    {
+      "number": 221,
+      "id": "MySQL 数据库-221",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何优化Python程序中的MySQL连接性能？ ？"
+    },
+    {
+      "number": 222,
+      "id": "MySQL 数据库-222",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySql的Ascii和UTF-8编码：如何压缩和转换MySQL的字符编码 ？"
+    },
+    {
+      "number": 223,
+      "id": "MySQL 数据库-223",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "简述数据库事务和并发性能：MySQL vs. TiDB ？"
+    },
+    {
+      "number": 224,
+      "id": "MySQL 数据库-224",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述怎样处理MySQL连接错误1356？ ？"
+    },
+    {
+      "number": 225,
+      "id": "MySQL 数据库-225",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述解决MySQL连接错误1260的方法？ ？"
+    },
+    {
+      "number": 226,
+      "id": "MySQL 数据库-226",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接错误1059？ ？"
+    },
+    {
+      "number": 227,
+      "id": "MySQL 数据库-227",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接错误1070？ ？"
+    },
+    {
+      "number": 228,
+      "id": "MySQL 数据库-228",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中如何使用FROM_UNIXTIME函数将时间戳转换为日期格式 ？"
+    },
+    {
+      "number": 229,
+      "id": "MySQL 数据库-229",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "索引"
+      ],
+      "question": "简述如何使用MTR对数据库索引和查询优化进行测试与修复 ？"
+    },
+    {
+      "number": 230,
+      "id": "MySQL 数据库-230",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL连接数超过限制，该如何处理？ ？"
+    },
+    {
+      "number": 231,
+      "id": "MySQL 数据库-231",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述使用Go语言进行MySQL数据库的数据迁移的方法 ？"
+    },
+    {
+      "number": 232,
+      "id": "MySQL 数据库-232",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何在Node.js程序中优化MySQL连接池的设置？ ？"
+    },
+    {
+      "number": 233,
+      "id": "MySQL 数据库-233",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何优化MySQL连接效率？ ？"
+    },
+    {
+      "number": 234,
+      "id": "MySQL 数据库-234",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中如何使用IFNULL函数替换NULL值 ？"
+    },
+    {
+      "number": 235,
+      "id": "MySQL 数据库-235",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接错误1052？ ？"
+    },
+    {
+      "number": 236,
+      "id": "MySQL 数据库-236",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述安装的mysql中没有my.ini文件如何解决 ？"
+    },
+    {
+      "number": 237,
+      "id": "MySQL 数据库-237",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接错误1046？ ？"
+    },
+    {
+      "number": 238,
+      "id": "MySQL 数据库-238",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接异常终止后的数据丢失？ ？"
+    },
+    {
+      "number": 239,
+      "id": "MySQL 数据库-239",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL连接错误1146，如何解决？ ？"
+    },
+    {
+      "number": 240,
+      "id": "MySQL 数据库-240",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接异常终止的问题？ ？"
+    },
+    {
+      "number": 241,
+      "id": "MySQL 数据库-241",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述mysql使用left join连接出现重复问题怎么解决 ？"
+    },
+    {
+      "number": 242,
+      "id": "MySQL 数据库-242",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接错误1212？ ？"
+    },
+    {
+      "number": 243,
+      "id": "MySQL 数据库-243",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中的批量数据导入技巧 ？"
+    },
+    {
+      "number": 244,
+      "id": "MySQL 数据库-244",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MySQL中的CASE函数执行多条件判断 ？"
+    },
+    {
+      "number": 245,
+      "id": "MySQL 数据库-245",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySql的定时任务与调度：如何使用MySQL实现高效的定时任务和调度 ？"
+    },
+    {
+      "number": 246,
+      "id": "MySQL 数据库-246",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL连接被重置，如何通过重连处理来保持连接池可用性？ ？"
+    },
+    {
+      "number": 247,
+      "id": "MySQL 数据库-247",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL怎么用分隔符分隔字符串 ？"
+    },
+    {
+      "number": 248,
+      "id": "MySQL 数据库-248",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL连接错误2059，该如何解决？ ？"
+    },
+    {
+      "number": 249,
+      "id": "MySQL 数据库-249",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MTR进行MySQL数据库的压力测试？ ？"
+    },
+    {
+      "number": 250,
+      "id": "MySQL 数据库-250",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接错误1317？ ？"
+    },
+    {
+      "number": 251,
+      "id": "MySQL 数据库-251",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MySQL数据库进行地理空间数据分析？ ？"
+    },
+    {
+      "number": 252,
+      "id": "MySQL 数据库-252",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL和MongoDB：如何在高可用性方面进行决策？ ？"
+    },
+    {
+      "number": 253,
+      "id": "MySQL 数据库-253",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL的binlog、redo log和undo log怎么使用 ？"
+    },
+    {
+      "number": 254,
+      "id": "MySQL 数据库-254",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL连接超时问题的解决方法有哪些？ ？"
+    },
+    {
+      "number": 255,
+      "id": "MySQL 数据库-255",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中MVCC机制是什么 ？"
+    },
+    {
+      "number": 256,
+      "id": "MySQL 数据库-256",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL连接异常断开，如何自动重连？ ？"
+    },
+    {
+      "number": 257,
+      "id": "MySQL 数据库-257",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述Mysql的timestamp时间戳2038问题怎么解决 ？"
+    },
+    {
+      "number": 258,
+      "id": "MySQL 数据库-258",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MTR进行MySQL数据库的可靠性测试？ ？"
+    },
+    {
+      "number": 259,
+      "id": "MySQL 数据库-259",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述mysql怎么查询字符串中某个字符串出现的次数 ？"
+    },
+    {
+      "number": 260,
+      "id": "MySQL 数据库-260",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL长字符截断如何实现 ？"
+    },
+    {
+      "number": 261,
+      "id": "MySQL 数据库-261",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MySQL中的AVG函数计算某个字段的平均值 ？"
+    },
+    {
+      "number": 262,
+      "id": "MySQL 数据库-262",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MySQL数据库进行图像处理？ ？"
+    },
+    {
+      "number": 263,
+      "id": "MySQL 数据库-263",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中如何使用LPAD函数将字符串左填充到指定长度 ？"
+    },
+    {
+      "number": 264,
+      "id": "MySQL 数据库-264",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MySQL中的INET_NTOA函数将整数转换为IP地址 ？"
+    },
+    {
+      "number": 265,
+      "id": "MySQL 数据库-265",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中如何使用SUBSTRING函数提取字符串的一部分 ？"
+    },
+    {
+      "number": 266,
+      "id": "MySQL 数据库-266",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述oracle/mysql中的“不等于“ ＜＞ != ^= is not一样吗 ？"
+    },
+    {
+      "number": 267,
+      "id": "MySQL 数据库-267",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何使用MTR进行MySQL分析器和优化器测试 ？"
+    },
+    {
+      "number": 268,
+      "id": "MySQL 数据库-268",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中如何使用FLOOR函数向下取整一个数值 ？"
+    },
+    {
+      "number": 269,
+      "id": "MySQL 数据库-269",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述mysql中的regexp_substr函数如何使用 ？"
+    },
+    {
+      "number": 270,
+      "id": "MySQL 数据库-270",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述mysql explain中key_len的含义以及计算方法是什么 ？"
+    },
+    {
+      "number": 271,
+      "id": "MySQL 数据库-271",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL主键自增会遇到的坑怎么解决 ？"
+    },
+    {
+      "number": 272,
+      "id": "MySQL 数据库-272",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述PostgreSQL与MySQL优劣势是什么 ？"
+    },
+    {
+      "number": 273,
+      "id": "MySQL 数据库-273",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "锁"
+      ],
+      "question": "简述MySql所特有的锁机制：如何在高并发场景中避免死锁 ？"
+    },
+    {
+      "number": 274,
+      "id": "MySQL 数据库-274",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL内存不足启动失败怎么解决 ？"
+    },
+    {
+      "number": 275,
+      "id": "MySQL 数据库-275",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何调整MySQL数据库的连接池大小？ ？"
+    },
+    {
+      "number": 276,
+      "id": "MySQL 数据库-276",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中存储的数据查询的时候怎么区分大小写 ？"
+    },
+    {
+      "number": 277,
+      "id": "MySQL 数据库-277",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何实时监控MySQL连接数？ ？"
+    },
+    {
+      "number": 278,
+      "id": "MySQL 数据库-278",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL异步复制和半同步复制怎么实现 ？"
+    },
+    {
+      "number": 279,
+      "id": "MySQL 数据库-279",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述宝塔面板mysql无法启动问题如何解决 ？"
+    },
+    {
+      "number": 280,
+      "id": "MySQL 数据库-280",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL多版本并发控制MVCC实例分析 ？"
+    },
+    {
+      "number": 281,
+      "id": "MySQL 数据库-281",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述怎么解决mysql中文显示乱码问题 ？"
+    },
+    {
+      "number": 282,
+      "id": "MySQL 数据库-282",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL和PostgreSQL实时数据同步和复制技术区别 ？"
+    },
+    {
+      "number": 283,
+      "id": "MySQL 数据库-283",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL中binlog怎么备份脚本 ？"
+    },
+    {
+      "number": 284,
+      "id": "MySQL 数据库-284",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何实现MySQL的分区表技术 ？"
+    },
+    {
+      "number": 285,
+      "id": "MySQL 数据库-285",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述解决MySQL错误1016连接问题 ？"
+    },
+    {
+      "number": 286,
+      "id": "MySQL 数据库-286",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "简述在Go语言编写的MySQL应用程序中处理事务的方法 ？"
+    },
+    {
+      "number": 287,
+      "id": "MySQL 数据库-287",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何在Python程序中调整MySQL连接池大小？ ？"
+    },
+    {
+      "number": 288,
+      "id": "MySQL 数据库-288",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述mysql range分区指的是什么 ？"
+    },
+    {
+      "number": 289,
+      "id": "MySQL 数据库-289",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL和Oracle对于数据备份和恢复的可靠性对比 ？"
+    },
+    {
+      "number": 290,
+      "id": "MySQL 数据库-290",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述MySQL和Oracle对于海量数据存储和访问的支持对比 ？"
+    },
+    {
+      "number": 291,
+      "id": "MySQL 数据库-291",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何处理MySQL连接错误1215？ ？"
+    },
+    {
+      "number": 292,
+      "id": "MySQL 数据库-292",
+      "category": "MySQL 数据库",
+      "answer": "",
+      "tags": [
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述修复MySQL连接异常终止引起数据丢失问题的方法及追踪 ？"
+    },
+    {
+      "id": "MySQL-001",
+      "number": 293,
+      "question": "请简述数据库三大范式的核心要点？",
+      "answer": "**数据库三大范式：**\n\n1. **第一范式（1NF）**：列不可再分。确保每列的原子性，即每一列都是不可分割的最小数据单元。\n2. **第二范式（2NF）**：行可唯一区分。在满足 1NF 基础上，通过主键约束确保每条记录可被唯一标识，非主属性完全依赖于主键。\n3. **第三范式（3NF）**：非主属性不依赖其他表的非主属性。在满足 2NF 基础上，使用外键约束消除传递依赖。\n\n> 三大范式层层递进，核心目标是减少数据冗余、避免更新异常。实际开发中适度反范式化以换取查询性能也很常见。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "基础理论",
+        "范式"
+      ]
+    },
+    {
+      "id": "MySQL-002",
+      "number": 294,
+      "question": "请简述 MySQL 常用的存储引擎及各自特点？",
+      "answer": "查看命令：`show engines;`\n\n**常用引擎及特点：**\n\n| 引擎 | 锁粒度 | 事务 | 外键 | 特点 |\n|------|--------|------|------|------|\n| **MyISAM** | 全表锁 | ❌ | ❌ | 速度快，占用空间小，适合大量查询/插入 |\n| **InnoDB** | 行级锁 | ✅ | ✅ | 支持崩溃恢复，并发强，MySQL 5.5+ 默认引擎 |\n| **Memory** | 全表锁 | ❌ | ❌ | 数据存内存，重启丢失，默认 HASH 索引 |\n| **MERGE** | — | ❌ | ❌ | 多个 MyISAM 表的组合 |\n\n**选型建议：** 需要事务/外键 → InnoDB；只读/日志表 → MyISAM；临时缓存 → Memory。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "存储引擎",
+        "InnoDB",
+        "MyISAM"
+      ]
+    },
+    {
+      "id": "MySQL-003",
+      "number": 295,
+      "question": "InnoDB 和 MyISAM 的核心区别是什么？",
+      "answer": "**五大核心区别：**\n\n1. **事务支持**：InnoDB 支持事务（ACID），MyISAM 不支持。\n2. **外键**：InnoDB 支持外键约束，MyISAM 不支持。\n3. **索引结构**：InnoDB 使用**聚集索引**（主键和数据行存一起），MyISAM 使用**非聚集索引**（索引和数据分离）。\n4. **行数统计**：`count(*)` 无条件时，MyISAM 直接读计数器（O(1)），InnoDB 需要全表扫描。\n5. **全文索引**：MyISAM 原生支持，InnoDB 5.6+ 版本开始支持。\n\n| 特性 | InnoDB | MyISAM |\n|------|--------|--------|\n| 锁粒度 | 行级锁 | 表级锁 |\n| 并发能力 | 高 | 低 |\n| 存储空间 | 较大 | 较小 |\n| 适用场景 | 高并发写入、事务场景 | 大量查询、日志记录",
+      "category": "MySQL 数据库",
+      "tags": [
+        "InnoDB",
+        "MyISAM",
+        "对比"
+      ]
+    },
+    {
+      "id": "MySQL-004",
+      "number": 296,
+      "question": "请解释数据库事务及其 ACID 四大特性？",
+      "answer": "**定义**：事务是一组要么全部执行成功、要么全部回滚的 SQL 操作集合，是数据库并发控制的基本单位。\n\n**ACID 四大特性：**\n\n| 特性 | 说明 |\n|------|------|\n| **原子性 (Atomicity)** | 事务不可分割，任一操作失败则全部回滚（通过 undo log 实现） |\n| **一致性 (Consistency)** | 事务前后数据完整性约束不变（由其他三个特性共同保证） |\n| **隔离性 (Isolation)** | 并发事务之间互不干扰（通过 MVCC + 锁机制实现） |\n| **持久性 (Durability)** | 事务提交后数据永久保存，即使系统崩溃（通过 redo log 实现） |\n\n> InnoDB 中，redo log 保证持久性，undo log 保证原子性，MVCC + 锁保证隔离性。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "事务",
+        "ACID"
+      ]
+    },
+    {
+      "id": "MySQL-005",
+      "number": 297,
+      "question": "请简述数据库索引的定义、分类及优缺点？",
+      "answer": "**定义**：索引是帮助数据库高效检索数据的**数据结构**（InnoDB 默认使用 B+ 树）。\n\n**分类：**\n- 主键索引、普通索引、唯一索引、全文索引\n- 前缀索引、组合索引（遵循**最左前缀原则**）\n\n**优点：**\n- 大幅提升查询速度（B+ 树 O(log n) 查找）\n- 降低排序开销（索引本身有序）\n\n**缺点：**\n- 占用额外磁盘空间\n- 增删改操作需维护索引，降低写入效率\n\n**不建议建索引的场景：**\n- 频繁增删改的字段\n- 大量重复值的字段（如性别）\n- 表数据量过少（全表扫描反而更快）",
+      "category": "MySQL 数据库",
+      "tags": [
+        "索引",
+        "B+树",
+        "优化"
+      ]
+    },
+    {
+      "id": "MySQL-006",
+      "number": 298,
+      "question": "请列举 SQL 优化的常用手段？",
+      "answer": "**八条核心优化手段：**\n\n1. **禁用 `SELECT *`**，按需查询字段，减少 IO 和网络开销\n2. **子查询改联表查询**：`JOIN` 替代子查询，利用索引\n3. **`IN/NOT IN` 替换为 `EXISTS/NOT EXISTS`**，后者可使用索引\n4. **多 `OR` 用 `UNION/UNION ALL` 替代**，避免全表扫描\n5. **WHERE 避免索引失效写法**：\n   - 不使用 `!=`、`<>`、`IS NULL` 判断\n   - 不对字段进行运算或函数包裹\n   - 字符类型查询值必须加引号\n6. **模糊查询 `%` 不要放开头**，否则索引失效\n7. **合理使用 LIMIT**，减少返回数据量\n8. **EXPLAIN 分析执行计划**，关注 type、key、rows 字段\n\n> 核心原则：让查询**走索引**，减少**回表**次数。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "SQL优化",
+        "索引",
+        "性能"
+      ]
+    },
+    {
+      "id": "MySQL-007",
+      "number": 299,
+      "question": "请说明 DROP、DELETE、TRUNCATE 三者的区别？",
+      "answer": "| 维度 | DELETE | TRUNCATE | DROP |\n|------|--------|----------|------|\n| **SQL 类型** | DML（可回滚） | DDL（不可回滚） | DDL（不可回滚） |\n| **功能** | 删除部分/全部数据 | 清空全表数据 | 删除整张表 |\n| **表结构** | 保留 | 保留 | **一并删除** |\n| **触发器** | 触发 | 不触发 | 不触发 |\n| **速度** | 慢（逐行记录 undo log） | 快 | 最快 |\n| **WHERE 条件** | 支持 | 不支持 | 不支持 |\n| **自增计数器** | 保留 | **重置** | — |\n\n**速度排序：** `DROP > TRUNCATE > DELETE`\n\n> 误删数据后：DELETE 可通过回滚恢复，TRUNCATE/DROP 只能靠备份。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "SQL",
+        "DELETE",
+        "TRUNCATE",
+        "DROP"
+      ]
+    },
+    {
+      "id": "MySQL-008",
+      "number": 300,
+      "question": "什么是数据库视图？有什么优缺点？",
+      "answer": "**定义**：视图（View）是基于单表或多表的虚拟表，只存储查询 SQL 逻辑，不存储实际数据。\n\n**优点：**\n- 简化复杂多表联查\n- 控制数据访问权限（只暴露部分字段）\n- 逻辑独立性（底层表结构变更时，可修改视图保持接口不变）\n\n**缺点：**\n- 查询效率依赖底层表索引\n- 多表视图的增删改操作受限\n- 视图嵌套过多时性能下降\n\n> 修改视图会影响原始表数据（本质上是执行底层 SQL），所以视图也用于实现行/列级安全。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "视图",
+        "View"
+      ]
+    },
+    {
+      "id": "MySQL-009",
+      "number": 301,
+      "question": "请说明 INNER JOIN、LEFT JOIN、RIGHT JOIN 的区别？",
+      "answer": "**联表查询三种连接方式：**\n\n1. **INNER JOIN（内连接）**：只返回两表**匹配**的数据行，不匹配的行被丢弃。\n2. **LEFT JOIN（左外连接）**：返回**左表全部行** + 右表匹配的行，右表未匹配的字段为 `NULL`。\n3. **RIGHT JOIN（右外连接）**：返回**右表全部行** + 左表匹配的行，左表未匹配的字段为 `NULL`。\n\n**示例：**\n```\nTable A: {1, 2, 3}    Table B: {2, 3, 4}\n\nINNER JOIN: {2, 3}           — 取交集\nLEFT JOIN (A): {1, 2, 3}     — A 全保留，B 无关为 NULL\nRIGHT JOIN (A→B): {2, 3, 4}  — B 全保留，A 无关为 NULL\n```\n\n> 实际开发中 LEFT JOIN 最常用，RIGHT JOIN 可用 LEFT JOIN 等价替换（调换表顺序）。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "JOIN",
+        "联表查询"
+      ]
+    },
+    {
+      "id": "MySQL-010",
+      "number": 302,
+      "question": "并发事务会带来哪些问题？",
+      "answer": "**四种并发事务问题：**\n\n| 问题 | 描述 | 类比 |\n|------|------|------|\n| **脏读 (Dirty Read)** | 读取到其他事务**未提交**的数据 | 看到草稿 |\n| **丢失修改 (Lost Update)** | 多个事务同时改同一行，后提交覆盖前提交 | 互相踩脚 |\n| **不可重复读 (Non-Repeatable Read)** | 同一事务内多次读取同一条数据，结果不同（其他事务 UPDATE） | 刷新后变了 |\n| **幻读 (Phantom Read)** | 同一事务内多次查询，行数变化（其他事务 INSERT/DELETE） | 刷新后多了/少了 |\n\n**区分不可重复读与幻读：**\n- 不可重复读：侧重**数据被修改**（UPDATE）→ 同一行内容变了\n- 幻读：侧重**数据增删**（INSERT/DELETE）→ 行数变了",
+      "category": "MySQL 数据库",
+      "tags": [
+        "事务",
+        "并发",
+        "脏读",
+        "幻读"
+      ]
+    },
+    {
+      "id": "MySQL-011",
+      "number": 303,
+      "question": "请说明四种事务隔离级别及其解决的问题？",
+      "answer": "**SQL 标准定义的四种隔离级别：**\n\n| 隔离级别 | 脏读 | 不可重复读 | 幻读 |\n|----------|------|-----------|------|\n| READ-UNCOMMITTED（读未提交） | 存在 | 存在 | 存在 |\n| READ-COMMITTED（读已提交） | ❌ | 存在 | 存在 |\n| REPEATABLE-READ（可重复读） | ❌ | ❌ | 存在* |\n| SERIALIZABLE（串行化） | ❌ | ❌ | ❌ |\n\n> \\* MySQL InnoDB 的 REPEATABLE-READ 通过 **Next-Key Lock（间隙锁 + 行锁）** 实际解决了幻读问题。这也是 MySQL 的默认隔离级别。\n\n**查看当前隔离级别：**\n```sql\nSELECT @@transaction_isolation;  -- MySQL 8.0+\nSELECT @@tx_isolation;           -- MySQL 5.x\n```\n\n**级别越高，数据一致性越强，但并发性能越低。**",
+      "category": "MySQL 数据库",
+      "tags": [
+        "事务",
+        "隔离级别",
+        "MVCC"
+      ]
+    },
+    {
+      "id": "MySQL-012",
+      "number": 304,
+      "question": "大表数据量过大如何优化？",
+      "answer": "**大表优化五大策略：**\n\n1. **限定查询范围**：分页查询 + 时间范围过滤，避免全表扫描\n2. **读写分离**：主库写 + 从库读，分摊压力\n3. **垂直分表**：将大字段、冷门字段拆分到扩展表，减少单行数据量，提升缓存命中率\n4. **水平分表/分库**：按一定规则（如用户 ID 取模、时间分片）将数据分散到多张表/多个库\n5. **分片中间件**：\n   - 客户端分片：Sharding-JDBC（嵌入应用）\n   - 中间件分片：Mycat、Sharding-Proxy（独立部署）\n\n**分片策略选择：**\n- 数据量大但并发不高 → 分表\n- 并发极高 → 分库\n- 两者都高 → 分库 + 分表",
+      "category": "MySQL 数据库",
+      "tags": [
+        "大表优化",
+        "分库分表",
+        "架构"
+      ]
+    },
+    {
+      "id": "MySQL-013",
+      "number": 305,
+      "question": "分库分表后如何保证全局唯一主键？",
+      "answer": "**五种全局唯一 ID 生成方案：**\n\n| 方案 | 原理 | 优点 | 缺点 |\n|------|------|------|------|\n| **UUID** | 随机生成 128 位 | 简单，无中心节点 | 无序，B+ 树插入性能差，占用空间大 |\n| **数据库自增** | 不同表设置不同步长 | 简单有序 | 强依赖 DB，扩展困难 |\n| **Redis** | INCR 原子递增 | 高性能 | 需持久化，增加运维成本 |\n| **SnowFlake（雪花算法）** | 64 位 = 时间戳 + 机器 ID + 序列号 | 有序、分布式、纯内存 | 依赖时钟同步 |\n| **美团 Leaf** | 号段模式 + SnowFlake 双模式 | 高可用、高性能 | 依赖中间件部署 |\n\n> 实际生产中 SnowFlake 最常用，注意解决时钟回拨问题。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "分库分表",
+        "分布式ID",
+        "SnowFlake"
+      ]
+    },
+    {
+      "id": "MySQL-014",
+      "number": 306,
+      "question": "请描述 MySQL 中一条 SQL 语句的完整执行流程？",
+      "answer": "**SQL 执行流程（MySQL 5.7 架构）：**\n\n```\n客户端 → 连接器 → 查询缓存 → 分析器 → 优化器 → 执行器 → 存储引擎\n```\n\n| 阶段 | 功能 | 关键点 |\n|------|------|--------|\n| **连接器** | 建立连接、身份认证、权限校验 | 连接池管理，长连接 OOM 风险 |\n| **查询缓存** | 以 KV 形式缓存查询结果 | MySQL 8.0 **已移除**（命中率低，锁竞争大） |\n| **分析器** | 词法分析 + 语法解析 | 生成 AST 语法树，检查语法错误 |\n| **优化器** | 选择最优执行计划 | 选择索引、决定 JOIN 顺序、估算代价 |\n| **执行器** | 调用存储引擎 API | 权限校验后逐行读取/写入 |\n\n> 可通过 `EXPLAIN` 或 `EXPLAIN ANALYZE`（MySQL 8.0.18+）查看优化器生成的执行计划。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "SQL执行流程",
+        "架构"
+      ]
+    },
+    {
+      "id": "MySQL-015",
+      "number": 307,
+      "question": "请说明 CHAR 与 VARCHAR 的区别，以及 INT(11) 中 11 的含义？",
+      "answer": "**CHAR vs VARCHAR：**\n\n| 维度 | CHAR | VARCHAR |\n|------|------|---------|\n| 存储方式 | 固定长度，不足补空格 | 可变长度，按实际存储 |\n| 最大长度 | 255 字符 | 65535 字节 |\n| 存储开销 | 无额外字节 | 1-2 字节记录长度 |\n| 查询效率 | 更高（定长跳过计算） | 略低 |\n| 适用场景 | 定长数据（MD5、手机号） | 变长数据（用户名、描述） |\n\n**INT(11) 的含义：**\n- `11` 仅代表**展示宽度**，不影响存储范围\n- INT 始终占 4 字节，范围 -2³¹ ~ 2³¹-1（约 ±21 亿）\n- 配合 `ZEROFILL` 时，不足 11 位左侧补零显示\n- VARCHAR(30) 中的 30 代表最多存储 **30 个字符**（不是字节，受字符集影响）",
+      "category": "MySQL 数据库",
+      "tags": [
+        "数据类型",
+        "CHAR",
+        "VARCHAR"
+      ]
+    },
+    {
+      "id": "MySQL-016",
+      "number": 308,
+      "question": "请解释 MVCC（多版本并发控制）的实现原理？",
+      "answer": "**MVCC（Multi-Version Concurrency Control）**\n\n**核心思想：** 读操作不加锁，通过保存数据的多个历史版本实现读写并发。\n\n**三大实现要素：**\n\n1. **隐式字段**（每行记录）：\n   - `DB_TRX_ID`：最近修改这行的事务 ID（6 字节）\n   - `DB_ROLL_PTR`：回滚指针，指向 undo log 中的旧版本（7 字节）\n   - `DB_ROW_ID`：隐藏主键（如无显式主键，6 字节）\n\n2. **undo log（回滚日志）**：\n   - 存储数据的历史版本，形成版本链\n   - 事务回滚时从 undo log 恢复旧数据\n\n3. **Read View（读视图）**：\n   - RR 隔离级别：事务第一次快照读时创建，整个事务复用\n   - RC 隔离级别：每次快照读都创建新的 Read View\n   - 包含：活跃事务 ID 列表、最小/最大事务 ID\n\n**可见性判断：** 某版本数据的 trx_id 不在活跃事务列表中，且小于 Read View 的最小事务 ID，则可读。\n\n> MVCC 在 READ-COMMITTED 和 REPEATABLE-READ 下工作，SERIALIZABLE 下退化为加锁读。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "MVCC",
+        "并发控制",
+        "undo log"
+      ]
+    },
+    {
+      "id": "MySQL-017",
+      "number": 309,
+      "question": "请说明 MySQL 的锁机制（按粒度和按类型）？",
+      "answer": "**按粒度分：**\n\n| 锁类型 | 粒度 | 并发度 | 使用引擎 | 开销 |\n|--------|------|--------|----------|------|\n| **表锁** | 整张表 | 低 | MyISAM、Memory | 小 |\n| **行锁** | 单行 | 高 | InnoDB | 大 |\n| **页锁** | 数据页 | 中 | BDB | 中 |\n\n**按类型分：**\n\n| 锁类型 | 别称 | 兼容性 | 使用场景 |\n|--------|------|--------|----------|\n| **共享锁 (S)** | 读锁 | 多个 S 锁兼容 | `SELECT ... LOCK IN SHARE MODE` |\n| **排他锁 (X)** | 写锁 | 与任何锁互斥 | `SELECT ... FOR UPDATE` / DML |\n\n**重要：行锁升级为表锁的两种情况：**\n1. SQL 不走索引 → 行锁退化为表锁\n2. 非唯一索引重复数据过多 → 行锁升级\n\n**InnoDB 行锁算法：**\n- Record Lock：锁定单行记录\n- Gap Lock：锁定间隙（防止插入）\n- Next-Key Lock = Record Lock + Gap Lock（解决幻读）",
+      "category": "MySQL 数据库",
+      "tags": [
+        "锁机制",
+        "行锁",
+        "表锁",
+        "间隙锁"
+      ]
+    },
+    {
+      "id": "MySQL-018",
+      "number": 310,
+      "question": "请解释悲观锁和乐观锁的区别及适用场景？",
+      "answer": "| 维度 | 悲观锁 | 乐观锁 |\n|------|--------|--------|\n| **理念** | 默认数据会被修改 | 默认数据不会被修改 |\n| **实现** | 数据库锁机制（行锁、表锁） | 版本号 `version` 字段 |\n| **加锁时机** | 数据被读取时立即加锁 | 更新时才校验版本号 |\n| **并发性能** | 低（阻塞等待） | 高（无锁） |\n| **适用场景** | 写多读少、冲突率高 | 读多写少、冲突率低 |\n\n**悲观锁示例：**\n```sql\nBEGIN;\nSELECT stock FROM goods WHERE id = 1 FOR UPDATE;  -- 加排他锁\nUPDATE goods SET stock = stock - 1 WHERE id = 1;\nCOMMIT;\n```\n\n**乐观锁示例：**\n```sql\nUPDATE goods SET stock = stock - 1, version = version + 1\nWHERE id = 1 AND version = #{currentVersion};\n-- 判断 affected rows > 0，否则说明被其他事务修改，重试\n```\n\n> 分布式系统中，乐观锁更加常用，配合 CAS（Compare And Swap）模式。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "悲观锁",
+        "乐观锁",
+        "CAS"
+      ]
+    },
+    {
+      "id": "MySQL-019",
+      "number": 311,
+      "question": "如何避免数据库死锁？",
+      "answer": "**死锁四个必要条件**（缺一不可）：\n1. 互斥条件\n2. 持有并等待\n3. 不可剥夺\n4. 循环等待\n\n**规避死锁的实践：**\n\n1. **统一访问资源顺序**：所有事务按相同顺序锁定表/行（最重要！）\n2. **缩短事务**：将非数据库操作（RPC、计算）移出事务\n3. **设置锁超时**：`SET innodb_lock_wait_timeout = 5;` 避免无限等待\n4. **降低隔离级别**：RC 级别减少 Gap Lock，降低锁冲突概率\n5. **批量操作分拆**：大事务拆为小事务\n6. **合理使用索引**：避免行锁升级为表锁\n7. **死锁检测**：MySQL InnoDB 自动检测死锁并回滚代价较小的事务\n\n> 发生死锁时，应用层也应实现**重试机制**（捕获 Deadlock 异常后重试 3 次）。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "死锁",
+        "并发",
+        "锁"
+      ]
+    },
+    {
+      "id": "MySQL-020",
+      "number": 312,
+      "question": "主键和唯一索引的区别是什么？",
+      "answer": "| 维度 | 主键 (PRIMARY KEY) | 唯一索引 (UNIQUE INDEX) |\n|------|-------------------|------------------------|\n| **数量** | 一张表**仅一个** | 一张表**可多个** |\n| **NULL** | 不允许为空 | 允许单个 NULL（多个 NULL 不冲突） |\n| **外键引用** | 可作为外键引用 | ❌ 不能作为外键 |\n| **索引结构** | 自带唯一索引（聚集索引） | 非聚集索引 |\n| **数据存储** | 数据按主键顺序物理存储 | 索引和数据分离 |\n\n**本质关系：** 主键是一种特殊约束——满足唯一性 + 非空 + 一张表只有一个。技术上创建主键会自动创建唯一索引。",
+      "category": "MySQL 数据库",
+      "tags": [
+        "主键",
+        "唯一索引",
+        "约束"
+      ]
+    },
+    {
+      "id": "MySQL-021",
+      "number": 313,
+      "question": "如何实现 MySQL 高可用架构？",
+      "answer": "**MySQL 高可用四件套：**\n\n| 组件 | 作用 | 常用方案 |\n|------|------|----------|\n| **读写分离** | 分摊读写压力 | 主库写 + N 个从库读 |\n| **分库分表** | 突破单库瓶颈 | Mycat / Sharding-JDBC |\n| **负载均衡** | 分发请求到多从库 | HAProxy / ProxySQL |\n| **故障转移** | 主库宕机自动切换 | Keepalived + VIP / Orchestrator |\n\n**典型架构：**\n```\n          ┌─ HAProxy ─┐\n  App ─── │  (读写分离)  │ ─── MySQL Master  (写)\n          │  (负载均衡)  │ ─── MySQL Slave1  (读)\n          └─ Keepalived─┘ ─── MySQL Slave2  (读)\n```\n\n**其他高可用方案：**\n- **MHA**（Master High Availability）：自动故障切换 + 数据补全\n- **MGR**（MySQL Group Replication）：原生多主集群\n- **Orchestrator**：可视化管理 MySQL 拓扑，自动故障恢复",
+      "category": "MySQL 数据库",
+      "tags": [
+        "高可用",
+        "架构",
+        "主从"
+      ]
+    }
+  ]
+}

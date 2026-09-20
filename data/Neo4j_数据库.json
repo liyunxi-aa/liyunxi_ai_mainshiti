@@ -1,0 +1,1156 @@
+{
+  "category": "Neo4j 数据库",
+  "questions": [
+    {
+      "number": 1,
+      "id": "Neo4j 数据库面试题-001",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 的主要特性包括：(1) 原生图存储和计算引擎——数据以节点和关系的物理结构存储，遍历速度与数据规模无关（Index-Free Adjacency）；(2) Cypher 查询语言——声明式图查询语言，专为图模式匹配设计，可读性强；(3) ACID 事务支持——完全支持原子性、一致性、隔离性、持久性；(4) 高可用集群——支持因果一致性集群和读写分离；(5) 丰富的图算法库（GDS）——内置 PageRank、社区发现、最短路径等算法；(6) 多数据库支持——一个 Neo4j 实例可管理多个独立数据库；(7) 全栈图平台——包含 Bloom（可视化探索）、ETL 工具、监控等。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的主要特性有哪些？"
+    },
+    {
+      "number": 2,
+      "id": "Neo4j 数据库面试题-002",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 是一种原生图数据库（Native Graph Database），属于 NoSQL 数据库的一种。与关系型数据库不同，它不使用表和行，而是使用节点（Node）和关系（Relationship）来存储和表示数据。Neo4j 采用属性图模型（Property Graph Model），其中节点和关系都可以有键值对属性。它实现了原生图存储（而非在关系型或键值存储上模拟图），因此在图遍历和模式匹配查询上具有数量级的性能优势。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j属于哪种类型的数据库？"
+    },
+    {
+      "number": 3,
+      "id": "Neo4j 数据库面试题-003",
+      "category": "Neo4j 数据库",
+      "answer": "优势：(1) 图遍历性能——通过 Index-Free Adjacency，邻居节点通过物理指针直接访问，无需 JOIN 或索引查找，多跳查询性能远超关系型数据库；(2) 模型直观——业务中的实体关系自然映射为节点和关系，降低认知负担和建模复杂度；(3) 灵活 Schema——节点和关系可动态添加属性和标签，适应快速迭代的数据模型；(4) 内置图算法——社区发现、中心性分析等算法开箱即用。劣势：(1) 聚合查询（SUM、GROUP BY）不如 SQL 高效；(2) 生态和工具链不如关系型数据库成熟；(3) 人员技能要求——DBA 和开发者需学习图思维和图查询语言；(4) 不适合纯表格数据的批量分析。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j与关系型数据库相比，有什么优势和劣势？"
+    },
+    {
+      "number": 4,
+      "id": "Neo4j 数据库面试题-004",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 的主要应用场景：(1) 社交网络——好友推荐、影响力分析、关系路径发现；(2) 欺诈检测——通过交易网络中的环形结构和异常路径实时识别欺诈团伙；(3) 知识图谱——企业知识管理、百科知识推理、RDF 三元组存储；(4) 推荐系统——基于用户-物品-属性的异构图进行协同过滤和图嵌入推荐；(5) 身份和访问管理（IAM）——组织架构、权限继承关系的层次查询；(6) 供应链追溯——零件来源、产品成分的递归追溯；(7) 网络与 IT 运维——CMDB（配置管理数据库）的资产关系拓扑图；(8) 生物信息学——蛋白质相互作用网络、药物-靶点关系。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的应用场景有哪些？"
+    },
+    {
+      "number": 5,
+      "id": "Neo4j 数据库面试题-005",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 的核心概念：(1) 节点（Node）——图中的实体，可以有多个标签（Label）和属性（Property）；(2) 关系（Relationship）——节点之间的有向连接，必须有一个类型（Type），也可以有属性；(3) 属性（Property）——键值对，节点和关系都可拥有，支持字符串、数字、布尔、数组等基本类型；(4) 标签（Label）——节点的类型标记，一个节点可以有多个标签（如 Person、Employee）；(5) 路径（Path）——由节点和关系交替组成的序列；(6) 遍历（Traversal）——沿关系方向访问图的过程，是查询的核心操作模式；(7) 模式（Pattern）——Cypher 中用 (node:Label)-[rel:TYPE]->(other) 描述的子图结构。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的核心概念有哪些？"
+    },
+    {
+      "number": 6,
+      "id": "Neo4j 数据库面试题-006",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 安装在 Linux 上：(1) 添加 Neo4j 官方仓库后 apt-get install neo4j；(2) Docker：docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/password neo4j:latest；(3) 直接下载 tar.gz 解压后运行 bin/neo4j start；(4) 桌面版（Neo4j Desktop）用于开发和可视化，适合本地开发环境；(5) 默认配置——HTTP 端口 7474、Bolt 端口 7687，初始用户名密码 neo4j/neo4j（首次登录强制改密码）。\n\n```cypher\n// 创建带标签和属性的节点\nCREATE (p:Person {name: 'Alice', age: 30})\n\n// 为已有节点添加标签\nMATCH (p:Person {name: 'Alice'}) SET p:Employee\n\n// 查看节点\nMATCH (p:Person) RETURN p LIMIT 5\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中的节点(Node)是什么？"
+    },
+    {
+      "number": 7,
+      "id": "Neo4j 数据库面试题-007",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j AuraDB 是 Neo4j 官方提供的全托管云图数据库服务。优势：(1) 零运维——自动备份、自动扩缩容、安全补丁、版本升级全自动；(2) 快速启动——几分钟创建运行中的图数据库，无需配置基础设施；(3) 按需付费——提供免费套餐（AuraDB Free，5 万节点/17.5 万关系），适合学习和小型项目；(4) 企业特性——加密传输、VPC Peering、IAM 集成、SLA 保证；(5) 与 Neo4j 工具链原生集成——Bloom、Graph Data Science、ETL 工具无缝使用。与自托管相比，牺牲了部分定制灵活性（如不能安装自定义插件）。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中的关系(Relationship)是什么？"
+    },
+    {
+      "number": 8,
+      "id": "Neo4j 数据库面试题-008",
+      "category": "Neo4j 数据库",
+      "answer": "Cypher 是 Neo4j 的声明式图查询语言，类似 SQL 对关系型数据库的角色。其设计灵感来自 ASCII Art 风格的模式匹配：(nodes)-[relationships]->(other_nodes)。核心特点：(1) 模式驱动——用图结构描述要匹配的子图模式，查询逻辑直观；(2) 声明式——描述想要什么而非如何获取，优化器自动选择执行计划；(3) 表达式丰富——支持条件判断、聚合、列表推导、UNWIND 等操作；(4) 可更新——CREATE、MERGE、SET、DELETE 等写操作与读操作统一语法；(5) 2015 年被 openCypher 项目标准化，现已有多个图数据库支持。\n\n```cypher\n// 设置节点属性\nCREATE (p:Person {name: 'Bob', age: 25, email: 'bob@example.com'})\n\n// 修改属性\nMATCH (p:Person {name: 'Bob'}) SET p.age = 26\n\n// 属性支持多种类型\nCREATE (m:Movie {title: 'Inception', rating: 8.8, tags: ['sci-fi', 'thriller'], released: date('2010-07-16')})\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中的属性(Property)是什么？"
+    },
+    {
+      "number": 9,
+      "id": "Neo4j 数据库面试题-009",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 社区版和企业版的区别：(1) 集群——社区版不支持高可用集群，企业版支持因果一致性集群和只读副本；(2) 备份——社区版仅支持 dump/load 离线备份，企业版支持在线全量和增量备份；(3) 监控——企业版集成 Prometheus 监控，社区版需手动配置；(4) 安全——企业版支持 LDAP/AD 集成、Kerberos 认证、细粒度 RBAC、子图访问控制；(5) 多数据库——企业版支持多数据库功能更完善；(6) 内存管理——企业版的页面缓存管理更智能；(7) 许可证——社区版 GPLv3 开源免费，企业版商业许可证按实例收费。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中的标签(Label)是什么？"
+    },
+    {
+      "number": 10,
+      "id": "Neo4j 数据库面试题-010",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j Browser 是 Neo4j 自带的 Web 可视化查询界面，可通过 http://localhost:7474 访问。功能：(1) 交互式 Cypher 编辑器——语法高亮、自动补全、历史记录；(2) 图可视化——查询结果自动渲染为可视化图，支持拖拽、缩放、展开/折叠节点；(3) 辅助面板——显示节点标签、关系类型、属性键的统计信息；(4) 收藏常用查询——保存为书签重复使用；(5) 多数据库切换——选择不同数据库执行查询；(6) 结果导出——支持 CSV、PNG、SVG 等多种格式导出。它是最常用的 Neo4j 交互式开发工具。\n\n```cypher\n// 路径由节点和关系交替组成\nMATCH path = (a:Person {name: 'Alice'})-[:KNOWS*1..3]->(b:Person)\nRETURN path, nodes(path) AS people, relationships(path) AS connections, length(path) AS hops\n\n// 查找最短路径\nMATCH (a:Airport {code: 'JFK'}), (b:Airport {code: 'PEK'})\nMATCH p = shortestPath((a)-[:FLIES_TO*]-(b))\nRETURN p\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中的路径(Path)是什么？"
+    },
+    {
+      "number": 11,
+      "id": "Neo4j 数据库面试题-011",
+      "category": "Neo4j 数据库",
+      "answer": "Cypher Shell 是 Neo4j 的命令行查询客户端，通过 cypher-shell 命令启动：(1) 连接：cypher-shell -u neo4j -p password -a bolt://localhost:7687；(2) 执行方式——交互式（逐行输入）或非交互式（echo 'MATCH (n) RETURN n;' | cypher-shell）；(3) 输出格式——支持表格、纯文本、CSV 等；(4) 适合脚本化操作——在 shell 脚本中集成数据库操作，CI/CD 流程；(5) 支持 SSL/TLS 加密连接；适用于无图形界面的服务器环境或自动化运维。\n\n```cypher\n// Cypher 用 ASCII Art 风格描述图模式\n// 查找 Alice 认识的、住在 New York 的人\nMATCH (a:Person {name: 'Alice'})-[:KNOWS]->(friend:Person)\nWHERE friend.city = 'New York'\nRETURN friend.name, friend.age\n\n// 推荐共同好友\nMATCH (a:Person)-[:KNOWS]->(mutual:Person)<-[:KNOWS]-(b:Person)\nWHERE a.name = 'Alice' AND b.name = 'Bob'\nRETURN mutual.name\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j使用哪种查询语言？"
+    },
+    {
+      "number": 12,
+      "id": "Neo4j 数据库面试题-012",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 的沙盒（Sandbox）是官方提供的零安装云端体验环境：(1) 预置了不同场景的数据集——电影推荐、欺诈检测、知识图谱等，每个沙盒带有完整的数据集和示例查询；(2) 浏览器直接访问——Neo4j Browser 和 Bloom 都可通过 Web 使用；(3) 有效期 3 天（可延长）——适合快速原型验证和学习；(4) 完全免费——无需信用卡；(5) 限制——不能用于生产、有资源配额限制。访问 sandbox.neo4j.com 创建。",
+      "tags": [],
+      "question": "请简述Cypher是什么？"
+    },
+    {
+      "number": 13,
+      "id": "Neo4j 数据库面试题-013",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 数据模型的基本元素：(1) 节点（Node）——实体，如 Person、Movie、Product，用标签（Label）分类，可以有属性键值对；(2) 关系（Relationship）——节点之间带类型的连接，如 ACTED_IN、PURCHASED、FRIEND_OF，必须有一个方向（但查询时可忽略方向），可以有属性；(3) 属性（Property）——键值对，如 name: 'Tom Hanks'，类型包括 String、Integer、Float、Boolean、List、Point（空间坐标）、Date/Time/Duration（时间类型）；(4) 路径（Path）——节点和关系的交替序列。",
+      "tags": [],
+      "question": "请简述Cypher的主要特性有哪些？"
+    },
+    {
+      "number": 14,
+      "id": "Neo4j 数据库面试题-014",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中使节点类型不同的机制是标签（Label）：(1) 标签是节点的分类标记，如 :Person、:Company、:Movie；(2) 一个节点可以有多个标签（如 :Employee:Manager），实现多重分类和继承语义；(3) 查询时通过标签缩小搜索范围：MATCH (p:Person) 只扫描带 Person 标签的节点，配合索引可实现快速查找；(4) 没有标签的节点在大型数据集上查询极慢。标签是 Cypher 查询优化的第一步。",
+      "tags": [],
+      "question": "请简述Cypher中的MATCH语句有什么作用？"
+    },
+    {
+      "number": 15,
+      "id": "Neo4j 数据库面试题-015",
+      "category": "Neo4j 数据库",
+      "answer": "关系（Relationship）在 Neo4j 中的重要性：(1) 关系是连接两个节点的一等公民，将孤立的数据点变为有意义的图；(2) 关系必须有明确类型（如 ACTED_IN、FRIEND_OF）——类型是 Cypher 查询模式匹配的核心；(3) 关系可以有属性——如 ACTED_IN {role: 'Neo'}；(4) 关系必须有方向（->），但 Cypher 查询时可忽略方向：MATCH (a)-[:KNOWS]-(b)；(5) Index-Free Adjacency——关系存储为物理指针，遍历邻居节点是 O(1) 常量时间操作，不依赖索引，这是 Neo4j 图查询高性能的关键。",
+      "tags": [],
+      "question": "请简述Cypher中的CREATE语句有什么作用？"
+    },
+    {
+      "number": 16,
+      "id": "Neo4j 数据库面试题-016",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中创建数据的基本语句：(1) CREATE——创建新节点、关系或路径：CREATE (p:Person {name: 'Alice'}) 创建节点；CREATE (a)-[:KNOWS {since: 2020}]->(b) 创建关系；(2) MERGE——幂等操作，不存在则创建，存在则匹配：MERGE (p:Person {name: 'Alice'})；(3) SET——修改属性：SET n.age = 31; SET n:Employee 添加标签；(4) DELETE——DETACH DELETE n 删除节点及所有关系；(5) REMOVE——移除属性和标签。\n\n```cypher\n// MERGE - 幂等操作，不存在则创建\nMERGE (p:Person {email: 'alice@example.com'})\nON CREATE SET p.created_at = timestamp(), p.name = 'Alice'\nON MATCH SET p.last_seen = timestamp()\n\n// 用 MERGE 保证不重复添加关系\nMATCH (a:Person {name: 'Alice'})\nMATCH (b:Person {name: 'Bob'})\nMERGE (a)-[r:KNOWS]->(b)\nON CREATE SET r.since = date()\n```",
+      "tags": [],
+      "question": "请简述Cypher中的MERGE语句有什么作用？"
+    },
+    {
+      "number": 17,
+      "id": "Neo4j 数据库面试题-017",
+      "category": "Neo4j 数据库",
+      "answer": "MATCH 是 Cypher 的核心查询子句，用于匹配符合特定模式的子图。用法：(1) MATCH (p:Person)-[:ACTED_IN]->(m:Movie) 匹配演员及其电影；(2) 多跳遍历：MATCH (a)-[:KNOWS*2..4]->(b) 匹配 2-4 跳的朋友；(3) 最短路径：MATCH p=shortestPath((a)-[*]-(b))；(4) OPTIONAL MATCH 类似 SQL LEFT JOIN；(5) 配合 WHERE 子句添加条件过滤。MATCH 以声明式方式描述图模式，Cypher 优化器自动选择最优执行计划。\n\n```cypher\n// DELETE 删除节点或关系\nMATCH (a:Person {name: 'Alice'})-[r:KNOWS]->(b:Person {name: 'Bob'})\nDELETE r  // 只删除关系\n\n// DETACH DELETE 删除节点及所有关联关系\nMATCH (n:Person {name: 'Ghost'})\nDETACH DELETE n\n\n// 批量删除（分批提交避免 OOM）\nCALL { MATCH (n:OldData) WITH n LIMIT 10000 DETACH DELETE n RETURN count(*) } IN TRANSACTIONS\n```",
+      "tags": [],
+      "question": "请简述Cypher中的DELETE语句有什么作用？"
+    },
+    {
+      "number": 18,
+      "id": "Neo4j 数据库面试题-018",
+      "category": "Neo4j 数据库",
+      "answer": "MERGE 是幂等的创建或匹配操作（类似 UPSERT）。行为：(1) 先尝试匹配模式——图中存在则返回已有数据；(2) 部分匹配时——已存在的部分不重复创建，只创建缺失的部分；(3) 完全不存在时——创建全新数据；(4) ON CREATE SET 和 ON MATCH SET 分别在创建时和匹配时设置不同属性。使用场景：批量导入时确保唯一性、保证数据完整性。与 CREATE 的区别：MERGE 保证唯一，CREATE 无条件创建。\n\n```cypher\n// REMOVE 移除属性和标签\nMATCH (n:Person {name: 'Alice'})\nREMOVE n.temp_field  // 移除属性\n\n// 移除标签\nMATCH (n:Person:Employee {name: 'Alice'})\nREMOVE n:Employee\n\n// SET n.property = NULL 等效于 REMOVE n.property\nMATCH (n:Person {name: 'Alice'})\nSET n.optional_field = NULL\n```",
+      "tags": [],
+      "question": "请简述Cypher中的REMOVE语句有什么作用？"
+    },
+    {
+      "number": 19,
+      "id": "Neo4j 数据库面试题-019",
+      "category": "Neo4j 数据库",
+      "answer": "WHERE 子句在 Cypher 中的过滤作用：(1) 属性条件：WHERE n.age > 30 AND n.city = 'New York'；(2) 模式过滤：WHERE NOT (n)-[:BLOCKED]->(m) 排除特定关系模式的结果；(3) 正则匹配：WHERE n.email =~ '.*@example.com'；(4) 存在检查：WHERE exists(n.phone)；(5) IN 列表：WHERE n.role IN ['admin', 'moderator']；(6) 字符串匹配：STARTS WITH、CONTAINS、ENDS WITH。WHERE 可在 MATCH、WITH、OPTIONAL MATCH 后使用。\n\n```cypher\n// SET 设置属性和标签\nMATCH (n:Person {name: 'Alice'})\nSET n.age = 31, n.city = 'New York'  // 批量设置属性\n\n// 添加标签\nMATCH (n:Person {name: 'Alice'})\nSET n:Employee:Manager\n\n// 用 Map 替换所有属性\nMATCH (n:Person {name: 'Alice'})\nSET n = {name: 'Alice', age: 31, city: 'NYC'}\n\n// += 增量更新属性\nSET n += {phone: '555-1234'}\n```",
+      "tags": [],
+      "question": "请简述Cypher中的SET语句有什么作用？"
+    },
+    {
+      "number": 20,
+      "id": "Neo4j 数据库面试题-020",
+      "category": "Neo4j 数据库",
+      "answer": "Cypher 中常用的聚合函数：(1) COUNT——计数：COUNT(*) 或 COUNT(DISTINCT n.name)；(2) SUM——求和；(3) AVG——平均值；(4) MIN/MAX——最小/最大值；(5) COLLECT——收集为列表：COLLECT(n.name)；(6) 分组——聚合按非聚合列自动分组（类比 SQL GROUP BY）：RETURN n.city, COUNT(*)。聚合函数使 Cypher 不仅能做图遍历，还能完成统计分析。\n\n```cypher\n// RETURN 指定查询结果\nMATCH (p:Person)-[:ACTED_IN]->(m:Movie)\nRETURN p.name AS actor, m.title AS movie, m.year AS year\nORDER BY year DESC\nLIMIT 10\n\n// RETURN DISTINCT 去重\nMATCH (p:Person)-[:KNOWS]->(friend)\nRETURN DISTINCT friend.city\n\n// 返回路径（Browser 中渲染为图）\nMATCH path = (p:Person {name: 'Alice'})-[:KNOWS*1..2]->(other)\nRETURN path LIMIT 25\n```",
+      "tags": [],
+      "question": "请简述Cypher中的RETURN语句有什么作用？"
+    },
+    {
+      "number": 21,
+      "id": "Neo4j 数据库面试题-021",
+      "category": "Neo4j 数据库",
+      "answer": "RETURN 子句用于指定查询结果的内容和结构：(1) 返回节点/关系/属性：RETURN n, n.name, r.since；(2) 返回表达式：RETURN n.price * n.quantity AS total；(3) 别名：RETURN n.name AS full_name；(4) DISTINCT 去重；(5) ORDER BY 排序；(6) LIMIT/SKIP 分页：RETURN n SKIP 10 LIMIT 20；(7) 返回路径 p，在 Neo4j Browser 中渲染为可视化图。\n\n```cypher\n// WHERE 过滤条件\nMATCH (p:Person)\nWHERE p.age >= 18 AND p.city IN ['New York', 'London']\nRETURN p.name, p.age\n\n// 正则匹配\nMATCH (u:User)\nWHERE u.email =~ '.*@company\\\\.com'\nRETURN u.name\n\n// 模式过滤 - 排除已屏蔽的用户\nMATCH (a:Person)-[:KNOWS]->(b:Person)\nWHERE NOT (a)-[:BLOCKED]->(b)\nRETURN b.name\n\n// 存在检查\nMATCH (n:Person)\nWHERE exists(n.phone)\nRETURN n.name, n.phone\n```",
+      "tags": [],
+      "question": "请简述Cypher中的WHERE语句有什么作用？"
+    },
+    {
+      "number": 22,
+      "id": "Neo4j 数据库面试题-022",
+      "category": "Neo4j 数据库",
+      "answer": "SKIP 和 LIMIT 实现分页：(1) LIMIT N——限制返回 N 条记录；(2) SKIP N——跳过前 N 条记录：RETURN n SKIP 40 LIMIT 20 返回第 41-60 条；(3) 结合 ORDER BY 明确排序分页；(4) 性能注意——SKIP 较大的值（如跳过 10000 行）开销高，因为数据库仍需遍历跳过的行。大数据分页建议使用基于游标的键集分页（WHERE id > $last_id）。\n\n```cypher\n// ORDER BY 排序\nMATCH (p:Product)\nRETURN p.name, p.price, p.rating\nORDER BY p.rating DESC, p.price ASC\n\n// 结合聚合排序\nMATCH (c:Category)<-[:IN_CATEGORY]-(p:Product)\nRETURN c.name, COUNT(p) AS product_count\nORDER BY product_count DESC\nLIMIT 5\n\n// NULL 值处理 - 用 COALESCE 设默认值\nMATCH (p:Person)\nRETURN p.name, COALESCE(p.birth_year, 0) AS birth_year\nORDER BY birth_year DESC\n```",
+      "tags": [],
+      "question": "请简述Cypher中的ORDERBY语句有什么作用？"
+    },
+    {
+      "number": 23,
+      "id": "Neo4j 数据库面试题-023",
+      "category": "Neo4j 数据库",
+      "answer": "CREATE 和 MERGE 的主要区别：(1) CREATE 总是创建新数据——即使模式已存在也创建重复；(2) MERGE 是幂等操作——先查找匹配的模式，不存在时才创建；(3) 性能——MERGE 需要额外的查找步骤，比 CREATE 稍慢；(4) 使用场景——数据导入且保证无重复时用 MERGE，明确需要每次创建新实例时用 CREATE；(5) MERGE 可配合 ON CREATE SET 和 ON MATCH SET 实现灵活的条件操作。",
+      "tags": [],
+      "question": "请简述Cypher中的LIMIT语句有什么作用？"
+    },
+    {
+      "number": 24,
+      "id": "Neo4j 数据库面试题-024",
+      "category": "Neo4j 数据库",
+      "answer": "DELETE 和 DETACH DELETE 的区别：(1) DELETE——仅删除指定的节点或关系，但如果节点存在任何关系，DELETE 会失败报错（防止悬空关系）；(2) DETACH DELETE——先删除节点上的所有关系，再删除节点本身（级联删除），安全简洁；(3) 推荐——不确定节点是否有关联关系时用 DETACH DELETE；(4) 批量删除：MATCH (n:OldData) DETACH DELETE n；(5) 大批量用 CALL {} IN TRANSACTIONS 分批执行，避免内存溢出。\n\n```cypher\n// SKIP + LIMIT 分页\nMATCH (p:Product)\nRETURN p.name, p.price\nORDER BY p.created_at DESC\nSKIP 20 LIMIT 10  // 第 3 页（每页 10 条）\n\n// 键集分页（更高效，避免深度 SKIP 开销）\nMATCH (p:Product)\nWHERE p.created_at < $last_cursor\nRETURN p.name, p.price\nORDER BY p.created_at DESC\nLIMIT 10\n```",
+      "tags": [],
+      "question": "请简述Cypher中的SKIP语句有什么作用？"
+    },
+    {
+      "number": 25,
+      "id": "Neo4j 数据库面试题-025",
+      "category": "Neo4j 数据库",
+      "answer": "SET 子句用于修改节点和关系的属性及标签：(1) 设置属性：SET n.age = 31; SET n.name = 'Bob', n.city = 'NYC' 批量设置；(2) 添加标签：SET n:Employee；(3) 移除属性：SET n.phone = NULL 或 REMOVE n.phone；(4) 移除标签：REMOVE n:Employee；(5) 替换所有属性：SET n = {name: 'Alice', age: 30} 用 Map 完全替换；(6) 追加属性：SET n += {city: 'NYC'} 增量更新。\n\n```cypher\n// WITH 作为查询管道\nMATCH (p:Person)-[:ACTED_IN]->(m:Movie)\nWITH p, COUNT(m) AS movie_count\nWHERE movie_count >= 3\nRETURN p.name, movie_count\nORDER BY movie_count DESC\n\n// WITH + LIMIT 限制中间结果\nMATCH (p:Person)\nWITH p LIMIT 100\nMATCH (p)-[:KNOWS]->(friend)\nRETURN p.name, friend.name\n```",
+      "tags": [],
+      "question": "请简述Cypher中的WITH语句有什么作用？"
+    },
+    {
+      "number": 26,
+      "id": "Neo4j 数据库面试题-026",
+      "category": "Neo4j 数据库",
+      "answer": "FOREACH 子句用于对列表中的每个元素执行更新操作：FOREACH (tag IN ['ai', 'ml'] | MERGE (t:Tag {name: tag}) CREATE (post)-[:TAGGED]->(t))。典型场景：(1) 批量创建关系——将标签列表转为与某节点的关系；(2) 条件更新——FOREACH (x IN CASE WHEN condition THEN [1] ELSE [] END | ...) 实现条件执行；(3) 注意——FOREACH 内只能使用更新子句（CREATE、MERGE、SET、DELETE），不能使用 MATCH 或 RETURN。UNWIND 是更灵活的替代方案。",
+      "tags": [],
+      "question": "请简述Cypher中的UNION和UNIONALL有什么区别？"
+    },
+    {
+      "number": 27,
+      "id": "Neo4j 数据库面试题-027",
+      "category": "Neo4j 数据库",
+      "answer": "UNWIND 子句将列表展开为逐行：(1) 列表展开：WITH [1, 2, 3] AS list UNWIND list AS item RETURN item——返回 3 行；(2) 批量导入：WITH [{name: 'A'}, {name: 'B'}] AS users UNWIND users AS user CREATE (u:User {name: user.name})；(3) 与 FOREACH 的区别——UNWIND 后可以继续 MATCH、RETURN 等操作，更灵活；FOREACH 只能执行更新操作。批量数据处理推荐 UNWIND 展开后用 CREATE/MERGE。\n\n```cypher\n// OPTIONAL MATCH 类似 LEFT JOIN\nMATCH (p:Person {name: 'Alice'})\nOPTIONAL MATCH (p)-[:KNOWS]->(friend)\nOPTIONAL MATCH (p)-[:LIVES_IN]->(city:City)\nRETURN p.name, collect(friend.name) AS friends, city.name AS city\n// city 和 friends 可能为 null\n\n// 对比：MATCH 要求全部匹配\nMATCH (p:Person {name: 'Alice'})-[:KNOWS]->(friend)-[:LIVES_IN]->(city)\nRETURN friend.name, city.name  // 只有住在某城市的朋友才返回\n```",
+      "tags": [],
+      "question": "请简述Cypher中的OPTIONALMATCH有什么作用？"
+    },
+    {
+      "number": 28,
+      "id": "Neo4j 数据库面试题-028",
+      "category": "Neo4j 数据库",
+      "answer": "CALL 子句用于调用 Neo4j 的内置过程和自定义过程：(1) 调用内置过程：CALL db.labels() 列出所有标签；CALL db.schema.visualization() 查看 Schema 可视化；(2) 调用图算法：CALL gds.pageRank.stream('myGraph') YIELD nodeId, score；(3) 子查询（Cypher 4.x+）：CALL { MATCH (n) RETURN n LIMIT 5 } 在 CALL 块内执行子查询，支持 UNION；(4) 事务批处理：CALL { MATCH (n) DETACH DELETE n } IN TRANSACTIONS OF 1000 ROWS 分批删除。",
+      "tags": [
+        "索引"
+      ],
+      "question": "请简述Cypher中如何使用索引？"
+    },
+    {
+      "number": 29,
+      "id": "Neo4j 数据库面试题-029",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 索引是加速数据检索的关键机制：(1) 创建索引：CREATE INDEX person_name_idx FOR (p:Person) ON (p.name)——查询 MATCH (p:Person {name: 'Alice'}) 通过索引快速定位起始节点；(2) 复合索引：CREATE INDEX FOR (p:Person) ON (p.first_name, p.last_name)——优化多属性查找；(3) 全文索引：CREATE FULLTEXT INDEX person_fts FOR (p:Person) ON EACH [p.name, p.bio]——支持模糊搜索和文本分词；(4) 唯一约束隐含索引；(5) 索引对 MATCH 的起始节点查找最有效，对关系遍历无需索引（Index-Free Adjacency）。\n\n```cypher\n// 创建单属性索引\nCREATE INDEX person_name_idx FOR (p:Person) ON (p.name)\n\n// 创建复合索引（多属性查询优化）\nCREATE INDEX person_name_age FOR (p:Person) ON (p.first_name, p.last_name)\n\n// 创建全文索引（模糊搜索/文本匹配）\nCREATE FULLTEXT INDEX person_bio_idx FOR (p:Person) ON EACH [p.bio, p.title]\n// 使用全文索引\nCALL db.index.fulltext.queryNodes('person_bio_idx', 'machine learning') YIELD node RETURN node\n\n// 查看所有索引\nSHOW INDEXES\n```",
+      "tags": [
+        "索引"
+      ],
+      "question": "请简述Cypher中如何创建索引？"
+    },
+    {
+      "number": 30,
+      "id": "Neo4j 数据库面试题-030",
+      "category": "Neo4j 数据库",
+      "answer": "约束（Constraint）保证数据完整性：(1) 唯一约束：CREATE CONSTRAINT unique_email FOR (p:Person) REQUIRE p.email IS UNIQUE；(2) 节点键约束：CREATE CONSTRAINT person_key FOR (p:Person) REQUIRE (p.first_name, p.last_name) IS NODE KEY——复合唯一且非空；(3) 存在约束：CREATE CONSTRAINT FOR (p:Person) REQUIRE p.name IS NOT NULL（企业版）；(4) 关系属性存在约束；(5) 查看：SHOW CONSTRAINTS；(6) 删除：DROP CONSTRAINT constraint_name。约束在数据写入时即时检查，保证数据质量。\n\n```cypher\n// 删除索引\nDROP INDEX person_name_idx\n\n// 删除全文索引\nDROP INDEX person_bio_idx\n\n// 查看索引前先确认\nSHOW INDEXES YIELD name, type, entityType, labelsOrTypes, properties\nWHERE name CONTAINS 'person'\nRETURN name\n```",
+      "tags": [
+        "索引"
+      ],
+      "question": "请简述Cypher中如何删除索引？"
+    },
+    {
+      "number": 31,
+      "id": "Neo4j 数据库面试题-031",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中定义 Schema 通过 Cypher 语句：(1) 标签和关系类型随数据创建自动定义；(2) 索引：CREATE INDEX person_name FOR (p:Person) ON (p.name)；(3) 约束：CREATE CONSTRAINT unique_email FOR (p:Person) REQUIRE p.email IS UNIQUE；(4) 查看当前 Schema：CALL db.schema.visualization()；(5) Neo4j 是 Schema-Optional——可以灵活地不使用 Schema，也可以在需要数据完整性时显式定义约束。最佳实践是至少定义唯一约束来确保实体标识。\n\n```cypher\n// 唯一约束（同时创建索引）\nCREATE CONSTRAINT unique_email FOR (p:Person) REQUIRE p.email IS UNIQUE\n\n// 节点键约束（复合唯一 + 非空）\nCREATE CONSTRAINT person_key FOR (p:Person) REQUIRE (p.first_name, p.last_name) IS NODE KEY\n\n// 存在约束（企业版）\nCREATE CONSTRAINT require_name FOR (p:Person) REQUIRE p.name IS NOT NULL\n\n// 查看约束\nSHOW CONSTRAINTS\n\n// 删除约束\nDROP CONSTRAINT unique_email\n```",
+      "tags": [],
+      "question": "请简述Cypher中如何使用约束？"
+    },
+    {
+      "number": 32,
+      "id": "Neo4j 数据库面试题-032",
+      "category": "Neo4j 数据库",
+      "answer": "在 Neo4j 中修改已有节点：(1) 修改属性——SET n.property = newValue；(2) 添加标签——SET n:NewLabel；(3) 移除标签——REMOVE n:OldLabel；(4) 如需重命名标签，需先创建新标签然后删除旧标签：MATCH (n:OldLabel) SET n:NewLabel REMOVE n:OldLabel；(5) 关系类型的重命名——只能创建新关系复制属性再删除旧关系。设计 Schema 时应在初始阶段慎重命名，减少后期迁移成本。",
+      "tags": [],
+      "question": "请简述Cypher中如何创建唯一约束？"
+    },
+    {
+      "number": 33,
+      "id": "Neo4j 数据库面试题-033",
+      "category": "Neo4j 数据库",
+      "answer": "删除 Neo4j 中的数据库：(1) DROP DATABASE myDatabase IF EXISTS（企业版，先 STOP DATABASE）；(2) 删除所有数据：MATCH (n) DETACH DELETE n——删除所有节点和关系，但标签、索引、约束保留；(3) 批量删除：CALL { MATCH (n) WITH n LIMIT 10000 DETACH DELETE n RETURN count(*) } IN TRANSACTIONS；(4) 社区版：停止 Neo4j，删除 data/databases/ 下的对应目录；(5) 谨慎——删除操作不可逆，生产环境务必先备份。",
+      "tags": [],
+      "question": "请简述Cypher中如何创建节点键约束？"
+    },
+    {
+      "number": 34,
+      "id": "Neo4j 数据库面试题-034",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 支持的数据类型：(1) 基本类型——String、Integer、Float、Boolean；(2) 时间类型——Date、Time、DateTime、LocalTime、LocalDateTime、Duration；(3) 空间类型——Point（支持 WGS 84 地理坐标和笛卡尔坐标系）；(4) 复合类型——List（列表）、Map（键值对）；(5) 特殊值——NULL。Cypher 中的类型是动态的——不同节点的同名字段可以存不同类型（不推荐）。toInteger()、toString() 等函数可用于类型转换。",
+      "tags": [],
+      "question": "请简述Cypher中如何处理NULL值？"
+    },
+    {
+      "number": 35,
+      "id": "Neo4j 数据库面试题-035",
+      "category": "Neo4j 数据库",
+      "answer": "模式（Pattern）是 Cypher 查询的核心，用 ASCII Art 风格描述要匹配的图结构：(1) 节点模式：(node:Label {key: value})——匹配特定标签和属性的节点；(2) 关系模式：(a)-[rel:TYPE {key: value}]->(b)——匹配特定类型和属性的关系；(3) 可变长度路径：(a)-[:KNOWS*2..4]->(b)；(4) 最短路径：p = shortestPath((a)-[*]-(b))；(5) 模式可组合嵌套，用逗号连接多个模式表示 AND 逻辑。模式即是查询即文档。",
+      "tags": [],
+      "question": "请简述Cypher中的FOREACH语句有什么作用？"
+    },
+    {
+      "number": 36,
+      "id": "Neo4j 数据库面试题-036",
+      "category": "Neo4j 数据库",
+      "answer": "路径（Path）是节点和关系的交替序列：(1) 简单路径——节点不重复；(2) 可变长度路径：MATCH p=(a)-[:KNOWS*1..5]->(b) RETURN p；(3) 最短路径：MATCH p=shortestPath((a)-[*]-(b))；(4) 所有最短路径：allShortestPaths()；(5) 路径函数：nodes(p) 返回节点列表，relationships(p) 返回关系列表，length(p) 返回长度；(6) 加权最短路径需配合 GDS 的 Dijkstra 算法。",
+      "tags": [],
+      "question": "请简述Cypher中的CASE语句有什么作用？"
+    },
+    {
+      "number": 37,
+      "id": "Neo4j 数据库面试题-037",
+      "category": "Neo4j 数据库",
+      "answer": "可变长度路径查询用于遍历多跳关系，语法为 [:TYPE*min..max]：(1) 固定范围：MATCH (a)-[:KNOWS*2]->(b)——精确 2 跳；(2) 范围：MATCH (a)-[:KNOWS*1..5]->(b)——1 到 5 跳；(3) 无穷上限慎用：(a)-[:KNOWS*]->(b) 可能导致全图扫描；(4) 配合 DISTINCT 去重；(5) 性能考虑——在大型图上设置合理上限，配合 WHERE 条件、方向约束和标签过滤缩小搜索空间。",
+      "tags": [],
+      "question": "请简述Cypher中的LOADCSV语句有什么作用？"
+    },
+    {
+      "number": 38,
+      "id": "Neo4j 数据库面试题-038",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中的函数分类：(1) 字符串函数——toUpper()、toLower()、replace()、split()、substring()、trim()；(2) 数学函数——abs()、ceil()、floor()、round()、rand()；(3) 聚合函数——COUNT()、SUM()、AVG()、MIN()、MAX()、COLLECT()、STDEV()；(4) 列表函数——size()、head()、tail()、reverse()、reduce()、range()；(5) 谓词函数——all()、any()、none()、single()、exists()；(6) 标量函数——id()、labels()、type()、properties()、timestamp()。",
+      "tags": [],
+      "question": "请简述Cypher中如何导入数据？"
+    },
+    {
+      "number": 39,
+      "id": "Neo4j 数据库面试题-039",
+      "category": "Neo4j 数据库",
+      "answer": "Cypher 中实现 IF-ELSE 条件逻辑：(1) CASE WHEN 表达式：CASE WHEN n.age < 18 THEN 'minor' WHEN n.age < 65 THEN 'adult' ELSE 'senior' END AS age_group；(2) 简单 CASE：CASE n.role WHEN 'admin' THEN 'Administrator' ELSE 'Unknown' END；(3) 在 SET 中使用：SET n.status = CASE WHEN n.score > 60 THEN 'pass' ELSE 'fail' END；(4) APOC 过程：CALL apoc.when(condition, 'true_query', 'false_query', params)；(5) CASE 是表达式（返回值），不是控制流语句。",
+      "tags": [],
+      "question": "请简述Cypher中如何导出数据？"
+    },
+    {
+      "number": 40,
+      "id": "Neo4j 数据库面试题-040",
+      "category": "Neo4j 数据库",
+      "answer": "WITH 子句的作用：(1) 查询管道——将 Cypher 查询分为多个阶段，前阶段结果通过 WITH 传递到下阶段；(2) 重命名和计算：WITH n.name AS name, n.price * n.quantity AS total；(3) 聚合后过滤（类似 SQL HAVING）：WITH n.category, COUNT(*) AS cnt WHERE cnt > 10 RETURN n.category, cnt；(4) 限制中间结果：MATCH (n) WITH n LIMIT 100 MATCH (n)-[:KNOWS]->(f)；(5) WITH 是性能优化的关键工具——缩小中间结果集再做高代价操作。",
+      "tags": [],
+      "question": "请简述Cypher中如何使用函数？"
+    },
+    {
+      "number": 41,
+      "id": "Neo4j 数据库面试题-041",
+      "category": "Neo4j 数据库",
+      "answer": "使用 WITH 子句优化复杂查询性能：(1) 尽早过滤——在 MATCH 后用 WITH + WHERE 缩小中间结果集；(2) LIMIT 提前——在嵌套 MATCH 前用 WITH ... LIMIT N 限制参与后续遍历的起始节点数量；(3) 提前聚合——WITH 后聚合减少传递给 RETURN 的行数；(4) 避免笛卡尔积——WITH 隔离两个 MATCH 语句，防止交叉连接；(5) 列筛选——WITH 只传递后续必要的列。黄金法则：每一步尽可能减少数据量。",
+      "tags": [],
+      "question": "请简述Cypher中有哪些常用的函数？"
+    },
+    {
+      "number": 42,
+      "id": "Neo4j 数据库面试题-042",
+      "category": "Neo4j 数据库",
+      "answer": "列表推导是 Cypher 中的列表转换语法：[expression IN list WHERE condition | transformation]：(1) 基本：RETURN [x IN range(1, 5) WHERE x % 2 = 0 | x * x]——返回 [4, 16]；(2) 节点属性提取：RETURN [p IN nodes(path) WHERE p:Person | p.name]；(3) 嵌套列表推导：[[n.name, r.role] FOR (n)-[r]->()]；(4) 配合 reduce：reduce(total = 0, n IN nodes(path) | total + n.value)。列表推导是函数式编程风格在 Cypher 中的体现。\n\n```cypher\n// 用户自定义函数（Java 编写，注册到 Neo4j 插件）\n// 调用自定义函数\nRETURN my.customFunction('input', 42) AS result\n\n// APOC 提供了丰富的自定义函数\n// 文本处理\nRETURN apoc.text.clean('Some   messy    text') AS cleaned\n// 日期处理\nRETURN apoc.date.format(timestamp(), 'ms', 'yyyy-MM-dd HH:mm:ss') AS formatted\n// 数学\nRETURN apoc.math.round(3.14159, 2) AS rounded\n```",
+      "tags": [],
+      "question": "请简述Cypher中如何定义自定义函数？"
+    },
+    {
+      "number": 43,
+      "id": "Neo4j 数据库面试题-043",
+      "category": "Neo4j 数据库",
+      "answer": "Cypher 中的集合操作：(1) 列表拼接：RETURN [1, 2] + [3, 4]——[1, 2, 3, 4]；(2) 元素检查：RETURN 3 IN [1, 2, 3, 4]——true；(3) 交集/差集/并集通过列表推导实现——交集 [x IN list1 WHERE x IN list2]；(4) UNION / UNION ALL——合并两个查询结果（列数和类型必须匹配）；(5) apoc.coll 过程提供更多集合操作。\n\n```cypher\n// 属性图模型示例\n// 节点（带标签和属性）\nCREATE (alice:Person:Customer {name: 'Alice', email: 'alice@example.com', created_at: datetime()})\n\n// 关系（带类型和属性）\nCREATE (alice)-[:PURCHASED {quantity: 2, price: 29.99, date: date('2024-01-15')}]->(product:Product {name: 'Widget', sku: 'W-001'})\n\n// 图模式匹配\nMATCH (c:Customer)-[order:PURCHASED]->(p:Product)\nWHERE order.date > date('2024-01-01')\nRETURN c.name, p.name, order.quantity, order.price\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的数据模型是什么？"
+    },
+    {
+      "number": 44,
+      "id": "Neo4j 数据库面试题-044",
+      "category": "Neo4j 数据库",
+      "answer": "使用 APOC 扩展 Neo4j 功能：(1) 安装——下载 apoc.jar 放入 plugins/ 目录，重启 Neo4j；(2) 常用功能：apoc.periodic.iterate——批量处理；apoc.load.json/load.csv——数据加载；apoc.path.expand——高级图遍历；apoc.date/convert/toMap——类型转换；(3) 调用方式：CALL apoc.help('search') 搜索可用过程。APOC 是 Neo4j 的瑞士军刀，几乎所有高级操作都依赖它。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j如何存储数据？"
+    },
+    {
+      "number": 45,
+      "id": "Neo4j 数据库面试题-045",
+      "category": "Neo4j 数据库",
+      "answer": "使用 APOC 批量处理大数据集：(1) apoc.periodic.iterate——分批次处理，避免内存溢出：CALL apoc.periodic.iterate('MATCH (n:Old) RETURN n', 'DETACH DELETE n', {batchSize: 10000, parallel: true})；(2) 参数——batchSize 每批记录数，parallel 是否并行；(3) Neo4j 4.4+ 原生替代：CALL { MATCH (n) WITH n LIMIT 10000 DETACH DELETE n RETURN count(*) } IN TRANSACTIONS 更推荐，内置支持。\n\n```cypher\n// 创建索引\nCREATE INDEX person_name_idx FOR (p:Person) ON (p.name)\n\n// 使用索引的查询（自动命中）\nMATCH (p:Person {name: 'Alice'}) RETURN p\n\n// 查看查询执行计划，确认使用了索引\nEXPLAIN MATCH (p:Person {name: 'Alice'}) RETURN p\n// 输出中出现 NodeIndexSeek 表示使用了索引\n\n// 查看索引统计\nSHOW INDEXES YIELD name, type, uniqueness, populationPercent\n```",
+      "tags": [
+        "Neo4j",
+        "索引"
+      ],
+      "question": "请简述Neo4j的索引是如何工作的？"
+    },
+    {
+      "number": 46,
+      "id": "Neo4j 数据库面试题-046",
+      "category": "Neo4j 数据库",
+      "answer": "使用 APOC 加载 JSON 数据：CALL apoc.load.json('file:///data.json') YIELD value。加载后解析：(1) 遍历 JSON 数组：UNWIND value.items AS item CREATE (n:Item {name: item.name})；(2) 从 URL 加载：CALL apoc.load.json('https://api.example.com/data')；(3) 批量加载 CSV：CALL apoc.load.csv('file:///data.csv', {header: true}) YIELD map CREATE (p:Person) SET p = map；(4) 导出 JSON：CALL apoc.export.json.all('export.json')。file:// 路径相对于 Neo4j import 目录。\n\n```cypher\n// 显式事务\nBEGIN\nMATCH (a:Account {id: 1})\nSET a.balance = a.balance - 100\nMATCH (b:Account {id: 2})\nSET b.balance = b.balance + 100\nCOMMIT\n\n// 失败时回滚\nBEGIN\nMATCH (a:Account {id: 1})\nSET a.balance = a.balance - 10000\n// 如果余额不足\nROLLBACK\n```\n```python\n# Python 驱动中的事务\nfrom neo4j import GraphDatabase\n\ndef transfer_money(tx, from_id, to_id, amount):\n    tx.run('MATCH (a:Account {id: $from_id}) '\n           'SET a.balance = a.balance - $amount',\n           from_id=from_id, amount=amount)\n    tx.run('MATCH (b:Account {id: $to_id}) '\n           'SET b.balance = b.balance + $amount',\n           to_id=to_id, amount=amount)\n\nwith driver.session() as session:\n    session.execute_write(transfer_money, 1, 2, 100)\n```",
+      "tags": [
+        "Neo4j",
+        "事务"
+      ],
+      "question": "请简述Neo4j的事务是如何工作的？"
+    },
+    {
+      "number": 47,
+      "id": "Neo4j 数据库面试题-047",
+      "category": "Neo4j 数据库",
+      "answer": "使用 APOC 动态调用查询：(1) 动态 Cypher：CALL apoc.cypher.run('MATCH (n:' + $label + ') RETURN n', {label: 'Person'})——动态拼接查询；(2) 批量并行执行：CALL apoc.cypher.runMany('...')；(3) 获取元数据：CALL apoc.meta.data() 查看所有标签、关系类型、属性分布；(4) 生成 Schema 图：CALL apoc.meta.graph()；(5) 获取统计：CALL apoc.meta.stats() 返回节点数、关系数。APOC 反射功能在动态 ETL 和监控场景中很有用。",
+      "tags": [
+        "Neo4j",
+        "事务"
+      ],
+      "question": "请简述Neo4j支持哪些事务隔离级别？"
+    },
+    {
+      "number": 48,
+      "id": "Neo4j 数据库面试题-048",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j Graph Data Science (GDS) 库是官方图算法库，提供生产级图算法：(1) 核心类别——路径查找（Dijkstra、A*）、中心性（PageRank、Betweenness）、社区检测（Louvain、Label Propagation）、相似性（Jaccard、Cosine）、节点嵌入（Node2Vec、FastRP、GraphSAGE）；(2) 安装：从 Neo4j Desktop 或下载 gds.jar；(3) 使用流程——创建图投影（gds.graph.project），运行算法（stream/write/mutate），写入结果或返回查询，删除投影释放内存。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j如何进行权限控制？"
+    },
+    {
+      "number": 49,
+      "id": "Neo4j 数据库面试题-049",
+      "category": "Neo4j 数据库",
+      "answer": "使用 GDS 运行 PageRank 算法：(1) 创建图投影：CALL gds.graph.project('myGraph', 'Page', {LINKS: {type: 'LINKS', orientation: 'NATURAL'}})；(2) stream 模式：CALL gds.pageRank.stream('myGraph', {maxIterations: 20, dampingFactor: 0.85}) YIELD nodeId, score RETURN gds.util.asNode(nodeId).url AS url, score ORDER BY score DESC；(3) write 模式：将分数写入节点属性；(4) mutate 模式：写入内存投影但不持久化；(5) 清理：CALL gds.graph.drop('myGraph') 释放内存。\n\n```cypher\n// 创建用户\nCREATE USER alice SET PASSWORD 'secret123' CHANGE NOT REQUIRED\n\n// 创建角色\nCREATE ROLE dataAnalyst\n\n// 授予读权限\nGRANT ROLE dataAnalyst TO alice\nGRANT MATCH {*} ON GRAPH neo4j TO dataAnalyst\nGRANT READ {*} ON GRAPH neo4j TO dataAnalyst\n\n// 查看用户和角色\nSHOW USERS\nSHOW ROLES\n\n// 修改密码\nALTER USER alice SET PASSWORD 'new_secret456'\n\n// 删除用户\nDROP USER alice\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何创建用户？"
+    },
+    {
+      "number": 50,
+      "id": "Neo4j 数据库面试题-050",
+      "category": "Neo4j 数据库",
+      "answer": "Labels（标签）和 Relationship Types（关系类型）是 Neo4j 的核心分类机制：(1) Labels——节点的类型标记（:Person、:Company），一个节点可以有多个标签；(2) Relationship Types——关系的类型标记（ACTED_IN、KNOWS），每个关系有且仅有一个类型；(3) 类似关系型数据库的表名，但查询无需 JOIN——通过关系类型直接导航；(4) 索引和约束基于 Label 和属性定义；(5) 查询设计原则——优先通过标签缩小搜索空间：MATCH (p:Person {name: 'Alice'}) 而非 MATCH (n {name: 'Alice'})。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何删除用户？"
+    },
+    {
+      "number": 51,
+      "id": "Neo4j 数据库面试题-051",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中的节点（Node）：(1) 图中的实体——在 Browser 中渲染为圆形/图标；(2) 组成——至少一个标签，零或多个属性，通过关系连接到其他节点；(3) 每个节点有不可变的内部 ID，但推荐使用业务唯一标识（如 uuid）；(4) 节点的物理存储——基于链表结构连接其关系，关系指针实现 O(1) 邻居遍历；(5) 节点可以有多个标签——标签可在创建后动态添加和移除。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何修改用户密码？"
+    },
+    {
+      "number": 52,
+      "id": "Neo4j 数据库面试题-052",
+      "category": "Neo4j 数据库",
+      "answer": "关系（Relationship）是 Neo4j 的一等公民：(1) 在两个节点之间建立有向连接，始终有一个类型；(2) 关系可以有属性（键值对）；(3) 关系不能独立存在——必须连接两个现有节点；(4) 内部存储——关系物理包含起止节点 ID、类型、属性、以及同节点的上一个/下一个关系指针（双向链表），实现快速邻接遍历；(5) 关系是图数据库区别于关系型数据库的核心——将关系从逻辑 JOIN 提升为物理存储实体，多跳查询无需表连接。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何分配角色？"
+    },
+    {
+      "number": 53,
+      "id": "Neo4j 数据库面试题-053",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中遍历特定关系类型的方法：(1) 指定类型：MATCH (a:Person)-[:KNOWS]->(b)；(2) 多种类型：MATCH (a)-[:KNOWS|:FAMILY_OF]->(b)；(3) 排除类型：MATCH (a)-[r]->(b) WHERE type(r) <> 'BLOCKED'；(4) 反向遍历：MATCH (a)<-[:KNOWS]-(b)；(5) 双向（忽略方向）：MATCH (a)-[:KNOWS]-(b)；(6) 可变深度多类型：MATCH (a)-[:KNOWS|FAMILY_OF*1..3]-(b)。遍历性能取决于访问的关系数量而非图总大小。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用Bolt协议？"
+    },
+    {
+      "number": 54,
+      "id": "Neo4j 数据库面试题-054",
+      "category": "Neo4j 数据库",
+      "answer": "使用 Neo4j Browser 可视化图数据库：(1) 打开 http://localhost:7474，输入 Cypher 查询后结果自动渲染为图；(2) 交互——点击节点查看属性、展开/折叠邻居节点（双击或右键）；(3) 导出——结果可导出为 PNG、SVG 图片或 CSV/JSON；(4) Bloom——Neo4j 的专业可视化工具，支持自然语言搜索和透视探索；(5) 第三方工具——neovis.js（网页嵌入）、Graphlytic、KeyLines。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的集群架构是怎样的？"
+    },
+    {
+      "number": 55,
+      "id": "Neo4j 数据库面试题-055",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 图分析的主要类型：(1) 中心性分析——识别最重要节点：PageRank、Betweenness、Closeness；(2) 社区检测——发现紧密群体：Louvain、Label Propagation、WCC；(3) 路径分析——最短路径、所有路径、最小生成树；(4) 相似性分析——Jaccard、Cosine 相似度；(5) 链接预测——Adamic Adar、Common Neighbors、Preferential Attachment。通过 GDS 库实现。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的因果集群(CausalClustering)是什么？"
+    },
+    {
+      "number": 56,
+      "id": "Neo4j 数据库面试题-056",
+      "category": "Neo4j 数据库",
+      "answer": "社区检测算法用于发现图中的紧密子群：(1) Louvain——基于模块度最大化的分层聚类，速度快、效果好，适合大规模图；(2) Label Propagation——基于邻居标签投票的快速算法，近乎线性时间，适合超大图初步分析；(3) WCC——识别连通的子图，最简单但有用的结构分析；(4) SCC——有向图的强连通分量。应用场景：社交圈分析、电商用户分群、欺诈团伙识别、蛋白质功能模块发现。\n\n```properties\n# neo4j.conf - Core 节点配置\ndbms.mode=CORE\ninitial.server.mode_constraint=PRIMARY\n\n# 集群发现\ndbms.cluster.discovery.endpoints=core01:5000,core02:5000,core03:5000\n\n# Raft 配置\ndbms.cluster.minimum_initial_system_primaries_count=3\n```\nCore 节点数通常为奇数（3 或 5），通过 Raft 共识选举 Leader。Leader 处理所有写操作，Follower 同步复制日志。写操作需要 quorum（大多数）确认后才能提交，保证强一致性。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j集群中的核心服务器(CoreServer)有什么作用？"
+    },
+    {
+      "number": 57,
+      "id": "Neo4j 数据库面试题-057",
+      "category": "Neo4j 数据库",
+      "answer": "中心性分析衡量节点在图中的重要程度：(1) PageRank——被重要节点指向的节点也重要，基于链接传递的全局重要性；(2) Degree Centrality——度数中心性，连接数越多越重要；(3) Betweenness Centrality——中介中心性，经过某节点的最短路径占比，信息流动的桥节点；(4) Closeness Centrality——到所有其他节点的平均距离；(5) Eigenvector Centrality——与 PageRank 类似但无阻尼因子。选择：传播扩散用 PageRank，信息控制用 Betweenness，局部重要性用 Degree。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j集群中的副本服务器(ReplicaServer)有什么作用？"
+    },
+    {
+      "number": 58,
+      "id": "Neo4j 数据库面试题-058",
+      "category": "Neo4j 数据库",
+      "answer": "最短路径在 Neo4j 中的实现：(1) 内置 shortestPath：MATCH p=shortestPath((a {name: 'Alice'})-[:KNOWS*]-(b {name: 'Bob'})) RETURN p, length(p)；(2) allShortestPaths——返回所有最短路径；(3) 加权最短路径——GDS 的 Dijkstra：CALL gds.shortestPath.dijkstra.stream('graph', {sourceNode: a, targetNode: b, relationshipWeightProperty: 'distance'})；(4) A*——有坐标时比 Dijkstra 更快；(5) Yen's k-shortest——前 K 条最短路径。应用：导航、关系链、供应链优化。\n\n```properties\n# neo4j.conf - Read Replica 配置\ndbms.mode=READ_REPLICA\n\n# 指定上游 Core 服务器\ndbms.cluster.discovery.endpoints=core01:5000,core02:5000,core03:5000\n```\nRead Replica 只同步数据不参与选举，专用于分担读查询负载。\n```cypher\n// 客户端指定路由策略\n// Python 驱动 - 读操作路由到 Replica\nsession = driver.session(database='neo4j', default_access_mode='READ')\n// 写操作路由到 Core Leader\nsession = driver.session(database='neo4j', default_access_mode='WRITE')\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j集群中的读副本(ReadReplica)有什么作用？"
+    },
+    {
+      "number": 59,
+      "id": "Neo4j 数据库面试题-059",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 处理大型图和高并发的机制：(1) 索引加速起始节点查找；(2) Index-Free Adjacency——邻居遍历 O(1)，不依赖索引；(3) 页面缓存——热数据缓存在内存中；(4) Bolt 二进制协议——比 HTTP 更高效，连接池复用；(5) 查询计划缓存——避免重复编译；(6) 企业版读写分离——只读副本分担查询负载；(7) Fabric 图分片——跨多个数据库分布图数据；(8) 查询优化——合理 MATCH 顺序、标签过滤、LIMIT 提前。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j如何进行备份和恢复？"
+    },
+    {
+      "number": 60,
+      "id": "Neo4j 数据库面试题-060",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 查询优化策略：(1) 使用标签索引——查询总是指定标签和索引属性；(2) 合适的 MATCH 顺序——从最小结果集开始匹配；(3) 避免全图扫描——不加 LIMIT 的无标签 MATCH 是性能杀手；(4) EXPLAIN 和 PROFILE 分析执行计划；(5) 参数化查询——使用 $param 而非字符串拼接，允许计划缓存；(6) 限制深度——可变路径设合理上限；(7) 只返回需要的列——避免 RETURN *。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的备份类型有哪些？"
+    },
+    {
+      "number": 61,
+      "id": "Neo4j 数据库面试题-061",
+      "category": "Neo4j 数据库",
+      "answer": "EXPLAIN 和 PROFILE 的区别：EXPLAIN 仅展示查询的执行计划和估算代价，不实际执行查询。PROFILE 实际执行查询并展示实际执行统计（实际行数 vs 估算行数、数据库命中数、每个算子的耗时、内存使用）。用法：(1) EXPLAIN——开发初期，快速验证是否使用了索引、是否全扫描；(2) PROFILE——深入了解实际执行瓶颈，比较不同查询方案的实测性能。PROFILE 有额外开销，不要在生产环境 PROFILE 高并发查询。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用neo4j-adminbackup命令进行备份？"
+    },
+    {
+      "number": 62,
+      "id": "Neo4j 数据库面试题-062",
+      "category": "Neo4j 数据库",
+      "answer": "EXPLAIN 输出的解读要点：(1) 执行计划树从下往上读，底层是起始数据检索（NodeIndexSeek 说明命中索引，NodeByLabelScan 是全标签扫描）；(2) EstimatedRows——估算行数，与实际行数差距大说明统计信息需更新；(3) DB Hits——数据库访问次数，越小越好；(4) 算子——Expand(All) 沿关系扩展、Filter 应用条件、Eager 物化中间结果（可能内存瓶颈）、Apply 嵌套循环。优化目标：索引查找在底层、尽早 Filter、避免 Eager。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用neo4j-adminrestore命令进行恢复？"
+    },
+    {
+      "number": 63,
+      "id": "Neo4j 数据库面试题-063",
+      "category": "Neo4j 数据库",
+      "answer": "常见查询性能问题及解决方案：(1) 全标签扫描——未使用索引属性过滤，解决：创建索引并将索引属性放在 MATCH 条件中；(2) 无限深度路径 [:KNOWS*]——全图遍历，解决：设置深度上限；(3) 中间结果膨胀——MATCH A, MATCH B 产生笛卡尔积，解决：用 WITH 隔离；(4) Eager 操作——消耗内存，解决：重写查询避免 Eager；(5) 缺失索引——Neo4j 不自动创建索引，解决：手动 CREATE INDEX；(6) 页面缓存不足——频繁磁盘 I/O，解决：增大 dbms.memory.pagecache.size。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的监控和管理工具有哪些？"
+    },
+    {
+      "number": 64,
+      "id": "Neo4j 数据库面试题-064",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 图数据优化的关键方法：(1) 使用合适的索引——在 WHERE 过滤的属性上创建索引，复合查询用复合索引；(2) 避免超级节点——一个节点百万级关系，用中间节点或时间分片分流；(3) 关系方向一致——与大多数查询方向一致，提高缓存命中；(4) 避免在属性中存大数据——大文本/图片存外部存储（S3），Neo4j 只存 URL；(5) 页面缓存配置——覆盖热数据集的 50-80%；(6) Heap 内存——大型聚合查询需要足够 Heap。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用Neo4jBrowser？"
+    },
+    {
+      "number": 65,
+      "id": "Neo4j 数据库面试题-065",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 数据库的最佳设计实践：(1) 高频查询的实体应作为节点而非内嵌属性（如 Tag 应作为节点而非属性列表）；(2) 实体间的关联作为关系而非外键属性；(3) 属性原子性——每个属性存储单一值，列表值拆为多个关系或独立节点；(4) 命名规范——标签用 PascalCase（Person）、关系类型用 UPPER_SNAKE_CASE（ACTED_IN）、属性用 camelCase；(5) 唯一标识——每个节点有业务唯一标识（如 uuid），不依赖内部 ID。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用Neo4jDesktop？"
+    },
+    {
+      "number": 66,
+      "id": "Neo4j 数据库面试题-066",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中存储链表/队列数据：(1) 用关系链接元素：(a)-[:NEXT]->(b)-[:NEXT]->(c)；(2) 头节点/尾节点用 :Head 和 :Tail 标签标记快速定位；(3) 双向链表——同时维护 NEXT 和 PREV 关系；(4) 优势——图遍历天然支持链表的插入和删除操作，比关系型数据库的 sort_order 列更新高效得多；(5) 典型应用——事件溯源（Event Sourcing）、时间线、审批流程链。\n\n```bash\n# 连接 Neo4j\ncypher-shell -u neo4j -p password -a bolt://localhost:7687\n\n# 非交互式执行查询\ncypher-shell -u neo4j -p password \\\n  \"MATCH (n:Person) RETURN n.name LIMIT 5;\"\n\n# 从文件执行查询\ncypher-shell -u neo4j -p password < queries.cypher\n\n# 输出 CSV 格式\ncypher-shell -u neo4j -p password --format plain \\\n  \"MATCH (n) RETURN n.name, labels(n)\" > output.csv\n```",
+      "tags": [],
+      "question": "请简述如何使用CypherShell？"
+    },
+    {
+      "number": 67,
+      "id": "Neo4j 数据库面试题-067",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 不适合的场景：(1) 大规模聚合分析——列式数据库（ClickHouse、BigQuery）效率更高；(2) 纯键值查找——Redis/MongoDB 更简单高效；(3) 全文搜索——Elasticsearch 更专业；(4) 高吞吐写入——Kafka + 时序数据库更适合；(5) BLOB 存储——大文件用对象存储 + 引用；(6) 传统报表查询——数据仓库中执行更高效。Neo4j 擅长关系密集型数据的关联分析，而非孤立数据的批量处理。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用neo4j-admin工具？"
+    },
+    {
+      "number": 68,
+      "id": "Neo4j 数据库面试题-068",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 图数据模型设计的基本原则：(1) 实体为节点——独立存在的业务实体建模为节点（User、Product、Order）；(2) 关系为边——实体间的交互建模为关系（PURCHASED、FRIEND_OF）；(3) 属性在节点——实体的性质作为节点属性；(4) 关系也可有属性——如 since、quantity、role；(5) 多对多关系——直接建模为关系，无需中间关联表；(6) 避免冗余关系——可通过路径推导的不必创建直接关系；(7) 从问题出发——先定义核心查询场景，再反向设计图模型。",
+      "tags": [],
+      "question": "请简述如何使用Halin？"
+    },
+    {
+      "number": 69,
+      "id": "Neo4j 数据库面试题-069",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中的图嵌入（Graph Embedding）：(1) 概念——将图中的节点映射到低维向量空间，使图结构信息编码到向量中；(2) 算法——Node2Vec（随机游走+Word2Vec）、FastRP（快速随机投影，适合大图）、GraphSAGE（图神经网络）；(3) GDS 使用：CALL gds.fastRP.stream('graph', {embeddingDimension: 128}) YIELD nodeId, embedding；(4) 应用——节点分类、链接预测、图相似性搜索、ML 模型的特征输入。",
+      "tags": [],
+      "question": "请简述如何使用Bloom？"
+    },
+    {
+      "number": 70,
+      "id": "Neo4j 数据库面试题-070",
+      "category": "Neo4j 数据库",
+      "answer": "Node2Vec 和 FastRP 的对比：(1) Node2Vec——基于有偏随机游走，参数 p（返回）和 q（远离）控制游走的局部/全局偏好，用 Word2Vec 训练得到嵌入，效果好但计算成本高；(2) FastRP——基于随机投影的快速方法，通过谱稀疏化和归一化加速，速度快几个数量级，适合百万级以上超大图；(3) 选择——图不大且追求质量用 Node2Vec，超大图或快速迭代用 FastRP。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的性能优化有哪些方法？"
+    },
+    {
+      "number": 71,
+      "id": "Neo4j 数据库面试题-071",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中实现实时推荐引擎：(1) 基于图的协同过滤——找到相似用户购买但目标用户未购买的商品：MATCH (u:User)-[:PURCHASED]->(:Product)<-[:PURCHASED]-(similar:User)-[:PURCHASED]->(rec:Product) WHERE NOT (u)-[:PURCHASED]->(rec) RETURN rec, COUNT(*) AS score；(2) 基于内容的推荐——利用节点属性相似性；(3) 混合推荐——结合图结构和节点属性，使用 GDS 相似性算法；(4) 离线+在线——离线批量预计算候选集，在线用 Cypher 快速查询。图推荐的优势：推荐路径可视化，可解释性强。\n\n```cypher\n// 性能优化示例\n\n// 1. 用 PROFILE 分析执行计划\nPROFILE MATCH (p:Person)-[:KNOWS]->(f)\nWHERE p.name = 'Alice' AND f.age > 30\nRETURN f.name\n\n// 2. 从索引节点开始匹配\nMATCH (p:Person {name: 'Alice'})  // 先索引查找\nMATCH (p)-[:KNOWS]->(f)           // 再图遍历\nRETURN f\n\n// 3. LIMIT 提前减少中间结果\nMATCH (p:Person)\nWITH p LIMIT 100\nMATCH (p)-[:KNOWS*1..3]->(f)\nRETURN p.name, collect(DISTINCT f.name)\n\n// 4. 参数化查询（允许计划缓存）\nMATCH (p:Person {name: $name}) RETURN p.age\n// 而非拼接字符串: 'MATCH (p:Person {name: \\'' + name + '\\''}) RETURN p.age'\n```",
+      "tags": [],
+      "question": "请简述如何优化Cypher查询性能？"
+    },
+    {
+      "number": 72,
+      "id": "Neo4j 数据库面试题-072",
+      "category": "Neo4j 数据库",
+      "answer": "CALL {} IN TRANSACTIONS 控制大批量更新的事务大小：(1) CALL { MATCH (n:OldData) WITH n LIMIT 10000 DETACH DELETE n RETURN count(*) } IN TRANSACTIONS OF 10000 ROWS——每 10000 行提交一个事务；(2) 避免长事务锁住资源、耗尽内存；(3) PERIODIC COMMIT 是旧语法，新项目推荐 CALL {} IN TRANSACTIONS；(4) 使用场景——数据迁移、批量删除、大 CSV 导入。永远不要在一个 Cypher 语句中操作数十万行而不分批。\n\n```properties\n# neo4j.conf 内存配置\n# 页面缓存（最重要）- 设为图数据大小的 50-80%\ndbms.memory.pagecache.size=4G\n\n# JVM Heap - 查询执行、聚合、事务状态\ndbms.memory.heap.max_size=2G\ndbms.memory.heap.initial_size=1G\n\n# 堆外内存 - GDS 图投影\ndbms.memory.off_heap.max_size=4G\n\n# 事务内存限制\ndbms.memory.transaction.total.max=1G\ndbms.memory.transaction.global_max_size=512M\n```\n监控内存使用：\n```cypher\nCALL dbms.memory.usage()\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何配置Neo4j的内存？"
+    },
+    {
+      "number": 73,
+      "id": "Neo4j 数据库面试题-073",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中常见的模型设计模式：(1) 链表模式——NEXT 关系串联元素，适合时间线和事件序列；(2) 树模式——PARENT_OF 关系表示层次结构，递归遍历获取子树；(3) 物化路径模式——节点存祖先路径的字符串或数组，加速子树查询（以存储换时间）；(4) 属性图 vs RDF——Neo4j 用属性图模型，可通过 neosemantics 插件支持 RDF；(5) 版本图——通过关系时间属性模拟双时态数据。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何配置Neo4j的缓存？"
+    },
+    {
+      "number": 74,
+      "id": "Neo4j 数据库面试题-074",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中 LIMIT 的重要性：(1) 防止全图扫描——不加 LIMIT 的 MATCH (n) RETURN n 可能导致 OOM 和超时；(2) 预览数据——MATCH (n:User) RETURN n LIMIT 10 先看样本；(3) 性能优化——WITH ... LIMIT 100 后再做多跳遍历；(4) Top-N 查询——ORDER BY n.sales DESC LIMIT 10；(5) 结合 SKIP 做分页。写 Cypher 的习惯：能给 LIMIT 的地方就给 LIMIT。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何监控Neo4j的性能指标？"
+    },
+    {
+      "number": 75,
+      "id": "Neo4j 数据库面试题-075",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中 ORDER BY 子句排序：(1) 单字段：ORDER BY n.age DESC；(2) 多字段：ORDER BY n.city ASC, n.age DESC；(3) 表达式：ORDER BY n.price * n.quantity DESC；(4) NULL 处理——NULL 默认排最后，用 COALESCE(n.email, '') 替代；(5) 混合聚合和排序——WITH n.category, COUNT(*) AS cnt ORDER BY cnt DESC；(6) 性能——排序需要内存，大结果集应 LIMIT 提前或使用索引覆盖排序。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的日志文件有哪些？"
+    },
+    {
+      "number": 76,
+      "id": "Neo4j 数据库面试题-076",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中 CSV 文件导入的最佳实践：(1) LOAD CSV WITH HEADERS FROM 'file:///users.csv' AS row CREATE (u:User {id: toInteger(row.id), name: row.name})；(2) 分批提交：CALL { ... } IN TRANSACTIONS（大数据文件）；(3) CSV 必须放在 Neo4j import 目录下；(4) 预处理——清理 BOM、规范化换行、校验数据类型；(5) 使用 MERGE 而非 CREATE 避免重复；(6) 超大文件用 neo4j-admin import 脱机导入，亿级记录分钟级完成。\n\n```properties\n# neo4j.conf 日志配置\n# 查询日志 - 记录慢查询\ndbms.logs.query.enabled=true\ndbms.logs.query.threshold=5s  # 超过 5 秒的查询记录日志\n\n# 日志轮换\ndbms.logs.query.rotation.size=20m\ndbms.logs.query.rotation.keep_number=7\n\n# 调试日志\ndbms.logs.debug.level=INFO\n\n# HTTP 日志\nhttp.logging.enabled=true\n```\n查看日志位置：\n```bash\nls $NEO4J_HOME/logs/\n# neo4j.log  - 主日志（集群事件、启动/关闭）\n# debug.log  - 调试日志\n# query.log  - 慢查询日志\n# http.log   - HTTP 请求日志\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何配置Neo4j的日志？"
+    },
+    {
+      "number": 77,
+      "id": "Neo4j 数据库面试题-077",
+      "category": "Neo4j 数据库",
+      "answer": "使用 neo4j-admin import 大规模脱机导入：(1) 适合——首次加载、百万级以上数据；(2) 步骤——停止 Neo4j，准备节点 CSV（:ID 和 :LABEL 列）和关系 CSV（:START_ID、:END_ID、:TYPE 列），运行 neo4j-admin import 命令；(3) 速度——比 LOAD CSV 快 10-100 倍，直接生成数据库文件；(4) 导入是新图不能追加；(5) 导入后需手动重建索引和约束。\n\n```properties\n# neo4j.conf 安全配置\n# 强制 Bolt TLS\ndbms.connector.bolt.tls_level=REQUIRED\n\n# HTTPS\ndbms.connector.https.enabled=true\ndbms.connector.https.listen_address=:7473\n\n# SSL 证书\ndbms.ssl.policy.bolt.trusted_dir=certificates/bolt/trusted\ndbms.ssl.policy.https.private_key=certificates/https/private.key\ndbms.ssl.policy.https.public_certificate=certificates/https/public.crt\n\n# 禁用不需要的过程\ndbms.security.procedures.allowlist=apoc.load.*,apoc.meta.*\n\n# 审计日志（企业版）\ndbms.security.logs.audit.enabled=true\n```\n```cypher\n-- 防火墙规则建议\n-- 限制对 7474(HTTP), 7687(Bolt) 端口的访问仅为内网和应用服务器\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的安全性如何保障？"
+    },
+    {
+      "number": 78,
+      "id": "Neo4j 数据库面试题-078",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 的访问控制模型（企业版）：(1) RBAC——创建角色 -> 授予权限 -> 分配用户；(2) 权限类型——ACCESS（连接）、READ（读）、MATCH（模式匹配）、WRITE（写入）、CREATE/DELETE/SET（细粒度操作）、EXECUTE（执行过程）、ADMIN（管理）；(3) 命令——CREATE USER alice SET PASSWORD 'secret'; CREATE ROLE analyst; GRANT ROLE analyst TO alice; GRANT MATCH {*} ON GRAPH neo4j TO analyst；(4) 子图访问控制——企业版可限制角色只能访问部分图；(5) 社区版只有单用户模式。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何配置HTTPS？"
+    },
+    {
+      "number": 79,
+      "id": "Neo4j 数据库面试题-079",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中的 LDAP 集成（企业版）：(1) 配置 neo4j.conf：设置 authentication_providers=ldap、LDAP 主机、组到角色映射；(2) LDAP 认证——用户登录 Neo4j 时密码发送到 LDAP 验证；(3) 授权——LDAP 组映射到 Neo4j 角色；(4) 混合认证——可同时使用 LDAP 和原生认证；(5) 好处——企业统一身份管理，无需在 Neo4j 维护密码。确保 Neo4j 可解析 LDAP 主机名且 SSL 证书正确。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何配置身份验证和授权？"
+    },
+    {
+      "number": 80,
+      "id": "Neo4j 数据库面试题-080",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中的加密通信：(1) Bolt 加密——dbms.connector.bolt.tls_level=REQUIRED 强制 Bolt TLS；(2) HTTPS 加密——启用 HTTPS 连接器和 SSL 证书；(3) 集群通信加密——集群节点间启用 TLS；(4) 证书管理——测试环境用自签名证书，生产环境用 CA 签发证书；(5) 最佳实践——生产环境所有外部通信启用 TLS，内网集群间通信可豁免。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的企业版和社区版有什么区别？"
+    },
+    {
+      "number": 81,
+      "id": "Neo4j 数据库面试题-081",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 的身份验证和授权的区别：(1) 认证——确认用户是谁，通过密码、LDAP、Kerberos 等手段验证身份；(2) 授权——决定用户能做什么，根据角色授予的权限控制对数据和操作的访问；(3) 实现——先 CREATE USER + 密码认证，再 GRANT ROLE + GRANT PRIVILEGE 授权；(4) 例子——Alice 通过密码认证，被授予 analyst 角色，该角色有 READ 权限但无法创建数据。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的图算法有哪些？"
+    },
+    {
+      "number": 82,
+      "id": "Neo4j 数据库面试题-082",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 备份和恢复策略：(1) neo4j-admin backup——在线全量备份（企业版）；(2) neo4j-admin dump——离线全量导出：neo4j-admin dump --database=neo4j --to=backup.dump；(3) neo4j-admin load——离线恢复：neo4j-admin load --from=backup.dump --database=neo4j --force；(4) 增量备份——企业版支持基于事务日志的 PITR；(5) 社区版——定时 dump + 文件系统快照；(6) 最佳实践——每天全量备份，开启连续增量备份，定期演练恢复。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用PageRank算法？"
+    },
+    {
+      "number": 83,
+      "id": "Neo4j 数据库面试题-083",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 事务日志的工作原理：(1) 所有写操作先写入事务日志（WAL），再刷新到图存储文件，确保崩溃恢复；(2) 电源故障后重放日志恢复到一致状态；(3) 日志轮换——达到大小后自动归档，旧日志按保留策略删除；(4) 用途——崩溃恢复、增量备份、CDC 数据同步；(5) 性能——日志顺序 I/O 写入，比随机 I/O 快很多。\n\n```cypher\n// 无权最短路径\nMATCH (a:Airport {code: 'JFK'}), (b:Airport {code: 'PEK'})\nMATCH p = shortestPath((a)-[:FLIES_TO*]-(b))\nRETURN p, length(p) AS hops\n\n// 所有最短路径\nMATCH p = allShortestPaths((a)-[:KNOWS*]-(b))\nRETURN p\n\n// GDS 加权最短路径 (Dijkstra)\nCALL gds.shortestPath.dijkstra.stream('routeGraph', {\n  sourceNode: id(a),\n  targetNode: id(b),\n  relationshipWeightProperty: 'distance'\n}) YIELD index, sourceNode, targetNode, totalCost, nodeIds, costs\nRETURN index, [nodeId IN nodeIds | gds.util.asNode(nodeId).name] AS path, totalCost\n\n// GDS A* 路径（有坐标时更快）\nCALL gds.shortestPath.astar.stream('routeGraph', {\n  sourceNode: id(a),\n  targetNode: id(b),\n  latitudeProperty: 'lat',\n  longitudeProperty: 'lon',\n  relationshipWeightProperty: 'distance'\n}) YIELD nodeId, cost\nRETURN gds.util.asNode(nodeId).name, cost\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用最短路径算法？"
+    },
+    {
+      "number": 84,
+      "id": "Neo4j 数据库面试题-084",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 集群 HA/DR 架构：(1) 因果一致性集群（企业版）——Core 节点（Raft 共识，处理写入）+ Read Replica 节点（只读分担查询）；(2) 多数据中心——不同地理位置集群副本，异步复制实现 DR；(3) 自动故障转移——Core 领导者故障后 Raft 数秒内选举新领导者；(4) 灾难恢复——保持异地备份集群，切换 DNS/负载均衡。RPO 取决于复制延迟，RTO 取决于切换速度。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用广度优先搜索(BFS)算法？"
+    },
+    {
+      "number": 85,
+      "id": "Neo4j 数据库面试题-085",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 监控性能的关键指标：(1) 查询吞吐量、延迟（P50/P95/P99）、活跃连接数、页面缓存命中率（>99%）、Heap 使用率、事务数/秒、磁盘 I/O；(2) 自带监控——:queries 查看运行中的查询、dbms.listQueries()、dbms.killQuery()；(3) HALin——图形化监控仪表盘；(4) Prometheus + Grafana——企业版暴露 /metrics 端点，社区版通过 JMX 导出器集成；(5) 日志——debug.log 记录慢查询，neo4j.log 记录集群事件。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用深度优先搜索(DFS)算法？"
+    },
+    {
+      "number": 86,
+      "id": "Neo4j 数据库面试题-086",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 升级步骤：(1) 备份——升级前务必全量备份；(2) 检查兼容性——阅读版本发布说明，注意破坏性变更；(3) 停止数据库——neo4j stop；(4) 替换安装文件——下载新版本解压；(5) 配置迁移——手动合并 neo4j.conf，不要直接覆盖；(6) 允许存储格式升级——设置 dbms.allow_upgrade=true；(7) 启动并验证——检查日志，运行关键查询；(8) 重建索引——某些版本升级后索引可能需重建；(9) 测试环境先演——永远不要直接升级生产环境。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用标签传播算法？"
+    },
+    {
+      "number": 87,
+      "id": "Neo4j 数据库面试题-087",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j Desktop 与 Neo4j Server 的区别：(1) Neo4j Desktop——桌面 GUI 应用（Electron），集成数据库管理、可视化、插件安装的一站式开发环境，适合本地开发和单用户；(2) Neo4j Server——后台服务进程，运行在生产服务器上，通过 Bolt/HTTP 接受远程客户端连接，适合多用户并发和部署；(3) Desktop 可管理多个本地 Server 项目——创建/启动/停止/删除数据库；(4) 选择——开发用 Desktop，部署生产用 Server（Docker 或裸机）。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用Louvain算法？"
+    },
+    {
+      "number": 88,
+      "id": "Neo4j 数据库面试题-088",
+      "category": "Neo4j 数据库",
+      "answer": "将 Neo4j 与 Python 集成使用 neo4j 驱动：(1) pip install neo4j；(2) 连接：from neo4j import GraphDatabase; driver = GraphDatabase.driver('bolt://localhost:7687', auth=('neo4j', 'password'))；(3) 执行查询：with driver.session() as session: result = session.run('MATCH (n:Person) RETURN n.name LIMIT 5')；(4) 参数化查询防注入：session.run('MATCH (n {name: $name}) RETURN n', name='Alice')；(5) 事务——使用 execute_write() 和 execute_read() 自动管理事务；(6) 异步驱动——AsyncGraphDatabase 支持 asyncio。\n\n```cypher\n// 弱连接组件 (WCC) - 识别连通子图\n// 创建图投影\nCALL gds.graph.project(\n  'socialGraph',\n  'Person',\n  {KNOWS: {type: 'KNOWS', orientation: 'UNDIRECTED'}}\n)\n\n// 运行 WCC（stream 模式）\nCALL gds.wcc.stream('socialGraph')\nYIELD nodeId, componentId\nRETURN gds.util.asNode(nodeId).name AS name, componentId\nORDER BY componentId\n\n// 写入节点属性\nCALL gds.wcc.write('socialGraph', {\n  writeProperty: 'wcc_component'\n}) YIELD componentCount, componentDistribution\n\n// 查看每个组件的大小分布\nCALL gds.wcc.stats('socialGraph')\nYIELD componentCount, componentDistribution\n\n// 清理\nCALL gds.graph.drop('socialGraph')\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用弱连接组件(WCC)算法？"
+    },
+    {
+      "number": 89,
+      "id": "Neo4j 数据库面试题-089",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中定义大规模社交网络图模型：(1) User 节点——:User {user_id, name, created_at}，user_id 有唯一约束；(2) 好友关系——(u1)-[:FRIEND_OF {since}]-(u2)，查询时忽略方向；(3) 关注关系——(u1)-[:FOLLOWS {timestamp}]->(u2)；(4) 帖子——:Post 节点 + (u)-[:POSTED]->(p) + (u)-[:LIKED]->(p)；(5) 评论——:Comment 节点 + (c)-[:COMMENTED_ON]->(p) + (u)-[:WROTE]->(c)；(6) 超级节点——好友数超千的用户用中间节点分流或用 LIMIT 限制。\n\n```cypher\n// 强连接组件 (SCC) - 有向图的强连通分量\nCALL gds.graph.project('twitterGraph', 'User', {\n  FOLLOWS: {type: 'FOLLOWS', orientation: 'NATURAL'}\n})\n\n// 运行 SCC\nCALL gds.scc.stream('twitterGraph')\nYIELD nodeId, componentId\nWITH componentId, COUNT(*) AS members\nORDER BY members DESC\nLIMIT 5\nRETURN componentId, members\n\n// 写入结果\nCALL gds.scc.write('twitterGraph', {writeProperty: 'scc_component'})\nYIELD componentCount, componentDistribution\n\nCALL gds.graph.drop('twitterGraph')\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用强连接组件(SCC)算法？"
+    },
+    {
+      "number": 90,
+      "id": "Neo4j 数据库面试题-090",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中反向关系查询不存储双向关系：(1) 关系有方向但查询忽略方向：MATCH (a)-[:KNOWS]-(b) 匹配两方向；(2) 不重复存储——FRIEND_OF 只创建一次，查询用双向模式；(3) 需要区分发起者——仍只存一条，用属性标记 who_initiated；(4) 物理上反向遍历一样快——每个节点的关系链表同时包含传入和传出关系；(5) 最佳实践——除非业务需要区分方向，关系创建方向可以任意，查询时忽略方向。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用三角形计数算法？"
+    },
+    {
+      "number": 91,
+      "id": "Neo4j 数据库面试题-091",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中通过推荐路径实现可解释推荐：(1) 推荐查询返回路径：MATCH path = (u:User)-[:PURCHASED]->(p)<-[:PURCHASED]-(similar)-[:PURCHASED]->(rec) WHERE NOT (u)-[:PURCHASED]->(rec) RETURN rec, path, COUNT(similar) AS score；(2) 渲染路径给用户——因为你购买了 X，相似用户还买了 Y；(3) 图推荐优势——关系路径天然提供推荐解释链，传统矩阵分解是黑盒子；(4) 受监管行业（金融、医疗）和推荐理由展示场景中价值巨大。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j中如何使用聚类系数算法？"
+    },
+    {
+      "number": 92,
+      "id": "Neo4j 数据库面试题-092",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 图数据库最重要的性能指标：(1) 查询延迟——P50/P95/P99，影响用户体验；(2) 查询吞吐量——QPS，反映并发处理能力；(3) 页面缓存命中率——应 > 99%，低于此说明缓存不足；(4) Heap 使用率——高水位持续时间长说明结果集过大或内存泄漏；(5) 事务数/秒——高写入场景关注是否瓶颈；(6) 磁盘 I/O——页面缓存未命中导致的磁盘读取，高 I/O 需扩大缓存。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的图数据库模型与其他数据库模型有什么不同？"
+    },
+    {
+      "number": 93,
+      "id": "Neo4j 数据库面试题-093",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中提升读查询性能的技巧：(1) 创建正确的索引——分析慢查询，在 WHERE 条件属性上建索引；(2) 参数化查询——允许执行计划缓存；(3) MATCH 顺序——从最具体的标签和条件开始；(4) LIMIT 前移——MATCH (n:User) WITH n LIMIT 100 MATCH (n)-[:KNOWS]->(f)；(5) 返回最少列——RETURN n.name, n.age 而非 RETURN n；(6) 使用 CALL {} 子查询隔离昂贵操作；(7) 启用查询缓存（企业版）。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的ACID特性是如何保证的？"
+    },
+    {
+      "number": 94,
+      "id": "Neo4j 数据库面试题-094",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中索引与约束的区别：(1) 索引——加速检索的性能结构，基于 B-tree，CREATE INDEX；(2) 约束——保证数据完整性的规则，CREATE CONSTRAINT；(3) 关系——唯一性约束隐式创建索引（唯一性检查需要快速查找）；(4) 索引可独立存在，约束必有对应索引；(5) 复合索引：CREATE INDEX FOR (n:Person) ON (n.first_name, n.last_name)；(6) 节点键（Node Key）：唯一+非空约束的复合形式。简单记忆：索引为性能，约束为正确性。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的JavaAPI有哪些？"
+    },
+    {
+      "number": 95,
+      "id": "Neo4j 数据库面试题-095",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中不使用索引的查询类型：(1) 基于关系遍历的查询——依赖 Index-Free Adjacency 而非索引；(2) 全标签扫描——MATCH (n:User) RETURN n LIMIT 10 无 WHERE 条件；(3) 存在检查——WHERE exists(n.email) 不使用普通索引；(4) 全文搜索——使用 FULLTEXT INDEX；(5) 模糊匹配——CONTAINS 或正则匹配不使用 B-tree 索引。理解索引适用范围是性能优化关键。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用Neo4j的Java驱动程序？"
+    },
+    {
+      "number": 96,
+      "id": "Neo4j 数据库面试题-096",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中复杂推荐查询优化：(1) 为参与匹配的节点创建索引——:User(user_id)、:Product(product_id)；(2) 分阶段执行——WITH + LIMIT 限制参与匹配的节点数；(3) OPTIONAL MATCH 替代 MATCH 链路——避免因缺少某环节导致无结果；(4) 预计算热门关系——离线批量计算候选集存储为 :RECOMMENDS 关系；(5) 图嵌入+向量索引混合——将图嵌入导入向量数据库用 ANN 搜索。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用Neo4j的SpringData模块？"
+    },
+    {
+      "number": 97,
+      "id": "Neo4j 数据库面试题-097",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中 A* 算法实现（GDS）：(1) A* 是带启发函数的最短路径算法；(2) CALL gds.shortestPath.astar.stream('graph', {sourceNode: a, targetNode: b, latitudeProperty: 'lat', longitudeProperty: 'lon', relationshipWeightProperty: 'distance'}) YIELD nodeId, cost；(3) 启发函数——用经纬度计算欧氏距离引导搜索朝向目标方向；(4) 效果——搜索空间集中在起点到目标的直线附近，比 Dijkstra 的辐射状搜索大幅减少遍历节点数；(5) 适用——地理导航、游戏 AI 寻路、机器人路径规划。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用Neo4j的OGM(对象图映射)框架？"
+    },
+    {
+      "number": 98,
+      "id": "Neo4j 数据库面试题-098",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 存储和处理超大规模图（十亿级）的设计策略：(1) 图分片（Fabric，企业版）——水平分片到多个实例，跨分片查询路由和聚合；(2) 节点分区——按地理位置、时间范围、业务域分片；(3) 超级节点处理——用中间聚合节点分散连接；(4) 热冷分离——热数据放内存优化实例，历史数据放存储优化实例；(5) 外部索引——在 Elasticsearch 存节点类型和关键属性，先查索引再定位分片。\n\n```javascript\n// Neo4j JavaScript 驱动\nconst neo4j = require('neo4j-driver');\nconst driver = neo4j.driver(\n  'bolt://localhost:7687',\n  neo4j.auth.basic('neo4j', 'password')\n);\n\nconst session = driver.session();\ntry {\n  const result = await session.run(\n    'MATCH (p:Person {name: $name}) RETURN p',\n    { name: 'Alice' }\n  );\n  const records = result.records.map(r => r.get('p').properties);\n  console.log(records);\n} finally {\n  await session.close();\n  await driver.close();\n}\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的JavaScript驱动程序有哪些？"
+    },
+    {
+      "number": 99,
+      "id": "Neo4j 数据库面试题-099",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中创建图投影（GDS 第一步）：(1) 原生投影：CALL gds.graph.project('myGraph', 'User', {INTERACTS: {type: 'INTERACTS', orientation: 'UNDIRECTED'}})；(2) Cypher 投影（更灵活）：用 Cypher 定义节点和关系投影逻辑；(3) 投影常驻内存直到显式删除（gds.graph.drop）；(4) 内存消耗——投影将子图数据加载到堆外内存，大图需足够 RAM；(5) 用完即删，避免多个大投影同时驻留内存。\n\n```python\n# Neo4j Python 驱动\nfrom neo4j import GraphDatabase\n\nclass Neo4jApp:\n    def __init__(self, uri, user, password):\n        self.driver = GraphDatabase.driver(uri, auth=(user, password))\n    \n    def close(self):\n        self.driver.close()\n    \n    def find_person(self, name):\n        with self.driver.session() as session:\n            result = session.execute_read(self._find_and_return_person, name)\n            return result\n    \n    @staticmethod\n    def _find_and_return_person(tx, name):\n        query = 'MATCH (p:Person {name: $name}) RETURN p.name AS name, p.age AS age'\n        result = tx.run(query, name=name)\n        return [record.data() for record in result]\n\n# 使用\napp = Neo4jApp('bolt://localhost:7687', 'neo4j', 'password')\nprint(app.find_person('Alice'))\napp.close()\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的Python驱动程序有哪些？"
+    },
+    {
+      "number": 100,
+      "id": "Neo4j 数据库面试题-100",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中图投影的生命周期管理：(1) 创建投影：gds.graph.project()——加载到内存；(2) 使用投影——运行 GDS 算法，可复用；(3) 检查：gds.graph.list()——查看活跃投影的名称、数据量、内存使用；(4) 删除：gds.graph.drop('myGraph')——释放内存；(5) 投影不自动更新——图数据变更后投影内容仍是快照，需重建；(6) 最佳实践——用完即删，定期重复运行的任务创建命名图并定期重建。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的.NET驱动程序有哪些？"
+    },
+    {
+      "number": 101,
+      "id": "Neo4j 数据库面试题-101",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中 Cypher 查询的分页模式：(1) SKIP + LIMIT 分页：RETURN n SKIP 40 LIMIT 20——第 3 页；(2) 键集分页（更高效）：WHERE n.created_at < $last_cursor RETURN n ORDER BY n.created_at DESC LIMIT 20——基于游标，避免 SKIP 开销，适合无限滚动；(3) 存储上次返回的最后一条记录的标识作为下次查询的游标；(4) 键集分页要求排序字段唯一且单调。SKIP+LIMIT 在深度分页时性能差。\n\n```go\n// Neo4j Go 驱动\nimport (\n    \"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n)\n\nfunc findPerson(ctx context.Context, driver neo4j.DriverWithContext, name string) ([]string, error) {\n    session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})\n    defer session.Close(ctx)\n    \n    result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {\n        query := \"MATCH (p:Person {name: $name}) RETURN p.name AS name\"\n        params := map[string]interface{}{\"name\": name}\n        records, err := tx.Run(ctx, query, params)\n        if err != nil {\n            return nil, err\n        }\n        var names []string\n        for records.Next(ctx) {\n            names = append(names, records.Record().Values[0].(string))\n        }\n        return names, records.Err()\n    })\n    return result.([]string), err\n}\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的Go驱动程序有哪些？"
+    },
+    {
+      "number": 102,
+      "id": "Neo4j 数据库面试题-102",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中 ORDER BY 排序后的数据提取：(1) 单字段：ORDER BY n.created_at DESC SKIP $offset LIMIT $limit；(2) 多字段：ORDER BY n.category ASC, n.price DESC，复合索引可加速；(3) 为排序字段建索引——如果索引与 ORDER BY 匹配且只返回索引属性，可跳过排序步骤；(4) 大结果集排序耗内存——应提前 WITH + LIMIT 缩小数据集；(5) 实时增量分页优先用键集分页。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j支持哪些编程语言？"
+    },
+    {
+      "number": 103,
+      "id": "Neo4j 数据库面试题-103",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中 RETURN 大数据量的处理：(1) 分页——LIMIT 限制单次返回；(2) 流式处理——驱动游标逐条处理，不一次性加载全部到客户端内存；(3) 聚合——在服务端用 COUNT、SUM 聚合而非拉回客户端统计；(4) 只返回需要的属性——RETURN n.name, n.age 而非 RETURN n；(5) 导出大数据——neo4j-admin dump 或 apoc.export.csv.query()；(6) 避免 Browser 渲染太多节点——Browser 处理的节点数应 < 1000。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的GraphQL集成是如何实现的？"
+    },
+    {
+      "number": 104,
+      "id": "Neo4j 数据库面试题-104",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中启动和关闭数据库的正确方式：(1) 启动：neo4j start；(2) 关闭：neo4j stop——发送 TERM 信号 -> 等待活动事务完成 -> 写入检查点 -> 关闭存储 -> 释放资源，优雅关闭；(3) 紧急情况才用 kill -9，可能损坏数据文件；(4) Docker：docker start/stop <container>；(5) 状态检查：neo4j status；(6) 关闭前确认无长时间运行的事务；(7) 优雅关闭的好处——事务日志完整写入、页面缓存刷新、下次启动恢复最快。\n\n```javascript\n// @neo4j/graphql - 从 GraphQL Schema 自动生成 Cypher\nconst { Neo4jGraphQL } = require('@neo4j/graphql');\nconst { ApolloServer } = require('apollo-server');\n\nconst typeDefs = `\n  type Movie {\n    title: String!\n    year: Int\n    actors: [Person!]! @relationship(type: \"ACTED_IN\", direction: IN)\n  }\n  \n  type Person {\n    name: String!\n    movies: [Movie!]! @relationship(type: \"ACTED_IN\", direction: OUT)\n  }\n`;\n\nconst neoSchema = new Neo4jGraphQL({ typeDefs, driver });\nconst server = new ApolloServer({ schema: await neoSchema.getSchema() });\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用@neo4j/graphql库？"
+    },
+    {
+      "number": 105,
+      "id": "Neo4j 数据库面试题-105",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中活动的事务管理：(1) 查看：CALL dbms.listTransactions()——返回事务 ID、用户、查询、运行时间；(2) 终止：CALL dbms.killTransaction('<id>')——强制回滚释放锁；(3) 事务超时——设置 dbms.transaction.timeout，超时自动回滚；(4) 锁超时——dbms.lock.acquisition.timeout；(5) 生产环境——监控长事务（>10s），设置合理超时，确保连接池归还。Python 驱动 session 用 with 语句自动关闭。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的GRANDstack是什么？"
+    },
+    {
+      "number": 106,
+      "id": "Neo4j 数据库面试题-106",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中配置多个数据库（企业版）：(1) 创建：CREATE DATABASE analytics；(2) 列出：SHOW DATABASES；(3) 切换：Browser 中 :use analytics，驱动中 session = driver.session(database='analytics')；(4) 停止/删除：STOP DATABASE / DROP DATABASE；(5) 优势——数据隔离（不同业务域分开）、资源隔离（独立页面缓存）、独立备份恢复；(6) 社区版——仅一个默认数据库 neo4j 和一个系统数据库 system。Fabric 支持跨数据库查询。\n\n```cypher\n// APOC 常用功能\n// 批量处理\nCALL apoc.periodic.iterate(\n  'MATCH (n:OldLabel) RETURN n',\n  'SET n:NewLabel REMOVE n:OldLabel',\n  {batchSize: 10000, parallel: true}\n)\n\n// 加载 JSON\nCALL apoc.load.json('file:///data.json') YIELD value\nUNWIND value.items AS item\nCREATE (p:Product {name: item.name, price: item.price})\n\n// 图遍历扩展\nMATCH (a:Person {name: 'Alice'})\nCALL apoc.path.expand(a, 'KNOWS>', '+Person', 1, 3)\nYIELD path\nRETURN path\n\n// 工具函数\nRETURN apoc.date.toISO8601(timestamp(), 'ms') AS iso_time\nRETURN apoc.text.snakeCase('Hello World') AS snake\nRETURN apoc.convert.toMap('{\"key\": \"value\"}') AS map\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的APOC库有什么作用？"
+    },
+    {
+      "number": 107,
+      "id": "Neo4j 数据库面试题-107",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中通过 Driver 实现连接池：(1) Python 驱动内置连接池——GraphDatabase.driver() 自动管理；(2) 配置：driver = GraphDatabase.driver(uri, auth=auth, max_connection_pool_size=50, connection_acquisition_timeout=60)；(3) 使用——with driver.session() as session: ...，with 块结束后连接归还池；(4) Driver 实例应为应用单例——应用生命周期内只创建一次；(5) 应用关闭时 driver.close() 释放所有连接。",
+      "tags": [],
+      "question": "请简述如何安装和使用APOC库？"
+    },
+    {
+      "number": 108,
+      "id": "Neo4j 数据库面试题-108",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中优化内存使用：(1) 页面缓存——dbms.memory.pagecache.size 是最重要参数，设为图数据大小的 50-80%；(2) Heap——dbms.memory.heap.max_size，通常 2-8 GB；(3) 堆外内存——用于 GDS 图投影；(4) 总内存分配——页面缓存 + Heap + 堆外 + OS 开销不应超过物理内存；(5) 监控——neo4j.log 和 /metrics 端点，确保页面缓存命中率 > 99%，Heap 使用 < 80%。",
+      "tags": [],
+      "question": "请简述APOC库中有哪些常用的过程和函数？"
+    },
+    {
+      "number": 109,
+      "id": "Neo4j 数据库面试题-109",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中实现因果一致性（企业版）：(1) 写操作在 Core 集群领导者上执行，同步复制到多数追随者；(2) 写后返回书签（Bookmark）代表逻辑时间戳；(3) 客户端读取时传递上次写入的书签：session = driver.session(bookmarks=[last_bookmark])，Core 节点确保返回结果包含该书签之前的所有写入；(4) 直观解释——读取我的写入，确保应用级一致性；(5) 比强一致性更实用，提供高可用性和足够的应用级一致性。\n\n```cypher\n// Neosemantics (n10s) - RDF 支持\n// 创建 RDF 图配置\nCALL n10s.graphconfig.init({\n  handleVocabUris: 'SHORTEN',\n  handleMultival: 'ARRAY'\n})\n\n// 从 RDF 文件导入\nCALL n10s.rdf.import.fetch(\n  'https://www.w3.org/People/Berners-Lee/card.rdf',\n  'RDF/XML'\n)\n\n// 查询导入的 RDF 数据\nMATCH (n:ns0__Person) RETURN n LIMIT 5\n\n// 导出为 RDF\nCALL n10s.rdf.export.cypher(\n  'MATCH (p:Person)-[:KNOWS]->(f:Person) RETURN p, f',\n  {fileName: 'export.ttl', format: 'Turtle'}\n)\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的Neosemantics插件有什么作用？"
+    },
+    {
+      "number": 110,
+      "id": "Neo4j 数据库面试题-110",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中建模和管理层次数据：(1) 直接建模——(parent)-[:HAS_CHILD]->(child)，递归遍历获取子树；(2) 物化路径——节点属性存完整祖先路径：path = '/electronics/computers/laptops'，查询后代：WHERE n.path STARTS WITH '/electronics/'；(3) 嵌套集模型——left/right 值表示包含关系（查询快但更新成本高）；(4) 选择——树深度小（<10）时直接建模最灵活，深度大且频繁子树查询用物化路径加速。\n\n```cypher\n// 导入 RDF 数据\n// Turtle 格式\nCALL n10s.rdf.import.fetch('file:///data.ttl', 'Turtle')\n\n// RDF/XML 格式\nCALL n10s.rdf.import.fetch('file:///ontology.owl', 'RDF/XML')\n\n// JSON-LD 格式\nCALL n10s.rdf.import.fetch('https://schema.org/docs/schema.jsonld', 'JSON-LD')\n\n// 导出为 RDF\nCALL n10s.rdf.export.cypher(\n  'MATCH (n) WHERE n:Person OR n:Organization RETURN n',\n  {fileName: 'export.ttl', format: 'Turtle', stream: true}\n)\n\n// 本体推理\nCALL n10s.onto.import.fetch('http://www.w3.org/2000/01/rdf-schema', 'RDF/XML')\n```",
+      "tags": [],
+      "question": "请简述如何使用Neosemantics导入和导出RDF数据？"
+    },
+    {
+      "number": 111,
+      "id": "Neo4j 数据库面试题-111",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中数据变更追踪（CDC）方案：(1) 事务日志解析——企业版 CDC 插件监听事务日志变更，发送到 Kafka；(2) 触发器——APOC 的 apoc.trigger.add() 在条件满足时自动执行 Cypher；(3) 应用层追踪——在应用代码中每次修改后发布事件；(4) 时间戳属性——节点维护 created_at 和 updated_at；(5) 版本图——变更历史存为独立时间戳关系，构建可审计的数据沿袭。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4jBloom的主要功能是什么？"
+    },
+    {
+      "number": 112,
+      "id": "Neo4j 数据库面试题-112",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中处理计算密集型算法：(1) 使用 GDS——所有图算法在堆外内存执行，多线程并行加速；(2) 选择合适的模式——stream 返回数据，write 写回数据库，mutate 写入内存，stats 统计输出；(3) 参数调优——maxIterations、dampingFactor、concurrency；(4) 图投影优化——减少投影的节点和关系数量，缩小计算规模；(5) 超大图分区后在各分区上独立运行再合并。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的数据导入工具有哪些？"
+    },
+    {
+      "number": 113,
+      "id": "Neo4j 数据库面试题-113",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中事务隔离级别的实现：(1) Neo4j 使用读已提交（Read Committed）——事务内读取已提交的最新版本，不读脏数据；(2) 写锁——更新节点或关系时获取排他锁；(3) 读锁——读取时获取共享锁，多事务可同时读；(4) 死锁检测——自动检测并回滚其中一个事务，抛出 TransientException；(5) 事务重试——应用应捕获 TransientException 并重试，Python 驱动的 execute_write() 自动重试。\n\n```bash\n# 准备 CSV 文件\n# nodes.csv\n# id:ID,name,:LABEL\n# 1,Alice,Person\n# 2,Bob,Person\n\n# movies.csv\n# id:ID,title,year:int,:LABEL\n# 101,Inception,2010,Movie\n\n# relationships.csv\n# :START_ID,:END_ID,role,:TYPE\n# 1,101,Cobb,ACTED_IN\n\n# 执行离线导入（Neo4j 必须停止）\nneo4j-admin database import full \\\n  --nodes=import/nodes.csv \\\n  --nodes=import/movies.csv \\\n  --relationships=import/relationships.csv \\\n  --overwrite-destination=true \\\n  neo4j\n```",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用neo4j-adminimport工具导入数据？"
+    },
+    {
+      "number": 114,
+      "id": "Neo4j 数据库面试题-114",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中处理并发写入冲突：(1) 使用 MERGE 替代 CREATE——幂等操作减少冲突；(2) 细粒度锁——节点和关系级别加锁，不同节点上的并发写入不冲突；(3) 乐观并发——应用层用版本号实现乐观锁；(4) 批量写入——CALL {} IN TRANSACTIONS 分批提交，减少长事务冲突概率；(5) 连接池——使用连接池支持多个写入事务并行提交。\n\n```cypher\n// LOAD CSV 在线导入\n// 基本导入\nLOAD CSV WITH HEADERS FROM 'file:///users.csv' AS row\nCREATE (u:User {\n  id: toInteger(row.id),\n  name: row.name,\n  email: row.email\n})\n\n// 创建索引和关系\nLOAD CSV WITH HEADERS FROM 'file:///friends.csv' AS row\nMATCH (a:User {id: toInteger(row.user_id)})\nMATCH (b:User {id: toInteger(row.friend_id)})\nMERGE (a)-[:FRIEND_OF {since: date(row.since)}]->(b)\n\n// 分批提交大数据文件\nCALL {\n  LOAD CSV FROM 'file:///large_data.csv' AS row\n  WITH row LIMIT 10000\n  CREATE (n:Record {data: row[0]})\n  RETURN count(*) AS created\n} IN TRANSACTIONS OF 10000 ROWS\n```",
+      "tags": [],
+      "question": "请简述如何使用LOADCSV导入数据？"
+    },
+    {
+      "number": 115,
+      "id": "Neo4j 数据库面试题-115",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中如何选择合适的图算法：(1) 明确业务问题——识别最重要的人？（中心性）人群分组？（社区检测）路径查找？（最短路径）推荐相似？（相似性）；(2) 中心性——传播分析选 PageRank，信息控制选 Betweenness，局部重要性选 Degree；(3) 社区检测——大图选 Louvain，快速分群选 Label Propagation，严格分量选 WCC；(4) 路径——无权图用 shortestPath，有权图用 Dijkstra，有坐标用 A*；(5) 相似性——共同邻居用 Jaccard，属性向量用 Cosine。GDS 文档提供决策流程图。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用neo4j-etl工具导入数据？"
+    },
+    {
+      "number": 116,
+      "id": "Neo4j 数据库面试题-116",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中使用 Cypher 检测图结构异常：(1) 孤立节点——MATCH (n) WHERE NOT (n)--() RETURN n；(2) 自循环关系——MATCH (n)-[r]->(n) RETURN n, r；(3) 重复关系——MATCH (a)-[r:REL_TYPE]->(b) WITH a, b, count(r) AS cnt WHERE cnt > 1 RETURN a, b, cnt；(4) 环路检测——MATCH path=(n)-[*]->(n) RETURN path LIMIT 100；(5) 异常度统计——GDS 的 Degree 分布和 Louvain 社区大小分布，找出极度偏差点。\n\n```yaml\n# Neo4j Streams 配置 (neo4j.conf)\nkafka.bootstrap.servers=localhost:9092\nkafka.topic=neo4j-events\n\n# 或使用 APOC Kafka 集成\n```\n```cypher\n// 发送变更事件到 Kafka\nCALL apoc.kafka.send(\n  'neo4j-events',\n  'node',\n  {event: 'created', labels: labels(n), properties: properties(n)}\n)\n```\nNeo4j Streams 插件可自动监听事务日志中的变更事件（CDC），将节点和关系的创建、更新、删除事件实时推送到 Kafka 主题，实现图数据库到数据湖/搜索引擎/缓存的下游同步。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4jStreams是什么？"
+    },
+    {
+      "number": 117,
+      "id": "Neo4j 数据库面试题-117",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 中大规模图布局的优化：(1) 索引——对参与遍历起始的标签和属性建索引；(2) 页面缓存——尽可能大以覆盖热数据；(3) Fabric 分片——水平拆分到多个实例；(4) 读写分离——写主节点，读分发到读副本；(5) 优化遍历模式——从最具体节点开始，避免全标签扫描；(6) 存储——SSD 磁盘（随机 I/O 性能关键）；(7) 分析查询模式——高频和慢查询针对性优化索引和策略。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何使用Neo4jStreams与Kafka集成？"
+    },
+    {
+      "number": 118,
+      "id": "Neo4j 数据库面试题-118",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 安全最佳实践：(1) 更改默认密码——首次安装后立即修改；(2) 最小权限原则——不同应用创建独立用户，授予最少权限；(3) 加密传输——Bolt 和 HTTPS 启用 TLS；(4) 网络安全——防火墙限制对 Neo4j 端口的访问，避免公网直接暴露；(5) 审计日志——企业版记录所有 DDL 和 DML 操作；(6) 定期更新——跟随安全补丁；(7) 备份加密；(8) 过程白名单——dbms.security.procedures.allowlist 控制。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的安全最佳实践有哪些？"
+    },
+    {
+      "number": 119,
+      "id": "Neo4j 数据库面试题-119",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 性能调优最佳实践：(1) 索引策略——分析慢查询，为 WHERE/MATCH 属性建索引，复合索引覆盖多属性查询；(2) 内存配置——页面缓存 50-80%，Heap 2-8GB，堆外给 GDS；(3) 查询优化——使用 EXPLAIN/PROFILE 分析，重写笛卡尔积或 Eager 操作；(4) 数据模型——避免超级节点，用时间分片或其他节点分流；(5) 连接管理——合理连接池大小，避免频繁创建/销毁连接；(6) 定期维护——更新统计信息，重建碎片索引，清理长时间运行的事务。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的性能调优最佳实践有哪些？"
+    },
+    {
+      "number": 120,
+      "id": "Neo4j 数据库面试题-120",
+      "category": "Neo4j 数据库",
+      "answer": "Neo4j 建模最佳实践：(1) 从查询出发——设计模型前先明确核心查询场景，反向推导节点和关系结构；(2) 节点 vs 属性——需要独立查询/索引/连接大量关系的概念建模为节点而非属性；(3) 关系命名——用动词短语（ACTED_IN, PURCHASED），表达清晰业务语义；(4) 唯一标识——每个节点有业务 uuid，不依赖内部 ID；(5) 规范化——避免跨关系复制数据，保持单一事实来源；(6) 适度反规范化——为频繁查询缓存聚合值（如节点的关系计数），以存储换时间。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述Neo4j的建模最佳实践有哪些？"
+    },
+    {
+      "number": 121,
+      "id": "Neo4j 数据库面试题-121",
+      "category": "Neo4j 数据库",
+      "answer": "设计高效 Neo4j 数据模型的关键：(1) 从查询场景出发——先列出前 10 个最频繁查询，反向设计模型以最小化遍历跳数；(2) 预建关系——频繁使用的跳跃查询结果预计算为直接关系；(3) 属性 vs 节点——需独立检索/频繁更新的概念定义为节点，稳定的附属描述定义为属性；(4) 中间节点——N 元关系用中间节点 + 多条二元关系建模；(5) 分桶——极度连接的节点用时间分桶或地理分桶拆分。高效模型 = 最匹配查询的图结构。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述如何设计高效的Neo4j数据模型？"
+    },
+    {
+      "number": 122,
+      "id": "Neo4j 数据库面试题-122",
+      "category": "Neo4j 数据库",
+      "answer": "使用 Neo4j 过程中常见的挑战：(1) 查询性能陷阱——不加 LIMIT 的全图扫描、过深的遍历导致超时或 OOM；(2) 超级节点——百万级关系使简单遍历变成瓶颈，需分桶或应用层限制；(3) 数据模型演进——缺乏 Schema 约束时重复节点泛滥；(4) 内存管理——页面缓存估算不准导致频繁 I/O；(5) 学习曲线——从 SQL 的思维转换到图遍历和 Cypher；(6) 运维复杂度——集群部署、备份恢复、升级迁移需专业运维；(7) 工具链成熟度——相比关系型数据库，监控和 CDC 工具生态仍在快速发展中。",
+      "tags": [
+        "Neo4j"
+      ],
+      "question": "请简述你在使用Neo4j的过程中遇到过哪些挑战？"
+    }
+  ]
+}

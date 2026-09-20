@@ -1,0 +1,122 @@
+{
+  "category": "设计模式",
+  "questions": [
+    {
+      "id": "DesignPattern-001",
+      "number": 1,
+      "question": "GoF 设计模式分为哪三大类？每类包含哪些模式？",
+      "answer": "GoF（Gang of Four）23 种经典设计模式分为三大类：\n\n**1. 创建型（Creational）— 5 种**\n关注**对象创建**的方式，将对象创建与使用解耦。\n- **单例 (Singleton)**：一个类仅一个实例\n- **工厂方法 (Factory Method)**：子类决定实例化哪个类\n- **抽象工厂 (Abstract Factory)**：创建一系列相关对象\n- **原型 (Prototype)**：克隆已有对象\n- **建造者 (Builder)**：分步骤构建复杂对象\n\n**2. 结构型（Structural）— 7 种**\n关注**类和对象的组合**，用组合而非继承实现功能扩展。\n- **代理 (Proxy)**：控制对原对象的访问\n- **适配器 (Adapter)**：接口转换，兼容不同接口\n- **装饰器 (Decorator)**：动态扩展对象功能\n- **桥接 (Bridge)**：抽象与实现分离\n- **外观 (Facade)**：提供统一入口简化调用\n- **享元 (Flyweight)**：共享大量相似对象节约内存\n- **组合 (Composite)**：树形结构统一处理整体与部分\n\n**3. 行为型（Behavioral）— 11 种**\n关注**对象之间的通信和职责分配**。\n- **模板方法 (Template Method)**：定义算法骨架，子类实现具体步骤\n- **策略 (Strategy)**：封装一系列算法，可相互替换\n- **责任链 (Chain of Responsibility)**：请求沿链传递\n- **观察者 (Observer)**：一对多，状态变更自动通知\n- **命令 (Command)**：请求封装为对象\n- **状态 (State)**：状态变化时行为改变\n- **迭代器 (Iterator)**：顺序访问聚合对象\n- 中介者、备忘录、解释器、访问者",
+      "category": "设计模式",
+      "tags": [
+        "GoF",
+        "设计模式分类"
+      ]
+    },
+    {
+      "id": "DesignPattern-002",
+      "number": 2,
+      "question": "请说明单例模式的三种写法及其优缺点？",
+      "answer": "**定义**：类仅存在**一个实例**，全局唯一访问点，节省系统资源。\n\n**三种实现方式（Java 为例）：**\n\n**1. 饿汉式（线程安全，但可能浪费内存）：**\n```java\npublic class Singleton {\n    private static final Singleton INSTANCE = new Singleton();\n    private Singleton() {}\n    public static Singleton getInstance() { return INSTANCE; }\n}\n```\n- ✅ 简单，线程安全（类加载时创建）\n- ❌ 如果实例从未使用，浪费内存\n\n**2. 懒汉式（延迟加载，需处理线程安全）：**\n```java\npublic class Singleton {\n    private static Singleton instance;\n    private Singleton() {}\n    public static synchronized Singleton getInstance() {\n        if (instance == null) instance = new Singleton();\n        return instance;\n    }\n}\n```\n- ✅ 延迟初始化\n- ❌ 每次调用都加锁，性能差\n\n**3. 双重检查锁（DCL，推荐）：**\n```java\npublic class Singleton {\n    private static volatile Singleton instance;\n    private Singleton() {}\n    public static Singleton getInstance() {\n        if (instance == null) {                    // 第一次检查（无锁）\n            synchronized (Singleton.class) {\n                if (instance == null)              // 第二次检查（加锁）\n                    instance = new Singleton();\n            }\n        }\n        return instance;\n    }\n}\n```\n- ✅ 线程安全 + 延迟加载 + 高性能\n- ⚠️ JDK 1.5 以下 volatile 语义不完整\n\n> **枚举实现**（最安全）：`enum Singleton { INSTANCE; }` — 天然防反射、防反序列化。",
+      "category": "设计模式",
+      "tags": [
+        "单例模式",
+        "创建型"
+      ]
+    },
+    {
+      "id": "DesignPattern-003",
+      "number": 3,
+      "question": "工厂模式和抽象工厂模式有什么区别？",
+      "answer": "**工厂模式（Factory Pattern）**：定义一个创建对象的接口，由子类决定实例化哪个类。\n\n```java\n// 简单工厂（不属 GoF 23）\nclass AnimalFactory {\n    static Animal create(String type) {\n        if (\"dog\".equals(type)) return new Dog();\n        if (\"cat\".equals(type)) return new Cat();\n        return null;\n    }\n}\n```\n\n**抽象工厂（Abstract Factory）**：创建一系列**相关或依赖**的产品族，无需指定具体类。\n\n```java\ninterface UIFactory {            // 抽象工厂\n    Button createButton();\n    TextBox createTextBox();\n}\nclass WindowsFactory implements UIFactory { /* Windows 风格组件 */ }\nclass MacFactory implements UIFactory { /* Mac 风格组件 */ }\n```\n\n| 维度 | 工厂方法 | 抽象工厂 |\n|------|---------|---------|\n| **产品数量** | 单一产品 | 产品族（多个关联产品） |\n| **扩展性** | 新增产品需修改代码 | 新增产品族只需新增工厂类（开闭原则） |\n| **复杂度** | 简单 | 更复杂 |\n\n> **原则：** 简单工厂违背开闭原则，抽象工厂遵循开闭原则。实际开发中工厂方法最常用。",
+      "category": "设计模式",
+      "tags": [
+        "工厂模式",
+        "抽象工厂",
+        "创建型"
+      ]
+    },
+    {
+      "id": "DesignPattern-004",
+      "number": 4,
+      "question": "装饰器模式和代理模式有什么区别？",
+      "answer": "**装饰器模式（Decorator）**：动态给对象**扩展功能**，不修改原结构。\n\n```java\n// Java IO 典型装饰器链\nInputStream is = new BufferedInputStream(\n    new FileInputStream(\"file.txt\")\n);\n// FileInputStream 提供基础读功能\n// BufferedInputStream 装饰上缓冲功能\n```\n\n**代理模式（Proxy）**：为对象提供一层**访问控制**的代理。\n\n```java\n// 代理控制数据库连接\nclass ConnectionPoolProxy implements Connection {\n    private Connection realConn;\n    // 获取连接时检查连接池、权限等\n}\n```\n\n**核心区别：**\n\n| 维度 | 装饰器 | 代理 |\n|------|--------|------|\n| **关注点** | 功能**增强/添加** | 访问**控制/拦截** |\n| **实例创建** | 装饰器接收外部传入的被装饰对象 | 代理可控自建真实对象 |\n| **典型用途** | Java IO 流、日志增强 | AOP、RPC 远程代理、权限控制 |\n| **使用方式** | 多重装饰，层层包裹 | 通常单层代理 |\n\n> **一句话版本：** 装饰器让你\"做更多\"，代理让你\"先审再放\"。Spring AOP 底层使用**动态代理**实现。",
+      "category": "设计模式",
+      "tags": [
+        "装饰器模式",
+        "代理模式",
+        "对比"
+      ]
+    },
+    {
+      "id": "DesignPattern-005",
+      "number": 5,
+      "question": "请说明代理模式的分类及应用场景？",
+      "answer": "**代理模式定义**：为其他对象提供一种代理以控制对这个对象的访问。\n\n**分类：**\n\n| 类型 | 实现方式 | 何时生成代理类 |\n|------|---------|---------------|\n| **静态代理** | 手动编写代理类代码 | 编译期 |\n| **JDK 动态代理** | `Proxy.newProxyInstance()` | 运行时（反射） |\n| **CGLIB 代理** | 字节码增强（子类代理） | 运行时 |\n\n**JDK 动态代理 vs CGLIB：**\n| 维度 | JDK 动态代理 | CGLIB |\n|------|------------|-------|\n| 代理方式 | 接口代理 | 子类代理 |\n| 被代理对象 | 必须实现接口 | 不需要接口 |\n| 限制 | 只能代理接口方法 | 不能代理 final 类/方法 |\n| 性能 | 反射调用，略慢 | 字节码调用，较快 |\n\n**应用场景：**\n- **Spring AOP**：事务管理、日志拦截\n- **MyBatis Mapper**：接口自动生成实现\n- **RPC 框架**：远程服务调用代理\n- **延迟加载**：Hibernate Lazy Loading",
+      "category": "设计模式",
+      "tags": [
+        "代理模式",
+        "AOP",
+        "动态代理"
+      ]
+    },
+    {
+      "id": "DesignPattern-006",
+      "number": 6,
+      "question": "请解释模板方法模式和策略模式的区别？",
+      "answer": "**模板方法模式（Template Method）**：定义算法**骨架**，具体步骤由子类实现。用**继承**。\n\n```java\nabstract class DataProcessor {\n    // 模板方法（final 防止被重写）\n    public final void process() {\n        readData();   // 子类实现\n        transform();  // 子类实现\n        save();       // 父类统一实现\n    }\n    abstract void readData();\n    abstract void transform();\n    void save() { System.out.println(\"Save to DB\"); }\n}\n```\n\n**策略模式（Strategy）**：定义一系列算法，封装后**可互相替换**。用**组合**。\n\n```java\ninterface SortStrategy { void sort(int[] arr); }\nclass QuickSort implements SortStrategy { ... }\nclass MergeSort implements SortStrategy { ... }\n\nclass Sorter {\n    private SortStrategy strategy;\n    void setStrategy(SortStrategy s) { this.strategy = s; }\n    void doSort(int[] arr) { strategy.sort(arr); }\n}\n```\n\n**核心区别：**\n\n| 维度 | 模板方法 | 策略 |\n|------|---------|------|\n| **实现方式** | 继承 | 组合/接口 |\n| **控制点** | 父类控制整体流程 | 客户端选择策略 |\n| **扩展方式** | 新增子类 | 新增策略类 |\n| **运行时切换** | ❌ 不能 | ✅ 可以动态切换 |\n| **典型应用** | Servlet、JDBCTemplate | 排序算法、支付方式选择 |\n\n> **原则：** 模板方法用继承（is-a），策略用组合（has-a）。组合优于继承 → 策略模式更灵活。",
+      "category": "设计模式",
+      "tags": [
+        "模板方法",
+        "策略模式",
+        "行为型"
+      ]
+    },
+    {
+      "id": "DesignPattern-007",
+      "number": 7,
+      "question": "请说明责任链模式的核心思想及应用场景？",
+      "answer": "**定义**：多个处理器按顺序组成链条，请求沿链传递，直到某个处理器处理。\n\n```java\nabstract class Handler {\n    protected Handler next;\n    public void setNext(Handler h) { this.next = h; }\n    public abstract void handle(Request req);\n}\n\nclass AuthHandler extends Handler {\n    public void handle(Request req) {\n        if (!req.isAuthenticated()) { reject(); return; }\n        if (next != null) next.handle(req);  // 传给下一个\n    }\n}\n// 构建链条：AuthHandler → RateLimitHandler → BusinessHandler\n```\n\n**核心特点：**\n- 请求与处理者**解耦**\n- 链条可**动态组合**\n- 每个处理者**只关心自己负责的部分**\n\n**实际应用：**\n| 框架 | 应用 |\n|------|------|\n| **Servlet Filter** | `FilterChain`：认证 → 日志 → 业务 |\n| **Spring Interceptor** | `HandlerInterceptor` 链 |\n| **Netty Pipelining** | `ChannelPipeline`：编解码 → 业务 Handler |\n| **网关** | 限流 → 鉴权 → 路由 → 转发 |\n\n> 和**装饰器模式**的区别：责任链是\"找到能处理的人\"，装饰器是\"增强功能\"。前者任一节点可能终止传递，后者每层都会增强。",
+      "category": "设计模式",
+      "tags": [
+        "责任链模式",
+        "行为型",
+        "Filter"
+      ]
+    },
+    {
+      "id": "DesignPattern-008",
+      "number": 8,
+      "question": "请解释观察者模式（发布-订阅）的原理？",
+      "answer": "**定义**：定义对象间一对多依赖，当被观察对象（Subject）状态变化时，所有观察者（Observer）**自动收到通知并更新**。\n\n```java\n// 被观察者\nclass Subject {\n    private List<Observer> observers = new ArrayList<>();\n    public void attach(Observer o) { observers.add(o); }\n    public void notifyAll(String msg) {\n        for (Observer o : observers) o.update(msg);\n    }\n}\n\n// 观察者\ninterface Observer { void update(String msg); }\n```\n\n**和发布-订阅的区别：**\n\n| 维度 | 观察者模式 | 发布-订阅 |\n|------|-----------|----------|\n| 耦合度 | Subject 和 Observer **直接通信** | 通过 **Event Bus/Broker** 解耦 |\n| 注册方式 | Observer 注册到 Subject | Publisher/Subscriber 注册到 Broker |\n| 典型实现 | Java Observable | Kafka、RabbitMQ、Redis Pub/Sub |\n\n**实际应用：**\n- **前端**：DOM 事件监听（addEventListener）\n- **后端**：Spring Event、Guava EventBus\n- **消息队列**：本质是发布-订阅模型的工程化实现",
+      "category": "设计模式",
+      "tags": [
+        "观察者模式",
+        "发布订阅",
+        "行为型"
+      ]
+    },
+    {
+      "id": "DesignPattern-009",
+      "number": 9,
+      "question": "享元模式和单例模式有什么区别？",
+      "answer": "**享元模式（Flyweight）**：通过**共享**大量相似对象来节省内存。\n\n```java\nclass Font { String name; int size; }  // 内部状态（共享）\n\nclass Character {\n    private Font font;       // 共享的享元对象\n    private char c;          // 外部状态（不共享）\n    private int position;\n}\n// 成千上万的 Character 共享少量 Font 对象\n```\n\n**核心区别：**\n\n| 维度 | 单例模式 | 享元模式 |\n|------|---------|----------|\n| **实例数** | **一个**类只有一个实例 | 一个类有**多个实例**，但共享 |\n| **关注点** | 全局唯一 | 降低对象**创建数量** |\n| **内部状态** | 不区分 | 区分内部状态（共享）和外部状态（独立） |\n| **典型场景** | 配置对象、连接池 | 字符格式化、数据库连接池、Integer 缓存 |\n\n**享元模式的运用：**\n- **Java Integer 缓存**：`Integer.valueOf(-128 ~ 127)` 从缓存池取，不新建对象\n- **String 常量池**：相同字面量字符串共享同一对象\n- **线程池**：复用线程而非每次新建\n\n> **一句话：** 单例 = 全集唯一；享元 = 池化复用，减少创建开销。",
+      "category": "设计模式",
+      "tags": [
+        "享元模式",
+        "单例模式",
+        "对比"
+      ]
+    },
+    {
+      "id": "DesignPattern-010",
+      "number": 10,
+      "question": "请说明适配器模式的两种实现方式？",
+      "answer": "**定义**：将一个接口转换为客户期望的另一个接口，使不兼容的类能协同工作。\n\n**1. 类适配器（继承）：**\n```java\n// 已有 220V 电源\nclass Power220V { int output() { return 220; } }\n\n// 目标接口：需要 5V\ninterface Target5V { int get5V(); }\n\n// 适配器：继承 + 实现接口\nclass Adapter extends Power220V implements Target5V {\n    public int get5V() {\n        int src = output();      // 220V\n        return src / 44;          // 转成 5V\n    }\n}\n```\n\n**2. 对象适配器（组合，推荐）：**\n```java\nclass Adapter implements Target5V {\n    private Power220V power;     // 持有而不是继承\n    public Adapter(Power220V p) { this.power = p; }\n    public int get5V() {\n        return power.output() / 44;\n    }\n}\n```\n\n| 维度 | 类适配器 | 对象适配器 |\n|------|---------|-----------|\n| 实现方式 | 继承源类 | 持有源对象 |\n| 灵活性 | 只能适配一个类 | 可适配多个不同类 |\n| 语言限制 | Java 不支持多继承 | 无限制 |\n\n**实际应用：**\n- Java IO：`InputStreamReader` 将字节流转为字符流\n- Spring：`HandlerAdapter` 适配不同类型的 Controller\n- 日志框架：SLF4J 适配 Log4j / Logback",
+      "category": "设计模式",
+      "tags": [
+        "适配器模式",
+        "结构型"
+      ]
+    }
+  ]
+}

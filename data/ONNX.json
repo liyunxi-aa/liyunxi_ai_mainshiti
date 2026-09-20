@@ -1,0 +1,405 @@
+{
+  "category": "ONNX",
+  "questions": [
+    {
+      "number": 1,
+      "id": "ONNX-001",
+      "category": "ONNX",
+      "answer": "ONNX（Open Neural Network Exchange）的主要设计目标是提供一个开放、可互操作的模型交换格式，解决不同深度学习框架（如 PyTorch、TensorFlow、Keras 等）之间模型无法直接互通的问题。它定义了一套统一的中间表示（IR），使得开发者在一个框架中训练的模型可以无缝部署到另一个运行时或推理引擎。核心价值在于解耦训练与推理，实现一次训练、随处部署。",
+      "tags": [],
+      "question": "请简述解释 ONNX 的主要设计目标。它旨在解决什么问题？"
+    },
+    {
+      "number": 2,
+      "id": "ONNX-002",
+      "category": "ONNX",
+      "answer": "ONNX 在 ML 模型生命周期中扮演模型交换枢纽的角色：在训练阶段，各框架将模型导出为 ONNX 格式；在优化阶段，可借助 ONNX 生态工具进行图优化、量化和剪枝；在部署阶段，通过 ONNX Runtime 等推理引擎在云端、边缘或移动端高效执行。它打通了从研究到生产的最后一公里，显著降低了工程化门槛。",
+      "tags": [],
+      "question": "请简述ONNX 在机器学习模型生命周期中扮演什么角色？"
+    },
+    {
+      "number": 3,
+      "id": "ONNX-003",
+      "category": "ONNX",
+      "answer": "ONNX 由三个核心部分组成：(1) ONNX 格式——使用 Protocol Buffers 序列化，定义模型的计算图结构，包括节点、张量、属性和元数据；(2) ONNX 操作符集——标准化了数百种算子（如 Conv、MatMul、Softmax）的语义和接口，是跨框架兼容的基础；(3) ONNX 运行时（ONNX Runtime）——高性能推理引擎，支持多种硬件后端和执行提供程序（CPU、CUDA、TensorRT 等）。",
+      "tags": [],
+      "question": "请简述描述 ONNX 的组成部分：ONNX 格式、ONNX 操作符集、ONNX 运行时。"
+    },
+    {
+      "number": 4,
+      "id": "ONNX-004",
+      "category": "ONNX",
+      "answer": "计算图是一种有向无环图（DAG），节点表示运算（算子），边表示张量数据流。ONNX 使用 SSA（静态单赋值）形式的计算图：每个节点有零或多个输入、一个或多个输出，图中的每个值都有唯一的名字；图的输入/输出通过 input/output 列表显式声明；初始值（initializer）存储常量参数（如权重），通过 GraphProto 的 initializer 字段关联到图中。",
+      "tags": [],
+      "question": "请简述什么是计算图？ONNX 如何表示一个模型的计算图？"
+    },
+    {
+      "number": 5,
+      "id": "ONNX-005",
+      "category": "ONNX",
+      "answer": "主流的训练框架包括：PyTorch（通过 torch.onnx.export 或 torch.onnx.dynamo_export）、TensorFlow / Keras（通过 tf2onnx 工具）、JAX / Flax（通过 jax2onnx）、MXNet（原生 ONNX 导出支持）、PaddlePaddle（通过 paddle2onnx）。此外，传统 ML 库如 Scikit-learn（skl2onnx）、XGBoost、LightGBM 也支持 ONNX 导出。",
+      "tags": [],
+      "question": "请简述列出一些支持将模型导出为 ONNX 格式的流行训练框架。"
+    },
+    {
+      "number": 6,
+      "id": "ONNX-006",
+      "category": "ONNX",
+      "answer": "ONNX 支持广泛的 ML 领域：计算机视觉（CNN、ViT、目标检测、分割）、自然语言处理（Transformer、BERT、GPT 系列）、语音识别与合成（ASR、TTS）、推荐系统（CTR 预估、Embedding）、时间序列预测、生成模型（GAN、扩散模型），以及传统机器学习（树模型、SVM、聚类等，通过 ONNX-ML 规范）。",
+      "tags": [],
+      "question": "请简述ONNX 支持哪些主要的机器学习领域？（如视觉、语音、NLP）"
+    },
+    {
+      "number": 7,
+      "id": "ONNX-007",
+      "category": "ONNX",
+      "answer": "ONNX 模型的基本结构采用 Protocol Buffers 定义的层次化模型：最外层是 ModelProto，包含元数据（producer_name、opset_import 等）和一个 GraphProto；GraphProto 包含：node（计算节点列表，每个节点有 op_type、input、output 和 attribute）、input（模型输入，含形状和类型信息）、output（模型输出）、initializer（可训练参数的常量值）。这种结构使得模型既有自描述能力，又方便程序化操作。",
+      "tags": [],
+      "question": "请简述解释 ONNX 模型的基本结构：图、节点、输入、输出、初始值。"
+    },
+    {
+      "number": 8,
+      "id": "ONNX-008",
+      "category": "ONNX",
+      "answer": "操作符集（opset）是 ONNX 算子的版本化集合，定义了每个算子的语义（输入输出格式、属性含义、类型约束）。版本控制至关重要，因为算子语义可能随 ONNX 规范演进而变化，而不同推理引擎支持的 opset 版本不同。通过 opset_import 字段声明版本，确保模型行为在不同版本间一致。",
+      "tags": [],
+      "question": "请简述什么是操作符集？为什么它有版本控制？"
+    },
+    {
+      "number": 9,
+      "id": "ONNX-009",
+      "category": "ONNX",
+      "answer": "可以通过以下方式查看：在 Python 中用 model.opset_import 遍历，查看每个 domain 和 version；使用 onnx.helper.printable_graph(model.graph) 打印图结构时会显示 opset 信息；命令行工具 onnx CLI 或 netron 可视化工具也能展示 opset 版本；在 ONNX Runtime 中通过 session.get_modelmeta() 获取。",
+      "tags": [],
+      "question": "请简述如何查看一个 ONNX 模型的操作符集版本？"
+    },
+    {
+      "number": 10,
+      "id": "ONNX-010",
+      "category": "ONNX",
+      "answer": "基本步骤：(1) 将模型设置为 eval() 模式；(2) 准备一个示例输入张量（dummy input），形状与模型期望输入匹配并移至相同设备；(3) 调用 torch.onnx.export(model, args, f, input_names, output_names, opset_version=xx) 导出；(4) 使用 onnx.checker.check_model 验证导出结果。关键注意事项：确保模型不包含动态控制流、避免就地操作、处理动态轴。",
+      "tags": [],
+      "question": "请简述如何将 PyTorch 模型转换为 ONNX 格式？（使用 torch.onnx.export）"
+    },
+    {
+      "number": 11,
+      "id": "ONNX-011",
+      "category": "ONNX",
+      "answer": "torch.onnx.export 关键参数包括：model（要导出的 PyTorch 模型）、args（示例输入张量或元组）、f（输出文件路径或文件对象）、input_names（输入节点名称列表）、output_names（输出节点名称列表）、opset_version（目标 ONNX opset 版本）、dynamic_axes（指定可变维度字典）、export_params（是否将参数存储在模型内，默认 True）、training（导出模式，一般为 EVAL）、verbose（打印导出详情）。",
+      "tags": [],
+      "question": "请简述torch.onnx.export 函数的关键参数有哪些？（model, args, f, input_names, output_names, dynamic_axes）"
+    },
+    {
+      "number": 12,
+      "id": "ONNX-012",
+      "category": "ONNX",
+      "answer": "PyTorch 使用动态计算图，导出时需要实际执行一次前向传播来 trace 计算图。示例输入（dummy input）提供输入张量的形状和数据类型信息，PyTorch 的 JIT tracer 会记录在此输入上的所有操作序列，从而构建静态计算图。如果没有示例输入，tracer 无法确定图的结构和中间张量的形状。这也是含有动态控制流（如 if-else）的模型导出可能失败的根源。",
+      "tags": [],
+      "question": "请简述在转换 PyTorch 模型时，为什么需要提供一个示例输入？"
+    },
+    {
+      "number": 13,
+      "id": "ONNX-013",
+      "category": "ONNX",
+      "answer": "使用 tf2onnx 库将 TensorFlow 模型转换为 ONNX：(1) 安装 tf2onnx；(2) 对于 SavedModel：python -m tf2onnx.convert --saved-model <path> --output model.onnx --opset 13；(3) 对于 Keras h5 模型：直接通过 tf2onnx.convert.from_keras；(4) 对于 frozen graph（.pb）：指定 --input 和 --output 节点名；(5) 验证：使用 onnx.checker.check_model。注意需要 TensorFlow 版本与 tf2onnx 兼容。",
+      "tags": [],
+      "question": "请简述如何将 TensorFlow 模型转换为 ONNX 格式？（使用 tf2onnx 库）"
+    },
+    {
+      "number": 14,
+      "id": "ONNX-014",
+      "category": "ONNX",
+      "answer": "dynamic_axes 参数用于声明哪些维度是可变的（如 batch_size、序列长度），格式为字典：{'input_name': {0: 'batch_size', 1: 'seq_len'}}。重要性：(1) 不声明动态轴则导出时会固定维度，推理时只能接受完全相同的形状；(2) 在 NLP 和语音等变长输入场景中必不可少；(3) 允许推理引擎进行针对性的内存优化（如动态 batch 批处理），提升吞吐量。",
+      "tags": [],
+      "question": "请简述解释 dynamic_axes 参数的作用。它为什么对处理可变维度输入（如批量大小、序列长度）很重要？"
+    },
+    {
+      "number": 15,
+      "id": "ONNX-015",
+      "category": "ONNX",
+      "answer": "常见转换失败原因包括：(1) 模型包含不被支持的动态控制流（if-else、loop），tracer 只能追踪一条路径；(2) 使用了不支持的算子或 opset 版本过低无对应算子；(3) 就地操作（inplace ops）修改了 tracer 假设的不可变张量；(4) 使用了 Python 原生数据结构或自定义 Python 函数，torchscript 无法追踪；(5) 数据类型不匹配（如输入为 double 而模型参数为 float）；(6) 未设置 model.eval()，Dropout/BatchNorm 行为不一致。",
+      "tags": [],
+      "question": "请简述在模型转换过程中，常见的错误或失败原因有哪些？"
+    },
+    {
+      "number": 16,
+      "id": "ONNX-016",
+      "category": "ONNX",
+      "answer": "ONNX Script 是 ONNX 官方提供的 Python API，允许用户以编程方式创建、操作和修改 ONNX 模型。它的核心用途：(1) 创建 ONNX 图——用 Python 函数风格写出算子调用链，自动生成 ONNX 图；(2) 修改模型——向已有图插入新节点、替换算子或调整拓扑结构；(3) 实现自定义算子——以 ONNX Script 编写函数逻辑然后导出为 FunctionProto。比手动拼接 GraphProto 更直观和安全。",
+      "tags": [],
+      "question": "请简述什么是 ONNX 脚本？它有什么用？（用于创建和操作 ONNX 模型的 Python API）"
+    },
+    {
+      "number": 17,
+      "id": "ONNX-017",
+      "category": "ONNX",
+      "answer": "将 Keras 模型（.h5 或 SavedModel）转换为 ONNX 主要通过 tf2onnx：(1) 对于 h5 文件：import tf2onnx; onnx_model = tf2onnx.convert.from_keras(keras_model, opset=13); 然后写入文件；(2) 命令行：python -m tf2onnx.convert --keras model.h5 --output model.onnx；(3) 对于 SavedModel 格式：python -m tf2onnx.convert --saved-model ./saved_model --output model.onnx。Keras 3.0 后多后端统一，还可通过 huggingface 的 optimum 等工具链。",
+      "tags": [],
+      "question": "请简述如何将 Keras 模型转换为 ONNX？"
+    },
+    {
+      "number": 18,
+      "id": "ONNX-018",
+      "category": "ONNX",
+      "answer": "使用 skl2onnx 库将 Scikit-learn 模型转换为 ONNX：(1) 安装 skl2onnx 和 onnxconverter-common；(2) 调用 convert_sklearn 函数：from skl2onnx import convert_sklearn; onnx_model = convert_sklearn(model, name='my_model', initial_types=[('input', FloatTensorType([None, n_features]))]); (3) 写入文件：with open('model.onnx', 'wb') as f: f.write(onnx_model.SerializeToString())。支持分类、回归、聚类、降维等大多数 sklearn pipeline 组件。",
+      "tags": [],
+      "question": "请简述如何将 Scikit-learn 模型转换为 ONNX？（使用 skl2onnx 库）"
+    },
+    {
+      "number": 19,
+      "id": "ONNX-019",
+      "category": "ONNX",
+      "answer": "XGBoost：使用 onnxmltools 或自带的 booster.dump_model() 加手动构建。最便捷方式是通过 ONNX Runtime 的 convert_lightgbm 和 xgboost 支持的统一接口。LightGBM：安装 onnxmltools 后 from onnxmltools import convert_lightgbm; onnx_model = convert_lightgbm(model, initial_types=...)。或使用 treelite 编译为共享库再包装为 ONNX。两者都支持单树和集成树模型。",
+      "tags": [],
+      "question": "请简述如何将 XGBoost 或 LightGBM 模型转换为 ONNX？"
+    },
+    {
+      "number": 20,
+      "id": "ONNX-020",
+      "category": "ONNX",
+      "answer": "验证 ONNX 模型的方法：(1) 使用 onnx.checker.check_model(model)——检查模型结构完整性（graph 是否 valid、opset 兼容性、shape 一致性等），通过则无异常，失败会抛出异常详细描述问题；(2) 加载到 ONNX Runtime 创建 InferenceSession，如果失败说明存在不受支持的算子或版本问题；(3) 用原始框架跑一次推理，再用 ONNX Runtime 跑一次，比较输出是否一致（数值容差 1e-5 ~ 1e-3）；(4) 用 netron 可视化检查图结构是否如预期。",
+      "tags": [],
+      "question": "请简述如何验证一个导出的 ONNX 模型是否有效？（使用 onnx.checker.check_model）"
+    },
+    {
+      "number": 21,
+      "id": "ONNX-021",
+      "category": "ONNX",
+      "answer": "在 Python 中：(1) model.graph.input 和 model.graph.output 列表包含 ValueInfoProto，其中 name 是张量名、type 含 elem_type 和 shape；(2) 使用 onnx.helper.printable_graph(model.graph) 格式化打印；(3) 对于 ONNX Runtime session，session.get_inputs() 返回 [NodeArg]，每个有 name、type、shape 属性；session.get_outputs() 同理。可结合 numpy 的 dtype 字符串映射 elem_type 到可读类型。",
+      "tags": [],
+      "question": "请简述如何打印 ONNX 模型的输入和输出信息？"
+    },
+    {
+      "number": 22,
+      "id": "ONNX-022",
+      "category": "ONNX",
+      "answer": "ONNX Simplifier（onnx-simplifier）是一个开源工具，用于优化和清理导出的 ONNX 模型。核心功能包括：常量折叠（将编译时可确定的子图预计算为常量）、冗余节点消除（删除无输出的死节点和恒等操作）、形状推断（利用 ONNX 形状推断 API 传播更精确的形状信息）、合并连续的相同算子和算子融合。典型用法：python -m onnxsim input.onnx output.onnx。结果通常是模型文件更小、推理更快。",
+      "tags": [],
+      "question": "请简述什么是 ONNX 简化器？它有什么用？（用于优化模型结构，如常量折叠、冗余节点消除）"
+    },
+    {
+      "number": 23,
+      "id": "ONNX-023",
+      "category": "ONNX",
+      "answer": "ONNX Runtime 提供了 GraphOptimizationLevel 参数控制优化级别：(1) ORT_DISABLE_ALL——完全禁用；(2) ORT_ENABLE_BASIC——基础级（常量折叠、冗余消除、节点融合）；(3) ORT_ENABLE_EXTENDED——扩展级（更激进的融合、布局优化）；(4) ORT_ENABLE_ALL——全部启用。在创建 InferenceSession 时通过 SessionOptions.graph_optimization_level 设置，也可以在 ONNX Runtime 的配置文件中细粒度控制。",
+      "tags": [],
+      "question": "请简述如何使用 ONNX Runtime 提供的图形优化工具？"
+    },
+    {
+      "number": 24,
+      "id": "ONNX-024",
+      "category": "ONNX",
+      "answer": "常量折叠：识别输入全部为常量的子图（如权重乘以常数因子），在编译期计算出结果并替换为常量节点，消除运行时计算。冗余节点消除：移除无输出的死亡节点、恒等节点（如两次转置恢复原状）、重复计算。算子融合：将多个连续的算子合并为一个高效实现（如 Conv+BN+ReLU 融合为单一的 ConvBNReLU，减少内存带宽和 kernel 启动开销）。这些技术共同降低内存占用和推理延迟。",
+      "tags": [],
+      "question": "请简述解释一些常见的图优化技术，例如：常量折叠，冗余节点消除，算子融合"
+    },
+    {
+      "number": 25,
+      "id": "ONNX-025",
+      "category": "ONNX",
+      "answer": "在 ONNX 上下文中，量化指将模型参数（权重和激活值）从 FP32 降精度为 INT8 等低位宽格式。好处：(1) 模型大小减小约 4 倍（32bit 降至 8bit），方便存储和传输；(2) 推理速度显著提升，INT8 运算在支持向量化指令的 CPU 和专用硬件上远快于 FP32；(3) 功耗降低，对边缘和移动设备至关重要；(4) 准确率下降通常可控（约 1% 以内），可通过量化感知训练进一步改善。",
+      "tags": [
+        "量化"
+      ],
+      "question": "请简述量化在 ONNX 上下文中是什么意思？它有什么好处？"
+    },
+    {
+      "number": 26,
+      "id": "ONNX-026",
+      "category": "ONNX",
+      "answer": "ONNX Runtime 支持三种量化模式：(1) 动态量化——权重预量化为 INT8，激活在推理时动态量化和反量化，代码改动最小，适合 LSTM/Transformer 等带宽受限场景；(2) 静态量化——权重和激活都预先量化，需要校准数据集计算激活范围（scale/zero_point），精度最高，适用于 CNN 和固定网络；(3) 量化感知训练（QAT）——在训练时模拟量化影响，训练后直接导出量化的 ONNX 模型，精度损失最小，适合大模型和关键任务。",
+      "tags": [
+        "量化"
+      ],
+      "question": "请简述ONNX Runtime 支持哪些量化格式？（如 int8 动态量化、静态量化）"
+    },
+    {
+      "number": 27,
+      "id": "ONNX-027",
+      "category": "ONNX",
+      "answer": "使用 ONNX Runtime 量化工具：(1) 安装 onnxruntime 和 onnxruntime-tools；(2) 动态量化示例：from onnxruntime.quantization import quantize_dynamic; quantize_dynamic('model.onnx', 'model_int8.onnx', weight_type=QuantType.QInt8); (3) 静态量化需要先准备校准数据集 reader，然后 quantize_static('model.onnx', 'model_int8.onnx', calibration_data_reader); (4) 可选指定 op_types_to_quantize 控制量化算子范围。验证：对比量化前后的输出一致性和性能。",
+      "tags": [
+        "量化"
+      ],
+      "question": "请简述如何对 ONNX 模型进行量化？"
+    },
+    {
+      "number": 28,
+      "id": "ONNX-028",
+      "category": "ONNX",
+      "answer": "ONNX Runtime（ORT）是由微软主导的高性能跨平台推理引擎，专门优化 ONNX 模型的执行。它与 ONNX 格式是互补关系：ONNX 定义模型的表示标准（说什么），而 ONNX Runtime 提供实际的执行能力（怎么做）。ORT 通过可插拔的执行提供程序（CPU、CUDA、TensorRT、OpenVINO 等）将 ONNX 图高效映射到不同硬件，同时内置图优化、量化和模型压缩能力。",
+      "tags": [],
+      "question": "请简述ONNX Runtime 是什么？它与 ONNX 格式有什么关系？"
+    },
+    {
+      "number": 29,
+      "id": "ONNX-029",
+      "category": "ONNX",
+      "answer": "CPU 版：pip install onnxruntime（已包含 MKL-DNN/oneDNN 加速，适用于 Intel/AMD CPU）；GPU 版：pip install onnxruntime-gpu（需要匹配的 CUDA 和 cuDNN 版本，如 onnxruntime-gpu==1.18.0 需要 CUDA 12.x 和 cuDNN 8.x）。也支持 ARM（onnxruntime-silicon for Apple Neural Engine、onnxruntime-openvino for Intel GPU/VPU）。版本对应关系查阅官方文档的兼容矩阵。",
+      "tags": [],
+      "question": "请简述如何安装 ONNX Runtime？（CPU 版 vs GPU 版）"
+    },
+    {
+      "number": 30,
+      "id": "ONNX-030",
+      "category": "ONNX",
+      "answer": "使用 ONNX Runtime 进行推理的基本步骤：(1) 创建 InferenceSession：session = ort.InferenceSession('model.onnx', providers=['CPUExecutionProvider']); (2) 获取输入名称和形状：input_name = session.get_inputs()[0].name; (3) 准备数据：将 numpy 或类似张量转为与 input 匹配的 shape 和 dtype；(4) 运行推理：outputs = session.run(None, {input_name: input_data}); (5) 处理输出：outputs 是按顺序的输出列表，可直接 numpy 操作。",
+      "tags": [],
+      "question": "请简述描述使用 ONNX Runtime 进行推理的基本步骤。"
+    },
+    {
+      "number": 31,
+      "id": "ONNX-031",
+      "category": "ONNX",
+      "answer": "创建推理会话：import onnxruntime as ort; session = ort.InferenceSession('model.onnx') 或显式指定提供程序 session = ort.InferenceSession('model.onnx', providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])。SessionOptions 可配置：graph_optimization_level（优化级别）、intra_op_num_threads（Op 内并行线程数）、inter_op_num_threads（Op 间并行线程数）、enable_profiling（性能分析开关）、log_severity_level 等。",
+      "tags": [],
+      "question": "请简述如何创建 ONNX Runtime 的推理会话？（ort.InferenceSession）"
+    },
+    {
+      "number": 32,
+      "id": "ONNX-032",
+      "category": "ONNX",
+      "answer": "session.run 方法的签名：outputs = session.run(output_names, input_feed, run_options=None)。output_names 是要获取的输出名称列表，None 表示返回所有输出；input_feed 是字典 {input_name: numpy_array}，键必须精确匹配模型输入名；input_feed 中的数据须是 numpy array 或可转换的类型。run_options 可配置 RunOptions，大多数场景无需指定。",
+      "tags": [],
+      "question": "请简述InferenceSession 的 run 方法需要什么参数？"
+    },
+    {
+      "number": 33,
+      "id": "ONNX-033",
+      "category": "ONNX",
+      "answer": "为 ONNX Runtime 会话提供输入数据需注意：(1) 名称匹配——字典键必须与 session.get_inputs()[i].name 完全一致；(2) 数据类型——numpy dtype 必须匹配模型要求的类型（如 float32->np.float32, int64->np.int64），不匹配会报错或自动转换导致精度损失；(3) 形状——若输入是固定形状必须完全一致，若批维设为动态则第一维可变；(4) 设备——数据必须是 CPU 上的 numpy array，ORT 会自动将其传输到指定执行提供程序对应的设备上；(5) 内存布局——通常为 NCHW（CV）或 BSNH（NLP），需与模型导出时一致。",
+      "tags": [],
+      "question": "请简述如何为 ONNX Runtime 会话提供输入数据？需要注意什么？（数据类型、形状、设备）"
+    },
+    {
+      "number": 34,
+      "id": "ONNX-034",
+      "category": "ONNX",
+      "answer": "指定执行提供程序：(1) 在 InferenceSession 构造时通过 providers 参数显式指定，如 providers=['CUDAExecutionProvider', 'CPUExecutionProvider'] 让 ORT 优先尝试 CUDA，不可用时回退到 CPU；(2) 对每个提供程序可传入配置字典，如 ('CUDAExecutionProvider', {'device_id': 0, 'arena_extend_strategy': 'kNextPowerOfTwo'})；(3) 通过 session.get_providers() 查看当前实际使用的提供程序；(4) 用 ort.get_available_providers() 列出所有可用的执行提供程序。",
+      "tags": [],
+      "question": "请简述如何指定 ONNX Runtime 使用 CPU 或 GPU 执行提供程序？"
+    },
+    {
+      "number": 35,
+      "id": "ONNX-035",
+      "category": "ONNX",
+      "answer": "执行提供程序（Execution Provider, EP）是 ONNX Runtime 的硬件抽象层，负责将 ONNX 图中的算子分配到具体硬件上高效执行。常见 EP：(1) CPUExecutionProvider——通用 CPU 实现，基于 oneDNN/MLAS；(2) CUDAExecutionProvider——NVIDIA GPU；(3) TensorrtExecutionProvider——使用 TensorRT 构建优化引擎；(4) OpenVINOExecutionProvider——Intel CPU/GPU/VPU；(5) CoreMLExecutionProvider——Apple Neural Engine；(6) DirectMLExecutionProvider——Windows GPU；(7) ROCMExecutionProvider——AMD GPU。",
+      "tags": [],
+      "question": "请简述什么是“执行提供程序”？列举一些常见的执行提供程序（如 CPU, CUDA, TensorRT, OpenVINO）。"
+    },
+    {
+      "number": 36,
+      "id": "ONNX-036",
+      "category": "ONNX",
+      "answer": "切换执行提供程序的能力是 ONNX Runtime 的关键优势：(1) 一套代码覆盖多种硬件——开发者无需为每种硬件编写不同推理代码；(2) 部署灵活性——同一 ONNX 模型可在训练用 GPU 集群上验证后，直接部署到云端 CPU 实例或边缘设备；(3) 性能可移植——可通过切换 EP（如从 CUDA 到 TensorRT）在已有硬件上获得额外加速；(4) 渐进式迁移——用户可在现有硬件上先跑 CPU，后续升级 GPU 后仅需配置改变。",
+      "tags": [],
+      "question": "请简述为什么能够切换执行提供程序是 ONNX Runtime 的一个关键优势？"
+    },
+    {
+      "number": 37,
+      "id": "ONNX-037",
+      "category": "ONNX",
+      "answer": "比较不同执行提供程序性能的方法：(1) 使用相同输入数据分别在 CPU 和 CUDA EP 上运行，测量端到端延迟和吞吐量；(2) 开启 profiler：创建 session 时设置 enable_profiling=True，运行后输出 profiling JSON 文件；(3) 使用 ort.PerfTest 工具进行标准化性能测试：onnxruntime_perf_test -e cpu|cuda model.onnx；(4) 比较关键指标：平均延迟、P99 延迟、吞吐量（QPS）、首次推理延迟。注意提供程序的内存消耗和初始化开销也应纳入评估。",
+      "tags": [],
+      "question": "请简述如何为同一个模型比较不同执行提供程序之间的性能？"
+    },
+    {
+      "number": 38,
+      "id": "ONNX-038",
+      "category": "ONNX",
+      "answer": "分析 ONNX Runtime 性能瓶颈：(1) 开启 profiling：设置 SessionOptions.enable_profiling = True，运行后 end_profiling() 得到 JSON 性能文件，可用 chrome://tracing 可视化每个算子的耗时；(2) 使用 ORT 的 NodeTiming 信息找到最慢的算子（通常是 MatMul、Conv 或 Attention）；(3) 针对瓶颈：如果是 GPU kernel 慢，考虑 TensorRT 子图替换；如果是数据传输，检查是否有不必要的 GPU 与 CPU 间拷贝；(4) 检查内存模式：arena_extend_strategy 影响动态内存分配效率；(5) 使用 onnxruntime_perf_test 工具的 --trace 选项获取详细事件。",
+      "tags": [],
+      "question": "请简述如何分析 ONNX Runtime 的模型性能瓶颈？（使用性能分析工具）"
+    },
+    {
+      "number": 39,
+      "id": "ONNX-039",
+      "category": "ONNX",
+      "answer": "若模型包含 ONNX 标准不支持的操作符，有几种处理方式：(1) 自定义算子——实现 CustomOp 接口（Compute() 方法），注册到 ONNX Runtime，然后在图中使用该算子；(2) 使用 ONNX 函数——用已有标准算子组合实现新功能，打包为函数节点；(3) 分解/模拟——将不支持的算子分解为 ONNX 支持的一组等价算子；(4) 使用支持该算子的转换器版本或更高 opset 版本；(5) 对于特殊的推理引擎，可使用 Plugin 机制注册。推荐优先尝试分解和函数方式以保持跨平台兼容。",
+      "tags": [],
+      "question": "请简述如果我的模型包含一个 ONNX 标准操作符集中不支持的运算符，我该怎么办？"
+    },
+    {
+      "number": 40,
+      "id": "ONNX-040",
+      "category": "ONNX",
+      "answer": "自定义运算符是用户实现的、非 ONNX 标准库中的算子。实现步骤：(1) 继承 ort.OrtCustomOp 基类，实现 KernelCompute()（前向计算）和 GetInput/OutputTypeInfo()；(2) 用 ort.SessionOptions 的 register_custom_ops_library() 加载编译好的 .so/.dll 共享库，或用 Python 直接注册；(3) 在 ONNX 图中使用该算子（需要设定 custom domain 和 op_type）；(4) 也可用 onnx.helper.make_node 在代码中创建自定义节点。注意事项：需保证 CUDA 版本的实现与 EP 兼容，且遵循 ONNX 的类型系统。",
+      "tags": [],
+      "question": "请简述什么是自定义运算符？如何在 ONNX 中实现一个？"
+    },
+    {
+      "number": 41,
+      "id": "ONNX-041",
+      "category": "ONNX",
+      "answer": "ONNX 操作符（Operator）是原子计算单元，由 C++/CUDA 实现并注册到 ONNX Runtime，如 Conv、ReLU、MatMul。ONNX 函数（Function）是用已有操作符组合而成的复合计算，通过 FunctionProto 定义输入输出和操作序列，类似于宏或子例程。区别：操作符不可再分，性能优化在底层实现；函数由操作符组合而成，可在所有后端复用，但优化取决于各 EP 对组合的识别。函数适合扩展 ONNX 且不丢失跨平台兼容性。",
+      "tags": [],
+      "question": "请简述解释 ONNX 函数和 ONNX 操作符的区别。"
+    },
+    {
+      "number": 42,
+      "id": "ONNX-042",
+      "category": "ONNX",
+      "answer": "向现有 ONNX 模型添加新节点/层：(1) 使用 onnx.helper 创建新节点：new_node = onnx.helper.make_node('Relu', inputs=['prev_out'], outputs=['new_out']); (2) 修改图：graph.node.append(new_node)；(3) 更新 value_info：若新增中间值需要在 graph.value_info 中添加形状信息；(4) 也可以使用 ONNX Script API 构建新图然后替换部分子图；(5) 更高级的操作：使用 onnx.compose 模块合并两个模型（如插入预处理/后处理节点）；(6) 修改后必须以 onnx.checker.check_model 验证模型有效性。",
+      "tags": [],
+      "question": "请简述如何向现有 ONNX 模型添加新的节点或层？"
+    },
+    {
+      "number": 43,
+      "id": "ONNX-043",
+      "category": "ONNX",
+      "answer": "提取 ONNX 模型子图的方法：(1) 使用 onnx.utils.extract_model 函数：extract_model(input_path, output_path, input_names=['a'], output_names=['b'])，根据指定输入输出自动裁剪无关节点；(2) 编程化方法：遍历 graph.node 找到从 input 到 output 的路径（使用 BFS/DFS 遍历节点依赖），只保留路径上的节点，重连输入输出边；(3) 也可使用 onnx.compose 或 netron 可视化后手动标记；(4) 提取后务必验证 checker 并且用 ORT 测试子图输出与原模型对应部分一致。",
+      "tags": [],
+      "question": "请简述如何从 ONNX 模型中提取一个子图？"
+    },
+    {
+      "number": 44,
+      "id": "ONNX-044",
+      "category": "ONNX",
+      "answer": "ONNX-ML 是 ONNX 规范的一个扩展，专为传统机器学习模型设计。它的区别：(1) 新增操作符——如 TreeEnsembleClassifier、OneHotEncoder、LabelEncoder、Imputer、Normalizer、SVMClassifier 等，覆盖 Scikit-learn 等 ML 库的常用流水线组件；(2) 类型系统——支持字典（Map）、序列（Sequence）等非张量类型，适应表格数据的多种列类型；(3) 使用场景——将整个 ML pipeline（预处理+模型+后处理）统一导出为一个 ONNX-ML 模型，而非像深度学习那样主要处理张量到张量的映射。",
+      "tags": [],
+      "question": "请简述什么是 ONNX-ML？它与标准的 ONNX 有什么区别？（支持传统 ML 操作符）"
+    },
+    {
+      "number": 45,
+      "id": "ONNX-045",
+      "category": "ONNX",
+      "answer": "ONNX 促进边缘设备部署的方式：(1) 格式标准化——任何框架训练的模型导出为 ONNX 后，可用针对边缘设备优化的推理引擎执行（如 ONNX Runtime Mobile、NCNN、MNN），无需针对每种边缘硬件重写模型代码；(2) 模型优化——通过 ONNX 工具链进行量化（INT8）、剪枝、蒸馏等压缩操作，模型体积和计算量大幅减小；(3) 硬件加速——ONNX Runtime 支持 ARM NN、XNNPACK、CoreML、OpenVINO 等边缘执行提供程序，将算子映射到 DSP/NPU/GPU；(4) 统一工具链——从训练到部署，开发者无需为树莓派、手机、嵌入式板卡各维护一套推理代码。",
+      "tags": [],
+      "question": "请简述ONNX 如何促进模型在边缘设备上的部署？"
+    },
+    {
+      "number": 46,
+      "id": "ONNX-046",
+      "category": "ONNX",
+      "answer": "除了 ONNX Runtime，还有：NVIDIA TensorRT（NVIDIA GPU 推理优化引擎，直接导入 ONNX 进行层融合和 INT8 量化）；Intel OpenVINO（针对 Intel CPU/GPU/VPU 优化，支持 ONNX 导入的模型优化器）；NCNN（腾讯开源，轻量级，专为移动端和嵌入式设计）；MNN（阿里开源，移动优先，支持多种后端）；TNN（腾讯，跨平台 GPU 推理）；ONNX.js（浏览器端推理）；TensorFlow Lite（通过 tf2onnx 到 TFLite 转换）；Apache TVM（通用编译器，支持 ONNX 作为前端 IR）。",
+      "tags": [
+        "CNN"
+      ],
+      "question": "请简述列举一些可以运行 ONNX 模型的推理引擎。（除了 ONNX Runtime，还有 TensorRT, OpenVINO, NCNN 等）"
+    },
+    {
+      "number": 47,
+      "id": "ONNX-047",
+      "category": "ONNX",
+      "answer": "在移动端运行 ONNX 模型：(1) 使用 ONNX Runtime Mobile——精简版包（如 onnxruntime-mobile），仅包含移动端所需的 EP 和算子，体积小；(2) 在 Android 上：通过 AAR 集成或 JNI 调用 C API，配置 XNNPACK 或 NNAPI EP 进行硬件加速；(3) 在 iOS 上：通过 CocoaPods 集成 onnxruntime-mobile-c，配置 CoreML EP 驱动 ANE（Apple Neural Engine）；(4) 替代方案：将 ONNX 转换为 NCNN、MNN、Core ML 原生格式后嵌入到移动端。量化（INT8/FP16）在移动端几乎必选以减少体积和功耗。",
+      "tags": [],
+      "question": "请简述如何在移动端（Android/iOS）上运行 ONNX 模型？"
+    },
+    {
+      "number": 48,
+      "id": "ONNX-048",
+      "category": "ONNX",
+      "answer": "在浏览器中运行 ONNX 模型：(1) ONNX.js（微软开源）——将 ONNX 模型加载到浏览器，利用 WebGL/WebGPU 进行 GPU 加速推理，也支持 CPU fallback（WebAssembly）；(2) 使用步骤：加载 ONNX 模型文件 -> 创建 InferenceSession -> 传入输入张量（从 canvas/摄像头获取的图像数据）-> 异步获取输出 -> 渲染结果；(3) WebAssembly + WebGPU 结合可实现接近原生的性能；(4) 替代方案：ORT Web（ONNX Runtime 的 WebAssembly 构建）、TensorFlow.js 通过转换器导入 ONNX。浏览器推理常见于在线 demo、隐私敏感的客户端推理。",
+      "tags": [],
+      "question": "请简述如何在 Web 浏览器中运行 ONNX 模型？（使用 ONNX.js）"
+    },
+    {
+      "number": 49,
+      "id": "ONNX-049",
+      "category": "ONNX",
+      "answer": "ONNX 是实现「一次训练，随处部署」的关键基础设施：训练阶段，开发者可使用最适合的框架（PyTorch 做研究、TensorFlow 做生产、JAX 做高性能），只需将其导出为 ONNX 这个统一中间表示；部署阶段，ONNX 模型可在任意支持的推理引擎上运行，覆盖云端 GPU、CPU 服务器、移动设备、浏览器和嵌入式硬件。这从根本上解耦了训练框架与推理运行时，避免了对单一框架的锁定，同时 ONNX 生态的优化工具进一步保证了跨硬件的高效执行。",
+      "tags": [],
+      "question": "请简述解释 ONNX 在构建“一次训练，随处部署”的机器学习系统中的作用。"
+    }
+  ]
+}

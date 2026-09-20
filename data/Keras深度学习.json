@@ -1,0 +1,741 @@
+{
+  "category": "Keras深度学习",
+  "questions": [
+    {
+      "id": "Keras深度学习-001",
+      "number": 1,
+      "question": "请简述什么是余弦相似度？NLTK 中如何计算两个向.. ?",
+      "answer": "余弦相似度是通过计算两个向量夹角的余弦值来衡量其方向相似性的度量，值域[-1,1]，值越大方向越一致。在NLTK中，可以先用nltk.tokenize分词，再用sklearn的TfidfVectorizer将文本转为向量，最后调用sklearn.metrics.pairwise.cosine_similarity计算。如果仅对原始向量操作，可直接用numpy的dot和norm实现。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-002",
+      "number": 2,
+      "question": "请简述Keras的主要设计原则和优点是什么？（用户友好、模块化、易扩展） ?",
+      "answer": "Keras的主要设计原则包括用户友好、模块化和易扩展：用户友好体现在极简的API和高层抽象，使快速原型开发成为可能；模块化体现在网络层、损失函数等组件可自由组合；易扩展则允许用户自定义层或模型。其优点在于易于上手、支持多后端（TensorFlow等）且与底层框架无缝集成，同时提供清晰的一致性和调试便利性。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-003",
+      "number": 3,
+      "question": "请简述解释Keras的“模型”概念。三种主要的模型类型是什么？ ?",
+      "answer": "Keras中的“模型”是一个将网络层组织成计算图的核心概念，用于定义网络结构、训练和推理过程。三种主要模型类型是：Sequential模型（线性层堆叠，适用于简单序列）、Functional API模型（支持多输入、多输出和共享层的无环图）和Model子类化（通过继承Model并自定义call方法实现灵活控制）。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-004",
+      "number": 4,
+      "question": "请简述比较Sequential模型、Functional API和Model Subclassing的优缺点及适用场景。 ?",
+      "answer": "Sequential模型是线性堆叠的简单容器，适合单一输入输出的直连网络，优点在简洁快速，缺点是无法处理分支、多输入输出或共享层；Functional API通过层图构建任意拓扑，支持多输入、多输出和共享层，灵活性高且可序列化，适合非顺序网络如残差结构；Model Subclassing通过继承并自定义call方法实现完全动态控制，适合研究型复杂逻辑，但牺牲了序列化便利性和模型summary的可视化，调试成本较高。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-005",
+      "number": 5,
+      "question": "请简述如何检查Keras的版本？ ?",
+      "answer": "在Python环境中执行import keras; print(keras.__version__)即可打印Keras版本。若使用TensorFlow内置的Keras，则用import tensorflow as tf; print(tf.keras.__version__)。此外，也可通过命令行运行python -c \"import keras; print(keras.__version__)\"快速查询。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-006",
+      "number": 6,
+      "question": "请简述什么是Keras的“层”？它起什么作用？ ?",
+      "answer": "在Keras中，“层”（Layer）是神经网络的基本构建模块，是一个可调参的数据处理单元，负责接收输入张量、执行特定变换（如全连接、卷积、激活、正则化等）并输出张量。它的核心作用是抽象出重复的运算逻辑，通过堆叠不同层来构建复杂的神经网络结构，同时管理内部的可训练权重和计算图，从而实现前向传播与反向传播的自动化。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-007",
+      "number": 7,
+      "question": "请简述如何查看一个层或模型的配置信息？ ?",
+      "answer": "在Keras中，可通过调用层的`get_config()`方法或模型的`get_config()`方法获取其配置字典，包含所有初始化参数。对于模型，也可使用`model.to_json()`或`model.get_config()`（返回结构字典）查看完整架构。此外，`model.summary()`可输出层概况，`model.layers`列表配合各层的`name`和`config`属性可逐层检查。这些方法返回的配置信息可直接用于重建相同结构的模型。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-008",
+      "number": 8,
+      "question": "请简述Keras中的“张量”是什么？它与TensorFlow的Tensor有何关系？ ?",
+      "answer": "在Keras中，张量（Tensor）是多维数组的泛化表示，是数据的基本容器，用于存储输入、输出和中间特征。当Keras使用TensorFlow作为后端时（当前主流用法），Keras中的张量直接就是TensorFlow的`tf.Tensor`对象，二者在底层完全等价。简言之，Keras的Tensor是TensorFlow Tensor的API层抽象，操作上使用相同的计算图机制，只是在Keras中通常通过层（Layer）和模型（Model）来构建更高级的抽象。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-009",
+      "number": 9,
+      "question": "请简述解释Keras中的“形状”概念。batch_size在形状中是如何体现的？ ?",
+      "answer": "Keras中的“形状”指张量各维度的长度，定义了数据的结构，如序列长度、特征数或图像尺寸。batch_size作为批处理样本数，通常占据形状的第一个维度，例如输入形状为(batch_size, 特征维度)；在模型第一层通过input_shape参数指定时，batch_size被省略（用None代替），允许模型在训练和推理时灵活适应不同批大小。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-010",
+      "number": 10,
+      "question": "请简述什么是“符号式编程”和“命令式编程”？Keras的Sequential/Functional API和Model Subclassing分别属于哪种？ ?",
+      "answer": "符号式编程先定义计算图再执行，具有编译优化和静态计算特性，如TensorFlow 1.x；命令式编程逐行执行，即时运算并灵活调试，如PyTorch。Keras的Sequential和Functional API基于符号式编程，构建静态计算图后编译运行；Model Subclassing则采用命令式编程，通过继承Layer/Model类并在call方法中定义前向逻辑，支持动态控制流。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-011",
+      "number": 11,
+      "question": "请简述如何使用Sequential API快速构建一个简单的多层感知机？ ?",
+      "answer": "首先实例化Sequential对象，然后通过add方法或构造函数按序添加Dense层，指定输入维度、神经元数和激活函数（如ReLU），最后调用compile配置优化器、损失函数与评价指标，即可快速构建多层感知机。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-012",
+      "number": 12,
+      "question": "请简述在Sequential模型中，如何添加一个层？ ?",
+      "answer": "在Keras的Sequential模型中，添加一个层最常用的方法是调用模型的add()方法，传入一个层实例，例如model.add(Dense(64, activation='relu'))。也可以在创建模型时直接传入层列表，如model = Sequential([Dense(64), Dense(10)])。add()方法会将层追加到模型末尾，并自动建立层间的连接关系。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-013",
+      "number": 13,
+      "question": "请简述Sequential模型的局限性是什么？（不能共享层，不能有多输入/多输出） ?",
+      "answer": "Sequential模型是线性堆叠层的容器，其核心局限在于不支持非顺序拓扑结构：它无法共享层，因为每个层只能出现一次且按顺序传递；也无法处理多输入或多输出，例如需要合并多个分支或从不同层提取输出的架构。此外，它不能实现残差连接、注意力机制等复杂网络设计。这些限制使其仅适用于简单的单输入单输出前馈网络。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-014",
+      "number": 14,
+      "question": "请简述什么情况下必须使用Functional API？ ?",
+      "answer": "当模型需要多输入、多输出、共享层或残差连接等非线性拓扑结构时，必须使用Functional API。Sequential模型仅支持单输入单输出的线性堆叠，无法处理分支、合并或跨层连接。Functional API通过定义张量的有向无环图来构建网络，能够灵活实现Inception、Siamese等复杂架构。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-015",
+      "number": 15,
+      "question": "请简述如何使用Functional API创建一个多输入模型（例如，连接两个特征向量）？ ?",
+      "answer": "使用Functional API创建多输入模型时，首先用`Input`层定义多个输入张量（如`input_a`和`input_b`），各自经过独立的隐藏层处理后，通过`Concatenate`层或`keras.layers.add`等合并操作将特征向量拼接。随后接上全连接等后续层，最后用`Model(inputs=[input_a, input_b], outputs=final_output)`实例化。训练时需传入输入列表或字典。该方式支持任意拓扑结构，灵活性强。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-016",
+      "number": 16,
+      "question": "请简述如何使用Functional API创建一个多输出模型（例如，一个网络同时执行分类和回归）？ ?",
+      "answer": "首先定义输入层，然后通过共享的隐藏层提取特征，接着从该特征层分出两个独立的输出分支：一个使用softmax激活用于分类任务，另一个使用线性激活用于回归任务。最后用Model类将输入与多个输出组合，编译时指定多个损失函数（如分类交叉熵和均方误差）及对应权重，即可实现多任务学习。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-017",
+      "number": 17,
+      "question": "请简述如何在Functional API中实现层共享？（例如，一个编码器被两个解码器使用） ?",
+      "answer": "在Functional API中实现层共享，只需先实例化一个层或子模型，然后在多个输入或后续步骤中重复调用它。例如，定义一个编码器层实例后，分别传入两个不同输入得到两个输出，再分别传递给两个解码器。这些调用共享相同的权重和参数，反向传播时会同时更新。注意需确保共享层在模型图中只出现一次，避免重复定义。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-018",
+      "number": 18,
+      "question": "请简述如何使用Model Subclassing通过继承tf.keras.Model来定义自定义模型？ ?",
+      "answer": "通过继承tf.keras.Model，首先在__init__中定义所有层为实例属性，然后在call方法中实现前向传播逻辑，可重写train_step、compile等方法来定制训练流程。这种子类化方式提供完全的灵活性，适合动态计算图和非序列化结构，但牺牲了序列化方便性。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-019",
+      "number": 19,
+      "question": "请简述在Subclassing模型中，__init__和call方法分别应该做什么？ ?",
+      "answer": "__init__方法用于定义和初始化模型中的层、可训练参数以及超参数，通常在此处创建所有需要的层对象，但不执行实际计算。call方法实现前向传播逻辑，接收输入数据并按照模型结构依次调用在__init__中定义的层，最终返回输出张量。两者共同实现模型的计算图定义与执行分离。\n\n**示例代码：**\n\n```python\nclass Person:\n    def __init__(self, name, age):\n        self.name = name  # 实例变量\n        self.age = age\n    \n    def greet(self):\n        return f\"我是{self.name}，今年{self.age}岁\"\n\np = Person(\"张三\", 25)\nprint(p.greet())  # 我是张三，今年25岁\n\n```",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-020",
+      "number": 20,
+      "question": "请简述在__init__中定义层和在call中直接定义层有什么区别？ ?",
+      "answer": "在__init__中定义的层是模型的持久化属性，会被注册为可训练参数，支持序列化、保存和加载；而在call中直接定义的层每次调用都会重新创建实例，无法保存权重和状态，且模型结构不固定，不利于模型导出与部署。关键区别在于：前者保证层与权重的持久性，后者仅用于无状态或临时计算。因此，生产级模型应在__init__中定义所有含参数的层。\n\n**示例代码：**\n\n```python\nclass Person:\n    def __init__(self, name, age):\n        self.name = name  # 实例变量\n        self.age = age\n    \n    def greet(self):\n        return f\"我是{self.name}，今年{self.age}岁\"\n\np = Person(\"张三\", 25)\nprint(p.greet())  # 我是张三，今年25岁\n\n```",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-021",
+      "number": 21,
+      "question": "请简述如何获取模型中某一层的输出？（使用Functional API或创建多输出模型） ?",
+      "answer": "使用Functional API定义模型时，在构建模型后通过`model.get_layer('layer_name').output`即可获取指定层的输出张量，再实例化一个`Model(inputs=model.input, outputs=target_output)`得到中间输出模型。若需同时训练多个输出，可在定义模型时将多个输出层作为`Model`的`outputs`参数，编译时指定多个损失函数与权重。此外，也可通过`K.function`创建Keras函数，传入输入与目标层输出列表，直接计算中间层激活值。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-022",
+      "number": 22,
+      "question": "请简述什么是“跳过连接”？如何在Keras中实现它？（使用Functional API的加法或拼接） ?",
+      "answer": "跳过连接是神经网络中将某层输出直接传递给更深层的一种捷径，有助于缓解梯度消失和网络退化问题。在Keras Functional API中，可通过定义两个张量后使用`keras.layers.Add()`进行逐元素相加（如残差网络）或`keras.layers.Concatenate()`沿通道维度拼接（如DenseNet）来实现。例如，`output = Add()([shortcut, main_path])`即可构建一个简单的残差跳过连接。\n\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\ninputs = keras.Input(shape=(10,))\nx = keras.layers.Dense(64, activation='relu')(inputs)\nx = keras.layers.Dropout(0.3)(x)\nx = keras.layers.Dense(32, activation='relu')(x)\noutputs = keras.layers.Dense(1, activation='sigmoid')(x)\n\nmodel = keras.Model(inputs=inputs, outputs=outputs)\nmodel.compile(optimizer='adam',\n              loss='binary_crossentropy')\n\nmodel.summary()\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-023",
+      "number": 23,
+      "question": "请简述介绍Dense层及其关键参数（units, activation）。 ?",
+      "answer": "Dense层是Keras中实现全连接神经网络的核心层，每个输入节点与所有输出节点相连，执行线性变换后可选非线性激活。关键参数units定义输出维度，决定该层神经元的数量；activation指定激活函数，如'relu'或'softmax'，引入非线性以学习复杂模式。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-024",
+      "number": 24,
+      "question": "请简述Conv2D层的主要参数是什么？（filters, kernel_size, strides, padding） ?",
+      "answer": "Conv2D层是Keras中用于二维卷积的核心层，主要参数包括filters（输出通道数，即卷积核数量，控制特征图深度）、kernel_size（卷积核空间尺寸，如(3,3)，决定感受野大小）、strides（卷积步长，控制特征图下采样幅度）和padding（填充策略，'valid'不填充则输出尺寸缩小，'same'填充零使输出与输入尺寸相同，以保留边缘信息）。这些参数共同决定了卷积操作的计算量和特征提取能力。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-025",
+      "number": 25,
+      "question": "请简述MaxPooling2D和AveragePooling2D有什么区别？ ?",
+      "answer": "MaxPooling2D取池化窗口内的最大值，保留最显著特征，噪声抑制能力强，但可能丢失细节信息；AveragePooling2D取窗口内所有值的平均，保留整体分布信息，对梯度更平滑，但会弱化强特征。两者均用于下采样以降低特征图尺寸和参数量，但MaxPooling更常用，AveragePooling在需要保留背景或全局信息时更有效。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-026",
+      "number": 26,
+      "question": "请简述Flatten层的作用是什么？它如何影响输入形状？ ?",
+      "answer": "Flatten层的作用是将多维输入张量展平为一维张量，通常位于卷积层与全连接层之间，用于保留特征数量并消除空间结构。它仅改变张量的形状，不改变批大小（batch size），例如输入形状为(batch, height, width, channels)时输出形状变为(batch, height*width*channels)。展平操作本身不引入可训练参数，仅作为数据维度适配器，确保后续全连接层能处理所有特征。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-027",
+      "number": 27,
+      "question": "请简述Dropout层在训练和推理时行为有何不同？它的rate参数是什么意思？ ?",
+      "answer": "Training时，Dropout以概率rate随机将神经元输出置零，并将保留的激活除以(1-rate)以保持期望不变；推理时所有神经元均激活，不进行随机丢弃，且权重已隐式缩放。rate参数即丢弃概率，控制神经元被临时移除的比例，通常设为0.2~0.5。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-028",
+      "number": 28,
+      "question": "请简述BatchNormalization层的作用是什么？它在训练和推理时的行为有何不同？ ?",
+      "answer": "BatchNormalization通过对每一层的输入进行归一化（减均值除方差）并引入可学习的缩放和平移参数，加速训练收敛、缓解梯度消失或爆炸，并起到轻微正则化作用。训练时，每个小批量的均值和方差用于归一化，并使用滑动平均更新全局统计量；推理时则直接使用训练过程中累积的全局均值和方差进行归一化，不再依赖当前批次的数据。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-029",
+      "number": 29,
+      "question": "请简述如何构建一个简单的卷积神经网络用于图像分类？ ?",
+      "answer": "在Keras中，构建CNN图像分类模型通常使用Sequential API：首先加入Conv2D层提取特征，配合ReLU激活和MaxPooling2D下采样，之后Flatten展平并接入Dense全连接层，最后用softmax输出类别概率；编译时选用adam优化器与categorical_crossentropy损失，然后通过model.fit传入归一化后的图像数据和标签进行训练，并监控验证集准确率。\n**示例代码：**\n\n```python\nfrom tensorflow import keras\n\nmodel = keras.Sequential([\n    keras.layers.Conv2D(32, (3,3), activation='relu',\n                        input_shape=(28,28,1)),\n    keras.layers.MaxPooling2D((2,2)),\n    keras.layers.Conv2D(64, (3,3), activation='relu'),\n    keras.layers.MaxPooling2D((2,2)),\n    keras.layers.Flatten(),\n    keras.layers.Dense(64, activation='relu'),\n    keras.layers.Dense(10, activation='softmax')\n])\n\nmodel.summary()\n\n\n\n```\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-030",
+      "number": 30,
+      "question": "请简述如何构建一个简单的循环神经网络（如LSTM或GRU）用于序列处理？ ?",
+      "answer": "使用Keras构建LSTM/GRU模型的第一步是定义输入层，指定序列长度（时间步）和特征维度，然后添加一个LSTM或GRU层，设置units数量并根据任务决定是否返回完整序列（return_sequences=True用于堆叠RNN或序列输出）。接着添加一个或多个全连接层进行最终预测，并使用适应任务的激活函数（如softmax用于分类）。最后编译模型时选择合适的损失函数（如categorical_crossentropy）和优化器（如Adam），并用model.fit传入序列数据训练。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-031",
+      "number": 31,
+      "question": "请简述LSTM层的return_sequences和return_state参数有什么区别？ ?",
+      "answer": "return_sequences控制是否输出所有时间步的隐藏状态序列（形状：[batch, timesteps, units]），通常用于堆叠LSTM或连接序列层；return_state则控制是否返回最后一个时间步的隐藏状态h和细胞状态c（形状：[batch, units]），常用于编码器-解码器结构或状态初始化。两者可同时设为True，此时模型返回(output, state_h, state_c)三元组，分别对应完整的输出序列和最终状态。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-032",
+      "number": 32,
+      "question": "请简述如何堆叠多层LSTM？（设置return_sequences=True） ?",
+      "answer": "堆叠多层LSTM时，除最后一层外，前N-1层的return_sequences必须设为True，以输出每个时间步的隐藏状态序列作为下一层的输入；最后一层可根据任务设为True（输出序列如Seq2Seq）或False（输出最后一个时间步如分类）。关键点：第一层需指定input_shape，后续层自动继承序列维度；各层units可独立设置，但需注意过拟合风险，通常采用Dropout正则化。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-033",
+      "number": 33,
+      "question": "请简述什么是嵌入层？它在NLP任务中起什么作用？ ?",
+      "answer": "嵌入层是一种将离散的稀疏词索引映射为稠密、低维连续向量的神经网络层。在NLP任务中，它通过从数据中学习语义相近的词在向量空间中距离更近的表示，从而捕捉词汇间的语义和语法关系。这种向量化替代了one-hot编码，大幅降低了输入维度，并缓解了数据稀疏性问题。同时，预训练的词嵌入（如Word2Vec、GloVe）可初始化该层，加速模型收敛并提升下游任务性能。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-034",
+      "number": 34,
+      "question": "请简述GlobalAveragePooling2D层的作用是什么？为什么在CNN的末尾常用它来代替Flatten？ ?",
+      "answer": "GlobalAveragePooling2D对每个特征图的空间维度求平均，生成一个与通道数相等的1D向量。相比Flatten直接展平，它几乎没有可学习参数，能极大降低过拟合风险，同时使模型对输入空间尺寸不敏感，并强制网络学习全局的特征响应，从而提升泛化能力。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-035",
+      "number": 35,
+      "question": "请简述模型编译的目的是什么？model.compile()方法接受哪些关键参数？ ?",
+      "answer": "模型编译的目的是配置模型的学习过程，包括指定优化器、损失函数和评估指标，从而为训练阶段做好准备。model.compile()的关键参数有：optimizer（优化器，如'sgd'或'adam'）、loss（损失函数，如'categorical_crossentropy'）、metrics（评估指标列表，如['accuracy']），以及可选的loss_weights、weighted_metrics等。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-036",
+      "number": 36,
+      "question": "请简述如何为二分类、多分类和多标签分类任务选择损失函数？ ?",
+      "answer": "对于二分类任务，使用二元交叉熵损失（binary cross-entropy）配合sigmoid激活；多分类任务使用分类交叉熵损失（categorical cross-entropy）配合softmax激活，使各类概率互斥且和为1；多标签分类任务同样选用二元交叉熵损失，但每个输出节点独立使用sigmoid，允许同时激活多个标签。核心区别在于标签间的互斥性：多分类要求单标签，多标签允许多个正例，而二分类是单标签的特例。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-037",
+      "number": 37,
+      "question": "请简述binary_crossentropy和categorical_crossentropy有什么区别？它们对应的标签格式是什么？ ?",
+      "answer": "binary_crossentropy用于二分类任务，输出层通常使用sigmoid激活函数，标签格式为0或1的标量；categorical_crossentropy用于多分类任务，输出层使用softmax，标签格式为one-hot编码向量。若标签为整数索引，则对应使用sparse_categorical_crossentropy。两者核心区别在于分类目标的数量和标签表示形式。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-038",
+      "number": 38,
+      "question": "请简述什么是sparse_categorical_crossentropy？什么时候使用它？ ?",
+      "answer": "sparse_categorical_crossentropy是用于多类分类任务的损失函数，它与categorical_crossentropy的区别在于标签格式：前者接受整数编码的标签（0到num_classes-1），后者接受one-hot编码的标签。当你的目标标签是整数而非one-hot向量时，应使用它，因为它内部自动处理了标签到概率分布的转换，计算效率更高且内存占用更少。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-039",
+      "number": 39,
+      "question": "请简述介绍几种常见的优化器，如SGD, RMSprop, Adam。 ?",
+      "answer": "SGD（随机梯度下降）按当前梯度直接更新参数，计算简单但收敛慢且易陷入局部鞍点；RMSprop通过累积梯度平方的指数移动平均来调整学习率，缓解了SGD的震荡问题并自适应不同参数的学习率；Adam结合了动量（Momentum）与RMSprop，既保留了梯度方向上的惯性加速，又根据梯度方差动态调节步长，成为最常用的默认优化器，且对超参数调整相对鲁棒。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-040",
+      "number": 40,
+      "question": "请简述Adam优化器有哪些关键参数？（learning_rate, beta_1, beta_2） ?",
+      "answer": "Adam优化器的关键参数包括学习率（learning_rate）、一阶矩衰减率（beta_1）和二阶矩衰减率（beta_2）。学习率控制步长，典型值0.001；beta_1默认为0.9，决定梯度指数移动平均的衰减速度；beta_2默认为0.999，控制梯度平方指数移动平均的衰减，用于自适应调整学习率。这些参数共同平衡了收敛速度与稳定性，超参数调整时需注意epsilon（防止除零）和权重衰减选项。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-041",
+      "number": 41,
+      "question": "请简述什么是“指标”？如何指定模型在训练和评估期间要监控的指标？ ?",
+      "answer": "指标是用于量化模型预测性能的标量函数，如准确率、精确率、召回率或自定义度量，它们不同于损失函数，不用于梯度更新。在Keras中，通过在model.compile()的metrics参数中以列表形式传入指标名称（如'accuracy'）或Metric实例来指定监控目标。这些指标会在每个训练epoch和评估阶段自动计算并记录，可通过history对象或evaluate()返回值获取。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-042",
+      "number": 42,
+      "question": "请简述如何创建自定义指标？ ?",
+      "answer": "在Keras中创建自定义指标通常通过继承keras.metrics.Metric类并实现__init__、update_state、result和reset_state方法来完成，其中update_state负责累积批次数据，result返回当前指标值。也可以使用函数式方式将任意函数包装为指标，只需确保函数接收y_true和y_pred并返回张量。注意自定义指标应支持分布式计算和自动微分，避免使用Python原生循环或可变副作用。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-043",
+      "number": 43,
+      "question": "请简述自定义指标函数需要满足什么条件？（必须接受y_true和y_pred参数，并返回一个张量） ?",
+      "answer": "自定义指标函数必须接受y_true和y_pred两个张量参数，并返回一个标量张量（即形状为()的张量），且该函数需使用Keras后端操作（如K.mean、K.sum）而非原生Python运算，以确保梯度可计算且兼容不同后端。此外，指标函数应仅依赖输入参数，避免外部状态，以保持纯函数特性。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-044",
+      "number": 44,
+      "question": "请简述如何实现一个“准确率”指标？tf.keras.metrics模块中内置了哪些常见指标？ ?",
+      "answer": "实现准确率指标可继承tf.keras.metrics.Metric，在update_state中比较预测与标签并更新正确计数和总数，result返回比值；也可直接使用内置Accuracy类。常见内置指标包括Accuracy、BinaryAccuracy、CategoricalAccuracy、SparseCategoricalAccuracy、Precision、Recall、AUC、MeanSquaredError、MeanAbsoluteError等。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-045",
+      "number": 45,
+      "question": "请简述使用model.fit()训练模型的基本流程是什么？ ?",
+      "answer": "首先，使用model.fit()训练模型需要先编译模型，指定优化器、损失函数和评估指标。然后，将训练数据（特征和标签）作为参数传入，并设置batch size、epochs等超参数。训练过程中，模型按批次前向传播计算损失，反向传播更新权重，并周期性地在验证数据上评估性能。最终，训练完成后模型权重被优化，可进行预测或进一步调优。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-046",
+      "number": 46,
+      "question": "请简述model.fit()中的epochs和batch_size参数是什么意思？ ?",
+      "answer": "epochs指整个训练数据集在模型训练过程中被完整遍历的次数；batch_size指每次权重更新时参与计算的样本数量。两者共同决定了训练时的迭代步数——每轮epoch的迭代步数等于训练样本总数除以batch_size。较大的batch_size能利用矩阵运算加速，但可能降低泛化能力；较小的batch_size则引入更多随机性，有助于逃离局部最优，但训练耗时更长。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-047",
+      "number": 47,
+      "question": "请简述validation_data和validation_split参数有什么区别？ ?",
+      "answer": "validation_data允许用户显式传入独立的验证集(如(x_val, y_val))，适用于数据已预先拆分或需要自定义划分逻辑的场景；而validation_split则从训练数据末尾按指定比例(如0.2)自动切分，常用在数据未拆分且希望随机采样时。两者互斥，同时设置会引发错误，且validation_split默认不打乱顺序，可能引入数据分布偏差。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-048",
+      "number": 48,
+      "question": "请简述如何将TensorFlow的tf.data.Dataset对象传递给fit()方法？ ?",
+      "answer": "直接将tf.data.Dataset对象作为fit()的第一个参数传入即可，该数据集需返回(features, labels)元组；不需要提供x和y的单独指定，fit会按批次自动迭代；可设置steps_per_epoch控制每轮迭代步数，否则使用数据集元素数除以batch_size；利用Dataset的prefetch、cache等方法可提升数据管道效率。\n\n**示例代码：**\n\n```python\nimport tensorflow as tf\nimport numpy as np\n\nX = np.random.randn(1000, 10).astype(np.float32)\ny = np.random.randint(0, 2, 1000)\n\ndataset = tf.data.Dataset.from_tensor_slices((X, y))\ndataset = (dataset\n           .shuffle(1000)\n           .batch(32)\n           .prefetch(tf.data.AUTOTUNE))\n\nfor batch_x, batch_y in dataset.take(1):\n    print(f\"Batch X: {batch_x.shape}, y: {batch_y.shape}\")\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-049",
+      "number": 49,
+      "question": "请简述训练过程中返回的History对象包含什么信息？ ?",
+      "answer": "History对象是Keras中model.fit()返回的字典式对象，其history属性是一个字典，记录了每个epoch的损失值和评估指标值（如准确率等）。该字典的键对应于编译模型时指定的损失函数和监控指标名称，值则是每个epoch对应的数值列表，可用于后续可视化训练曲线或进行早停等回调逻辑的判断。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-050",
+      "number": 50,
+      "question": "请简述如何使用model.evaluate()评估模型？ ?",
+      "answer": "调用model.evaluate()时，传入测试数据（x_test）和标签（y_test），并可选batch_size和verbose参数。该方法会先对模型执行前向传播计算预测值，再根据编译时指定的损失函数和评估指标计算损失与指标值，返回一个列表（如[loss, accuracy]）。内部无梯度更新，仅用于评估模型在测试集上的表现，不会影响模型权重。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-052",
+      "number": 52,
+      "question": "请简述model.predict()和直接调用模型（如model(x)）有什么区别？ ?",
+      "answer": "model.predict()会启用全局的推断模式，自动处理批次维度、数据分发和评估过程，返回完整的预测数组；而直接调用model(x)则是以函数式API的方式执行前向传播，需要手动管理批次和梯度上下文，常用于动态图或自定义训练循环。前者更适合批量预测场景，后者更灵活但需要用户自行处理输入形状和模式。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-053",
+      "number": 53,
+      "question": "请简述在推理时，为什么有时需要设置model.trainable = False或调用model.eval()？（注意：标准Keras无eval，此行为由层内部处理，如Dropout和BN） ?",
+      "answer": "在Keras中，推理时需通过层内部的training参数或模型设置为推理模式（如调用model.predict时自动处理），因为某些层在训练和推理时有不同行为：Dropout在推理时需禁用随机失活以保持确定性输出，BatchNormalization则需使用全局均值和方差而非当前batch的统计量，以保证推理稳定性。因此，虽然标准Keras无显式eval调用，但正确设置推理模式（如通过model.predict或传递training=False）是必要的，否则模型输出会不准确。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-054",
+      "number": 54,
+      "question": "请简述解释tf.keras.callbacks.Callback的作用。 ?",
+      "answer": "tf.keras.callbacks.Callback是一个基类，用于在模型训练的不同阶段（如epoch开始/结束、batch结束）插入自定义操作。通过继承该类并重写on_epoch_end、on_batch_end等方法，开发者可以实现学习率调度、早停、模型检查点、日志记录等功能。其核心作用是增强训练流程的灵活性和控制力，而无需修改训练循环代码。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-055",
+      "number": 55,
+      "question": "请简述介绍几个常用的内置回调函数：ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TensorBoard。 ?",
+      "answer": "ModelCheckpoint在训练期间自动保存模型权重或完整模型，可依据验证集表现选择最佳节点；EarlyStopping监控指定指标，在指标不再改善时提前终止训练，防止过拟合并节省时间；ReduceLROnPlateau当监控指标停滞时自动降低学习率，帮助模型跳出局部最优；TensorBoard记录训练中的标量、图像、直方图等日志，通过可视化工具实现训练过程的可视化监控与调试。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-056",
+      "number": 56,
+      "question": "请简述如何创建自定义回调函数？（例如，在每轮结束时发送通知） ?",
+      "answer": "继承keras.callbacks.Callback类，并重写on_epoch_end方法，在其中编写发送通知的代码（如使用requests.post发送HTTP请求）。实例化该自定义类后，将其添加到model.fit的callbacks参数列表中即可生效。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-057",
+      "number": 57,
+      "question": "请简述在自定义回调中，你可以重写哪些方法？（on_epoch_begin, on_epoch_end, on_batch_begin, on_batch_end） ?",
+      "answer": "在Keras自定义回调中，你可以重写on_epoch_begin、on_epoch_end、on_batch_begin、on_batch_end等核心钩子方法，分别对应每个epoch或每个batch开始和结束时触发；此外还可重写on_train_begin、on_train_end、on_test_begin、on_test_end等方法，以实现在训练、评估等不同阶段的介入。这些方法通常用于记录日志、动态调整学习率、提前停止或保存模型等自定义逻辑。重写时需注意保持对父类方法的调用（即super().xxx()），以避免破坏回调链中的默认行为。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-058",
+      "number": 58,
+      "question": "请简述Keras提供了哪些工具来进行图像数据预处理和增强？（tf.keras.preprocessing.image.ImageDataGenerator，但在TF2.x中推荐使用tf.data） ?",
+      "answer": "传统上Keras通过`tf.keras.preprocessing.image.ImageDataGenerator`提供实时数据增强（如旋转、缩放、翻转等）及从目录批量加载图像的功能，但该工具基于Python生成器，扩展性有限。在TF2.x中推荐使用`tf.data`管道搭配`tf.image`进行图像预处理与增强（如`map`函数内调用`tf.image.random_flip_left_right`等），支持更高效的图执行、混合精度训练及分布式策略。`ImageDataGenerator`仍可用于简单场景，而`tf.data`提供更强的性能与灵活性，尤其适合大规模数据集。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-059",
+      "number": 59,
+      "question": "请简述如何使用tf.data API与Keras模型结合？ ?",
+      "answer": "通过tf.data API构建高性能输入管道，将数据集转换为tf.data.Dataset对象，并应用map、batch、prefetch等变换进行预处理和流水线优化；然后直接将该Dataset对象传入Keras模型的fit、evaluate或predict方法，Keras会自动从数据管道迭代批次进行训练，例如model.fit(dataset, epochs=10)。利用Dataset的.shuffle和.repeat可以控制数据顺序与周期，结合.prefetch(tf.data.AUTOTUNE)实现数据加载与模型计算的异步并行，显著提升GPU利用率。\n\n**示例代码：**\n\n```python\nimport tensorflow as tf\nimport numpy as np\n\nX = np.random.randn(1000, 10).astype(np.float32)\ny = np.random.randint(0, 2, 1000)\n\ndataset = tf.data.Dataset.from_tensor_slices((X, y))\ndataset = (dataset\n           .shuffle(1000)\n           .batch(32)\n           .prefetch(tf.data.AUTOTUNE))\n\nfor batch_x, batch_y in dataset.take(1):\n    print(f\"Batch X: {batch_x.shape}, y: {batch_y.shape}\")\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-060",
+      "number": 60,
+      "question": "请简述介绍tf.keras.utils.Sequence类。它有什么优势？（用于创建数据生成器，支持多进程） ?",
+      "answer": "tf.keras.utils.Sequence是一个抽象基类，用于创建可多进程并行加载的数据生成器，通过实现__len__和__getitem__方法确保每个epoch固定顺序且无样本重叠。其核心优势在于配合workers参数实现安全的多进程数据预处理，避免线程安全问题，同时支持on_epoch_end方法进行epoch级状态重置，显著提升大数据量下的训练效率。\n\n**示例代码：**\n\n```python\n# 生成器函数 — 使用 yield 逐个产出值\ndef fibonacci(n):\n    a, b = 0, 1\n    for _ in range(n):\n        yield a\n        a, b = b, a + b\n\nfor num in fibonacci(10):\n    print(num, end=' ')  # 0 1 1 2 3 5 8 13 21 34\n\n# 生成器表达式\nsquares = (x**2 for x in range(5))\nprint(list(squares))  # [0, 1, 4, 9, 16]\n\n```",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-061",
+      "number": 61,
+      "question": "请简述如何对图像数据进行标准化？（例如，将像素值从[0, 255]缩放到[0, 1]或[-1, 1]） ?",
+      "answer": "图像数据标准化通常通过线性缩放实现：将像素值除以255即可从[0,255]映射到[0,1]；若要映射到[-1,1]，则先除以127.5再减1，即(x/127.5-1)。实际应用中还需考虑均值减法或Z-score标准化，即减去数据集均值并除以标准差，使数据符合标准正态分布，有助于加速模型收敛。预处理应在数据加载时或作为模型输入层的一部分进行，避免影响原始数据存储。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-062",
+      "number": 62,
+      "question": "请简述如何使用TextVectorization层处理文本数据？ ?",
+      "answer": "TextVectorization是Keras中用于将原始文本字符串映射为整数索引序列的预处理层。使用时，首先通过`adapt()`方法在训练文本上学习词汇表，然后配置输出模式（如`int`输出整数序列或`tf-idf`输出加权向量），并设置参数如`max_tokens`、`output_sequence_length`等来控制词汇表大小和序列长度。之后在模型中直接调用该层即可对文本进行标准化、分词和向量化，支持批处理并与Keras模型无缝集成。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-063",
+      "number": 63,
+      "question": "请简述什么是“标签编码”和“独热编码”？Keras中如何实现？ ?",
+      "answer": "标签编码将离散类别映射为从0开始的整数值，如“红、绿、蓝”变为0,1,2；独热编码则将每个类别表示为仅有对应位为1的二进制向量，如“红”对应[1,0,0]。在Keras中，独热编码可直接通过`keras.utils.to_categorical`函数或`tf.keras.layers.CategoryEncoding(output_mode='one_hot')`实现；标签编码可用`tf.keras.layers.StringLookup`进行索引映射，或借助`LabelEncoder`预处理后输入模型。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-064",
+      "number": 64,
+      "question": "请简述如何保存整个模型？（架构、权重和优化器状态） ?",
+      "answer": "使用Keras的`model.save('model.keras')`方法可以一次性保存模型架构、权重和优化器状态，生成独立的HDF5或Keras格式文件。加载时调用`tf.keras.models.load_model('model.keras')`即可恢复完整模型，包括继续训练所需的优化器状态。此方法覆盖全部组件，适合训练中断后恢复或部署场景。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-065",
+      "number": 65,
+      "question": "请简述如何只保存模型的权重？ ?",
+      "answer": "在Keras中，仅保存模型权重的方法是调用模型对象的 `save_weights()` 方法，传入文件路径（如 `'model_weights.h5'`），即可将权重以HDF5格式保存。加载时需先构建相同的模型结构，再调用 `load_weights()` 恢复权重。也可通过回调函数 `ModelCheckpoint` 在训练过程中自动保存权重。此方式不包含模型架构、优化器状态等信息，适用于权重共享或迁移学习场景。\n\n**示例代码：**\n\n```python\nimport tensorflow as tf\nfrom tensorflow import keras\n\nmodel = keras.Sequential([keras.layers.Dense(10,\n                            input_shape=(5,))])\nmodel.compile(optimizer='adam', loss='mse')\n\n# 保存完整模型\nmodel.save('my_model.h5')\n\n# 加载模型\nloaded = keras.models.load_model('my_model.h5')\n\n# 只保存/加载权重\nmodel.save_weights('weights.h5')\nmodel.load_weights('weights.h5')\n\n\n\n```\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-066",
+      "number": 66,
+      "question": "请简述如何只保存模型的架构？（model.to_json()或model.get_config()） ?",
+      "answer": "只保存Keras模型架构有两种常用方法：使用model.to_json()返回JSON字符串，包含层结构、连接方式和配置，可通过keras.models.model_from_json()重建；或者使用model.get_config()返回Python字典，但需要手动重建模型，不如to_json完整。to_json更推荐，因为它保留了完整拓扑，而get_config仅提供每层的参数配置。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-067",
+      "number": 67,
+      "question": "请简述SavedModel格式和H5格式有什么区别？ ?",
+      "answer": "SavedModel是TensorFlow原生序列化格式，包含计算图、权重和资产，支持签名定义与跨语言部署，适合生产环境；H5基于HDF5，仅保存模型结构和权重，不保留图与自定义层逻辑，兼容性较低但轻量易用。两者核心区别在于SavedModel完整保留执行逻辑与部署元数据，而H5更偏向存储训练结果。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-068",
+      "number": 68,
+      "question": "请简述如何加载一个之前保存的模型？ ?",
+      "answer": "使用Keras的load_model函数加载完整模型（包括架构、权重和训练配置），例如model = keras.models.load_model('model.h5')。若仅保存了权重，需先重建模型架构，再调用model.load_weights('weights.h5')。加载时需确保环境与保存时兼容，涉及自定义层或损失函数需通过custom_objects参数传递。此方法适用于HDF5格式或SavedModel格式的模型。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-069",
+      "number": 69,
+      "question": "请简述在加载自定义模型时，可能会遇到什么问题？（需要提供custom_objects） ?",
+      "answer": "加载自定义模型时，最核心的问题是Keras无法识别用户自定义的层、损失函数或指标，导致反序列化时抛出“Unknown”类型错误。解决方法是在model.load_model()中通过custom_objects参数传入一个字典，将自定义类的名称映射到其对应的Python对象。此外，若自定义对象依赖特定环境或超参数，可能还需在加载后手动恢复状态，否则会导致行为不一致或运行时崩溃。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-070",
+      "number": 70,
+      "question": "请简述什么是tf.keras.models.clone_model？它有什么用？ ?",
+      "answer": "tf.keras.models.clone_model用于创建Keras模型的独立副本，它通过重新实例化模型的架构并复制权重（若指定clone_function）来生成一个与原模型共享计算图但内存独立的副本。其核心用途包括模型集成、多任务学习中的参数隔离、以及安全地修改模型配置而不影响原模型。注意默认clone_function不会复制训练状态如优化器状态，需结合get_weights/set_weights手动迁移。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-071",
+      "number": 71,
+      "question": "请简述什么是迁移学习？在Keras中如何实现？ ?",
+      "answer": "迁移学习是将预训练模型在源任务上学到的特征表示迁移到目标任务，以加速训练并提高小数据场景下的泛化能力。在Keras中，可通过`applications`模块加载预训练模型（如ResNet50），设置`include_top=False`并冻结底层权重（`layer.trainable = False`），然后在其后添加自定义的全连接分类层，最后用目标任务数据微调顶层参数。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-072",
+      "number": 72,
+      "question": "请简述如何从tf.keras.applications加载一个预训练模型（如VGG16, ResNet50）？ ?",
+      "answer": "从tf.keras.applications加载预训练模型，直接调用对应类构造函数并传入weights='imagenet'参数即可，例如VGG16(weights='imagenet')。默认包含顶层全连接分类层，可通过include_top=False截断以用于迁移学习。可指定input_shape适配自定义输入尺寸，并设置pooling参数控制输出特征图的聚合方式。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-073",
+      "number": 73,
+      "question": "请简述如何“冻结”预训练模型的基础层？ ?",
+      "answer": "在Keras中冻结预训练模型的基础层，需遍历目标层并设置其trainable属性为False，然后重新编译模型以生效。通常先加载预训练模型，如Model(inputs, outputs)，再通过for layer in model.layers[:n]设置layer.trainable = False，之后添加自定义顶层并调用model.compile()。这样前向传播时冻结层不更新权重，仅微调后续层，有效利用预训练特征并避免灾难性遗忘。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-074",
+      "number": 74,
+      "question": "请简述迁移学习的典型步骤是什么？（冻结基础、训练新顶部分类器、微调） ?",
+      "answer": "迁移学习典型步骤首先冻结预训练模型的基础层参数，防止其梯度更新以保留通用特征；接着在基础层上添加新的分类器并仅训练该部分，使其适应目标数据集；最后解冻部分或全部基础层进行联合微调，以低学习率优化整体网络，提升任务特定特征的学习效果。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-075",
+      "number": 75,
+      "question": "请简述什么是“微调”？在微调阶段需要注意什么？（使用较低的学习率） ?",
+      "answer": "微调（Fine-tuning）是指在预训练模型（如在大规模数据集上训练好的模型）的基础上，用目标任务的数据继续训练部分或全部参数的过程，使模型适应特定下游任务。微调阶段通常使用较低的学习率（例如原学习率的1/10到1/100），这是因为预训练权重已经包含较好的特征表示，过大的学习率可能导致模型快速遗忘预训练知识，造成灾难性遗忘或权重剧烈震荡。此外，还需注意冻结部分底层（保留通用特征）与解冻高层（适应领域特征）的策略，并确保使用较小的批量尺寸和适当的正则化（如Dropout或权重衰减）以防止过拟合。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-076",
+      "number": 76,
+      "question": "请简述如何创建一个自定义层？（继承tf.keras.layers.Layer） ?",
+      "answer": "继承tf.keras.layers.Layer，在__init__中定义超参数；重写build方法，通过self.add_weight创建可训练权重；重写call方法实现前向计算逻辑；建议额外实现get_config方法以支持模型序列化。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-077",
+      "number": 77,
+      "question": "请简述在自定义层中，build和call方法分别应该实现什么？ ?",
+      "answer": "build方法负责创建层的可训练权重，它接收输入形状作为参数，并通过调用add_weight来定义参数，仅在首次调用时执行一次。call方法实现前向传播逻辑，利用build中定义的权重对输入张量进行计算，并返回输出张量，在每次前向传播时被调用。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-078",
+      "number": 78,
+      "question": "请简述如何创建一个自定义损失函数？ ?",
+      "answer": "在Keras中创建自定义损失函数通常有两种方式：一是直接定义一个接收y_true和y_pred并返回标量张量的函数，确保所有操作基于Keras后端（如tf.math）以保证可微性；二是继承keras.losses.Loss类并重写call方法，该方法同样返回损失值。定义后，在model.compile中通过loss参数传入函数名或类实例即可使用。如果损失函数涉及额外参数，可在类初始化时传入，或在函数中通过闭包封装。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-079",
+      "number": 79,
+      "question": "请简述自定义损失函数需要满足什么条件？ ?",
+      "answer": "自定义损失函数必须接受真实标签y_true和模型预测y_pred作为输入，并返回一个标量张量作为损失值。核心要求是该函数在TensorFlow计算图中完全可微，通常基于Keras后端或tf操作实现，以确保梯度反向传播正确。此外，输出形状需与y_true和y_pred兼容，并避免使用Python原生控制流（如if/for）导致计算图断裂，除非通过tf.cond或tf.map_fn等包装。最终损失函数应保持数值稳定性，避免NaN或梯度爆炸。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-080",
+      "number": 80,
+      "question": "请简述如何创建一个自定义优化器？（继承tf.keras.optimizers.Optimizer） ?",
+      "answer": "创建自定义优化器需继承tf.keras.optimizers.Optimizer并实现__init__、build、update_step三个核心方法：__init__中调用父类构造函数并定义超参数，build中创建变量（如动量累积），update_step中实现梯度更新逻辑，使用self.assign_add等操作更新参数。例如实现一个简单SGD：update_step中执行self.assign_sub(var, learning_rate * grad)。此外，需在get_config中返回超参配置以便序列化。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-081",
+      "number": 81,
+      "question": "请简述如何创建一个自定义评估指标？（继承tf.keras.metrics.Metric） ?",
+      "answer": "创建一个自定义评估指标需继承tf.keras.metrics.Metric并实现三个核心方法：__init__中调用super().__init__并定义状态变量（如self.total与self.count）；update_state接收真实值y_true和预测值y_pred，更新状态变量（如累加差值）；result返回最终指标值（如除法）。同时可重写reset_state在每次epoch开始时重置状态。该方法保证了指标计算与训练循环无缝集成，且自动支持分布式策略。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-082",
+      "number": 82,
+      "question": "请简述使用add_metric()方法在自定义层或模型中添加指标。 ?",
+      "answer": "在自定义层或模型的call方法中，可通过self.add_metric(value, name)动态添加指标，value为每个batch计算出的标量张量，框架会自动追踪并聚合该指标。该方法允许在模型内部定义自定义评估逻辑，如逐样本损失或中间度量，无需依赖编译时的metrics参数。添加的指标会纳入训练日志，并默认以均值方式在各batch间聚合。使用时需注意value需是张量且具有可微性或仅为监控用途。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-083",
+      "number": 83,
+      "question": "请简述如何可视化Keras模型的架构？（使用plot_model） ?",
+      "answer": "使用keras.utils.plot_model函数可视化模型架构前，需安装pydot和graphviz库。调用plot_model(model, to_file='model.png')可生成包含层间连接的PNG图片，设置show_shapes=True可显示各层输入输出维度，show_layer_names=True则显示层名称。该工具内部通过graphviz将模型拓扑结构转换为DOT语言并渲染为图像，适用于快速检查网络结构和调试。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-084",
+      "number": 84,
+      "question": "请简述如何使用TensorBoard与Keras集成？ ?",
+      "answer": "在Keras中集成TensorBoard主要通过`tf.keras.callbacks.TensorBoard`回调实现。首先实例化该回调并指定日志目录`log_dir`，然后在`model.fit()`中通过`callbacks`参数传入。训练过程中，回调会自动记录标量、直方图、计算图等数据。训练完成后，在终端执行`tensorboard --logdir=日志目录`即可启动可视化界面。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-085",
+      "number": 85,
+      "question": "请简述在训练过程中，如果出现梯度爆炸，可以采取哪些措施？（梯度裁剪、调整学习率、使用BN） ?",
+      "answer": "梯度爆炸可通过梯度裁剪限制梯度范数（如Keras中clipnorm或clipvalue参数），防止参数更新过大；降低学习率能减小单步更新幅度，但可能影响收敛速度，需配合调度策略；批量归一化通过规范化每层输入分布，缓解深层网络梯度不稳定性，间接抑制爆炸。实践中常组合使用，优先尝试梯度裁剪与BN，再调整学习率。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-086",
+      "number": 86,
+      "question": "请简述如何实现梯度裁剪？（在优化器中设置clipnorm或clipvalue） ?",
+      "answer": "在Keras中，梯度裁剪通过优化器的clipnorm或clipvalue参数实现。clipnorm将整个梯度向量的L2范数限制在指定阈值内，如果超限则等比例缩放；clipvalue则将每个梯度分量单独限制在[-阈值, 阈值]区间内，直接截断超出部分。例如在Adam优化器中设置clipnorm=1.0即可生效。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-087",
+      "number": 87,
+      "question": "请简述如果模型过拟合，有哪些常见的正则化技术？（Dropout, L2正则化, 数据增强, EarlyStopping） ?",
+      "answer": "过拟合指模型在训练集上表现优异但泛化能力差。Dropout通过随机丢弃神经元强制网络学习冗余表示，降低特征间共适应性；L2正则化在损失函数中权重平方和惩罚项，限制权重幅度；数据增强通过对输入样本施加随机变换扩大有效训练分布，提升模型鲁棒性；EarlyStopping监控验证集性能并在其不再改善时终止训练，防止过度拟合噪声。这些技术可组合使用以平衡模型容量与泛化。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-088",
+      "number": 88,
+      "question": "请简述如何在Keras中对层应用L1或L2正则化？ ?",
+      "answer": "在Keras中，对层应用L1或L2正则化主要通过层的`kernel_regularizer`参数实现，传入`keras.regularizers.l1(l1=0.01)`或`keras.regularizers.l2(l2=0.01)`对象即可。该参数会对该层的权重矩阵施加正则化惩罚，训练时损失函数会加上该项以减少过拟合。此外，还可用`bias_regularizer`和`activity_regularizer`分别对偏置和输出激活施加正则化。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-089",
+      "number": 89,
+      "question": "请简述如何设置和固定随机种子以确保结果可复现？ ?",
+      "answer": "在Keras中确保结果可复现需同步设置Python、NumPy和TensorFlow的随机种子：调用`random.seed()`、`np.random.seed()`和`tf.random.set_seed()`并设为相同整数值。对于GPU运算，还需配置`tf.config.threading.set_inter_op_parallelism_threads(1)`和`tf.config.threading.set_intra_op_parallelism_threads(1)`，并设置`os.environ['TF_DETERMINISTIC_OPS'] = '1'`以强制确定性操作。此外，若使用CuDNN，应设置`tf.keras.utils.set_random_seed()`（一次性配置）并禁用CuDNN的自动调优（`os.environ['TF_CUDNN_DETERMINISTIC'] = '1'`）。注意：完全复现仍可能因硬件、框架版本差异而略有偏差，但种子设置能最大化一致性。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-090",
+      "number": 90,
+      "question": "请简述如何使用tf.keras.mixed_precision进行混合精度训练以加速训练并减少内存使用？ ?",
+      "answer": "在tf.keras中启用混合精度训练，首先通过tf.keras.mixed_precision.set_global_policy('mixed_float16')设置全局策略，将模型中的浮点运算部分切换为float16以加速计算并降低显存占用；然后，在模型编译和训练时，需要配合LossScaleOptimizer处理float16的梯度下溢问题，通常使用tf.keras.mixed_precision.LossScaleOptimizer包装优化器，并设置动态损失缩放。最后，在模型训练流程中无需额外修改代码，Keras会自动处理精度转换和缩放，从而实现训练速度提升和内存减少，尤其适用于支持float16的GPU（如NVIDIA Volta及以上架构）。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-091",
+      "number": 91,
+      "question": "请简述如何将Keras模型转换为TensorFlow Lite格式以在移动设备上部署？ ?",
+      "answer": "使用TensorFlow Lite Converter将已训练的Keras模型转换为.tflite格式。首先加载或保存模型为.h5文件，然后通过tf.lite.TFLiteConverter.from_keras_model()创建转换器，并可选择应用量化等优化以减小模型体积和提升推理速度。最后调用convert()方法并写入.tflite文件，即可在移动设备上通过TensorFlow Lite解释器加载运行。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-092",
+      "number": 92,
+      "question": "请简述如何将Keras模型部署到TensorFlow Serving？ ?",
+      "answer": "首先，将Keras模型保存为SavedModel格式，使用model.save('model_path', save_format='tf')。然后，启动TensorFlow Serving容器，并通过--model_base_path参数指定模型路径。最后，通过REST或gRPC接口发送预测请求，其中serving会自动加载并服务模型版本。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    },
+    {
+      "id": "Keras深度学习-093",
+      "number": 93,
+      "question": "请简述在转换模型时，量化是什么？它有什么好处和代价？ ?",
+      "answer": "量化是将模型的权重和激活值从高精度浮点数（如FP32）映射到低精度整数（如INT8）的技术，核心是通过离散化减少表示位数。其好处是显著压缩模型大小并加速推理（尤其在硬件支持的设备上），降低内存带宽和功耗。代价是可能引入精度损失，尤其在量化感知训练不充分或模型对数值敏感时，且校准过程需要代表性数据集以避免分布偏移。\n",
+      "category": "Keras深度学习",
+      "tags": []
+    }
+  ]
+}

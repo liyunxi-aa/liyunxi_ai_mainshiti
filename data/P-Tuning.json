@@ -1,0 +1,365 @@
+{
+  "category": "P-Tuning",
+  "questions": [
+    {
+      "id": "P-Tuning-001",
+      "number": 1,
+      "question": "请简述什么是错误接受率（FAR）和错误拒绝率（FR.. ?",
+      "answer": "错误接受率（FAR）指系统错误地将非授权用户识别为合法用户的比例，即假阳性；错误拒绝率（FRR）指系统错误地拒绝合法用户的比例，即假阴性。两者是衡量生物识别或安全验证系统性能的关键指标，通常存在权衡关系：降低FAR会增加FRR，反之亦然，实际应用中需根据安全级别需求选择合适阈值。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-002",
+      "number": 2,
+      "question": "请简述P-Tuning 属于哪一类机器学习技术？（参数高效微调 - PEFT） ?",
+      "answer": "P-Tuning属于参数高效微调（PEFT）技术，其核心是在预训练模型的输入层或特定层引入可学习的连续向量（prompt embeddings），而冻结原始模型参数。这种方法仅需更新极少量额外参数，即可实现与全量微调相近的性能，显著降低计算和存储成本。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-003",
+      "number": 3,
+      "question": "请简述P-Tuning 主要解决什么问题？（固定离散提示搜索困难，全模型微调成本高） ?",
+      "answer": "P-Tuning 主要解决传统离散提示模板搜索困难（依赖人工设计且泛化性差）以及全模型微调成本高（参数量大、存储开销高、过拟合风险大）的问题。它通过在输入层引入可学习的连续向量作为软提示，在冻结预训练模型参数的前提下，仅优化这些提示向量，从而以极低的训练成本实现高效的模型适配。这种方法不仅避免了对离散提示的手工设计，还显著降低了微调参数量和存储需求，尤其适用于小样本和低资源场景。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-004",
+      "number": 4,
+      "question": "请简述P-Tuning 中的比较“硬提示”与“软提示”的区别？ ?",
+      "answer": "硬提示（Hard Prompt）是离散的、由自然语言token构成的显式文本，不可微，需人工设计或搜索；软提示（Soft Prompt）是连续的、可学习的嵌入向量，可通过梯度下降优化。区别在于：硬提示保持可读性但灵活性差，软提示可端到端调整但缺乏可解释性，两者在参数效率上也有显著差异。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-005",
+      "number": 5,
+      "question": "请简述P-Tuning 中的解释“连续提示”的概念？ ?",
+      "answer": "连续提示（Continuous Prompt）是P-Tuning的核心思想，指将传统离散的文本提示（如“The movie is”）替换为可学习的连续向量，这些向量作为虚拟token嵌入到模型输入层，直接参与梯度反向传播优化。与手动设计的离散提示不同，连续提示摒弃了自然语言约束，在连续语义空间中自适应调整，能够更灵活地捕捉任务关联特征，尤其适用于大模型微调时参数效率与性能的平衡。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-006",
+      "number": 6,
+      "question": "请简述P-Tuning 的核心思想是什么？ ?",
+      "answer": "P-Tuning的核心思想是通过可学习的连续向量替代离散的、人工设计的模板，使预训练语言模型能够更灵活地适配下游任务。具体而言，它在输入层插入一组可训练的“软提示”向量，这些向量与输入拼接后参与模型的前向传播，仅更新提示参数而冻结原模型权重。这种方法避免了离散搜索的局限性，提高了参数效率与任务迁移的灵活性。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-007",
+      "number": 7,
+      "question": "请简述描述 P-Tuning v1 的架构？ 它在输入序列中引入了什么？ ?",
+      "answer": "P-Tuning v1 的核心架构是在预训练语言模型的输入层引入一组可学习的连续向量（称为 continuous prompts 或 virtual tokens），这些向量被拼接在原始输入序列的嵌入表示之前或之后，作为模型的前缀或后缀输入。这些连续 prompt 不依赖离散的词汇表，而是通过反向传播直接优化，而预训练模型的主体参数保持不变，从而以极少的可训练参数实现下游任务的适配。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-008",
+      "number": 8,
+      "question": "请简述P-Tuning 中的“连续提示令牌”与传统的单词嵌入有何不同？ ?",
+      "answer": "连续提示令牌是直接在高维嵌入空间中优化的可学习参数，而非来自固定词表的离散ID；传统单词嵌入则对应词表中每个词的静态向量，无法针对特定任务动态调整。前者是连续的、任务特定的软提示，允许梯度反向传播优化，而后者是离散的、冻结的表示。这种差异使P-Tuning能更灵活地适配下游任务，避免离散提示搜索的局限性。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-009",
+      "number": 9,
+      "question": "请简述P-Tuning 中的这些连续提示令牌是如何被优化的？ ?",
+      "answer": "在P-Tuning中，连续提示令牌（continuous prompt tokens）被视为可训练的嵌入向量，而非离散的词汇索引。优化过程通过反向传播计算任务损失（如交叉熵损失）对提示嵌入的梯度，并使用梯度下降法（如Adam优化器）直接更新这些向量。通常预训练语言模型的参数被冻结，仅调整提示嵌入，从而在保持模型知识的同时高效适配下游任务。这种基于梯度的连续空间优化使得提示能够自动学习到任务相关的上下文表征。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-010",
+      "number": 10,
+      "question": "请简述在 P-Tuning 中，预训练语言模型的主体会被冻结吗？ ?",
+      "answer": "在P-Tuning中，预训练语言模型的主体通常被冻结，仅微调或训练少量可学习的连续提示向量（prompt embeddings）。这种设计旨在保留预训练模型的通用知识，避免灾难性遗忘，同时通过参数高效的轻量级适配完成下游任务。冻结主体也大幅降低了计算和存储开销，使得在较小显存下即可执行。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-011",
+      "number": 11,
+      "question": "请简述P-Tuning 如何将离散的提示模板（如 \"The movie is [MASK].\"）与连续提示结合起来？ ?",
+      "answer": "P-Tuning 将离散模板中的固定词汇（如 \"The movie is\"）替换为可学习的连续嵌入向量，这些向量作为“伪token”插入输入序列；连续提示与原始离散模板共享相同的上下文位置，但不再受限于词汇表，而是通过反向传播与语言模型参数（或仅提示向量）联合优化，从而将离散约束转化为连续空间中的可微调参数。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-012",
+      "number": 12,
+      "question": "请简述为什么使用双向 LSTM 或 MLP 等“提示编码器”？它的作用是什么？ ?",
+      "answer": "在P-Tuning中，可学习的连续提示嵌入需要经过一个编码器（如双向LSTM或MLP）来捕获提示词之间的依赖关系或进行非线性变换，从而生成更优的词嵌入表示。其核心作用是缓解离散提示搜索的困难，增强软提示的表达能力与适配性，使预训练语言模型能更高效地适应下游任务。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-013",
+      "number": 13,
+      "question": "请简述P-Tuning 中的提示编码器如何帮助解决连续提示令牌之间的依赖关系？ ?",
+      "answer": "P-Tuning使用一个轻量级的提示编码器（通常为LSTM或MLP）将随机初始化的连续提示嵌入映射到词嵌入空间，该编码器通过自回归或双向建模捕捉连续提示令牌之间的序列依赖关系，确保生成的提示嵌入具有上下文连贯性，从而让预训练语言模型更有效地理解提示序列的语义关联。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-014",
+      "number": 14,
+      "question": "请简述描述 P-Tuning v1 的训练过程？哪些参数被更新？ ?",
+      "answer": "P-Tuning v1 通过在输入层前引入一组可学习的连续 prompt 嵌入（virtual tokens），与原始输入拼接后送入冻结的预训练语言模型（PLM），仅更新这些 prompt 嵌入和任务特定的输出层（如分类头），而 PLM 的其余参数保持不变。训练时，模型通过下游任务的损失函数反向传播，仅优化这组可学习的连续向量和任务头参数，实现参数高效微调。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-015",
+      "number": 15,
+      "question": "请简述P-Tuning v2 相比 v1 有哪些重大改进？ ?",
+      "answer": "P-Tuning v2的核心改进在于从仅优化输入层连续提示扩展到在每一层Transformer前插入可学习任务特定向量，从而克服了v1仅适用于小模型和浅层优化的局限。v2采用深度提示优化（Deep Prompt Tuning），使得参数效率更高，同时支持全参数冻结下的迁移学习，并在自然语言理解与生成任务上显著提升了与全量微调的性能差距。此外，v2引入了更稳健的优化策略，如使用MLP重参数化初始化和多任务联合训练，从而在更大规模模型上实现更稳定的收敛。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-016",
+      "number": 16,
+      "question": "请简述P-Tuning v2 的核心创新是什么？（在 Transformer 的每一层都引入连续提示） ?",
+      "answer": "P-Tuning v2的核心创新在于将连续可学习的提示向量引入Transformer的每一层，而非仅首层输入。这种跨层级联的提示设计使模型能够更充分地利用深层语义信息，解决了P-Tuning v1在复杂任务和较大模型上性能不足的问题。它本质上是一种参数高效的微调方法，仅需少量可训练参数即可逼近全参数微调的效果。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-017",
+      "number": 17,
+      "question": "请简述P-Tuning 中的为什么在深度上（每一层）添加提示比仅在输入层（v1）更有效？ ?",
+      "answer": "P-Tuning v2在每层Transformer中插入可学习提示，突破了v1仅在输入层添加时的表示瓶颈。深层提示允许梯度直接作用于各层隐藏表示，避免长序列中浅层提示被后续层非线性变换稀释或遗忘。这增强了模型对任务特定语义的精细调控能力，尤其在中大规模模型上显著提升了复杂NLU任务的适配效果。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-018",
+      "number": 18,
+      "question": "请简述P-Tuning v2 中的连续提示是如何引入到每一层的？它们被添加到哪里？（通常作为前缀令牌添加到键和值中） ?",
+      "answer": "P-Tuning v2将连续提示作为可学习的虚拟令牌嵌入到每一层的输入序列中，具体做法是在每一层Transformer的键（Key）和值（Value）前添加可训练的前缀令牌。这些前缀令牌与原始输入序列的隐藏状态拼接，从而影响每一层的自注意力计算，使模型能够针对下游任务学习层特定的提示表示。该方法避免了仅在第一层引入提示的局限性，从而在大规模预训练模型上实现了与全量微调相当的性能。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-019",
+      "number": 19,
+      "question": "请简述P-Tuning v2 的架构与 Prefix-Tuning 有何异同？ ?",
+      "answer": "P-Tuning v2 与 Prefix-Tuning 的核心相同点在于都通过引入可学习的连续向量（soft prompts）来调整预训练模型行为，仅微调这些参数而冻结主干网络。主要差异在于插入位置与方式：Prefix-Tuning 在每一层 Transformer 的 key 和 value 前拼接可调前缀张量，而 P-Tuning v2 在每一层输入（hidden states 序列）前直接插入可训练的 prompt tokens，更接近 P-Tuning v1 的架构但扩展到所有层。相比之下，P-Tuning v2 的逐层 prompt 设计提供了更强的表达能力与优化稳定性，且不改变 self-attention 的计算结构，使其在更大模型上表现更优。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-020",
+      "number": 20,
+      "question": "请简述P-Tuning v2 如何实现不同任务间的参数高效性？ ?",
+      "answer": "P-Tuning v2 通过在每一层 Transformer 的输入前加入可学习的连续 prompt 向量，而冻结预训练模型的所有原始参数，从而仅需训练极少量（约0.1%-1%）的任务特定参数。不同任务只需保存和切换各自的 prompt 向量，共享同一个预训练主干，因此实现了跨任务的参数高效性，大幅降低了存储和切换成本。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-021",
+      "number": 21,
+      "question": "请简述描述 P-Tuning v2 的训练过程和参数更新策略？ ?",
+      "answer": "P-Tuning v2在预训练语言模型的每一层Transformer之前插入可学习的连续prompt embeddings，训练时冻结所有原始模型参数，仅通过反向传播更新这些prompt embeddings。参数更新策略采用AdamW等优化器，以任务损失函数为目标进行梯度下降，同时使用重参数化技术（如MLP编码）来稳定训练。该策略使得prompt能灵活影响深层表示，从而适配复杂NLU和NLG任务。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-022",
+      "number": 22,
+      "question": "请简述在 P-Tuning 中，“提示长度”是一个关键超参数？它如何影响性能和效率？ ?",
+      "answer": "在P-Tuning中，提示长度（即连续可学习向量的序列长度）决定了可调参数量与模型输入的上下文信息量。较长的提示能提供更丰富的任务语义，提升下游任务的性能，但会增加显存占用和训练时间；过短则可能无法充分激活预训练模型的知识，导致效果下降。实践中需要根据任务复杂度、模型规模及资源约束在性能与效率间权衡，通常通过网格搜索或经验法则（如5-20个token）选取最优长度。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-023",
+      "number": 23,
+      "question": "请简述P-Tuning 中的如何为特定任务选择合适的提示长度？ ?",
+      "answer": "选择合适的提示长度通常基于任务复杂度和验证集性能进行调优。一般从较小的长度（如5-10个虚拟token）开始，逐步增加，观察在下游任务验证集上的性能曲线，选择性能趋于饱和或开始下降的点。长提示可容纳更多语义信息但易过拟合，短提示泛化性更优但可能表达能力不足，因此需在偏差与方差间平衡。也可采用自动搜索策略，如通过梯度优化或贝叶斯调参确定最优长度。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-024",
+      "number": 24,
+      "question": "请简述P-Tuning 中的提示编码器的选择（如 MLP, LSTM）对结果有什么影响？ ?",
+      "answer": "P-Tuning中提示编码器的选择直接影响连续提示向量的表达能力与训练效率。MLP作为简单的全连接网络，参数量少、计算快，但缺乏序列建模能力，适用于较短或静态的提示；LSTM能捕捉提示内token间的依赖关系，生成更平滑、上下文相关的嵌入，在需要复杂语义建模时表现更好，但训练更慢且容易过拟合。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-025",
+      "number": 25,
+      "question": "请简述在 P-Tuning v2 中，不同层的提示是共享的还是独立的？ ?",
+      "answer": "P-Tuning v2 中，不同层的提示是独立的，而不是共享的。每个 Transformer 层都拥有自己的一套可学习的连续 prompt embedding，这允许模型在不同层学习到不同的语义表示，从而提升对深层信息的适配能力。这种设计相比于仅在输入层添加提示的 P-Tuning v1，能够更充分地利用预训练模型的全部层，特别适用于更大的模型和更复杂的任务。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-026",
+      "number": 26,
+      "question": "请简述P-Tuning v2 的“深度”参数是什么意思？ ?",
+      "answer": "P-Tuning v2中的“深度”参数指可训练前缀嵌入插入到Transformer各层的隐状态而非仅输入层，形成深度提示。相比v1仅在embedding层添加浅层前缀，v2在每个Transformer层都添加可学习的连续向量，直接参与每层的注意力计算和前馈过程。这种深度注入方式增强了模型对复杂语义建模的能力，尤其在自然语言理解任务中表现更优，同时保持参数高效。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-027",
+      "number": 27,
+      "question": "请简述P-Tuning 中的如何使用 OpenPrompt 或 PEFT 等库实现 P-Tuning？ ?",
+      "answer": "使用OpenPrompt实现P-Tuning时，需定义包含可学习SoftTemplate的Template，绑定预训练模型与Verbalizer，通过PromptModel训练仅更新soft prompt参数；在PEFT库中，可直接调用`PromptTuningConfig`配置`num_virtual_tokens`及初始化策略，用`get_peft_model`包装模型后仅微调注入的虚拟token嵌入，二者均支持在少量标注数据上高效适配下游任务。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-028",
+      "number": 28,
+      "question": "请简述在训练 P-Tuning 模型时，损失函数是如何计算的？ ?",
+      "answer": "在P-Tuning中，损失函数通常采用下游任务的监督学习损失，例如分类任务使用交叉熵损失。计算时，将连续提示嵌入与原始输入序列拼接后送入冻结的预训练语言模型，得到输出的表示，再通过一个可选的分类头映射到任务标签空间。损失仅作用于更新提示嵌入和分类头参数，而预训练模型权重保持不变，因此反向传播只回传梯度到这些可训练部分。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-029",
+      "number": 29,
+      "question": "请简述P-Tuning 如何应用于序列标注任务？（如命名实体识别） ?",
+      "answer": "P-Tuning将输入序列与一组可学习的连续提示向量拼接，并保持预训练模型参数冻结，仅优化这些虚拟token嵌入。对于序列标注任务，模型利用这些提示隐式地引导每个token的标签预测，通常结合输出端的CRF层或线性分类器解码最终标签序列。这种方法避免了离散的模板设计，能在少量标注数据上有效适配NER等任务。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-030",
+      "number": 30,
+      "question": "请简述P-Tuning 如何应用于分类任务？ ?",
+      "answer": "P-Tuning将分类任务转化为基于预训练语言模型的完形填空形式：首先在输入文本前插入一组可学习的连续向量作为虚拟prompt，然后将分类目标映射为特定词汇（如\"好/坏\"），最后冻结模型主体参数，仅优化这些连续向量以最小化预测词汇与真实标签间的交叉熵损失。这种方法通过少量可训练参数适配下游分类，在少样本场景下尤其高效，且避免了对全模型微调带来的灾难性遗忘。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-031",
+      "number": 31,
+      "question": "请简述P-Tuning 的局限性或挑战是什么？ ?",
+      "answer": "P-Tuning的核心挑战在于其连续提示的优化空间在高维参数下容易陷入局部最优，且对初始化和超参数敏感，导致微调稳定性不足。此外，它难以完全激发大型预训练模型的深层语义能力，尤其在复杂推理任务中效果弱于全参数微调。大规模部署时，连续提示的可解释性差，且需要额外存储软提示参数，增加了模型切换成本。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-032",
+      "number": 32,
+      "question": "请简述为什么 P-Tuning v2 解决了 v1 的许多不稳定问题？ ?",
+      "answer": "P-Tuning v1 仅在输入层插入可学习的连续 prompt，优化参数少，但模型深层难以适配，导致训练波动大。P-Tuning v2 将可学习 prompt 引入每一层 Transformer 的输入，增加参数量并允许各层分别调整，从而更稳定地适配预训练模型。同时 v2 借鉴了 Prefix Tuning 的逐层设计，并利用重参数化技术（如 MLP 编码）减少随机初始化带来的方差，显著提升了训练收敛的稳定性与下游任务性能。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-033",
+      "number": 33,
+      "question": "请简述比较 P-Tuning 和 Prefix-Tuning？ ?",
+      "answer": "P-Tuning 通过在输入层引入可学习的连续向量（prompt tokens）并仅更新这些向量来适配大模型，而 Prefix-Tuning 则在 Transformer 的每一层前拼接可学习的连续向量（prefix）并仅更新它们，两者均冻结预训练参数。关键区别在于作用位置：P-Tuning 仅在输入嵌入层，Prefix-Tuning 则作用于所有隐藏层，因此 Prefix-Tuning 有更强的表达能力，但参数量和训练成本稍高；P-Tuning 更轻量，适合资源受限场景。两者目标都是避免全量微调、缓解灾难性遗忘，但 Prefix-Tuning 通常在下游任务上表现更稳定。\n\n> 📖 参考链接：[/AlibiRoPE_h5/](/AlibiRoPE_h5/)",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-034",
+      "number": 34,
+      "question": "请简述比较 P-Tuning 和 LoRA？ 它们在理念和实现上有何根本不同？ ?",
+      "answer": "P-Tuning和LoRA都是参数高效微调方法，但理念根本不同：P-Tuning通过向输入层添加可学习的连续提示向量来引导模型行为，不修改原始权重；LoRA则通过在模型权重上叠加低秩分解矩阵来近似全参数微调的更新。实现上，P-Tuning仅优化少量提示嵌入，而LoRA将低秩矩阵注入注意力层等权重，训练时只更新这些矩阵。P-Tuning更依赖提示设计，对语义任务有效；LoRA可插拔且推理时不引入额外延迟，因此更通用。\n\n**示例代码：**\n\n```python\n PEFT 库实现 LoRA\nfrom peft import LoraConfig, get_peft_model\nfrom transformers import AutoModelForCausalLM\n\n# model = AutoModelForCausalLM.from_pretrained(\"gpt2\")\n# lora_config = LoraConfig(\n#     r=8,\n#     lora_alpha=32,\n#     target_modules=[\"c_attn\", \"c_proj\"],\n#     lora_dropout=0.1,\n#     bias=\"none\"\n# )\n# model = get_peft_model(model, lora_config)\n# model.print_trainable_parameters()\nprint(\"LoRA 配置示例已就绪\")\n\n\n\n```\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-035",
+      "number": 35,
+      "question": "请简述比较 P-Tuning 和 Adapter Tuning？ ?",
+      "answer": "P-Tuning和Adapter Tuning均为参数高效微调方法，但作用位置与机制不同：P-Tuning在输入嵌入层引入可学习的连续prompt向量，通过调整输入空间来引导模型行为；Adapter Tuning则在Transformer各层内插入小型瓶颈网络（下投影-激活-上投影），冻结原始权重仅微调Adapter层。P-Tuning更轻量且对模型结构无侵入，适合少样本场景；Adapter Tuning能更精细地调整各层特征，但增加了推理延迟。两者都显著减少了可训练参数量，但P-Tuning因修改输入分布可能影响预训练知识稳定性，Adapter则更易集成到已有模型。\n\n> 📖 参考链接：[/AlibiRoPE_h5/](/AlibiRoPE_h5/)",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-036",
+      "number": 36,
+      "question": "请简述什么是 Prompt Tuning？它与 P-Tuning 有何不同？（通常更简单，只在输入层添加软提示，无编码器） ?",
+      "answer": "Prompt Tuning是一种轻量级的微调方法，通过在输入层直接拼接可学习的软提示（soft prompts）向量来适配下游任务，无需修改预训练模型参数。P-Tuning则在此基础上引入一个独立的编码器（如LSTM或MLP），将可训练参数映射为软提示，以捕获更复杂的跨token交互。核心区别在于：Prompt Tuning将软提示视为独立可训练向量，结构最简单且仅作用于输入层；P-Tuning通过编码器生成软提示，增加了参数量和表达力，但复杂度更高。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-037",
+      "number": 37,
+      "question": "请简述P-Tuning v2 与 LoRA 在参数效率和性能上的对比？ ?",
+      "answer": "P-Tuning v2通过引入可学习的连续前缀（prefix）来微调整个模型层，参数量级通常为模型参数量的0.1%-1%，但在全量微调场景下性能与全参数微调相当；LoRA在注意力层的权重矩阵上添加低秩分解的适配器，参数量更小（约0.01%-0.1%），在保持低秩约束时可能损失部分表征能力，但训练稳定性和泛化性通常更优。总体而言，LoRA参数量更少、内存效率更高，而P-Tuning v2在复杂任务上性能上限可能略高，但两者均能在大部分下游任务中接近全参数微调的效果。\n\n**示例代码：**\n\n```python\n PEFT 库实现 LoRA\nfrom peft import LoraConfig, get_peft_model\nfrom transformers import AutoModelForCausalLM\n\n# model = AutoModelForCausalLM.from_pretrained(\"gpt2\")\n# lora_config = LoraConfig(\n#     r=8,\n#     lora_alpha=32,\n#     target_modules=[\"c_attn\", \"c_proj\"],\n#     lora_dropout=0.1,\n#     bias=\"none\"\n# )\n# model = get_peft_model(model, lora_config)\n# model.print_trainable_parameters()\nprint(\"LoRA 配置示例已就绪\")\n\n\n\n```\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-038",
+      "number": 38,
+      "question": "请简述在什么场景下你会选择 P-Tuning 而不是全参数微调？ ?",
+      "answer": "在数据量较少或计算资源受限时，我会优先选择 P-Tuning 而非全参数微调，因为它仅更新少量连续 prompt 嵌入，能显著降低显存开销并避免灾难性遗忘。当需要同时维护多个下游任务或快速迭代部署时，这种参数高效方法可以共用基座模型，实现多任务解耦并减少存储负担。此外，若基座模型本身规模极大（如 100B+），全参数微调在工程上不可行，P-Tuning 则是兼顾性能与效率的实用方案。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-039",
+      "number": 39,
+      "question": "请简述在什么场景下你会选择 P-Tuning 而不是 LoRA？ ?",
+      "answer": "P-Tuning 通过连续可学习的 prompt 嵌入来调整模型行为，适用于需要精细控制输入语义且训练数据较少的场景；而 LoRA 通过低秩矩阵更新模型权重，更适合参数量极大且需保留通用能力的大模型微调。当目标是用少量样本快速适配特定任务并保持模型原始能力不受干扰时，P-Tuning 因参数更少、训练更轻量且不改变权重分布而更优，例如在问答或分类任务中对输入模式敏感的场景。\n\n**示例代码：**\n\n```python\n PEFT 库实现 LoRA\nfrom peft import LoraConfig, get_peft_model\nfrom transformers import AutoModelForCausalLM\n\n# model = AutoModelForCausalLM.from_pretrained(\"gpt2\")\n# lora_config = LoraConfig(\n#     r=8,\n#     lora_alpha=32,\n#     target_modules=[\"c_attn\", \"c_proj\"],\n#     lora_dropout=0.1,\n#     bias=\"none\"\n# )\n# model = get_peft_model(model, lora_config)\n# model.print_trainable_parameters()\nprint(\"LoRA 配置示例已就绪\")\n\n\n\n```\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-040",
+      "number": 40,
+      "question": "请简述描述一个你使用 P-Tuning（或类似技术）解决实际问题的经历？ ?",
+      "answer": "在金融领域的情感分析任务中，我们使用P-Tuning对LLaMA-7B进行微调，仅调整约0.1%的连续型软提示参数，无需更新原始模型权重。通过在提示向量中融入领域术语和上下文信息，模型在财报电话会议文本的情感分类F1值提升了3.2%，同时避免了灾难性遗忘。该方法仅需单卡A100的4小时训练，相比全参数微调节省了80%的显存和70%的时间，且推理速度无显著下降。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-041",
+      "number": 41,
+      "question": "请简述当 P-Tuning 效果不佳时，你的调试思路是什么？ ?",
+      "answer": "当P-Tuning效果不佳时，首先检查prompt长度和初始化策略，过短或随机初始化可能导致梯度信号不足；其次观察训练稳定性，若loss震荡可尝试降低学习率或使用更平滑的优化器（如AdamW）；最后考虑预训练模型与任务的对齐程度，若领域差异大，建议先进行小规模全参数微调作为baseline或增加prompt embedding的维度。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-042",
+      "number": 42,
+      "question": "请简述如何评估 P-Tuning 微调后的模型质量？ ?",
+      "answer": "评估P-Tuning微调后的模型质量，首先在目标任务的标准测试集上计算核心指标（如准确率、F1、BLEU），并与全量微调、LoRA等基线对比，验证参数效率与性能的折中；其次通过消融实验分析可学习提示向量的长度与初始化方式对结果的影响，检验模型对提示鲁棒性；最后还需评估推理阶段的时间与显存开销，确保增量参数量未导致显著瓶颈。\n\n**示例代码：**\n\n```python\n PEFT 库实现 LoRA\nfrom peft import LoraConfig, get_peft_model\nfrom transformers import AutoModelForCausalLM\n\n# model = AutoModelForCausalLM.from_pretrained(\"gpt2\")\n# lora_config = LoraConfig(\n#     r=8,\n#     lora_alpha=32,\n#     target_modules=[\"c_attn\", \"c_proj\"],\n#     lora_dropout=0.1,\n#     bias=\"none\"\n# )\n# model = get_peft_model(model, lora_config)\n# model.print_trainable_parameters()\nprint(\"LoRA 配置示例已就绪\")\n\n\n\n```\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-043",
+      "number": 43,
+      "question": "请简述从表示学习的角度，解释为什么连续提示可能比离散提示更有效？ ?",
+      "answer": "从表示学习角度，连续提示在连续的嵌入空间中直接优化，避免了离散提示在高维稀疏空间中的离散搜索，能更平滑地逼近任务最优表示。连续提示可以灵活调整每个维度的语义权重，从而更精准地捕捉任务相关特征，而离散提示受限于固定token的离散语义，容易陷入局部最优。此外，连续提示的梯度信息可以反向传播至预训练模型，实现端到端的参数高效微调。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-044",
+      "number": 44,
+      "question": "请简述为什么在 Transformer 的每一层添加提示（如 v2）比只在输入层（如 v1）更强大？ ?",
+      "answer": "P-Tuning v2在每层Transformer中插入可学习的提示向量，而v1仅在输入层添加。这样v2能直接影响各层的中间表征，使梯度信号更直接地传播到每层提示，缓解了深层网络中提示被逐层稀释的问题。同时，v2提供了更大的参数容量和更细粒度的模型干预，从而在复杂任务上展现出更强的适配能力和性能优势。\n",
+      "category": "P-Tuning",
+      "tags": []
+    },
+    {
+      "id": "P-Tuning-045",
+      "number": 45,
+      "question": "请简述P-Tuning 如何与模型的注意力机制交互？ ?",
+      "answer": "P-Tuning通过在输入层引入一组可学习的连续向量（软提示）作为前缀或嵌入，这些向量与原始输入序列拼接后共同参与Transformer各层的自注意力计算。在注意力机制中，这些软提示token会生成自己的Query、Key、Value，并与其他token进行注意力交互，从而影响整个序列的注意力分布，使得模型能够根据任务需求动态调整关注焦点。由于软提示是可微的，它们能够通过梯度下降优化，在保持预训练参数不变的前提下，引导注意力机制聚焦于任务相关特征，实现对模型的轻量级适配。\n",
+      "category": "P-Tuning",
+      "tags": []
+    }
+  ]
+}

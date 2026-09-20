@@ -1,0 +1,677 @@
+{
+  "category": "Scikit-learn",
+  "questions": [
+    {
+      "id": "Scikit-learn-001",
+      "number": 1,
+      "question": "请简述什么是损失函数常见的损失函数有哪些（均方误差.. ?",
+      "answer": "损失函数（Loss Function）衡量模型预测值与真实值之间的差异，是模型优化的目标。常见的损失函数：① 均方误差（MSE）——用于回归任务，MSE = (1/n) * sum(y_i - y_hat_i) ^ 2，对异常值敏感（平方放大误差）；② 交叉熵损失（Cross-Entropy）——用于分类任务，衡量预测概率分布与真实分布的距离，二分类用 Binary Cross-Entropy，多分类用 Categorical Cross-Entropy；③ Hinge Loss——用于 SVM 分类，max(0, 1 - y * y_hat)；④ Huber Loss——MSE 和 MAE 的结合，对异常值更鲁棒。选择依据：回归用 MSE/MAE，二分类用 BCE，多分类用 CCE，排序用 Pairwise Loss。\n\n**示例代码：**\n\n```python\nfrom sklearn.metrics import mean_squared_error, log_loss\nimport numpy as np\n\ny_true = np.array([3.0, -0.5, 2.0, 7.0])\ny_pred = np.array([2.5, 0.0, 2.1, 8.0])\n\n# 均方误差\nmse = mean_squared_error(y_true, y_pred)\nprint(f\"MSE: {mse:.4f}\")\n\n# 交叉熵 (分类)\ny_true_cls = [0, 1, 1, 0]\ny_prob = [[0.9, 0.1], [0.2, 0.8], [0.1, 0.9], [0.7, 0.3]]\nce = log_loss(y_true_cls, y_prob)\nprint(f\"Cross-Entropy: {ce:.4f}\")\n\n\n\n```\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-002",
+      "number": 2,
+      "question": "请简述解释Scikit-learn中的“估计器”接口。所有估计器通常都有哪些核心方法？（fit, predict, transform） ?",
+      "answer": "Scikit-learn的估计器接口是一个统一的抽象基类，所有模型（如分类器、回归器、聚类器、降维器）都必须实现它。核心方法包括：fit(X, y)用于在训练数据上学习模型参数；predict(X)用于对新样本输出预测结果，适用于监督学习；transform(X)用于对输入进行数据变换（如PCA降维、标准化），常见于无监督学习与预处理。此外，常见方法还有score(X, y)评估模型性能，以及get_params/set_params用于超参数管理。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-003",
+      "number": 3,
+      "question": "请简述fit, predict, 和 transform 方法分别做什么？ ?",
+      "answer": "fit方法用于在训练数据上学习模型参数，如线性回归的系数或PCA的主成分方向；predict方法基于学习到的参数对新样本输出预测结果，如类别标签或回归值；transform方法则应用于非监督学习或预处理步骤，将原始数据转换为新的特征表示，如标准化或降维。三者共同构成了scikit-learn estimator的标准API，确保接口一致性和可组合性。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-004",
+      "number": 4,
+      "question": "请简述有监督学习和无监督学习的主要区别是什么？各举出Scikit-learn中的几个例子。 ?",
+      "answer": "有监督学习依赖带有标签的训练数据来学习输入到输出之间的映射，主要用于分类和回归任务；无监督学习则从无标签数据中自主发现隐藏的结构或模式，如聚类和降维。在Scikit-learn中，监督学习的典型例子包括LogisticRegression（分类）和SVR（回归），无监督学习的例子包括KMeans（聚类）和PCA（降维）。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-005",
+      "number": 5,
+      "question": "请简述什么是训练集、验证集和测试集？为什么这样划分？ ?",
+      "answer": "训练集用于拟合模型参数，验证集用于调参和选择模型结构，测试集用于评估最终模型的泛化能力。这样划分是为了避免信息泄露，防止模型过拟合到训练数据或对超参数产生虚假的乐观估计，从而获得对未知数据性能的无偏估计。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-006",
+      "number": 6,
+      "question": "请简述解释过拟合和欠拟合。如何在Scikit-learn中识别和解决它们？ ?",
+      "answer": "过拟合指模型在训练数据上表现优异，但在新数据上泛化能力差，通常因模型过于复杂或训练数据噪声过多；欠拟合指模型无法捕捉数据的基本结构，训练和测试误差均高，通常因模型过于简单或特征不足。在Scikit-learn中，可通过对比交叉验证得分与训练得分、绘制学习曲线来识别过拟合（训练得分远高于验证得分）或欠拟合（两者均低且差距小）；解决过拟合可使用正则化（如Ridge、Lasso）、降低模型复杂度（如减少树深度、增加样本量），解决欠拟合则需增加特征、选择更复杂的模型（如从线性模型换为随机森林）或减少正则化强度。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-007",
+      "number": 7,
+      "question": "请简述Scikit-learn如何帮助确保实验的可重复性？（使用random_state参数） ?",
+      "answer": "Scikit-learn通过在诸多算法与数据划分工具中提供random_state参数，将内部依赖的伪随机数生成器种子固定，从而确保相同种子下每次运行的随机流程（如训练集拆分、权重初始化、特征采样等）输出完全一致。这一机制有效隔离了随机性对实验结果的影响，使得研究者可以精准复现此前的结果，是保障实验可重复性的核心设计。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-008",
+      "number": 8,
+      "question": "请简述为什么在机器学习中需要数据预处理？ ?",
+      "answer": "数据预处理是机器学习流程中的关键步骤，主要因为原始数据通常包含噪声、缺失值、量纲不一致或异常分布等问题，这些会直接导致模型训练不稳定、收敛缓慢或泛化能力下降。通过清洗、标准化、特征缩放等操作，可以提升数据质量，使算法更有效地捕捉真实模式，并防止对数值范围敏感的模型（如SVM、KNN）产生偏差。此外，预处理还能降低过拟合风险，加速梯度下降收敛，从而在相同数据量下获得更优的预测性能。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-009",
+      "number": 9,
+      "question": "请简述介绍StandardScaler和MinMaxScaler。它们有什么区别？分别在什么场景下使用？ ?",
+      "answer": "StandardScaler通过减去均值再除以标准差实现零均值单位方差标准化，MinMaxScaler通过减去最小值再除以极差将数据压缩到[0,1]区间。区别在于缩放依据和鲁棒性：StandardScaler对异常值相对鲁棒，而MinMaxScaler易受极端值干扰；前者适合数据近似正态分布或需要中心化（如PCA、SVM）的场景，后者适合已知边界范围或使用神经网络等对数值区间敏感的模型。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-010",
+      "number": 10,
+      "question": "请简述什么是RobustScaler？它比StandardScaler有什么优势？ ?",
+      "answer": "RobustScaler是一种基于中位数和四分位距（IQR）的特征缩放方法，它通过减去中位数并除以IQR来转换数据。与StandardScaler使用均值和标准差不同，RobustScaler对异常值具有鲁棒性，因为中位数和IQR不受极端值的影响。在处理含有显著异常值的数据时，RobustScaler能避免缩放结果被少数离群点扭曲，从而保持更多数据的相对分布，而StandardScaler可能因异常值导致缩放后的数据严重偏移。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-011",
+      "number": 11,
+      "question": "请简述如何处理数据集中的缺失值？（使用SimpleImputer） ?",
+      "answer": "使用SimpleImputer处理缺失值的核心步骤：首先实例化一个SimpleImputer对象并指定策略（如均值、中位数或众数），然后调用fit方法在训练集上学习填充值，最后调用transform方法将缺失值替换为学习到的填充值。对于数值特征常用均值或中位数，分类特征常用众数；需注意避免数据泄露，即fit仅基于训练集，transform应用于训练集和测试集。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-012",
+      "number": 12,
+      "question": "请简述SimpleImputer的不同策略（如mean, median, most_frequent）有什么区别？ ?",
+      "answer": "SimpleImputer的mean策略使用各列的算术平均数填充缺失值，适用于数值型且近似正态分布的数据；median策略采用中位数，对异常值更鲁棒；most_frequent策略使用众数（频率最高的值），适合类别型或离散型数据。选择策略需依据数据特性：mean对异常值敏感，median能抗离群点干扰，most_frequent则忽视数值分布仅关注出现频次。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-013",
+      "number": 13,
+      "question": "请简述如何对分类特征进行编码？（使用OrdinalEncoder和OneHotEncoder） ?",
+      "answer": "OrdinalEncoder适用于有序分类特征，将每个类别映射为从0开始的递增整数，保留顺序信息；OneHotEncoder适用于无序分类特征，为每个类别创建独立的二进制列，避免引入虚假顺序。选择取决于特征是否具备内在顺序，如“低/中/高”用OrdinalEncoder，“红/蓝/绿”用OneHotEncoder。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-014",
+      "number": 14,
+      "question": "请简述OrdinalEncoder和OneHotEncoder有什么区别？各自有什么优缺点？ ?",
+      "answer": "OrdinalEncoder将类别特征映射为整数顺序（如0,1,2），适合有序类别，但会引入虚假有序关系；OneHotEncoder将每个类别扩展为二进制向量，避免顺序假设，但会显著增加特征维度。OrdinalEncoder的优点是节省内存和计算，适合树模型，缺点是将无序类别误加序数；OneHotEncoder的优势是无偏处理，适合线性模型和距离计算，缺点是维度爆炸和稀疏性。实际选择取决于数据特性与模型类型。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-015",
+      "number": 15,
+      "question": "请简述如何使用LabelEncoder？注意：它应该只用于编码目标变量还是特征？ ?",
+      "answer": "LabelEncoder将分类标签映射为0到n_classes-1的整数，通常仅用于编码目标变量（y），因为其输出的整数顺序会误导模型假设特征间的顺序关系。对于无序特征应使用OneHotEncoder或OrdinalEncoder，以避免引入虚假的序数信息。使用时实例化LabelEncoder，调用fit_transform传入目标变量，并通过inverse_transform还原原始标签。\n\n**示例代码：**\n\n```python\nfrom sklearn.preprocessing import OneHotEncoder, LabelEncoder\nimport numpy as np\n\n# Label Encoding\nlabels = np.array(['cat', 'dog', 'bird', 'cat', 'dog'])\nle = LabelEncoder()\nencoded = le.fit_transform(labels)\nprint(f\"Label编码: {encoded}\")\n\n# One-Hot Encoding\noh = OneHotEncoder(sparse_output=False)\nonehot = oh.fit_transform(labels.reshape(-1, 1))\nprint(f\"One-Hot:\\n{onehot}\")\n\n\n\n```\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-016",
+      "number": 16,
+      "question": "请简述解释ColumnTransformer的作用。它如何简化对不同类型特征的预处理？ ?",
+      "answer": "ColumnTransformer是Scikit-learn中用于将不同变换应用于不同特征列的组件，它能将数值型特征的标准化、类别型特征的独热编码等预处理步骤整合到一个统一的pipeline中。通过指定列与对应变换器的映射，它避免了手动拆分和合并数据集的繁琐操作，确保预处理流程清晰且可重复。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-017",
+      "number": 17,
+      "question": "请简述如何使用Pipeline来组合多个预处理步骤和模型？ ?",
+      "answer": "使用 sklearn.pipeline.Pipeline 将预处理步骤（如 StandardScaler、PCA）和模型（如 LogisticRegression）按顺序传入 (name, estimator) 列表。调用 pipeline.fit(X, y) 时自动依次应用预处理和训练模型，pipeline.predict(X) 则顺序执行变换和预测。这避免了数据泄露，简化了交叉验证和超参数调优流程，且通过 set_params 可统一管理各步骤参数。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-018",
+      "number": 18,
+      "question": "请简述使用Pipeline有什么好处？（避免数据泄露、代码简洁、便于部署） ?",
+      "answer": "使用Pipeline的主要好处包括：通过将所有预处理和模型训练步骤封装在单个估计器中，确保交叉验证时仅在训练集上拟合变换，有效避免数据泄露；同时大幅简化代码结构，将多个步骤串联为一条链，提升可读性与可维护性；此外，Pipeline作为独立对象可直接保存与加载，方便从训练到生产的无缝部署，并减少因手动调整步骤顺序或参数而引入的bug。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-019",
+      "number": 19,
+      "question": "请简述解释分类任务中的准确率、精确率、召回率和F1分数。 ?",
+      "answer": "准确率是预测正确的样本数占总样本数的比例，但在类别不平衡时可能产生误导。精确率关注预测为正例中真正为正例的比例，衡量误报。召回率关注实际为正例中被正确识别的比例，衡量漏报。F1分数是精确率和召回率的调和平均，平衡两者，适用于正负样本不均的情况。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-020",
+      "number": 20,
+      "question": "请简述什么是混淆矩阵？如何从混淆矩阵中推导出精确率和召回率？ ?",
+      "answer": "混淆矩阵是分类模型性能评估的表格化工具，行代表真实类别，列代表预测类别，矩阵中的四个元素分别为真正例(TP)、假正例(FP)、假负例(FN)和真负例(TN)。精确率定义为 TP/(TP+FP)，衡量预测为正例中真实为正例的比例；召回率定义为 TP/(TP+FN)，衡量真实为正例中被正确预测的比例，两者分别反映了模型的准确性和覆盖能力。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-021",
+      "number": 21,
+      "question": "请简述如何计算并展示一个分类模型的ROC曲线和AUC值？ ?",
+      "answer": "首先，使用模型对测试集预测得到概率分数，然后利用sklearn.metrics中的roc_curve函数计算不同阈值下的假正率(TPR)和真正率(FPR)，再通过auc函数计算ROC曲线下的面积得到AUC值。展示时，使用matplotlib将FPR作为x轴、TPR作为y轴绘制曲线，并标注AUC数值和随机对角线基准线。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-022",
+      "number": 22,
+      "question": "请简述解释ROC曲线的含义。对角线代表什么？ ?",
+      "answer": "ROC曲线（Receiver Operating Characteristic curve）是以假正率（FPR）为横轴、真正率（TPR）为纵轴绘制的曲线，用于评估二分类模型在不同阈值下的性能。对角线代表随机猜测模型的性能，即TPR=FPR，此时模型无判别能力，AUC=0.5，任何实际曲线高于对角线才说明模型优于随机。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-023",
+      "number": 23,
+      "question": "请简述对于不平衡数据集，为什么准确率可能不是一个好的指标？你会使用什么替代指标？ ?",
+      "answer": "准确率定义为正确预测样本占总样本的比例，在类别严重不平衡时，多数类样本主导了该指标，导致模型完全忽略少数类仍能获得高准确率，从而无法反映实际分类能力。常用的替代指标包括精确率、召回率、F1-score、AUC-ROC曲线下面积，以及专门针对不平衡问题的平衡准确率（Balanced Accuracy）、G-mean和Precision-Recall曲线下面积（PR-AUC），这些指标能更公平地评估模型对少数类的识别效果。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-024",
+      "number": 24,
+      "question": "请简述解释回归任务中的平均绝对误差、均方误差和R²分数。 ?",
+      "answer": "平均绝对误差（MAE）是预测值与真实值绝对差值的均值，对异常值不敏感；均方误差（MSE）是差值的平方的均值，对大误差惩罚更重且可导，便于优化；R²分数衡量模型解释的方差比例，值为1表示完美拟合，0表示与简单均值模型等价，但可能因过拟合而虚高。三者通常配合使用：MSE做损失函数，MAE评估鲁棒性，R²评估整体解释力。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-025",
+      "number": 25,
+      "question": "请简述什么是交叉验证？为什么它比简单的训练/测试集拆分更好？ ?",
+      "answer": "交叉验证是一种通过将数据集分割成多个互补子集，并轮流将其中的一部分作为验证集、其余作为训练集来评估模型性能的方法，最常见的是K折交叉验证。与简单的单次训练/测试集拆分相比，交叉验证能够更充分地利用有限数据，避免了因随机划分导致的偶然性偏差，同时通过多次求平均得到更稳定、泛化误差估计更可靠的模型评估结果，尤其适用于数据量较小的场景。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-026",
+      "number": 26,
+      "question": "请简述解释cross_val_score和cross_validate函数。 ?",
+      "answer": "cross_val_score是sklearn中执行交叉验证并返回每个折叠指定评估指标得分的简化接口，适用于快速评估模型性能；cross_validate则提供了更丰富的输出，包括训练和测试得分、拟合时间、预测时间等，支持多指标评估并允许控制返回内容。两者核心差异在于信息粒度：cross_val_score仅返回单一指标数组，而cross_validate返回包含自定义指标和诊断信息的字典，适合需要深入分析模型行为或计算开销的场景。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-027",
+      "number": 27,
+      "question": "请简述StratifiedKFold和标准的KFold有什么区别？为什么在分类任务中推荐使用它？ ?",
+      "answer": "StratifiedKFold是KFold的改进版，它在每个交叉验证折中保持与原始数据集一致的类别比例，而标准KFold是随机均分，可能造成某折类别严重失衡。在分类任务中推荐使用StratifiedKFold，因为它能避免因类别分布不均导致的评估偏差，尤其适用于不平衡数据集，确保每折验证集都能代表全局分布，从而获得更稳定、可靠的模型性能估计。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-028",
+      "number": 28,
+      "question": "请简述如何创建自定义的评分函数用于cross_val_score？ ?",
+      "answer": "可以通过 `sklearn.metrics.make_scorer` 工厂函数包装自定义的损失或得分函数（需满足 `estimator, X, y` 或 `y_true, y_pred` 签名），并设置 `greater_is_better` 等参数；或者直接定义一个 callable 对象例如 `def my_scorer(estimator, X, y): return ...`，然后将该函数赋值给 `cross_val_score` 的 `scoring` 参数。`make_scorer` 还支持 `needs_threshold`、`needs_proba` 等选项以适配概率输出模型。最终评分函数应返回单个标量值，`cross_val_score` 会在每个验证折上自动调用。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-029",
+      "number": 29,
+      "question": "请简述线性回归的基本假设是什么？ ?",
+      "answer": "线性回归的基本假设包括：线性关系、误差独立同分布且服从均值为零的正态分布、以及自变量之间不存在完全多重共线性。具体来说，线性关系要求因变量与自变量呈线性组合；误差的独立性避免自相关，同方差性保证方差恒定；正态性用于参数检验和置信区间。这些假设的违背会导致估计有偏、无效或不可靠，需通过诊断和变换来处理。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-030",
+      "number": 30,
+      "question": "请简述解释正则化的概念。L1（Lasso）和L2（Ridge）正则化有什么区别？ ?",
+      "answer": "正则化是一种通过在损失函数中加入惩罚项来限制模型参数大小，防止过拟合的技术。L1正则化（Lasso）使用参数绝对值之和作为惩罚，能产生稀疏解，自动进行特征选择；L2正则化（Ridge）使用参数平方和，使参数均匀收缩但不会归零。关键区别在于：L1解稀疏，适合特征冗余场景；L2解非稀疏，计算更稳定并保留所有特征。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-031",
+      "number": 31,
+      "question": "请简述Lasso回归为什么可以用于特征选择？ ?",
+      "answer": "Lasso回归通过在损失函数中加入L1正则化项，使得训练过程中部分特征的系数被精确压缩为零，从而实现自动特征选择。L1范数的几何特性导致解空间在坐标轴上形成尖角，优化时更容易触及稀疏解。这种机制能有效剔除冗余或无关特征，提升模型可解释性并防止过拟合。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-032",
+      "number": 32,
+      "question": "请简述如何控制Ridge和Lasso模型中的正则化强度？（alpha参数） ?",
+      "answer": "在Ridge和Lasso模型中，alpha参数直接控制正则化强度，其值越大，惩罚项权重越高，迫使模型系数收缩（Ridge均匀收缩，Lasso趋向稀疏），从而增强模型泛化能力但可能增加偏差；反之，alpha越小正则化越弱，模型更接近普通最小二乘解。实际中可通过交叉验证（如RidgeCV/LassoCV）自动选择最优alpha，以平衡偏差与方差。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-033",
+      "number": 33,
+      "question": "请简述逻辑回归是用于回归还是分类？解释它的输出。 ?",
+      "answer": "逻辑回归本质上是用于分类任务，尤其是二分类，尽管其名称源自回归。它通过sigmoid函数将线性组合的输出压缩到(0,1)区间，表示样本属于正类的概率。该概率值可直接用于决策，也可通过设定阈值转换为离散类别标签。因此其输出是一个连续的置信度分数，而非回归中的连续数值预测。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-034",
+      "number": 34,
+      "question": "请简述逻辑回归中的solver参数有哪些常见选项？（如lbfgs, liblinear, saga） ?",
+      "answer": "逻辑回归的solver参数常见选项包括lbfgs、liblinear、saga等，分别用于不同优化场景。lbfgs基于拟牛顿法，适合中小型数据集且默认支持L2正则化；liblinear是坐标下降法，专门针对线性模型并支持L1和L2正则化；saga是一种随机平均梯度下降的变体，适用于大规模稀疏数据且能处理L1正则化。此外还有newton-cg和sag等选项，其中newton-cg适合小样本高精度场景，sag与saga类似但仅支持L2正则化。选择时需根据数据规模、正则化类型和收敛速度综合权衡。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-035",
+      "number": 35,
+      "question": "请简述在多分类问题中，逻辑回归有哪些策略？（ovr, multinomial） ?",
+      "answer": "在多分类逻辑回归中，OvR（One-vs-Rest）为每个类别训练一个二分类器，输出该类别的概率，预测时取最大概率对应的类别，计算高效但可能面临类别不平衡问题；Multinomial（Softmax回归）则直接使用Softmax函数将线性输出转换为所有类别的概率分布，并最小化交叉熵损失，理论上能更好地利用参数共享，但对特征尺度敏感且计算复杂度较高。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-036",
+      "number": 36,
+      "question": "请简述决策树是如何工作的？它如何选择分裂特征？ ?",
+      "answer": "决策树通过递归地根据特征值对数据集进行划分来构建树状模型，每个内部节点对应一个特征上的条件判断，叶节点代表预测结果。它选择分裂特征时，会基于不纯度指标（如分类中常用基尼指数或信息增益，回归中常用均方误差）计算每个候选特征分裂后的加权不纯度下降量，并选取下降最大的特征作为当前节点的最优分裂。该过程持续进行直至达到预设的停止条件（如最大深度、最小叶节点样本数等），从而避免过拟合。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-037",
+      "number": 37,
+      "question": "请简述决策树有哪些超参数可以用于控制过拟合？（max_depth, min_samples_split, min_samples_leaf） ?",
+      "answer": "决策树中控制过拟合的主要超参数包括最大深度max_depth，它限制树的层数，防止过深的分支；最小分裂样本数min_samples_split，要求节点分裂所需的最小样本数，避免小样本分裂；最小叶节点样本数min_samples_leaf，规定叶节点至少包含的样本数，防止过细的叶子。此外，最大叶节点数max_leaf_nodes和最小不纯度减少量min_impurity_decrease也可有效剪枝，通过限制树的结构或分裂收益来降低方差。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-038",
+      "number": 38,
+      "question": "请简述什么是装袋法？随机森林是如何利用装袋法的？ ?",
+      "answer": "装袋法（Bagging）是一种集成学习技术，通过对原始训练集进行有放回的自助采样生成多个子集，分别训练基学习器，最后通过投票（分类）或平均（回归）融合预测结果，旨在降低模型方差。随机森林在装袋法的基础上进一步引入特征随机性：在构建每棵决策树时，不仅对样本进行有放回采样，还随机选择部分特征作为候选划分特征。这种双重随机性显著增加了树之间的多样性，使得随机森林比单纯装袋决策树具有更强的泛化能力和抗过拟合性能。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-039",
+      "number": 39,
+      "question": "请简述随机森林中的“随机”体现在哪里？（数据样本的随机子集和特征的随机子集） ?",
+      "answer": "随机森林的“随机”体现在两个层面：一是通过Bootstrap采样从原始训练集中有放回地随机抽取多个子集，确保每棵树的训练数据略有差异；二是在每个节点分裂时，从全部特征中随机选取一个子集（通常为sqrt(p)或log2(p)），再从中选择最优划分特征。这种双重随机性降低了树之间的相关性，有效抑制过拟合，同时使模型对噪声和异常值更鲁棒。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-040",
+      "number": 40,
+      "question": "请简述随机森林与单一的决策树相比有什么优势？ ?",
+      "answer": "随机森林通过集成多个决策树并采用随机样本与特征子集，显著降低了单一决策树容易过拟合的风险，从而提升泛化能力和鲁棒性。相比单棵树，它在高维数据、噪声和缺失值场景下更具稳定性，且在大数据集上往往能取得更优的预测精度。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-041",
+      "number": 41,
+      "question": "请简述什么是提升法？它与装袋法有什么区别？ ?",
+      "answer": "提升法是一种迭代集成学习算法，通过顺序训练多个弱学习器，每次迭代调整样本权重以聚焦前序模型的错误，最终加权组合所有模型。它与装袋法的核心区别在于：1）训练方式上，提升法顺序依赖、串行生成，装袋法并行独立采样；2）样本权重上，提升法动态调整错误样本权重，装袋法使用均匀权重自助采样；3）方差-偏差权衡上，提升法主要降低偏差，装袋法主要降低方差。典型代表如AdaBoost和梯度提升树。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-042",
+      "number": 42,
+      "question": "请简述介绍梯度提升机（Gradient Boosting Machine）的工作原理。 ?",
+      "answer": "梯度提升机通过迭代地训练弱学习器（通常是决策树），每轮拟合前一轮预测的负梯度（即残差），并将新学习器加权累加，逐步降低整体损失函数。其核心是贪心地在函数空间中进行梯度下降，确保每步都向全局最优方向更新。最终模型是多个弱学习器的线性组合，通过控制学习率和子采样来防止过拟合。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-043",
+      "number": 43,
+      "question": "请简述比较Scikit-learn中的GradientBoostingClassifier（传统GBDT）和HistGradientBoostingClassifier（基于直方图的，更快更高效）。 ?",
+      "answer": "传统GBDT每次分裂需遍历所有样本的所有特征值寻找最优切分点，复杂度高且内存消耗大；HistGradientBoostingClassifier将连续特征离散化为固定数量（通常255）的bins，基于直方图统计快速评估分裂增益，大幅降低计算与内存开销，并原生支持类别特征、缺失值处理及早停。因此后者在数据集较大时训练速度可提升数十倍且泛化能力相当，但前者在小数据集上分裂精度可能略优。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-044",
+      "number": 44,
+      "question": "请简述XGBoost, LightGBM和CatBoost与Scikit-learn的GBDT有何关系？它们通常通过各自的Python包提供接口。 ?",
+      "answer": "Scikit-learn的GBDT是其内置的GradientBoostingClassifier/Regressor，基于传统梯度提升算法；XGBoost、LightGBM和CatBoost则是该算法的优化变体，分别通过正则化、直方图近似、对称树结构等创新提升了速度和精度，均提供兼容scikit-learn的API。三者通常作为独立包安装，而非sklearn原生模块。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-045",
+      "number": 45,
+      "question": "请简述解释极端随机树。它与随机森林有何不同？ ?",
+      "answer": "极端随机树（Extra Trees）是一种集成学习方法，通过构建多棵完全随机化的决策树并对其结果进行平均来预测。与随机森林的关键区别在于：随机森林在训练每棵树时，对特征和样本都进行随机子采样，而极端随机树不仅对特征随机选择，还对每个分裂点的阈值进行完全随机抽取，并且使用全部训练样本而不进行Bootstrap采样。这种更强的随机化策略在牺牲一定偏差的同时显著降低了方差，通常训练速度更快，但对噪声数据的鲁棒性可能稍弱。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-046",
+      "number": 46,
+      "question": "请简述解释支持向量机在分类任务中的基本思想。 ?",
+      "answer": "支持向量机（SVM）的核心思想是在特征空间中寻找一个最优超平面，使得两类样本的间隔最大化。该超平面由距离它最近的少数训练样本（即支持向量）决定，从而保证模型具有最强的泛化能力。对于线性不可分问题，SVM通过核函数将原始数据映射到高维空间，使样本在该空间中变得线性可分。最终，分类决策仅依赖于支持向量，因此模型对非支持向量的噪声不敏感，具有较好的鲁棒性。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-047",
+      "number": 47,
+      "question": "请简述什么是“核技巧”？它解决了什么问题？ ?",
+      "answer": "核技巧是一种通过核函数将低维输入空间隐式映射到高维特征空间，从而在原始空间中计算内积的方法。它解决了在原始空间中线性不可分问题无法用线性模型处理的问题，无需显式构造高维特征向量，避免了维度灾难和计算开销。核技巧使得支持向量机等算法能高效处理非线性分类与回归任务，关键在于核函数满足Mercer条件以保证映射存在。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-048",
+      "number": 48,
+      "question": "请简述列出SVM中常用的核函数：线性、多项式、径向基函数。 ?",
+      "answer": "线性核对应原始特征空间的内积，适用于线性可分数据；多项式核通过参数d控制映射的复杂度，计算量较大；径向基函数（RBF）核将数据映射到无穷维，对非线性问题效果较好，但需调优gamma参数。实际应用中RBF核最为常用。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-049",
+      "number": 49,
+      "question": "请简述C参数在SVM中起什么作用？它如何影响偏差-方差权衡？ ?",
+      "answer": "C参数是SVM中的正则化项，控制对误分类样本的惩罚力度，即允许的软间隔程度。较小的C允许更大的间隔但容忍更多训练错误，导致模型欠拟合（高偏差、低方差）；较大的C则严格惩罚误分类，缩小间隔以拟合训练数据，易过拟合（低偏差、高方差）。因此C直接影响偏差-方差权衡：C越小，模型越简单，偏差越大方差越小；C越大，模型越复杂，偏差越小方差越大。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-050",
+      "number": 50,
+      "question": "请简述对于RBF核，gamma参数是什么意思？ ?",
+      "answer": "对于RBF核（径向基函数核），gamma参数控制单个训练样本的影响范围，定义为高斯函数中1/(2σ²)的系数，其中σ是带宽。较小的gamma值对应更大的σ，使核函数更平滑、决策边界更宽松，模型偏差较高；较大的gamma值则使核函数更尖锐、过拟合风险增加。它直接影响支持向量机的决策边界复杂度，是模型调参的关键超参数之一。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-051",
+      "number": 51,
+      "question": "请简述解释K-Means聚类算法的步骤。 ?",
+      "answer": "K-Means聚类算法首先随机初始化K个聚类中心，然后迭代执行两步：将每个样本分配到距离最近的聚类中心，再根据当前分配结果重新计算每个聚类的均值作为新中心，直到中心不再显著变化或达到最大迭代次数。算法本质是优化样本到其所属聚类中心的平方误差和，对初始中心敏感且假设簇为球形。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-052",
+      "number": 52,
+      "question": "请简述在K-Means中，如何选择聚类数K？（肘部法则、轮廓系数） ?",
+      "answer": "肘部法通过绘制不同K值下的SSE（样本到簇中心距离平方和），选择下降速率突变处的K；轮廓系数衡量样本聚类紧密度与分离度，取值范围[-1,1]，选择平均轮廓系数最大的K。两者结合使用：先肘部法确定候选区间，再用轮廓系数精调，能有效避免过度拟合与主观偏差。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-053",
+      "number": 53,
+      "question": "请简述什么是轮廓系数？如何解释它的值？ ?",
+      "answer": "轮廓系数是评估聚类结果质量的指标，结合了样本与自身簇的凝聚度（平均簇内距离a）和与最近邻簇的分离度（平均最近簇距离b）。每个样本的系数为(b - a) / max(a, b)，整体取所有样本均值。值域[-1,1]：接近1表示样本合理归属，簇间分离好且簇内紧凑；接近0表示样本位于两个簇边界；接近-1表示样本可能错分。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-054",
+      "number": 54,
+      "question": "请简述K-Means对数据的分布和特征的尺度有什么假设？ ?",
+      "answer": "K-Means假设每个簇的数据呈各向同性的球形分布，即簇内方差相等且簇的形状为凸形，这导致算法倾向于发现大小相近的球状簇。同时，它隐含假设所有特征具有相同的尺度，因为算法依赖欧氏距离度量相似性，若特征尺度差异大，大尺度特征将主导距离计算，从而扭曲聚类结果。因此，实际应用中需先对特征进行标准化或归一化处理，并注意数据分布的球形假设可能不适用于复杂形状的簇。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-055",
+      "number": 55,
+      "question": "请简述在运行K-Means之前，为什么要对特征进行缩放？ ?",
+      "answer": "K-Means基于欧氏距离计算样本相似性，未缩放的特征中数值范围较大的特征会主导距离计算，导致聚类结果偏向该特征。缩放能确保每个特征对距离的贡献相等，避免量纲差异带来的偏差。常用方法有标准化（Z-score）或归一化（Min-Max），使特征均值为0、方差为1或映射到[0,1]区间。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-056",
+      "number": 56,
+      "question": "请简述介绍DBSCAN聚类算法。它与K-Means相比有什么优势？ ?",
+      "answer": "DBSCAN是一种基于密度的空间聚类算法，通过邻域半径eps和最小样本数minPts识别核心点、边界点和噪声点，能发现任意形状的簇。与K-Means相比，DBSCAN无需预设聚类数K，能自动识别簇数量；对异常点鲁棒，能分离噪声；并可处理非球形、非凸形状的簇，而K-Means强依赖初始质心且限于凸形分布。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-057",
+      "number": 57,
+      "question": "请简述解释DBSCAN中的eps和min_samples参数。 ?",
+      "answer": "eps定义了样本点的邻域半径，用于确定一个点是否在另一个点的密度可达范围内；min_samples则指定了构成核心点所需的最小邻域样本数。这两个参数共同决定了DBSCAN的密度阈值：eps控制聚类的粒度，较小的值会生成更多细小的簇；min_samples影响模型的抗噪能力，较大的值会提升对离群点的过滤效果。实际应用中需要根据数据特征和距离度量通过k-distance图等方法联合调参。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-058",
+      "number": 58,
+      "question": "请简述为什么要进行降维？ ?",
+      "answer": "降维的主要目的是缓解“维度灾难”，即在高维空间中数据稀疏、距离度量失效、模型过拟合等问题。通过去除冗余和噪声特征，降维能提升模型训练效率与泛化能力。同时，降维有助于数据可视化，便于探索数据的内在结构。常用的降维方法如PCA、t-SNE等，能在保留主要变异信息的前提下压缩数据维度。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-059",
+      "number": 59,
+      "question": "请简述主成分分析是如何工作的？它试图最大化什么？ ?",
+      "answer": "主成分分析通过数据协方差矩阵的特征分解找到方差最大的方向，并将原始高维数据投影到这些正交的主成分上。它试图最大化投影后数据的方差，即第一主成分对应方差最大的方向，后续主成分在正交约束下方差依次递减，从而保留尽可能多的信息。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-060",
+      "number": 60,
+      "question": "请简述在使用PCA之前，为什么通常需要对数据进行标准化？ ?",
+      "answer": "PCA通过最大化方差来寻找主成分，若数据特征量纲不同，方差大的特征会主导主成分方向，导致结果被尺度而非真实结构扭曲。标准化将各特征均值为0、标准差为1，消除量纲影响，使每个特征在方差贡献上具有同等重要性，从而保证PCA反映的是数据相关结构而非数值大小差异。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-061",
+      "number": 61,
+      "question": "请简述如何解释PCA组件的含义？ ?",
+      "answer": "解释PCA组件含义的核心是分析其载荷向量：每个主成分是原始特征的线性组合，载荷系数绝对值越大，对应特征对该主成分的贡献越强，正负号指示方向关系。通过观察高载荷特征，可将主成分理解为潜在的综合变量，例如第一主成分常代表整体规模因子。同时，结合累计方差解释率可评估各主成分捕获原始数据信息量的重要性。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-062",
+      "number": 62,
+      "question": "请简述如何选择要保留的主成分数量？ ?",
+      "answer": "选择要保留的主成分数量常用三种方法：一是基于累计解释方差比例，选择能使累计方差达到预设阈值（如85%-95%）的最小k值；二是观察特征值变化的“肘部法则”，选取特征值降幅趋缓的临界点；三是交叉验证或基于重构误差的评估，通过验证集性能选择最优k。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-063",
+      "number": 63,
+      "question": "请简述PCA和线性判别分析有什么区别？（PCA是无监督的，LDA是有监督的） ?",
+      "answer": "PCA（主成分分析）是无监督降维方法，最大化数据方差以保留全局结构，不利用标签信息；LDA（线性判别分析）是有监督降维方法，最大化类间散度与类内散度之比，旨在增强类别可分性。两者均假设数据服从高斯分布，但PCA对异常值更敏感，而LDA在小样本或类内协方差差异大时可能退化。核心区别在于是否使用标签：PCA寻找数据整体方差最大的方向，LDA寻找最有利于分类的投影方向。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-064",
+      "number": 64,
+      "question": "请简述GridSearchCV和RandomizedSearchCV有什么区别？ ?",
+      "answer": "GridSearchCV在用户指定的超参数网格上进行穷举搜索，遍历所有组合，保证找到最优解但计算成本随参数数量指数增长；RandomizedSearchCV则从分布中随机采样固定数量的参数组合，效率更高，尤其适合高维或连续参数空间，能以较小代价找到近似最优解，但可能错过全局最优。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-065",
+      "number": 65,
+      "question": "请简述在使用GridSearchCV时，为什么应该使用管道？ ?",
+      "answer": "使用Pipeline可以将数据预处理步骤（如标准化、特征选择）与模型估计器封装为一个整体，确保在交叉验证的每一折中，预处理操作仅基于当前训练集进行，从而避免数据泄露导致的过拟合问题；同时，Pipeline允许你在GridSearchCV中对预处理参数和模型参数进行联合调优，简化代码逻辑并提升调参效率。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-066",
+      "number": 66,
+      "question": "请简述解释GridSearchCV中的cv参数和scoring参数。 ?",
+      "answer": "cv参数用于指定交叉验证的折叠策略，可以是整数（如5表示5折交叉验证）、交叉验证生成器或可迭代对象，决定了数据如何划分成训练集和验证集，影响模型评估的稳定性；scoring参数用于定义模型性能的评价指标，可以是字符串（如'accuracy'、'f1'）或可调用函数，控制GridSearchCV在遍历超参数组合时如何比较模型优劣。两者共同决定了搜索过程中的评估方式和数据划分方式，合理设置能有效避免过拟合并提升调参效率。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-067",
+      "number": 67,
+      "question": "请简述如何从GridSearchCV对象中获取最佳参数、最佳估计器和交叉验证结果？ ?",
+      "answer": "从GridSearchCV对象中，可通过属性`best_params_`获取最佳参数组合，`best_estimator_`获取最佳估计器，`cv_results_`获取完整的交叉验证结果字典。例如，`grid_search.best_params_`返回字典，`grid_search.best_estimator_`返回训练好的模型实例，`grid_search.cv_results_`包含mean_test_score、std_test_score等键。这些属性在`fit`之后自动生成，无需额外计算。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-068",
+      "number": 68,
+      "question": "请简述什么是“验证曲线”？如何绘制它？ ?",
+      "answer": "验证曲线是一种可视化工具，用于分析模型超参数对训练得分和交叉验证得分的敏感度，以诊断欠拟合或过拟合。绘制时，使用sklearn.model_selection.validation_curve函数，传入估计器、数据、目标、超参数搜索范围和交叉验证策略，得到不同参数值下的训练与测试得分数组，最后以参数值为横轴、得分为纵轴绘制均值曲线并通常添加标准差带表示波动。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-069",
+      "number": 69,
+      "question": "请简述什么是“学习曲线”？它如何帮助诊断偏差和方差问题？ ?",
+      "answer": "学习曲线是模型在训练集和验证集上的性能（如误差或准确率）随训练样本数量变化的曲线。当两条曲线趋于平稳且相距较近但都偏高时，指示高偏差（欠拟合）；若训练误差低而验证误差高且两者差距显著，则指示高方差（过拟合）。通过观察曲线收敛趋势和差距，可判断是需增加数据量（缓解方差）、增强模型复杂度（缓解偏差）还是调整正则化强度。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-070",
+      "number": 70,
+      "question": "请简述如何处理多标签分类问题？（使用MultiOutputClassifier） ?",
+      "answer": "对于多标签分类问题，每个样本可以同时关联多个标签。使用MultiOutputClassifier时，首先选择一个基分类器（如逻辑回归或SVM），然后通过该包装器为每个标签独立训练一个二分类模型；训练时只需传入多标签格式的y（如二维数组），预测时每个基分类器分别输出各标签的二元结果。这种方法简单直观，但忽略了标签之间的相关性，适用于标签独立或弱相关场景。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-071",
+      "number": 71,
+      "question": "请简述什么是“类别不平衡”？如何处理它？（使用class_weight参数、过采样如SMOTE、欠采样） ?",
+      "answer": "类别不平衡指分类任务中各类别样本数量差异悬殊，导致模型偏向多数类。处理方法包括：使用class_weight参数在损失函数中为少数类赋予更高权重；过采样如SMOTE通过插值合成少数类样本以平衡分布；欠采样则随机移除多数类样本，但可能丢失重要信息。实际中常组合使用并评估对验证集的影响。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-072",
+      "number": 72,
+      "question": "请简述如何在Scikit-learn中设置模型的class_weight参数？ ?",
+      "answer": "在Scikit-learn中，设置class_weight参数可以直接传入一个字典，键为类别标签，值为对应的权重；或使用字符串'balanced'，让算法根据训练集各类别样本数量的倒数自动计算权重，以弥补类别不平衡。此外，部分模型如SVM和逻辑回归还支持通过sample_weight参数在fit时传入每个样本的个性化权重，实现更精细的调整。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-073",
+      "number": 73,
+      "question": "请简述如何将Scikit-learn模型部署到生产环境中？（使用pickle或joblib进行序列化） ?",
+      "answer": "使用pickle或joblib对训练好的Scikit-learn模型进行序列化，保存为.pkl或.joblib文件；在生产环境中加载该文件反序列化恢复模型对象，然后调用predict方法进行推理。为提升性能，可结合Flask/FastAPI搭建REST API，或嵌入到批处理管道中；注意版本兼容性（Python与scikit-learn版本一致）和安全性（避免加载不可信文件）。\n\n**示例代码：**\n\n```python\nimport pickle\n\n# 序列化：Python 对象 → 字节流\ndata = {\"name\": \"张三\", \"scores\": [85, 92, 78]}\nwith open(\"data.pkl\", \"wb\") as f:\n    pickle.dump(data, f)\n\n# 反序列化：字节流 → Python 对象\nwith open(\"data.pkl\", \"rb\") as f:\n    loaded = pickle.load(f)\nprint(loaded)  # {'name': '张三', 'scores': [85, 92, 78]}\n\n```",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-074",
+      "number": 74,
+      "question": "请简述pickle和joblib在保存Scikit-learn模型时有什么区别？为什么推荐joblib？ ?",
+      "answer": "pickle是Python标准序列化工具，而joblib专门针对包含大量NumPy数组的对象如Scikit-learn模型进行优化。joblib通过将大型数组存储为独立二进制文件并支持压缩，显著减少内存占用和磁盘I/O，相比pickle的单一文件模式效率更高。因此，Scikit-learn官方文档推荐优先使用joblib保存和加载模型。\n\n**示例代码：**\n\n```python\nimport pickle\n\n# 序列化：Python 对象 → 字节流\ndata = {\"name\": \"张三\", \"scores\": [85, 92, 78]}\nwith open(\"data.pkl\", \"wb\") as f:\n    pickle.dump(data, f)\n\n# 反序列化：字节流 → Python 对象\nwith open(\"data.pkl\", \"rb\") as f:\n    loaded = pickle.load(f)\nprint(loaded)  # {'name': '张三', 'scores': [85, 92, 78]}\n\n```",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-075",
+      "number": 75,
+      "question": "请简述如何将Numpy数组或Pandas DataFrame输入到Scikit-learn模型中？ ?",
+      "answer": "Scikit-learn模型接受的特征输入必须是数值型二维数组，因此Numpy数组可直接传入，而Pandas DataFrame需确保所有列均为数值类型，通常先处理缺失值与分类变量（如使用pd.get_dummies或LabelEncoder），再调用模型.fit(X, y)方法。核心步骤包括数据清洗、特征工程和类型转换，最终确保输入形状为(n_samples, n_features)且无NaN或无限值。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-076",
+      "number": 76,
+      "question": "请简述编写一个完整的机器学习流程代码，包括：加载数据、划分训练测试集、预处理、训练模型、评估。 ?",
+      "answer": "使用pandas加载数据并划分特征和标签，通过train_test_split按比例分割训练集和测试集，对特征进行标准化或归一化预处理避免量纲影响，选用合适模型（如随机森林或SVM）调用fit方法训练，最后用predict得出预测结果并通过accuracy_score或classification_report评估性能。注意预处理时需用fit_transform在训练集上拟合变换，再transform测试集以防止数据泄露。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-077",
+      "number": 77,
+      "question": "请简述如何使用Scikit-learn进行文本特征提取？（使用CountVectorizer和TfidfVectorizer） ?",
+      "answer": "使用CountVectorizer时，首先定义词汇表（通过fit），然后将每个文档转化为词频向量（transform），本质是统计每个词在文档中出现次数，生成稀疏矩阵。TfidfVectorizer同样先统计词频，再乘以逆文档频率（IDF = log(总文档数/包含该词的文档数+1)+1）来降低常用词的权重，提升关键词区分度。实际应用中，通常调用`fit_transform`一次性完成词表学习和向量化，并可通过设置`ngram_range`、`stop_words`、`max_features`等参数控制特征维度。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-078",
+      "number": 78,
+      "question": "请简述CountVectorizer和TfidfVectorizer有什么区别？ ?",
+      "answer": "两者的核心区别在于特征权重的计算方式：CountVectorizer仅基于词频（term frequency）进行计数，每个文档的向量是原始词频的整数向量，未考虑词语在语料中的分布；而TfidfVectorizer在词频基础上引入了逆文档频率（IDF）项，通过降低语料中高频词的权重来突出对特定文档更具区分度的词语。因此，TF-IDF能更好地抑制停用词等常见词的干扰，在文本分类、信息检索等任务中通常表现更优。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-079",
+      "number": 79,
+      "question": "请简述在CountVectorizer中，ngram_range参数有什么用？ ?",
+      "answer": "ngram_range参数用于指定要提取的n-gram的n值范围，例如(1,2)表示同时提取单个词和两个连续词组成的特征。该参数通过控制词序列的长度，帮助捕捉短语级别的局部上下文信息，从而提升文本分类或聚类任务的特征表达能力。合理设置ngram_range可以在保留单词独立性同时引入词组语义，但过大范围会导致特征空间急剧膨胀和稀疏性加剧。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-080",
+      "number": 80,
+      "question": "请简述什么是“流水线”？请编写一个包含StandardScaler和SVM的流水线示例。 ?",
+      "answer": "流水线( Pipeline )是Scikit-learn中将多个数据转换步骤与估计器按顺序组装成一个整体对象的工具，确保交叉验证时避免数据泄露并使代码更简洁。例如，将StandardScaler标准化特征后接SVM分类器，通过Pipeline([('scaler', StandardScaler()), ('svm', SVC())])即可创建；调用fit时会依次执行缩放和训练，预测时会自动应用相同的缩放变换，从而保证流程一致且可重复。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-081",
+      "number": 81,
+      "question": "请简述如何自定义一个转换器并与Scikit-learn的Pipeline兼容？（继承BaseEstimator和TransformerMixin） ?",
+      "answer": "要自定义与Scikit-learn Pipeline兼容的转换器，需继承BaseEstimator和TransformerMixin，并实现fit和transform方法：fit方法用于学习参数（如均值、缩放因子）并返回self，transform方法基于这些参数进行转换返回数组或DataFrame。若需在fit中学习目标变量（如特征选择），则应额外实现fit_transform并在fit中返回self；TransformerMixin会自动提供fit_transform。最后，确保在__init__中仅接受关键字参数且不进行验证，以符合Scikit-learn的构造函数约定。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-082",
+      "number": 82,
+      "question": "请简述在自定义转换器中，为什么需要实现fit和transform方法？ ?",
+      "answer": "在Scikit-learn中，自定义转换器需要实现fit和transform方法，是因为fit负责从训练数据中学习并存储参数（如均值、方差），而transform则利用这些参数对数据进行转换（如标准化、编码）。这种分治设计确保了转换器可集成到Pipeline中，支持仅在训练集上拟合后对测试集应用相同变换，从而避免数据泄露并保证流程的可复现性。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-083",
+      "number": 83,
+      "question": "请简述什么是“特征联合”？如何使用FeatureUnion？ ?",
+      "answer": "特征联合（FeatureUnion）是scikit-learn中用于并行执行多个特征提取或变换，并将结果按列拼接成单一特征矩阵的元估计器。使用时，通过向FeatureUnion传递一个包含(名称, 转换器)元组的列表来构造对象，然后调用fit_transform()同时拟合所有转换器并返回合并后的特征。它适用于需要从相同数据中提取多种类型特征（如文本和数值特征）的场景，但要求所有转换器输出的样本数量一致且通常为二维数组。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    },
+    {
+      "id": "Scikit-learn-084",
+      "number": 84,
+      "question": "请简述解释“校准曲线”的概念。如何使用CalibratedClassifierCV来校准分类器的概率输出？ ?",
+      "answer": "校准曲线（Calibration Curve）是评估分类器概率输出可靠性的工具，通过将预测概率分箱后计算每个箱中的正例实际频率，并与平均预测概率对比绘制曲线；理想模型曲线接近对角线。使用CalibratedClassifierCV时，先将其包裹在待校准的分类器外，通过交叉验证在保留集上拟合一个校准器（如Platt缩放或等温回归），将原始预测概率映射至更准确的概率估计，最终调用fit方法完成校准，调用predict_proba获取校准后概率。\n",
+      "category": "Scikit-learn",
+      "tags": []
+    }
+  ]
+}

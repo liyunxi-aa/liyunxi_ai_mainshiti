@@ -1,0 +1,381 @@
+{
+  "category": "OpenAI_API",
+  "questions": [
+    {
+      "id": "OpenAI_API-001",
+      "number": 1,
+      "question": "请简述Polars 解释 select() 和 w.. ?",
+      "answer": "select() 是 Polars 中的投影操作，用于选择或重命名列，返回一个新 DataFrame，不改变原数据。而 w.. 可能指的是 with_columns()，后者用于添加或替换列，保持行数不变，常用于派生新特征。核心区别：select() 聚焦列子集，with_columns() 聚焦列变换，两者均不修改原 DataFrame，支持惰性求值。若面试中遇到“w..”，通常需确认其具体含义，常见为 with_columns 的简写。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-002",
+      "number": 2,
+      "question": "请简述Chat Completions API 与传统的 Completions API 相比，主要优势是什么？ ?",
+      "answer": "Chat Completions API以结构化消息列表（role: system/user/assistant）替代传统单一文本prompt，支持多轮对话上下文管理，显著提升指令遵循能力和对话连贯性。它原生集成函数调用（Function Calling）和结构化输出，便于开发者构建工具增强型应用，同时通过更优的token预算控制和角色分离机制，减少了prompt工程复杂性。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-003",
+      "number": 3,
+      "question": "请简述解释 gpt-4, gpt-4-turbo-preview, gpt-3.5-turbo 这些模型标识符的区别和适用场景？ ?",
+      "answer": "gpt-4是OpenAI最强大的多模态模型，支持文本和图像输入，擅长复杂推理和创意任务，但价格高、响应慢；gpt-4-turbo-preview是gpt-4的优化版本（如gpt-4-1106-preview），知识更新至2023年4月，成本更低且支持更长的上下文（128K tokens），适合对话和生成任务；gpt-3.5-turbo是轻量模型，速度快、成本极低，适用于简单对话、分类和实时交互场景。选择时需权衡性能、成本和响应速度。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-004",
+      "number": 4,
+      "question": "请简述除了聊天和补全，OpenAI API 还提供哪些其他能力？（如嵌入、图像生成、语音转文本、微调） ?",
+      "answer": "OpenAI API 还提供嵌入（Embeddings）用于文本语义向量化，支持搜索与分类；图像生成（DALL·E）通过文本描述生成或编辑图片；语音转文本（Whisper）实现音频到文字的转录；以及微调（Fine-tuning）允许用户在自定义数据集上调整基础模型，优化特定任务表现。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-005",
+      "number": 5,
+      "question": "请简述OpenAI API 中如何查询可用的模型列表？ ?",
+      "answer": "通过调用OpenAI API的GET请求到https://api.openai.com/v1/models端点，并附带有效的API密钥进行身份验证，即可返回一个包含所有可用模型ID和元数据的列表。具体使用时，通常借助官方Python库的openai.Model.list()方法，该方法封装了底层HTTP请求并自动处理分页和错误。返回的data数组中每个元素代表一个模型，可通过其id字段选取目标模型用于后续的对话或生成任务。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-006",
+      "number": 6,
+      "question": "请简述OpenAI API 的输入和输出计费单位是什么？ ?",
+      "answer": "OpenAI API以token为计费单位，token是模型处理文本的原子单元，大约等于0.75个英文单词或1个中文字符。输入（prompt）和输出（completion）分别按各自的token数量独立计费，不同模型（如GPT-4、GPT-3.5）的每千token费率不同，且上下文中的系统消息也计入输入token。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-007",
+      "number": 7,
+      "question": "请简述OpenAI API 的描述一个完整的 Chat Completions API 请求的 JSON 结构？ ?",
+      "answer": "一个完整的Chat Completions API请求JSON包含顶层字段model（如\"gpt-4\"）和messages数组，每个message对象至少包含role（\"system\"/\"user\"/\"assistant\"）和content（文本内容）。可选字段包括temperature、max_tokens、top_p、frequency_penalty、presence_penalty等控制生成行为的参数。此外，还可选stream布尔值、stop序列、logit_bias等进阶配置。结构必须符合API规范，否则返回错误。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-008",
+      "number": 8,
+      "question": "请简述messages 参数中，system、user 和 assistant 角色的作用分别是什么？ ?",
+      "answer": "在OpenAI API的messages参数中，system角色用于设定对话的全局行为或背景指令，例如指定助手的人格或约束回答风格；user角色模拟人类提问或提供输入，是对话的驱动者；assistant角色代表模型的历史回复，用于维持上下文连续性和多轮对话的连贯性。三者共同构建对话结构，其中system提供初始引导，user和assistant的交替序列定义交互流程。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-009",
+      "number": 9,
+      "question": "请简述OpenAI API 中如何构建一个多轮对话的 messages 数组？ ?",
+      "answer": "构建多轮对话的messages数组时，需按对话顺序依次添加每条消息，每条消息包含role（如system、user或assistant）和content字段；初始可包含system消息设定上下文，后续交替插入user输入和assistant回复，最新一轮对话末尾添加当前用户query即可实现历史语境连贯。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-010",
+      "number": 10,
+      "question": "请简述OpenAI API 中解释 temperature 和 top_p 参数的作用以及它们之间的区别？ 如何用它们来控制输出的随机性与确定性？ ?",
+      "answer": "temperature参数通过缩放logits后的softmax概率分布来调节随机性：值越高（如>1）分布越平滑，低概率词被选中概率增大，输出更随机；值越低（如接近0）分布越尖锐，近似于贪心解码，输出更确定。top_p参数采用核采样，只保留累积概率达到阈值p（如0.9）的top tokens，并重新归一化，p越小保留的词越少，输出越确定；两者本质区别在于temperature控制分布平滑度，top_p控制候选词集合大小，通常建议只调整其中一个，避免相互干扰。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-011",
+      "number": 11,
+      "question": "请简述OpenAI API 中max_tokens 参数的作用是什么？ 设置不当可能导致什么问题？（输出被截断） ?",
+      "answer": "max_tokens 参数用于限制模型生成的最大 token 数（含输入，具体取决于接口实现），确保输出长度可控。若设置过小，输出会在 token 耗尽时被强制截断，导致答案不完整或逻辑断裂；设置过大则浪费计算资源、增加延迟，并可能因超出上下文窗口上限而报错。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-012",
+      "number": 12,
+      "question": "请简述OpenAI API 中stream 参数有什么用？描述实现流式响应的大致流程？ ?",
+      "answer": "stream参数设为true时，API使用Server-Sent Events（SSE）协议将模型输出以token为单位逐步推送，而非一次性返回完整结果。实现流程：客户端在请求中设置stream=true，服务端逐token生成内容并通过事件流推送，客户端监听message事件实时接收每个data块并解析，直至收到[DONE]标识终止流。这种方式可显著降低首token延迟，提升交互体验，尤其适合长文本生成场景。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-013",
+      "number": 13,
+      "question": "请简述OpenAI API 中stop 参数的作用是什么？ ?",
+      "answer": "stop参数是OpenAI API中用于定义模型输出终止条件的字符串序列。当模型生成的文本包含任意一个指定的stop字符串时，生成过程会立即停止，并且该stop字符串本身不会被包含在输出中。这一机制常用于精确控制生成内容的边界，例如在对话中防止模型“自言自话”超出预期范围，或在结构化生成中确保输出格式的完整性。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-014",
+      "number": 14,
+      "question": "请简述OpenAI API 中presence_penalty 和 frequency_penalty 分别控制输出的哪些方面？ ?",
+      "answer": "presence_penalty 根据 token 是否已在已有文本中出现过进行惩罚，鼓励模型引入新话题或新词汇，值越大越倾向于避免重复任何已出现的 token。frequency_penalty 则基于 token 在已有文本中的出现频率进行惩罚，高频 token 被更严重地抑制，从而减少常见词汇或短语的重复。两者均通过向 logits 添加惩罚项调整生成概率，但前者关注是否存在，后者关注频率分布。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-015",
+      "number": 15,
+      "question": "请简述OpenAI API 如何通过 seed 参数来尽可能使输出具有确定性？ ?",
+      "answer": "OpenAI API的seed参数通过显式设置随机数生成器的初始状态，使模型在固定seed、相同温度等采样参数下重复生成相同的补全结果。其核心原理是：在采样过程中，模型对logits进行softmax后，基于seed确定的伪随机序列选择token，从而消除每次请求的随机偏差。实际使用时需注意，只有特定模型（如gpt-3.5-turbo-1106及以上）支持该功能，且仅在temperature=0或非常低时确定性最可靠。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-016",
+      "number": 16,
+      "question": "请简述response_format 参数有什么用？ 如何强制模型输出 JSON 对象？ ?",
+      "answer": "_format参数用于指定模型输出的格式，例如设置为{\"type\": \"json_object\"}可强制模型返回合法JSON对象。要强制输出JSON，只需在API请求中显式设置该参数，并在系统提示中明确要求模型以JSON格式响应，同时确保输入没有歧义。此参数在gpt-4-1106-preview及更高模型上可用，能有效减少后处理错误。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-017",
+      "number": 17,
+      "question": "请简述OpenAI API 中如何获取和使用 OpenAI API Key？ ?",
+      "answer": "访问 OpenAI 官网注册并登录账户，进入 API keys 页面点击“Create new secret key”生成密钥；使用时将密钥通过环境变量或配置文件加载（切勿硬编码），在每次 HTTP 请求的 Authorization 头中以 Bearer 令牌形式传递，即可调用所有 OpenAI API 接口。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-018",
+      "number": 18,
+      "question": "请简述OpenAI API 中在代码中管理 API Key 的最佳实践是什么？（环境变量，而非硬编码） ?",
+      "answer": "最佳实践是将API Key存储在环境变量中，而非直接硬编码在代码里，这样可以避免密钥泄露风险，并提升代码的可移植性与安全性。具体做法是在系统或项目配置文件中设置环境变量，如OPENAI_API_KEY，然后在代码中通过os.getenv('OPENAI_API_KEY')或类似方式读取，确保密钥不被提交到版本控制系统中。此外，建议使用.env文件配合python-dotenv等库在开发环境管理变量，生产环境则通过云服务的安全凭据服务注入密钥。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-019",
+      "number": 19,
+      "question": "请简述OpenAI API 使用了哪种认证方式？（Bearer Token） ?",
+      "answer": "OpenAI API采用Bearer Token认证方式，即客户端在HTTP请求的Authorization头部以Bearer Scheme传递一个静态API密钥作为凭据。该密钥由OpenAI生成并分配给用户，服务器通过校验令牌的合法性与权限来决定是否响应请求。这种方式实现简单、无状态，适合后端服务调用，但需注意密钥的保密存储与定期轮换。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-020",
+      "number": 20,
+      "question": "请简述OpenAI API 中列出几种常见的 API 响应状态码及其含义（如 200, 400, 401, 429, 500）？ ?",
+      "answer": "200表示请求成功，返回预期数据；400是Bad Request，请求格式错误或参数无效；401是Unauthorized，API密钥缺失或无效；429是Rate Limit Exceeded，触发了速率限制；500是Internal Server Error，OpenAI服务器内部故障。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-021",
+      "number": 21,
+      "question": "请简述OpenAI API 中什么是速率限制？ 你如何处理 429 错误？（实现指数退避重试机制） ?",
+      "answer": "速率限制是OpenAI API对用户或组织在特定时间窗口内发送请求次数的限制，旨在保障系统稳定性和公平性。处理429错误通常采用指数退避重试机制：捕获HTTP 429状态码后，等待一个初始延迟（如1秒），然后每次重试将等待时间翻倍，并加入随机抖动以避免惊群效应，直到重试次数上限。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-022",
+      "number": 22,
+      "question": "请简述OpenAI API 中如何优雅地处理 API 调用可能出现的网络超时或服务器错误（5xx）？ ?",
+      "answer": "核心是结合指数退避与随机抖动实现重试机制，并设置合理超时和断路器模式防止雪崩。使用tenacity或backoff库，仅对5xx及网络超时等可重试错误重试，同时保证请求幂等性以避免副作用。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-023",
+      "number": 23,
+      "question": "请简述OpenAI API 中什么是“函数调用”？ 它如何帮助构建能够执行外部动作的 AI 应用？ ?",
+      "answer": "函数调用是OpenAI API中一种机制，允许模型以结构化JSON格式输出调用预定义函数的请求，而非直接生成自然语言。它通过让模型生成函数名称和参数，使开发者能够安全地执行外部代码（如查询数据库、调用API），并将结果反馈给模型继续推理。这构建了AI应用与外部系统交互的桥梁，实现如实时数据检索、自动化操作等复杂功能。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-024",
+      "number": 24,
+      "question": "请简述OpenAI API 中描述在 API 请求中定义“工具”并在响应中处理“工具调用”的流程？ ?",
+      "answer": "在API请求中，通过tools参数定义工具，每个工具需指定type（如function）、function对象的name、description及parameters（JSON Schema格式）。模型根据对话上下文自主决定是否调用工具，并在响应中返回tool_calls字段，其中包含函数名和参数。开发者需解析该字段，执行对应函数，并将结果以role: \"tool\"的消息追加到消息列表，再次请求模型以继续对话。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-025",
+      "number": 25,
+      "question": "请简述OpenAI API 中如何利用 logprobs 参数来获取模型输出的置信度？ ?",
+      "answer": "在调用OpenAI API时设置logprobs参数为true，模型会返回每个输出token的对数概率，其指数化后的值即为该token的原始概率，可直接衡量模型对该token的置信度。通过分析整个输出序列中每个token的logprob值之和或平均，可以量化整体生成结果的置信水平，常用于评估输出可靠性或进行beam search等后处理。注意logprobs仅反映模型内部的自回归概率，并非校准后的置信度。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-026",
+      "number": 26,
+      "question": "请简述OpenAI API 中什么是“提示注入”？有哪些方法可以防范？ ?",
+      "answer": "提示注入是指攻击者通过精心构造的用户输入，绕过或覆盖系统预设的提示（system prompt），使模型执行非预期的操作。防范方法包括：严格分隔系统提示与用户输入（如使用特殊分隔符）、对用户输入进行正则或语义过滤、对模型输出进行后处理校验，以及采用更细粒度的权限控制，例如通过函数调用而非自然语言指令执行敏感操作。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-027",
+      "number": 27,
+      "question": "请简述OpenAI API 中如何使用 user 参数来辅助进行滥用监控？ ?",
+      "answer": "在OpenAI API调用中，通过将每个最终用户的唯一标识符（例如用户ID或会话ID）作为user参数传入，可以将不同请求关联到同一用户。这样OpenAI的监控系统能够基于用户维度分析调用频率、内容模式等行为，识别批量请求、违规内容或异常流量，从而更精准地执行滥用检测与速率限制。建议为每个终端用户生成稳定的匿名标识符，避免使用可识别个人身份的信息。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-028",
+      "number": 28,
+      "question": "请简述描述OpenAI API 中使用 Embeddings API 的典型场景？ ?",
+      "answer": "Embeddings API的核心应用是将非结构化文本映射为稠密向量，典型场景包括语义搜索（基于余弦相似度进行意图匹配）、文本聚类与分类（利用向量空间分布实现无监督分组或下游任务训练）、以及推荐系统（通过用户或内容嵌入的邻近性发现潜在关联）。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-029",
+      "number": 29,
+      "question": "请简述OpenAI API 如何选择适合的嵌入模型？（如 text-embedding-3-small vs text-embedding-3-large） ?",
+      "answer": "选择嵌入模型需权衡成本、速度与精度。text-embedding-3-large维度高达3072，在语义相似度、聚类等任务上表现更优，但延迟和存储成本更高；text-embedding-3-small维度1536，适合对性能要求不苛刻、强调响应速度和低成本的场景。核心决策依据是：如果任务需要高精度或处理细粒度语义区分，优先选large；否则选small并用维度参数调整至所需平衡。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-030",
+      "number": 30,
+      "question": "请简述OpenAI API 中描述使用 DALL·E API（图像生成）的基本请求参数？（prompt, model, n, size, quality） ?",
+      "answer": "DALL·E API的请求参数包括：prompt是描述生成图像的文本提示；model指定使用的模型版本；n控制单次生成的图像数量；size定义输出图像分辨率（如1024x1024）；quality调节生成质量与速度的权衡，如\"standard\"或\"hd\"。合理组合这些参数可平衡图像细节、数量和响应开销。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-031",
+      "number": 31,
+      "question": "请简述OpenAI API 中Whisper API 的主要功能是什么？ 支持哪些任务？ ?",
+      "answer": "Whisper API 是 OpenAI 提供的语音转文本服务，基于 Whisper 模型实现高精度多语种音频转录和翻译。主要功能包括将音频文件转换为文字（语音识别）以及将非英语音频翻译为英语文本。支持的任务有转录（transcriptions）和翻译（translations），前者保留源语言，后者输出英语。API 可处理多种音频格式，支持语言识别和可选的时间戳分段输出。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-032",
+      "number": 32,
+      "question": "请简述OpenAI API 中TTS API 的主要功能是什么？ 支持哪些语音和模型？ ?",
+      "answer": "OpenAI TTS API 将文本转换为自然流畅的语音音频，支持实时流式输出。目前提供6种预设人声（alloy、echo、fable、onyx、nova、shimmer），以及两个模型：tts-1（标准质量，低延迟）和tts-1-hd（高清晰度，适用于对音质要求更高的场景）。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-033",
+      "number": 33,
+      "question": "请简述OpenAI API 中描述微调一个模型的大致步骤？ ?",
+      "answer": "微调OpenAI模型的核心步骤包括：准备符合JSONL格式的训练数据（每行一个prompt-completion对），通过OpenAI CLI或API上传文件并创建微调作业（fine-tuning job），指定基础模型（如gpt-3.5-turbo）和超参数（如n_epochs），等待训练完成后通过API调用部署的微调模型。关键点在于数据质量直接影响微调效果，且需注意OpenAI对数据隐私和配额的限制。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-034",
+      "number": 34,
+      "question": "请简述OpenAI API 如何计算一次 Chat Completions API 调用的成本？ ?",
+      "answer": "OpenAI API 的 Chat Completions 调用成本基于输入和输出 tokens 的总数，分别按模型定价表中的每千 token 费率计费。输入 tokens 包括系统消息、用户消息和对话历史，输出 tokens 为模型生成的回复。部分模型支持提示缓存，命中缓存的部分享有折扣。此外，特殊功能如函数调用、结构化输出或图像输入会按特定规则转换为 token 后计算。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-035",
+      "number": 35,
+      "question": "请简述OpenAI API 中有哪些策略可以减少 API 调用的成本？ ?",
+      "answer": "主要通过以下几种方式降低成本：使用更便宜的模型（如GPT-3.5-turbo代替GPT-4），利用缓存或批处理减少冗余请求，以及通过缩短prompt和限制max_tokens来减少每次调用的token消耗。此外，采用流式响应（streaming）可在长回复中提前终止，避免支付未使用token的费用。合理设计应用逻辑，例如用函数调用（function calling）一次获取结构化信息而非多轮对话，也能显著降低总成本。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-036",
+      "number": 36,
+      "question": "请简述OpenAI API 中缓存频繁请求的响应？ ?",
+      "answer": "在OpenAI API场景中，缓存频繁请求的响应是指将相同输入（如相同的prompt和参数）返回的API结果临时存储，以避免重复调用消耗Token和延迟。常见实现是使用键值存储（如Redis或内存字典），以请求参数的哈希作为键，并设置合理的TTL（如几秒到几分钟）确保数据新鲜度。需要注意缓存键必须包含影响输出的所有参数（model、temperature、messages等），且对于非幂等请求（如流式或带seed的）不应缓存。合理的缓存策略能显著降低API调用成本并提高响应速度，但需平衡实时性与正确性。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-037",
+      "number": 37,
+      "question": "请简述OpenAI API 中优化提示，减少不必要的令牌使用？ ?",
+      "answer": "优化提示的核心是精炼指令并结构化内容，例如使用清晰的系统消息、限制输出格式（如JSON）、提供示例以减少试错，同时避免冗余描述和重复上下文。利用max_tokens参数严格约束输出长度，并通过多轮对话截断历史记录来降低输入开销。此外，采用更小的模型（如gpt-3.5-turbo）和启用response_format参数可进一步减少无效令牌。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-038",
+      "number": 38,
+      "question": "请简述OpenAI API 中为任务选择合适的模型（例如，用 gpt-3.5-turbo 处理简单任务）？ ?",
+      "answer": "为任务选择合适的模型需基于任务复杂度、响应速度和成本权衡。例如，简单任务（如基本问答、分类、翻译）应优先使用gpt-3.5-turbo，因其推理速度快、价格低廉，而复杂任务（如多步推理、代码生成、创意写作）则需gpt-4或gpt-4-turbo以获得更高准确性和上下文理解能力。选择时还需考虑输入长度、指令遵循要求及延迟容忍度，避免对低复杂度任务过度分配昂贵模型。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-039",
+      "number": 39,
+      "question": "请简述OpenAI API 如何估算一个字符串的令牌数量？（使用 tiktoken 库） ?",
+      "answer": "使用tiktoken库估算令牌数量时，核心步骤是加载对应的编码器（如cl100k_base用于GPT-4），调用encode方法将字符串转换为令牌ID列表，再通过len函数获取长度。该库基于Byte-Pair Encoding压缩算法，能将文本切分为子词单元，从而准确反映模型的实际分词结果。估算结果可用于控制API调用的输入长度和成本。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-040",
+      "number": 40,
+      "question": "请简述OpenAI API 中在处理长文档时，有哪些策略可以克服模型的上下文窗口限制？（如 MapReduce 摘要、滑动窗口） ?",
+      "answer": "针对OpenAI API的上下文窗口限制，常用策略包括MapReduce摘要（将文档切块分别摘要后合并再二次摘要）和滑动窗口（以重叠块依次提取关键信息或执行问答），此外还有递归拆分与分层聚合、使用Embedding进行语义检索并只输入相关片段等方法。这些策略均通过将长文本分解为可处理的子单元，再组合或筛选结果，来在受限窗口内最大化信息利用率。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-041",
+      "number": 41,
+      "question": "请简述OpenAI API 描述一个你使用 OpenAI API 构建过的应用或功能？ ?",
+      "answer": "使用 OpenAI API 构建了一个智能客服知识库问答系统，利用 Embeddings API 将企业文档向量化并存入向量数据库，用户提问时通过调用 Chat Completion API 结合检索到的上下文生成精准回答，显著降低人工客服成本并提升响应速度。该系统还通过 Function Calling 接口实现了工单自动流转与数据查询，整体延迟控制在2秒以内。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-042",
+      "number": 42,
+      "question": "请简述OpenAI API 如何设计一个支持多租户的 AI 应用，并管理他们的 API 使用和配额？ ?",
+      "answer": "设计多租户AI应用时，前端为每个租户分配唯一API Key，后端采用中间件拦截请求，提取租户标识并调用OpenAI API，同时结合Redis等缓存记录各租户的token消耗与请求频率，通过轮询或异步任务同步至数据库实现配额校验与限流；还可利用Azure OpenAI的部署级配额或自定义代理层，按租户设置独立速率限制和预算阈值，超出后返回429状态码或触发告警。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-043",
+      "number": 43,
+      "question": "请简述OpenAI API 中在构建一个生产级应用时，你会如何监控 API 的调用延迟、成功率和成本？ ?",
+      "answer": "在生产级应用中，我通常通过拦截每个API请求的响应时间、HTTP状态码和token使用量，并将这些指标与请求元数据一起推送到可观测性平台（如Datadog或Prometheus）来实时监控延迟和成功率；成本监控则通过汇总令牌消耗并依据OpenAI的定价模型计算，同时设置日/月预算上限，配合降级或缓存策略来预警和控制支出。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-044",
+      "number": 44,
+      "question": "请简述OpenAI API 如何实现一个带有流式响应的聊天界面？（前端与后端的配合） ?",
+      "answer": "后端通过SSE（Server-Sent Events）或StreamingResponse逐块返回OpenAI API的chunk数据，设置stream=True；前端使用EventSource或fetch的ReadableStream逐块解析并增量更新对话气泡，同时维护一个累积的响应文本变量避免重复渲染。关键点在于后端需在处理每个chunk时即时刷新http响应，前端则利用async/await循环读取流，并配合虚拟滚动优化长文本性能。\n\n**示例代码：**\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI()\n\nresponse = client.chat.completions.create(\n    model=\"gpt-4\",\n    messages=[\n        {\"role\": \"system\",\n         \"content\": \"你是一个有帮助的助手。\"},\n        {\"role\": \"user\",\n         \"content\": \"什么是大语言模型？\"}\n    ],\n    temperature=0.7,\n    max_tokens=500\n)\n\nprint(response.choices[0].message.content)\n\n\n\n```\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-045",
+      "number": 45,
+      "question": "请简述如何将 OpenAI API 与其他数据源或 API（如数据库、搜索引擎）结合，构建一个 RAG 系统？ ?",
+      "answer": "RAG系统的核心是将外部非结构化数据与LLM推理能力结合。流程包括：首先对文档分块并通过OpenAI Embeddings API转化为向量存入向量数据库（如Pinecone）；用户查询时同样向量化后在数据库进行相似性搜索；将检索到的Top-K片段作为上下文与用户问题拼接，调用Chat Completions API生成答案。此架构通过检索增强缓解了知识时效性和幻觉问题，但需注意索引更新频率与成本控制。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-046",
+      "number": 46,
+      "question": "请简述OpenAI API 在开发过程中，你如何测试和评估不同提示词或模型版本的效果？ ?",
+      "answer": "我通常采用离线评估与在线A/B测试相结合的方式。离线阶段构建多样化验证集，计算精确率、召回率、BLEU等指标，并辅以人工评分（如正确性、安全性、格式遵循度）。上线后通过用户反馈、任务完成率、延迟等指标进行对比，并利用参数调优工具（如OpenAI的Playground、Weights & Biases）快速迭代。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    },
+    {
+      "id": "OpenAI_API-047",
+      "number": 47,
+      "question": "请简述OpenAI API 在提示工程方面，有哪些被广泛认可的最佳实践？ ?",
+      "answer": "广泛认可的最佳实践包括：明确设定角色与目标，为模型提供具体身份和任务描述；使用清晰分隔符区分指令与输入内容；提供少样本示例（few-shot）引导输出格式与推理模式；对复杂问题采用链式思考（Chain-of-Thought）提示分解步骤；迭代测试不同措辞、温度、top_p参数以优化一致性与创造性。这些方法可显著提升生成质量与任务对齐度。\n",
+      "category": "OpenAI_API",
+      "tags": []
+    }
+  ]
+}

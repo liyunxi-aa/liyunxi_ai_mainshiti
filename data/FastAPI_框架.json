@@ -1,0 +1,805 @@
+{
+  "category": "FastAPI 框架",
+  "questions": [
+    {
+      "number": 1,
+      "id": "FastAPI 框架-001",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 的三大核心特性：(1) 高性能——基于 Starlette 和 Pydantic，性能媲美 NodeJS 和 Go，在 Python Web 框架中是最快的之一，异步支持使其能处理高并发；(2) 快速编码——利用 Python 类型提示自动生成参数验证、序列化和 API 文档，开发效率提升 200%-300%；(3) 更少错误——Pydantic 的类型安全和自动验证在开发阶段就捕获大部分参数错误，编辑器自动补全和类型检查进一步减少 bug。",
+      "tags": [],
+      "question": "请简述解释 FastAPI 的三大核心特性：高性能、快速编码和更少错误？"
+    },
+    {
+      "number": 2,
+      "id": "FastAPI 框架-002",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 建立在两个核心库之上：(1) Starlette——轻量级 ASGI 框架/工具包，提供 Web 路由、中间件、WebSocket 支持、后台任务等底层 Web 功能；(2) Pydantic——数据验证和设置管理库，利用 Python 类型提示进行数据解析、序列化和验证，自动生成 JSON Schema。FastAPI 在这两者之上添加了依赖注入、自动 API 文档生成、安全工具和一系列最佳实践，形成完整的 Web 框架。",
+      "tags": [],
+      "question": "请简述FastAPI 建立在哪些其他库之上？（Pydantic 和 Starlette）"
+    },
+    {
+      "number": 3,
+      "id": "FastAPI 框架-003",
+      "category": "FastAPI 框架",
+      "answer": "ASGI（Asynchronous Server Gateway Interface）是 WSGI 的异步继任者。FastAPI 基于 ASGI 而非 WSGI 的原因：(1) 原生异步支持——ASGI 支持 async/await，能处理 WebSocket、SSE（Server-Sent Events）、长轮询等长连接协议，而 WSGI 是同步的一请求一响应模型；(2) 更高的并发——ASGI 服务器（如 Uvicorn）使用事件循环处理数千个并发连接，远优于 WSGI 的线程/进程模型；(3) 协议无关——ASGI 设计为可扩展到 HTTP 以外的协议（如 WebSocket、HTTP/2）。",
+      "tags": [],
+      "question": "请简述什么是 ASGI？为什么 FastAPI 基于 ASGI 而不是 WSGI？"
+    },
+    {
+      "number": 4,
+      "id": "FastAPI 框架-004",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 和 Flask 的主要区别：(1) 异步支持——FastAPI 原生支持 async/await，Flask 默认同步（需额外扩展如 Quart）；(2) 自动文档——FastAPI 自动生成 OpenAPI/Swagger 文档，Flask 需手动集成 flasgger 等扩展；(3) 数据验证——FastAPI 通过 Pydantic + 类型提示内置数据验证，Flask 需手动使用 marshmallow 或 WTForms；(4) 性能——FastAPI 基于 ASGI，性能碾压基于 WSGI 的 Flask；(5) 依赖注入——FastAPI 有内置的 Depends() 依赖注入系统，Flask 没有；(6) 生态——Flask 有庞大的插件生态和社区积累，FastAPI 相对年轻但增长迅猛。",
+      "tags": [],
+      "question": "请简述比较 FastAPI 和 Flask 的主要区别？"
+    },
+    {
+      "number": 5,
+      "id": "FastAPI 框架-005",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 和 Django/DRF 的主要区别：(1) 架构——Django 是全能型框架（ORM、模板、管理后台、认证等全套），FastAPI 是微框架（专注 API，数据库等由开发者自选）；(2) 异步——FastAPI 原生异步，Django 4.0+ 才开始支持异步视图（仍在过渡中）；(3) 开发速度——FastAPI 用类型提示 + Pydantic 自动生成验证和文档，DRF 需要定义 Serializer 并手动配置路由和文档；(4) 性能——FastAPI 比 Django 快 2-3 倍（特别是高并发场景）；(5) 学习曲线——Django 的完整生态意味着更多概念需要学习，FastAPI 更轻量直接；(6) 适用场景——Django 适合全栈 Web 应用和 CMS，FastAPI 适合高性能 API 和微服务。",
+      "tags": [],
+      "question": "请简述比较 FastAPI 和 Django（特别是 DRF）的主要区别？"
+    },
+    {
+      "number": 6,
+      "id": "FastAPI 框架-006",
+      "category": "FastAPI 框架",
+      "answer": "安装 FastAPI 和 Uvicorn：pip install fastapi uvicorn。fastapi 自动安装 pydantic 和 starlette 等核心依赖。uvicorn 是推荐的 ASGI 服务器。可选安装：(1) pip install 'uvicorn[standard]'——包含 uvloop 和 httptools 以获得最佳性能；(2) pip install python-multipart——处理表单数据和文件上传；(3) pip install jinja2——使用模板引擎；(4) pip install sqlalchemy——数据库集成。生产环境推荐同时安装 gunicorn：pip install gunicorn。",
+      "tags": [],
+      "question": "请简述如何安装 FastAPI 和 Uvicorn？"
+    },
+    {
+      "number": 7,
+      "id": "FastAPI 框架-007",
+      "category": "FastAPI 框架",
+      "answer": "最简单的 Hello World FastAPI 应用：\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get('/')\nasync def root():\n    return {'message': 'Hello World'}\n```\n保存为 main.py，运行：uvicorn main:app --reload。访问 http://127.0.0.1:8000/ 返回 JSON 响应，访问 http://127.0.0.1:8000/docs 自动生成 Swagger 文档。",
+      "tags": [],
+      "question": "请简述写出一个最简单的 \"Hello World\" FastAPI 应用？"
+    },
+    {
+      "number": 8,
+      "id": "FastAPI 框架-008",
+      "category": "FastAPI 框架",
+      "answer": "Uvicorn 是一个超快的 ASGI 服务器实现，基于 uvloop 和 httptools。在开发中：(1) 提供热重载（--reload）方便快速迭代；(2) 友好的终端日志输出（请求方法、路径、状态码、耗时）；(3) 默认端口 8000。在生产中：(1) 作为 ASGI 应用服务器直接运行（适合小规模部署）；(2) 通常配合 Gunicorn（作为进程管理器）使用——Gunicorn 管理多个 Uvicorn worker 进程，实现多核利用和优雅重启；(3) 与 Nginx 反向代理配合，处理静态文件和 SSL 终止。Uvicorn 对 FastAPI 就像 Tomcat 对 Java Servlet，是运行时容器。",
+      "tags": [],
+      "question": "请简述什么是 Uvicorn？它在开发和生产中扮演什么角色？"
+    },
+    {
+      "number": 9,
+      "id": "FastAPI 框架-009",
+      "category": "FastAPI 框架",
+      "answer": "启动 FastAPI 开发服务器的常用命令：(1) 基本启动：uvicorn main:app --reload（main 是 main.py 模块名，app 是 FastAPI 实例变量名，--reload 启用热重载）；(2) 指定 host 和 port：uvicorn main:app --host 0.0.0.0 --port 8080；(3) 设置日志级别：uvicorn main:app --log-level debug；(4) 多 worker（仅生产环境，不兼容 --reload）：uvicorn main:app --workers 4；(5) 从 Python 代码启动：if __name__ == '__main__': uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True)。",
+      "tags": [],
+      "question": "请简述如何启动 FastAPI 开发服务器？（使用 uvicorn 命令）"
+    },
+    {
+      "number": 10,
+      "id": "FastAPI 框架-010",
+      "category": "FastAPI 框架",
+      "answer": "路径操作装饰器（Path Operation Decorator）是 FastAPI 中用于声明 HTTP 方法和 URL 路径的装饰器，如 @app.get('/items/')。装饰器名称对应 HTTP 方法：@app.get()、@app.post()、@app.put()、@app.delete()、@app.patch()、@app.options()、@app.head()、@app.trace()。路径参数（'/items/{item_id}'）自动从 URL 中提取。装饰器还接受额外参数：response_model（响应模型）、status_code（响应状态码）、tags（API 文档分组标签）、summary/description（文档描述）等。FastAPI 根据装饰器自动生成 OpenAPI schema。",
+      "tags": [],
+      "question": "请简述FastAPI 什么是“路径操作装饰器”？（如 @app.get(\"/\")）"
+    },
+    {
+      "number": 11,
+      "id": "FastAPI 框架-011",
+      "category": "FastAPI 框架",
+      "answer": "路径操作函数（Path Operation Function）是被路径操作装饰器装饰的 Python 函数，定义了处理该路径请求的业务逻辑。例如：@app.get('/items/{item_id}') async def read_item(item_id: int): return {'item_id': item_id}。该函数：(1) 参数通过类型提示自动验证（item_id: int 确保传入的是整数）；(2) 可声明请求体、查询参数、Header、Cookie 等；(3) 返回值自动序列化为 JSON（或按 response_model 处理）；(4) 支持 async/await（异步函数）或普通 def（同步函数，FastAPI 在线程池中执行）。",
+      "tags": [],
+      "question": "请简述FastAPI 什么是“路径操作函数”？"
+    },
+    {
+      "number": 12,
+      "id": "FastAPI 框架-012",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 中定义不同 HTTP 方法的路由通过装饰器实现：\n```python\n@app.get('/items/')      # GET：读取资源\ndef read_items(): ...\n\n@app.post('/items/')     # POST：创建资源\ndef create_item(item: Item): ...\n\n@app.put('/items/{id}')  # PUT：完整更新资源\ndef update_item(id: int, item: Item): ...\n\n@app.delete('/items/{id}')  # DELETE：删除资源\ndef delete_item(id: int): ...\n\n@app.patch('/items/{id}')   # PATCH：部分更新资源\ndef patch_item(id: int, item: ItemUpdate): ...\n```\n每个装饰器绑定一个 HTTP 方法到 Python 函数，FastAPI 自动处理路由匹配和参数解析。",
+      "tags": [],
+      "question": "请简述FastAPI 如何定义不同的 HTTP 方法（GET, POST, PUT, DELETE）的路由？"
+    },
+    {
+      "number": 13,
+      "id": "FastAPI 框架-013",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 中访问路径参数：在路径字符串中使用花括号 {} 声明参数，在函数签名中用同名参数接收。\n```python\n@app.get('/users/{user_id}/items/{item_id}')\nasync def get_item(user_id: int, item_id: str):\n    return {'user_id': user_id, 'item_id': item_id}\n```\n关键特性：(1) 类型提示自动转换——user_id: int 自动将 URL 中的字符串转为整数；(2) 顺序无关——匹配基于参数名而非位置；(3) 枚举路径参数——from enum import Enum; class ModelName(str, Enum): ...，FastAPI 在文档中显示可选值下拉列表；(4) 包含路径的路径参数——使用 :path 如 /files/{file_path:path} 匹配含 / 的路径。",
+      "tags": [],
+      "question": "请简述FastAPI 如何访问路径参数？"
+    },
+    {
+      "number": 14,
+      "id": "FastAPI 框架-014",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 中定义和访问查询参数：直接在函数签名中声明不在路径中的参数，FastAPI 自动将其解释为查询参数。\n```python\n@app.get('/items/')\nasync def read_items(skip: int = 0, limit: int = 10, q: str | None = None):\n    return {'skip': skip, 'limit': limit, 'q': q}\n```\n规则：(1) 有默认值的参数为可选查询参数（?limit=10），无默认值的为必选；(2) 类型提示自动验证（如 skip=abc 返回 422 验证错误）；(3) bool 类型查询参数支持 ?active=true/1/yes/on 等多种格式；(4) 可通过 Query() 添加额外验证：q: str = Query(default=None, max_length=50, description='搜索关键词')。",
+      "tags": [],
+      "question": "请简述FastAPI 如何定义和访问查询参数？"
+    },
+    {
+      "number": 15,
+      "id": "FastAPI 框架-015",
+      "category": "FastAPI 框架",
+      "answer": "Pydantic 模型在 FastAPI 中扮演核心数据契约的角色：(1) 请求体验证——自动将 JSON 请求体解析为 Pydantic 模型实例，验证字段类型、必填/可选、约束条件等，验证失败返回 422 错误及详细的错误位置和原因；(2) 响应序列化——通过 response_model 参数指定响应模型，自动过滤多余字段、转换类型、嵌套序列化；(3) API 文档——从 Pydantic 模型自动生成 JSON Schema，Swagger UI 中展示字段名、类型、是否必填、示例值等，无需手写文档；(4) IDE 支持——类型提示带来完整的代码补全和类型检查。",
+      "tags": [],
+      "question": "请简述解释 Pydantic 模型在 FastAPI 中的作用？"
+    },
+    {
+      "number": 16,
+      "id": "FastAPI 框架-016",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 中定义请求体模型：\n```python\nfrom pydantic import BaseModel\n\nclass Item(BaseModel):\n    name: str\n    price: float\n    description: str | None = None\n    tax: float | None = None\n\n@app.post('/items/')\nasync def create_item(item: Item):  # item 自动从请求体 JSON 解析\n    return item\n```\n规则：(1) 继承 BaseModel 定义数据模型；(2) 函数参数使用该模型类型，FastAPI 自动从 JSON 请求体解析；(3) 多个 Pydantic 模型参数——分别解析不同的 JSON 字段，或使用 Body() 标注嵌入值；(4) 嵌套模型自动递归解析。",
+      "tags": [],
+      "question": "请简述FastAPI 如何定义一个请求体模型？"
+    },
+    {
+      "number": 17,
+      "id": "FastAPI 框架-017",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 使用 Pydantic 模型定义响应模型：通过 response_model 参数。\n```python\nclass ItemOut(BaseModel):\n    id: int\n    name: str\n    price: float\n    created_at: datetime\n\n@app.get('/items/{item_id}', response_model=ItemOut)\nasync def get_item(item_id: int):\n    item = get_from_db(item_id)  # 可能包含 _password_hash 等隐私字段\n    return item  # FastAPI 自动过滤，只保留 ItemOut 中定义的字段\n```\n好处：(1) 自动过滤敏感字段（如密码哈希、内部状态）；(2) 确保响应格式一致；(3) 文档中显示正确的响应 Schema；(4) 可返回同一模型的不同视图（如 ItemCreate、ItemOut、ItemSummary）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何使用 Pydantic 模型定义响应模型？"
+    },
+    {
+      "number": 18,
+      "id": "FastAPI 框架-018",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 中设置响应状态码：\n```python\n@app.post('/items/', status_code=201)  # 默认 200 改为 201 Created\nasync def create_item(item: Item):\n    return item\n\n@app.get('/items/{id}')\nasync def get_item(id: int, response: Response):\n    if not_found:\n        response.status_code = 404  # 动态设置\n        return {'detail': 'Not found'}\n    return item\n```\n方式：(1) 装饰器参数 status_code——静态设置成功响应状态码；(2) Response 参数——在函数体内动态设置；(3) 抛出 HTTPException(status_code=404)——返回错误状态码；(4) 使用 from fastapi import status 中的常量（status.HTTP_201_CREATED）提高可读性。",
+      "tags": [],
+      "question": "请简述FastAPI 如何设置响应状态码？"
+    },
+    {
+      "number": 19,
+      "id": "FastAPI 框架-019",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 使用 Response 参数自定义响应头、Cookie 等：\n```python\nfrom fastapi import Response\n\n@app.get('/items/')\nasync def get_items(response: Response):\n    response.headers['X-Custom-Header'] = 'custom-value'\n    response.set_cookie(key='session_id', value='abc123', httponly=True, max_age=3600)\n    return {'items': []}\n```\n此外，还可以用 StreamingResponse、FileResponse、HTMLResponse、RedirectResponse、JSONResponse 等子类提供更具体的响应行为。对于 Cookie，也可直接在路径函数中声明 Response 参数后调用 response.set_cookie() 或使用 Cookie() 验证器。",
+      "tags": [],
+      "question": "请简述FastAPI 如何使用 Response 参数自定义响应头、cookie 等？"
+    },
+    {
+      "number": 20,
+      "id": "FastAPI 框架-020",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 返回不同内容类型的响应：(1) JSON 响应（默认）——直接返回 dict 或 Pydantic 模型：return {'message': 'hello'}；(2) HTML 响应——from fastapi.responses import HTMLResponse; @app.get('/', response_class=HTMLResponse) 或直接 return HTMLResponse(html_content)；(3) 纯文本——from fastapi.responses import PlainTextResponse; return PlainTextResponse('Hello')；(4) 文件下载——from fastapi.responses import FileResponse; return FileResponse('file.pdf', filename='download.pdf')；(5) 流式响应——return StreamingResponse(iterable_generator, media_type='text/csv')；(6) 重定向——from fastapi.responses import RedirectResponse; return RedirectResponse('/new-url')。",
+      "tags": [],
+      "question": "请简述FastAPI 如何返回 JSON 响应、HTML 响应或纯文本响应？"
+    },
+    {
+      "number": 21,
+      "id": "FastAPI 框架-021",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 处理表单数据使用 Form()：\n```python\nfrom fastapi import Form\n\n@app.post('/login/')\nasync def login(username: str = Form(), password: str = Form()):\n    return {'username': username}\n```\n关键点：(1) 必须先 pip install python-multipart——FastAPI 处理表单依赖此包；(2) Form() 类似于 Body()，但从表单编码数据解析而非 JSON；(3) 可添加验证：username: str = Form(min_length=3, max_length=50)；(4) 表单数据与文件上传可混用：file: UploadFile = File(), description: str = Form()；(5) 表单数据在 API 文档中展示为表单字段而非 JSON body。",
+      "tags": [],
+      "question": "请简述FastAPI 如何处理表单数据？（使用 Form(...)）"
+    },
+    {
+      "number": 22,
+      "id": "FastAPI 框架-022",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 处理文件上传使用 File() 和 UploadFile：\n```python\nfrom fastapi import File, UploadFile\n\n@app.post('/upload/')\nasync def upload_file(file: UploadFile = File()):\n    contents = await file.read()\n    with open(f'uploads/{file.filename}', 'wb') as f:\n        f.write(contents)\n    return {'filename': file.filename}\n\n@app.post('/multi-upload/')\nasync def multi_upload(files: list[UploadFile] = File()):\n    return {'count': len(files)}\n```\nFile() 用于小文件（bytes 类型），UploadFile 用于大文件（异步读取、流式处理、有 file 对象接口）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何处理文件上传？（使用 File(...) 和 UploadFile）"
+    },
+    {
+      "number": 23,
+      "id": "FastAPI 框架-023",
+      "category": "FastAPI 框架",
+      "answer": "UploadFile 相比 bytes 的优势：(1) 内存效率——UploadFile 提供类文件对象接口，可以流式读取（await file.read(size)），大文件不会一次性加载到内存；(2) 元数据——UploadFile 有 filename（原始文件名）、content_type（MIME 类型）、headers 等属性，bytes 只有原始数据；(3) 异步——UploadFile 的方法是异步的（async read/write/seek），不阻塞事件循环；(4) 临时文件——UploadFile 内部使用 SpooledTemporaryFile，超出内存阈值后自动溢出到磁盘；(5) 规范——bytes 适合小文件（几 KB 以内），UploadFile 是处理文件上传的推荐方式。",
+      "tags": [],
+      "question": "请简述UploadFile 相比 bytes 有什么优势？"
+    },
+    {
+      "number": 24,
+      "id": "FastAPI 框架-024",
+      "category": "FastAPI 框架",
+      "answer": "Pydantic 是 FastAPI 的数据验证和设置管理引擎，它帮助 FastAPI 的方式：(1) 自动数据验证——根据 Python 类型提示自动验证请求数据（类型、范围、格式等），验证失败返回 422 + 详细错误信息；(2) 自动 JSON Schema 生成——从 Pydantic 模型自动生成 OpenAPI 规范，驱动 Swagger UI 和 ReDoc 文档；(3) 序列化/反序列化——自动将 JSON 转换为 Python 对象（.parse_obj() / .model_validate()），将 Python 对象转换为符合 JSON Schema 的 dict（.dict() / .model_dump()）；(4) 编辑器支持——类型提示使 VSCode/PyCharm 提供完整的自动补全和类型检查，减少运行时错误。Pydantic v2 还大幅提升了验证速度（基于 Rust 核心）。",
+      "tags": [],
+      "question": "请简述FastAPI 的Pydantic 是什么？它如何帮助 FastAPI？"
+    },
+    {
+      "number": 25,
+      "id": "FastAPI 框架-025",
+      "category": "FastAPI 框架",
+      "answer": "定义 Pydantic 模型：\n```python\nfrom pydantic import BaseModel\nfrom datetime import datetime\n\nclass User(BaseModel):\n    id: int\n    name: str\n    email: str\n    is_active: bool = True  # 有默认值的字段自动变为可选\n    created_at: datetime | None = None\n    tags: list[str] = []\n```\n规则：(1) 继承 BaseModel 声明模型；(2) 所有字段用 Python 类型注解声明，无默认值的字段为必填；(3) 支持所有 Python 常用类型：int、float、str、bool、datetime、Enum、list[T]、dict[str, T]、Optional[T]（或 T | None）；(4) 可添加 Field() 提供额外元数据（default、min_length、gt、description、example 等）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何定义一个 Pydantic 模型？（继承自 BaseModel）"
+    },
+    {
+      "number": 26,
+      "id": "FastAPI 框架-026",
+      "category": "FastAPI 框架",
+      "answer": "Pydantic 支持的常用字段类型和验证：(1) 基本类型——int（含 gt、lt、ge、le 约束）、float、str（含 min_length、max_length、regex/pattern）、bool；(2) 复合类型——list[T]、tuple[T,...]、set[T]、dict[K,V]；(3) 枚举——from enum import Enum; class Color(str, Enum): RED='red'；(4) 日期时间——datetime、date、time、timedelta；(5) 特殊类型——EmailStr（需 pip install pydantic[email]）、AnyUrl、HttpUrl、FilePath、DirectoryPath、IPvAnyAddress、UUID；(6) 约束类型——conint(gt=0, lt=100)、constr(min_length=3)、conlist(item_type=int, min_items=1)；(7) Field() 验证——Field(default=..., ge=0, le=100, title='标题', description='描述', example='示例值')。",
+      "tags": [],
+      "question": "请简述解释 Pydantic 支持的一些常用字段类型和验证？"
+    },
+    {
+      "number": 27,
+      "id": "FastAPI 框架-027",
+      "category": "FastAPI 框架",
+      "answer": "为模型字段设置默认值、描述和示例：\n```python\nfrom pydantic import BaseModel, Field\n\nclass Item(BaseModel):\n    name: str = Field(default='未命名', description='商品名称', examples=['iPhone 15'])\n    price: float = Field(gt=0, description='价格，必须大于 0', examples=[999.99])\n    quantity: int = Field(default=1, ge=0, description='库存数量')\n    is_available: bool = True  # 直接用 Python 默认值\n```\nField() 的重要参数：default（默认值）、default_factory（默认值工厂函数）、alias（字段别名，用于 JSON key 与 Python 变量名不同时）、title（Schema 标题）、description（在 API 文档中显示描述）、examples（在文档中显示示例值）、gt/ge/lt/le（数值约束）、min_length/max_length（字符串长度约束）、regex/pattern（正则验证）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何为模型字段设置默认值、描述和示例？"
+    },
+    {
+      "number": 28,
+      "id": "FastAPI 框架-028",
+      "category": "FastAPI 框架",
+      "answer": "嵌套模型（Nested Models）是指一个 Pydantic 模型中将另一个模型作为字段类型，实现复杂数据结构的建模。\n```python\nclass Address(BaseModel):\n    city: str\n    street: str\n    zip_code: str\n\nclass User(BaseModel):\n    name: str\n    address: Address  # 嵌套模型\n    previous_addresses: list[Address] = []  # 嵌套模型列表\n```\n效果：(1) JSON 自动递归解析——请求体中的嵌套 JSON 对象自动转换为 Address 实例；(2) 递归验证——Address 的字段验证规则（如 zip_code: str(min_length=5)）同样生效；(3) 文档递归生成——Swagger 中展示完整的嵌套结构；(4) 支持任意深度的嵌套。",
+      "tags": [],
+      "question": "请简述什么是“嵌套模型”？"
+    },
+    {
+      "number": 29,
+      "id": "FastAPI 框架-029",
+      "category": "FastAPI 框架",
+      "answer": "使用 Pydantic 的特殊类型如 EmailStr：\n```python\nfrom pydantic import BaseModel, EmailStr  # 先 pip install pydantic[email]\n\nclass User(BaseModel):\n    email: EmailStr  # 自动验证邮箱格式\n    website: HttpUrl | None = None  # pip install pydantic\n    avatar: FileUrl | None = None\n```\n常用特殊类型：EmailStr（邮箱验证）、AnyUrl/HttpUrl/FileUrl/WebsocketUrl（URL 验证）、IPvAnyAddress/IPv4Address（IP 地址）、UUID（UUID 字符串）、PaymentCardNumber（信用卡号验证）、FilePath/DirectoryPath（路径验证）。这些类型在自动文档中显示为 string(format: email) 等格式，并提供对应的验证错误信息。",
+      "tags": [],
+      "question": "请简述FastAPI 如何使用 Pydantic 的 EmailStr, UrlStr 等特殊类型？"
+    },
+    {
+      "number": 30,
+      "id": "FastAPI 框架-030",
+      "category": "FastAPI 框架",
+      "answer": "创建自定义验证器使用 @field_validator（Pydantic v2）或 @validator（v1）装饰器：\n```python\nfrom pydantic import BaseModel, field_validator\n\nclass User(BaseModel):\n    name: str\n    password: str\n    password_confirm: str\n\n    @field_validator('name')\n    @classmethod\n    def name_must_not_be_empty(cls, v: str) -> str:\n        if not v.strip():\n            raise ValueError('名称不能为空')\n        return v.strip()\n\n    @field_validator('password_confirm')\n    @classmethod\n    def passwords_match(cls, v: str, info) -> str:\n        if 'password' in info.data and v != info.data['password']:\n            raise ValueError('两次密码不一致')\n        return v\n```\n也可使用 model_validator 进行跨字段验证。validator 在字段解析后、模型创建前按顺序调用。",
+      "tags": [],
+      "question": "请简述FastAPI 如何创建自定义验证器？（使用 @validator 装饰器）"
+    },
+    {
+      "number": 31,
+      "id": "FastAPI 框架-031",
+      "category": "FastAPI 框架",
+      "answer": "Pydantic 模型的 Config 类（Pydantic v1）或 model_config（v2）用于配置模型行为：\n```python\n# Pydantic v2\nclass User(BaseModel):\n    model_config = {\n        'from_attributes': True,  # 原 orm_mode（从 ORM 对象读取）\n        'str_strip_whitespace': True,\n        'validate_assignment': True,  # 赋值时也验证\n        'json_schema_extra': {'example': {...}},\n    }\n```\n常用配置：(1) from_attributes=True——允许 model_validate(obj) 从 ORM 对象（有 .属性 的任意对象）读取数据；(2) validate_assignment=True——在字段赋值时也进行验证；(3) use_enum_values=True——使用枚举值而非枚举对象；(4) extra='forbid'/'allow'/'ignore'——控制是否接受未定义的额外字段；(5) str_strip_whitespace——自动去除字符串前后空格。",
+      "tags": [],
+      "question": "请简述FastAPI 的模型配置（Config 类）有什么用？（例如，设置 orm_mode = True）"
+    },
+    {
+      "number": 32,
+      "id": "FastAPI 框架-032",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 的依赖注入（Dependency Injection）系统是其最具特色的功能之一。通过 Depends() 函数声明依赖关系，FastAPI 在运行时自动解析和注入依赖。好处：(1) 代码复用——公共逻辑（如数据库会话、用户认证、参数验证）提取为可复用的依赖函数，避免在每个路径函数中重复；(2) 关注点分离——路径函数专注业务逻辑，横切关注点（认证、日志、限流）由依赖处理；(3) 可测试性——依赖可以被 mock 或 override，方便单元测试；(4) 级联依赖——依赖可以依赖其他依赖，形成有向无环图（DAG），FastAPI 自动按依赖顺序执行；(5) 缓存——同一请求内多次请求同一依赖，默认只执行一次并缓存结果。",
+      "tags": [],
+      "question": "请简述FastAPI 的“依赖注入”系统是什么？它有什么好处？"
+    },
+    {
+      "number": 33,
+      "id": "FastAPI 框架-033",
+      "category": "FastAPI 框架",
+      "answer": "定义依赖函数：任何可调用对象（函数、类、生成器）都可作为依赖。\n```python\nasync def common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):\n    return {'q': q, 'skip': skip, 'limit': limit}\n\n# 或使用类（适合有状态的依赖）\nclass CommonQueryParams:\n    def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):\n        self.q = q\n        self.skip = skip\n        self.limit = limit\n```\n函数形式的依赖：参数来自查询参数、路径参数、请求体等（与路径操作函数相同规则）；返回值传入路径操作函数。生成器形式的依赖（yield）用于需要清理的场景（如数据库连接关闭）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何定义一个依赖函数？"
+    },
+    {
+      "number": 34,
+      "id": "FastAPI 框架-034",
+      "category": "FastAPI 框架",
+      "answer": "在路径操作函数中使用 Depends()：\n```python\nfrom fastapi import Depends\n\n@app.get('/items/')\nasync def read_items(commons: dict = Depends(common_parameters)):\n    return commons\n\n# 或使用类\n@app.get('/users/')\nasync def read_users(commons: CommonQueryParams = Depends(CommonQueryParams)):\n    return {'q': commons.q, 'skip': commons.skip}\n\n# 简化写法（FastAPI 自动推断）\n@app.get('/items/')\nasync def read_items(commons: CommonQueryParams = Depends()):\n    return commons\n```\nDepends() 的参数可以是函数或类。FastAPI 分析依赖函数的参数签名，自动从请求中提取对应的值（查询参数、路径参数、Body 等），调用依赖函数后将返回值注入。",
+      "tags": [],
+      "question": "请简述FastAPI 如何在路径操作函数中使用依赖项？（使用 Depends()）"
+    },
+    {
+      "number": 35,
+      "id": "FastAPI 框架-035",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 的依赖项可以嵌套——一个依赖可以依赖于另一个依赖，形成依赖链。\n```python\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n\ndef get_current_user(token: str = Depends(oauth2_scheme), db = Depends(get_db)):\n    user = decode_token(token, db)\n    return user\n\n@app.get('/me')\nasync def read_me(current_user: User = Depends(get_current_user)):\n    return current_user\n```\n执行顺序：请求到达 → FastAPI 发现 read_me 依赖 get_current_user → get_current_user 依赖 get_db 和 oauth2_scheme → 先解析并缓存 get_db → 再解析 oauth2_scheme → 调用 get_current_user → 调用 read_me。同一请求中同一依赖只执行一次。",
+      "tags": [],
+      "question": "请简述FastAPI 的依赖项可以嵌套吗？（一个依赖项可以依赖于另一个依赖项）"
+    },
+    {
+      "number": 36,
+      "id": "FastAPI 框架-036",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 依赖注入的常见用例：(1) 数据库会话管理——在依赖生成器中 yield session，请求结束后自动关闭；(2) 身份验证和权限检查——提取 token → 验证 → 查询用户 → 注入当前用户对象；(3) 请求参数预处理——统一的分页参数、排序、过滤逻辑，在全站 API 中保持一致的参数命名和默认值；(4) 共享业务逻辑——如根据 subdomain 确定租户、A/B 测试分组、功能开关检查；(5) 请求限流和速率限制——检查 Redis 中的请求计数，超限抛出 HTTPException(429)；(6) 请求日志和审计——自动记录每次 API 调用的用户、时间、参数。核心思想：Don't Repeat Yourself 在 API 层的实现。",
+      "tags": [],
+      "question": "请简述FastAPI 的依赖注入的常见用例有哪些？"
+    },
+    {
+      "number": 37,
+      "id": "FastAPI 框架-037",
+      "category": "FastAPI 框架",
+      "answer": "共享数据库连接是依赖注入最经典的用例：\n```python\nfrom sqlalchemy.orm import Session\n\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n\n@app.get('/users/{id}')\nasync def get_user(id: int, db: Session = Depends(get_db)):\n    return db.query(User).filter(User.id == id).first()\n```\n关键：(1) 使用生成器依赖 + yield 确保请求结束后自动关闭数据库连接；(2) 所有需要数据库的路径操作函数共享同一个 get_db 依赖；(3) 同一请求中多次 Depends(get_db) 返回同一个 db session（缓存），避免创建多个连接；(4) 测试时可通过 app.dependency_overrides 替换为测试用内存数据库。",
+      "tags": [],
+      "question": "请简述FastAPI 的共享数据库连接？"
+    },
+    {
+      "number": 38,
+      "id": "FastAPI 框架-038",
+      "category": "FastAPI 框架",
+      "answer": "身份验证和权限检查通过依赖注入实现：\n```python\nfrom fastapi import Depends, HTTPException, status\nfrom fastapi.security import OAuth2PasswordBearer\n\noauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')\n\ndef get_current_user(token: str = Depends(oauth2_scheme)):\n    try:\n        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])\n        user_id = payload.get('sub')\n        if user_id is None:\n            raise credentials_exception\n    except JWTError:\n        raise HTTPException(status_code=401, detail='Invalid token')\n    return get_user_by_id(user_id)\n\ndef require_admin(current_user: User = Depends(get_current_user)):\n    if not current_user.is_admin:\n        raise HTTPException(status_code=403, detail='Admin required')\n    return current_user\n\n@app.get('/admin/')\nasync def admin_panel(user: User = Depends(require_admin)):\n    return {'message': f'Welcome admin {user.name}'}\n```\n依赖链：oauth2_scheme → get_current_user → require_admin → 路径操作函数。",
+      "tags": [],
+      "question": "请简述FastAPI 的身份验证和权限检查？"
+    },
+    {
+      "number": 39,
+      "id": "FastAPI 框架-039",
+      "category": "FastAPI 框架",
+      "answer": "共享业务逻辑是依赖注入的关键优势：\n```python\ndef get_current_tenant(subdomain: str = Header()):\n    tenant = get_tenant_by_subdomain(subdomain)\n    if not tenant:\n        raise HTTPException(404, 'Tenant not found')\n    return tenant\n\ndef get_feature_flags(tenant = Depends(get_current_tenant)):\n    return get_flags_for_tenant(tenant.id)\n\n@app.get('/features/')\nasync def features(flags = Depends(get_feature_flags)):\n    return flags\n```\n这样每个 API 端点无需重复编写 subdomain 解析、租户查找、功能开关查询等逻辑。依赖函数可位于不同的模块文件中，通过 import 复用。依赖的组合比继承更灵活，每个依赖解决一个独立关注点。",
+      "tags": [],
+      "question": "请简述FastAPI 的共享业务逻辑？"
+    },
+    {
+      "number": 40,
+      "id": "FastAPI 框架-040",
+      "category": "FastAPI 框架",
+      "answer": "为整个路由器或应用添加全局依赖项：(1) 应用级别——app = FastAPI(dependencies=[Depends(verify_token), Depends(verify_api_key)])，所有路径操作自动包含这些依赖；(2) 路由器级别——router = APIRouter(dependencies=[Depends(get_current_user)])，该路由器下所有端点共享依赖；(3) 混合——全局依赖 + 特定路由的额外依赖同时生效。全局依赖最常用于：全局 API Key 验证、全站 CORS/安全头检查、请求日志记录、数据库连接初始化等。注意全局依赖不能有返回值注入到路径函数各，仅用于副作用（如验证失败抛异常）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何为整个路由器或应用添加全局依赖项？"
+    },
+    {
+      "number": 41,
+      "id": "FastAPI 框架-041",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 的依赖可以管理状态。最佳实践：(1) 函数依赖应是无状态的——每次调用独立，不依赖外部可变状态；(2) 类依赖可以有状态——类的 __init__ 接收请求参数，实例属性保存状态，__call__ 方法返回依赖值；(3) 生成器依赖的状态管理——yield 之前的代码初始化资源，yield 之后的 finally 块清理资源；(4) 依赖缓存——同一请求中 Depends() 相同签名的依赖默认只执行一次，不要依赖跨请求的缓存；(5) 线程安全——同步依赖在外部线程池中执行，避免在线程间共享可变状态。核心原则：依赖应干净、可预测。",
+      "tags": [],
+      "question": "请简述FastAPI 的依赖项可以有状态吗？最佳实践是什么？"
+    },
+    {
+      "number": 42,
+      "id": "FastAPI 框架-042",
+      "category": "FastAPI 框架",
+      "answer": "依赖项可以返回任何类型的值——Python 对象、Pydantic 模型实例、数据库会话、简单的 dict、甚至 List、Tuple 等任意 Python 类型。例：依赖返回数据库连接 -> Session；依赖返回当前用户 -> User（Pydantic 模型）；依赖返回分页参数 -> dict（或自定义 dataclass）；依赖返回第三方 SDK 客户端 -> boto3.Client。FastAPI 不限制返回类型，完全由使用该依赖的代码决定。类型提示不是强制的但强烈推荐（改善 IDE 支持和可读性）。",
+      "tags": [],
+      "question": "请简述FastAPI 的依赖项可以返回任何类型的值吗？"
+    },
+    {
+      "number": 43,
+      "id": "FastAPI 框架-043",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 抛出 HTTP 异常使用 HTTPException：\n```python\nfrom fastapi import HTTPException, status\n\n@app.get('/items/{item_id}')\nasync def get_item(item_id: int):\n    item = find_item(item_id)\n    if not item:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=f'Item {item_id} not found',\n            headers={'X-Error-Code': 'ITEM_NOT_FOUND'}\n        )\n    return item\n```\n参数：(1) status_code——HTTP 状态码（整数或 status 常量）；(2) detail——错误详情（字符串或 JSON-serializable 对象）；(3) headers——额外的响应头。抛出的 HTTPException 会被 FastAPI 的异常处理器捕获，按标准格式返回给客户端。",
+      "tags": [],
+      "question": "请简述FastAPI 如何抛出 HTTP 异常？（使用 HTTPException）"
+    },
+    {
+      "number": 44,
+      "id": "FastAPI 框架-044",
+      "category": "FastAPI 框架",
+      "answer": "安装自定义异常处理器使用 @app.exception_handler：\n```python\nfrom fastapi.responses import JSONResponse\n\nclass UnicornException(Exception):\n    def __init__(self, name: str):\n        self.name = name\n\n@app.exception_handler(UnicornException)\nasync def unicorn_exception_handler(request, exc: UnicornException):\n    return JSONResponse(\n        status_code=418,\n        content={'message': f'Oops! {exc.name} did something wrong'}\n    )\n\n@app.get('/unicorns/{name}')\nasync def read_unicorn(name: str):\n    if name == 'yolo':\n        raise UnicornException(name=name)\n    return {'unicorn_name': name}\n```\n可以为任意 Python 异常类型注册处理器，包括 FastAPI 内置的 HTTPException、RequestValidationError 等。处理器接收 request 和 exception 两个参数，返回 Response 对象。",
+      "tags": [],
+      "question": "请简述FastAPI 如何安装自定义的异常处理器？（使用 @app.exception_handler）"
+    },
+    {
+      "number": 45,
+      "id": "FastAPI 框架-045",
+      "category": "FastAPI 框架",
+      "answer": "覆盖默认 HTTP 异常处理器：FastAPI 内置了对 HTTPException 和 RequestValidationError 的默认处理器。要覆盖，注册相同异常类型的自定义处理器：\n```python\n@app.exception_handler(HTTPException)\nasync def custom_http_exception_handler(request, exc):\n    return JSONResponse(\n        status_code=exc.status_code,\n        content={'error': exc.detail, 'path': str(request.url)},\n    )\n\n@app.exception_handler(RequestValidationError)\nasync def validation_exception_handler(request, exc):\n    return JSONResponse(\n        status_code=422,\n        content={'validation_errors': exc.errors(), 'body': exc.body},\n    )\n```\n自定义处理器覆盖内置处理器后，所有相应类型的异常都走新的处理逻辑。这常用于统一错误响应格式（如所有错误包含 trace_id）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何覆盖默认的 HTTP 异常处理器？"
+    },
+    {
+      "number": 46,
+      "id": "FastAPI 框架-046",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 的验证错误以标准的 JSON 格式返回给客户端。当请求数据不符合 Pydantic 模型要求时，返回 422 Unprocessable Entity：\n```json\n{\n  \"detail\": [\n    {\n      \"loc\": [\"body\", \"item\", \"price\"],\n      \"msg\": \"value is not a valid float\",\n      \"type\": \"type_error.float\"\n    },\n    {\n      \"loc\": [\"body\", \"item\", \"name\"],\n      \"msg\": \"field required\",\n      \"type\": \"value_error.missing\"\n    }\n  ]\n}\n```\nloc 定位到具体的错误位置（body/query/path + 字段路径），msg 是人类可读的错误描述，type 是程序可读的错误类型代码。多错误批量返回，而非遇到第一个错误就停止，方便前端一次性修复所有字段。",
+      "tags": [],
+      "question": "请简述FastAPI 如何验证错误会以什么格式返回给客户端？"
+    },
+    {
+      "number": 47,
+      "id": "FastAPI 框架-047",
+      "category": "FastAPI 框架",
+      "answer": "中间件（Middleware）是位于请求-响应周期中的组件，在请求到达路径操作之前和响应返回客户端之前执行。位置：客户端 → ASGI Server → Middleware → 路径操作 → Middleware → ASGI Server → 客户端。中间件可以对每个请求执行前处理（如 CORS 头检查、日志记录）和后处理（如添加安全头、压缩响应）。FastAPI 中间件遵循 Starlette 的 ASGI 中间件规范，可以访问 request 对象、修改响应、短路请求（不传递到路径操作）。",
+      "tags": [],
+      "question": "请简述什么是“中间件”？它在请求-响应周期中处于什么位置？"
+    },
+    {
+      "number": 48,
+      "id": "FastAPI 框架-048",
+      "category": "FastAPI 框架",
+      "answer": "创建自定义中间件使用 @app.middleware(\"http\")：\n```python\nimport time\nfrom fastapi import Request\n\n@app.middleware(\"http\")\nasync def add_process_time_header(request: Request, call_next):\n    start_time = time.time()\n    response = await call_next(request)  # 传递到下一个中间件或路径操作\n    process_time = time.time() - start_time\n    response.headers['X-Process-Time'] = str(process_time)\n    return response\n```\n规则：(1) 装饰器参数必须是 \"http\"（目前唯一支持的类型）；(2) 函数接收 request 和 call_next；(3) call_next(request) 返回 Response 对象，可在此之前、之后或替代执行逻辑；(4) 多个中间件按注册顺序执行；(5) 中间件必须是 async 函数。",
+      "tags": [],
+      "question": "请简述如何创建一个自定义中间件？（使用 @app.middleware(\"http\")）"
+    },
+    {
+      "number": 49,
+      "id": "FastAPI 框架-049",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 中间件的常见用例：(1) CORS——使用内置 CORSMiddleware 添加跨域资源共享头；(2) 请求日志——记录每个请求的方法、路径、状态码、耗时到日志系统；(3) 请求计时——在响应头中添加 X-Process-Time；(4) 安全头——添加 X-Content-Type-Options、X-Frame-Options、Content-Security-Policy 等安全相关 HTTP 头；(5) 限流——基于 IP/用户控制请求频率；(6) 请求压缩——使用 GZipMiddleware 压缩响应体（需安装 aiofiles）；(7) 请求 ID——为每个请求生成唯一 trace_id 用于全链路追踪。",
+      "tags": [],
+      "question": "请简述FastAPI 中间件的常见用例有哪些？（CORS, 日志记录, 请求计时）"
+    },
+    {
+      "number": 50,
+      "id": "FastAPI 框架-050",
+      "category": "FastAPI 框架",
+      "answer": "为 FastAPI 添加 CORS 支持使用 CORSMiddleware：\n```python\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=['https://example.com', 'https://app.example.com'],  # 或 ['*'] 允许所有\n    allow_credentials=True,  # 允许携带 Cookie/Authorization 头\n    allow_methods=['GET', 'POST', 'PUT', 'DELETE'],  # 或 ['*']\n    allow_headers=['*'],  # 允许所有自定义头\n    expose_headers=['X-Custom-Header'],  # 暴露给前端的响应头\n    max_age=600,  # 预检请求缓存时间（秒）\n)\n```\n安全提示：生产环境不要用 allow_origins=['*'] 配合 allow_credentials=True，某些浏览器会拒绝。精确指定允许的域名列表。",
+      "tags": [],
+      "question": "请简述FastAPI 如何为 FastAPI 应用添加 CORS 支持？（使用 CORSMiddleware）"
+    },
+    {
+      "number": 51,
+      "id": "FastAPI 框架-051",
+      "category": "FastAPI 框架",
+      "answer": "将 SQL 数据库（SQLite、PostgreSQL）与 FastAPI 集成：(1) 选择 ORM——SQLAlchemy（最流行）或 SQLModel（SQLAlchemy + Pydantic 融合）；(2) 创建数据库引擎——engine = create_engine(DATABASE_URL)（如 'sqlite:///./app.db' 或 'postgresql://user:pass@localhost/db'）；(3) 创建会话工厂——SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)；(4) 定义 ORM 模型——继承 SQLAlchemy 的 Base（declarative_base()）；(5) 依赖注入会话——在 FastAPI 依赖中提供数据库会话并确保关闭；(6) 使用 Alembic 管理迁移。完整示例参考 FastAPI 官方 SQL 数据库教程。",
+      "tags": [
+        "SQL"
+      ],
+      "question": "请简述FastAPI 如何将 SQL 数据库（如 SQLite, PostgreSQL）与 FastAPI 集成？"
+    },
+    {
+      "number": 52,
+      "id": "FastAPI 框架-052",
+      "category": "FastAPI 框架",
+      "answer": "SQLModel 是由 FastAPI 作者 Sebastián Ramírez 创建的库，将 SQLAlchemy（ORM）和 Pydantic（数据验证）融合在一起。关系：(1) SQLModel 类同时是 SQLAlchemy ORM 模型和 Pydantic 模型——既可以映射到数据库表，又可以做请求体验证和响应序列化；(2) 避免了在 SQLAlchemy 模型和 Pydantic Schema 之间重复定义字段的痛点——一个 SQLModel 类同时服务于数据库和 API；(3) SQLModel = SQLAlchemy + Pydantic——底层使用 SQLAlchemy 做 ORM，Pydantic 做验证，但提供统一的接口；(4) table=True 创建数据库表模型，table=False 创建纯数据模型。适合以 FastAPI+SQL 为主的快速开发场景。",
+      "tags": [
+        "SQL"
+      ],
+      "question": "请简述什么是 SQLModel？它与 SQLAlchemy 和 Pydantic 有什么关系？"
+    },
+    {
+      "number": 53,
+      "id": "FastAPI 框架-053",
+      "category": "FastAPI 框架",
+      "answer": "使用 SQLAlchemy 和 Pydantic 设置数据库的基本步骤：(1) 定义数据库 URL：DATABASE_URL = 'sqlite:///./app.db'；(2) 创建引擎：engine = create_engine(DATABASE_URL, connect_args={'check_same_thread': False})（SQLite 需此参数）；(3) 创建 Base：Base = declarative_base()；(4) 定义 ORM 模型：class User(Base): __tablename__ = 'users'; id = Column(Integer, primary_key=True); name = Column(String)；(5) 创建表：Base.metadata.create_all(bind=engine)；(6) 创建 SessionLocal = sessionmaker(bind=engine)；(7) 定义 Pydantic 模型：class UserOut(BaseModel): id: int; name: str; model_config = ConfigDict(from_attributes=True)；(8) 依赖注入 get_db 管理 session 生命周期。",
+      "tags": [
+        "SQL"
+      ],
+      "question": "请简述描述使用 SQLAlchemy 和 Pydantic 设置数据库的基本步骤？"
+    },
+    {
+      "number": 54,
+      "id": "FastAPI 框架-054",
+      "category": "FastAPI 框架",
+      "answer": "在依赖项中创建和管理数据库会话：\n```python\nfrom sqlalchemy.orm import Session\n\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()  # 无论请求成功或异常，确保连接归还连接池\n\n@app.get('/users/{id}', response_model=UserOut)\nasync def get_user(id: int, db: Session = Depends(get_db)):\n    user = db.query(User).filter(User.id == id).first()\n    if not user:\n        raise HTTPException(404, 'User not found')\n    return user\n```\n关键：(1) 生成器依赖 + try/finally 确保会话在请求结束后一定关闭；(2) 同一请求内相同的 Depends(get_db) 返回同一 session 实例（FastAPI 缓存）；(3) 生产环境应使用连接池（SQLAlchemy 的 QueuePool 自动管理）；(4) 使用 scoped_session 管理线程/协程安全的会话（适用于同步模式）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何在依赖项中创建和管理数据库会话？"
+    },
+    {
+      "number": 55,
+      "id": "FastAPI 框架-055",
+      "category": "FastAPI 框架",
+      "answer": "orm_mode（Pydantic v1）或 from_attributes（Pydantic v2）允许 Pydantic 模型从 ORM 对象读取数据。为什么需要：(1) 默认情况下 Pydantic 期望输入是 dict（如 JSON），而 ORM 查询返回的是模型实例（如 SQLAlchemy 的 User 对象），不能直接用字典形式访问属性；(2) 设置 from_attributes=True 后，Pydantic 调用 model_validate(orm_obj) 时从对象的属性（如 orm_obj.name）而非 dict key 读取数据；(3) 这避免了在路径函数中手动将 ORM 对象转为 dict：user_dict = {'id': user.id, 'name': user.name, ...}；(4) 设置方式——Pydantic v2: model_config = ConfigDict(from_attributes=True)；Pydantic v1: class Config: orm_mode = True。",
+      "tags": [],
+      "question": "请简述FastAPI 中什么是 orm_mode？为什么在 Pydantic 模型中需要它？（允许从 ORM 对象读取数据）"
+    },
+    {
+      "number": 56,
+      "id": "FastAPI 框架-056",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 项目执行数据库迁移通常使用 Alembic：(1) 安装：pip install alembic；(2) 初始化：alembic init alembic——创建 alembic/ 目录和 alembic.ini 配置文件；(3) 配置 alembic.ini——设置 sqlalchemy.url = postgresql://...；(4) 在 alembic/env.py 中导入 target_metadata = Base.metadata（Base 是 ORM 模型的 declarative_base）；(5) 创建迁移：alembic revision --autogenerate -m 'add users table'——自动对比模型定义和数据库状态生成迁移脚本；(6) 执行迁移：alembic upgrade head——应用所有未执行的迁移；(7) 回滚：alembic downgrade -1——回退到上一个版本。迁移脚本应纳入版本控制。自动生成后务必手动检查生成的迁移代码。",
+      "tags": [],
+      "question": "请简述FastAPI 如何执行数据库迁移？（通常使用 Alembic）"
+    },
+    {
+      "number": 57,
+      "id": "FastAPI 框架-057",
+      "category": "FastAPI 框架",
+      "answer": "在 FastAPI 中实现基于 JWT 的认证：(1) 安装：pip install python-jose[cryptography] passlib[bcrypt] python-multipart；(2) 创建 JWT 工具函数：create_access_token(data, expires_delta) 和 decode_access_token(token)；(3) 创建密码哈希：pwd_context = CryptContext(schemes=['bcrypt'])，提供 hash() 和 verify()；(4) 登录端点：@app.post('/token') 验证用户名密码，返回 JWT token；(5) 创建认证依赖：oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token'); def get_current_user(token: str = Depends(oauth2_scheme)): ... 解码 token 并返回用户；(6) 保护端点：在路径函数参数中注入 current_user: User = Depends(get_current_user)。",
+      "tags": [],
+      "question": "请简述FastAPI 如何在 FastAPI 中实现基于 JWT 的认证？"
+    },
+    {
+      "number": 58,
+      "id": "FastAPI 框架-058",
+      "category": "FastAPI 框架",
+      "answer": "JWT 认证的典型流程：(1) 客户端发送 POST /token 携带 username 和 password（form data）；(2) 服务器验证凭证——从数据库查询用户，用 passlib 验证密码哈希；(3) 若验证通过，服务器创建 JWT——claims 包含 sub（用户 ID）、exp（过期时间）、iat（签发时间）等，用 HS256 + SECRET_KEY 签名；(4) 服务器返回 JSON 含 access_token 和 token_type='bearer'；(5) 客户端后续请求在 Authorization 头中携带 Bearer <token>；(6) 服务器依赖注入解析 token——OAuth2PasswordBearer 从 Authorization 头提取 token，decode 后查询用户，注入到路径函数。整个流程符合 OAuth2 Password Flow 规范。",
+      "tags": [],
+      "question": "请简述描述实现 JWT 认证的典型流程？"
+    },
+    {
+      "number": 59,
+      "id": "FastAPI 框架-059",
+      "category": "FastAPI 框架",
+      "answer": "使用依赖项保护路径操作——创建验证和提取当前用户的依赖：\n```python\nfrom fastapi import Depends, HTTPException, status\nfrom fastapi.security import OAuth2PasswordBearer\n\noauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')\n\nasync def get_current_user(token: str = Depends(oauth2_scheme)):\n    credentials_exception = HTTPException(status_code=401, detail='Could not validate credentials')\n    try:\n        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])\n        user_id: str = payload.get('sub')\n        if user_id is None:\n            raise credentials_exception\n    except JWTError:\n        raise credentials_exception\n    user = get_user(user_id)\n    if user is None:\n        raise credentials_exception\n    return user\n\n@app.get('/users/me')\nasync def read_users_me(current_user: User = Depends(get_current_user)):\n    return current_user\n```\n任何需要认证的端点只需添加 Depends(get_current_user) 参数即可自动获得当前用户对象，无需处理 token 解析。",
+      "tags": [],
+      "question": "请简述FastAPI 如何使用依赖项来保护路径操作？（创建一个依赖项来验证和提取当前用户）"
+    },
+    {
+      "number": 60,
+      "id": "FastAPI 框架-060",
+      "category": "FastAPI 框架",
+      "answer": "实现基于 OAuth2 的密码流使用 OAuth2PasswordBearer：\n```python\nfrom fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm\n\noauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')  # tokenUrl 指向登录路径\n\n@app.post('/token')\nasync def login(form_data: OAuth2PasswordRequestForm = Depends()):\n    user = authenticate_user(form_data.username, form_data.password)\n    if not user:\n        raise HTTPException(401, 'Incorrect username or password')\n    access_token = create_access_token(data={'sub': user.username})\n    return {'access_token': access_token, 'token_type': 'bearer'}\n```\nOAuth2PasswordBearer：(1) 自动从请求的 Authorization: Bearer <token> 头中提取 token；(2) tokenUrl 指向的路径在 Swagger 文档中显示为登录表单；(3) OAuth2PasswordRequestForm 自动解析 username 和 password 表单字段；(4) 符合 OAuth2 规范的密码授权模式。",
+      "tags": [],
+      "question": "请简述FastAPI 如何实现基于 OAuth2 的密码流？（使用 OAuth2PasswordBearer）"
+    },
+    {
+      "number": 61,
+      "id": "FastAPI 框架-061",
+      "category": "FastAPI 框架",
+      "answer": "使用 passlib 哈希和验证密码：\n```python\nfrom passlib.context import CryptContext\n\npwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')\n\ndef hash_password(password: str) -> str:\n    return pwd_context.hash(password)\n\ndef verify_password(plain_password: str, hashed_password: str) -> bool:\n    return pwd_context.verify(plain_password, hashed_password)\n\n# 注册时\nuser.hashed_password = hash_password('user_password')\n\n# 登录验证时\nif not verify_password(input_password, user.hashed_password):\n    raise HTTPException(401, 'Incorrect password')\n```\n要点：(1) 永远不要存储明文密码；(2) bcrypt 是工业标准的密码哈希算法，自动包含 salt；(3) CryptContext 支持自动升级哈希方案（如从 sha256_crypt 升级到 bcrypt）——验证成功后如果方案过时，自动重新哈希；(4) hash() 每次产生不同的哈希值（随机 salt），用 verify() 比对而非字符串比较。",
+      "tags": [],
+      "question": "请简述FastAPI 如何哈希和验证密码？（使用 passlib 库，如 CryptContext）"
+    },
+    {
+      "number": 62,
+      "id": "FastAPI 框架-062",
+      "category": "FastAPI 框架",
+      "answer": "实现基于角色的访问控制（RBAC）：\n```python\nfrom enum import Enum\n\nclass Role(str, Enum):\n    ADMIN = 'admin'\n    EDITOR = 'editor'\n    VIEWER = 'viewer'\n\ndef require_role(*allowed_roles: Role):\n    def role_checker(current_user: User = Depends(get_current_user)):\n        if current_user.role not in allowed_roles:\n            raise HTTPException(status_code=403, detail='Insufficient permissions')\n        return current_user\n    return role_checker\n\n@app.get('/admin/dashboard')\nasync def admin_dashboard(user: User = Depends(require_role(Role.ADMIN))):\n    return {'message': 'Admin only'}\n\n@app.get('/content/edit')\nasync def edit_content(user: User = Depends(require_role(Role.ADMIN, Role.EDITOR))):\n    return {'message': 'Editors and admins only'}\n```\n通过依赖工厂函数（返回依赖）实现灵活的角色检查。更细粒度的权限可使用基于资源的访问控制（ACL）或 ABAC。",
+      "tags": [],
+      "question": "请简述FastAPI 如何实现基于角色的访问控制？"
+    },
+    {
+      "number": 63,
+      "id": "FastAPI 框架-063",
+      "category": "FastAPI 框架",
+      "answer": "后台任务（BackgroundTasks）允许在返回响应后异步执行耗时操作，不阻塞请求响应周期：\n```python\nfrom fastapi import BackgroundTasks\n\ndef send_email(email: str, message: str):\n    # 模拟耗时操作\n    time.sleep(5)\n    print(f'Email sent to {email}: {message}')\n\n@app.post('/register/')\nasync def register(email: str, background_tasks: BackgroundTasks):\n    user = create_user(email)\n    background_tasks.add_task(send_email, email, 'Welcome!')\n    return {'message': 'User registered'}\n```\n注意：(1) 后台任务在响应返回之后执行，不适合需要客户端获取操作结果的场景；(2) 任务函数可以是同步或异步的；(3) 适合的操作——发送邮件、推送通知、写日志文件、轻度数据同步；(4) 对于需要任务队列、重试机制、分布式执行的重度任务，使用 Celery。",
+      "tags": [],
+      "question": "请简述什么是“后台任务”？如何在路径操作完成后运行一个后台任务？（使用 BackgroundTasks）"
+    },
+    {
+      "number": 64,
+      "id": "FastAPI 框架-064",
+      "category": "FastAPI 框架",
+      "answer": "Celery 相比 BackgroundTasks 的适用场景：(1) BackgroundTasks 适合轻量级、快速完成的后台操作——如发送一封邮件、写入本地日志、更新缓存等，任务在同一个进程/线程中执行，服务重启时未完成的任务丢失；(2) Celery 适合重量级、长时间运行的任务——如批量数据处理、视频转码、PDF 生成、定时任务等；(3) Celery 提供消息队列（Redis/RabbitMQ）、任务持久化、重试机制、调度（celery beat）、分布式 worker、监控（Flower）等企业级功能；(4) 经验法则——任务执行 < 1 秒用 BackgroundTasks，> 1 秒或需要可靠性和扩展性用 Celery。",
+      "tags": [],
+      "question": "请简述什么时候应该使用 Celery 而不是 BackgroundTasks？"
+    },
+    {
+      "number": 65,
+      "id": "FastAPI 框架-065",
+      "category": "FastAPI 框架",
+      "answer": "为 FastAPI 添加 WebSocket 支持：\n```python\nfrom fastapi import WebSocket, WebSocketDisconnect\n\nclass ConnectionManager:\n    def __init__(self):\n        self.active_connections: list[WebSocket] = []\n    async def connect(self, ws: WebSocket):\n        await ws.accept()\n        self.active_connections.append(ws)\n    def disconnect(self, ws: WebSocket):\n        self.active_connections.remove(ws)\n    async def broadcast(self, message: str):\n        for conn in self.active_connections:\n            await conn.send_text(message)\n\nmanager = ConnectionManager()\n\n@app.websocket('/ws/{client_id}')\nasync def websocket_endpoint(websocket: WebSocket, client_id: int):\n    await manager.connect(websocket)\n    try:\n        while True:\n            data = await websocket.receive_text()\n            await manager.broadcast(f'Client {client_id}: {data}')\n    except WebSocketDisconnect:\n        manager.disconnect(websocket)\n```\nFastAPI 原生支持 WebSocket，与 HTTP 端点共存于同一应用。WebSocket 函数必须是 async 的。",
+      "tags": [],
+      "question": "请简述FastAPI 如何为应用添加 WebSocket 支持？"
+    },
+    {
+      "number": 66,
+      "id": "FastAPI 框架-066",
+      "category": "FastAPI 框架",
+      "answer": "提供静态文件服务使用 StaticFiles：\n```python\nfrom fastapi.staticfiles import StaticFiles\n\napp.mount('/static', StaticFiles(directory='static'), name='static')\n\n# 访问 http://localhost:8000/static/image.png\n```\n关键：(1) app.mount() 将整个路径前缀（/static）挂载到 StaticFiles 应用上；(2) directory 参数指定本地文件目录路径；(3) html=True 模式可提供目录浏览（开发用途）；(4) 自定义 404 页面：StaticFiles(directory='static', packages=['aiofiles'])；(5) 生产环境建议用 Nginx 处理静态文件，FastAPI 的静态文件服务主要用于开发和小规模部署；(6) 静态文件挂载在路径操作之前处理，如果挂载路径与 API 端点冲突，静态文件优先。",
+      "tags": [],
+      "question": "请简述什么是“静态文件”？如何提供静态文件服务？（使用 StaticFiles）"
+    },
+    {
+      "number": 67,
+      "id": "FastAPI 框架-067",
+      "category": "FastAPI 框架",
+      "answer": "为 FastAPI 添加 GraphQL 支持通常通过第三方库 Strawberry：\n```python\nimport strawberry\nfrom strawberry.fastapi import GraphQLRouter\n\n@strawberry.type\nclass Query:\n    @strawberry.field\n    def hello(self) -> str:\n        return 'Hello World'\n\nschema = strawberry.Schema(query=Query)\ngraphql_app = GraphQLRouter(schema)\n\napp.include_router(graphql_app, prefix='/graphql')\n```\n其他选择：(1) Ariadne——schema-first 方式，用 SDL 定义 schema；(2) Graphene——Python GraphQL 的老牌库，社区生态丰富；(3) Tartiflette——异步优先的 GraphQL 引擎。Strawberry 使用 Python 类型提示定义 schema，与 FastAPI 的设计哲学最一致，推荐首选。GraphQL 和 REST 可以在同一 FastAPI 应用中共存。",
+      "tags": [],
+      "question": "请简述FastAPI 如何为应用添加 GraphQL 支持？（通常通过第三方库如 Strawberry）"
+    },
+    {
+      "number": 68,
+      "id": "FastAPI 框架-068",
+      "category": "FastAPI 框架",
+      "answer": "测试 FastAPI 应用的重要性：(1) 确保 API 端点的行为符合预期——验证响应状态码、响应体结构、边界条件；(2) 回归测试——修改代码后确保已有功能不受影响；(3) 文档化 API 行为——测试用例作为可执行的 API 文档；(4) 依赖注入覆盖测试——通过 dependency_overrides 替换真实依赖为 mock，隔离测试目标；(5) CI/CD 集成——在部署前自动运行测试套件，防止带有破坏性变更的代码上线。FastAPI 提供了 TestClient（基于 HTTPX）使测试像调用函数一样简单，无需启动真实服务器。",
+      "tags": [],
+      "question": "请简述为什么需要测试你的 FastAPI 应用？"
+    },
+    {
+      "number": 69,
+      "id": "FastAPI 框架-069",
+      "category": "FastAPI 框架",
+      "answer": "测试 FastAPI 应用使用 TestClient（基于 httpx）：\n```python\nfrom fastapi.testclient import TestClient\nfrom main import app\n\nclient = TestClient(app)\n\ndef test_read_items():\n    response = client.get('/items/?skip=0&limit=10')\n    assert response.status_code == 200\n    assert response.json() == {'skip': 0, 'limit': 10}\n\ndef test_create_item():\n    response = client.post('/items/', json={'name': 'Widget', 'price': 9.99})\n    assert response.status_code == 201\n    data = response.json()\n    assert data['name'] == 'Widget'\n```\nTestClient 是对 HTTPX 的薄封装，完全兼容 requests 的 API 风格。不需要启动真实的 HTTP 服务器——直接通过 ASGI 接口与应用通信，测试速度极快。",
+      "tags": [],
+      "question": "请简述如何测试 FastAPI 应用？（使用 TestClient 来自 httpx）"
+    },
+    {
+      "number": 70,
+      "id": "FastAPI 框架-070",
+      "category": "FastAPI 框架",
+      "answer": "测试需要认证的端点：(1) 通过 login 端点获取 token：response = client.post('/token', data={'username': 'test', 'password': 'secret'}); token = response.json()['access_token']；(2) 在后续请求中携带 token：client.get('/users/me', headers={'Authorization': f'Bearer {token}'})；(3) 或使用 dependency_overrides 绕过认证：app.dependency_overrides[get_current_user] = lambda: fake_user，让测试直连路径操作函数；(4) 两者可组合使用——集成测试用真实 token 流程，单元测试用 override；(5) 记得在测试结束后恢复依赖：app.dependency_overrides.clear()。",
+      "tags": [],
+      "question": "请简述FastAPI 如何测试需要认证的端点？"
+    },
+    {
+      "number": 71,
+      "id": "FastAPI 框架-071",
+      "category": "FastAPI 框架",
+      "answer": "测试依赖项：(1) 通过 dependency_overrides 替换真实依赖为测试版本——app.dependency_overrides[get_db] = override_get_db，override_get_db 返回测试数据库的 session；(2) 单独测试依赖函数——直接调用依赖函数并传入模拟参数：result = get_current_user(token='fake_token')；(3) 测试依赖的异常路径——验证依赖函数在特定条件下抛出正确的 HTTPException；(4) 使用 pytest fixtures 管理测试间的 override 设置和清理：(5) @pytest.fixture autouse 在每个测试前后自动设置和恢复依赖覆盖。",
+      "tags": [],
+      "question": "请简述FastAPI 如何测试依赖项？"
+    },
+    {
+      "number": 72,
+      "id": "FastAPI 框架-072",
+      "category": "FastAPI 框架",
+      "answer": "模拟数据库或其他外部服务进行测试：\n```python\n# 使用 SQLite 内存数据库替代 PostgreSQL\nSQLALCHEMY_DATABASE_URL = 'sqlite:///./test.db'\ntest_engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={'check_same_thread': False})\nTestingSessionLocal = sessionmaker(bind=test_engine)\n\ndef override_get_db():\n    db = TestingSessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n\napp.dependency_overrides[get_db] = override_get_db\n```\n或者使用 unittest.mock/MonkeyPatch：(1) from unittest.mock import patch; with patch('app.external_api.call') as mock_call: mock_call.return_value = {...}；(2) 使用 pytest 的 monkeypatch fixture 在函数级别替换依赖；(3) 使用 respx 或 httpretty mock 外部 HTTP 调用；(4) 推荐对数据库用真实测试数据库（SQLite 内存），对外部 API 用 mock。",
+      "tags": [],
+      "question": "请简述FastAPI 如何模拟数据库或其他外部服务进行测试？"
+    },
+    {
+      "number": 73,
+      "id": "FastAPI 框架-073",
+      "category": "FastAPI 框架",
+      "answer": "部署 FastAPI 应用：(1) 开发环境——uvicorn main:app --reload；(2) 单机生产——Gunicorn + Uvicorn workers：gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000；(3) 反向代理——Nginx 前面处理静态文件、SSL 终止、负载均衡，将请求 proxy_pass 到 Gunicorn/Uvicorn；(4) Docker 容器化——编写 Dockerfile，EXPOSE 端口，CMD ['uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8000']；(5) 云平台——Heroku 用 Procfile，AWS 用 ECS/EKS + ALB，Google Cloud Run 直接部署容器。",
+      "tags": [],
+      "question": "请简述如何部署一个 FastAPI 应用？（使用 Uvicorn 或 Gunicorn 作为进程管理器）"
+    },
+    {
+      "number": 74,
+      "id": "FastAPI 框架-074",
+      "category": "FastAPI 框架",
+      "answer": "在生产中建议将 Uvicorn 与 Gunicorn 一起使用的原因：(1) Gunicorn 作为进程管理器——管理多个 worker 进程，利用多核 CPU，提供优雅重启（SIGTERM → 新进程就绪后关闭旧进程）、worker 崩溃自动重启等功能；(2) Uvicorn 作为 ASGI worker——每个 Gunicorn worker 进程内运行一个 Uvicorn 事件循环，处理异步请求；(3) 组合方式：gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker——启动 4 个 worker 进程，每个运行一个 Uvicorn 实例；(4) 优势——既获得 Gunicorn 的进程管理和稳定性，又保留 Uvicorn 的高性能异步处理；(5) 也可以使用 Uvicorn 自带的 --workers 参数，但 Gunicorn 的进程管理更成熟（特别是信号处理、日志集成）。",
+      "tags": [],
+      "question": "请简述在生产中，为什么建议将 Uvicorn 与 Gunicorn 一起使用？"
+    },
+    {
+      "number": 75,
+      "id": "FastAPI 框架-075",
+      "category": "FastAPI 框架",
+      "answer": "Docker 容器化 FastAPI 应用：\n```dockerfile\nFROM python:3.12-slim\n\nWORKDIR /app\n\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\n\nCOPY ./app ./app\n\nEXPOSE 8000\n\nCMD ['uvicorn', 'app.main:app', '--host', '0.0.0.0', '--port', '8000']\n```\n```yaml\n# docker-compose.yml\nservices:\n  api:\n    build: .\n    ports: ['8000:8000']\n    environment:\n      - DATABASE_URL=postgresql://...\n    depends_on:\n      - db\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_PASSWORD: secret\n```\n最佳实践：使用多阶段构建减小镜像体积、非 root 用户运行应用、.dockerignore 排除不必要的文件。",
+      "tags": [],
+      "question": "请简述如何使用 Docker 容器化一个 FastAPI 应用？"
+    },
+    {
+      "number": 76,
+      "id": "FastAPI 框架-076",
+      "category": "FastAPI 框架",
+      "answer": "将 FastAPI 部署到云平台：(1) Heroku——创建 Procfile: web: uvicorn app.main:app --host=0.0.0.0 --port=$PORT，设置环境变量，git push heroku main；(2) AWS——方案一：ECS Fargate + ALB（应用负载均衡器）实现无服务器容器部署；方案二：Elastic Beanstalk 直接部署 Python 应用；方案三：Lambda + API Gateway（通过 Mangum 适配器将 ASGI 转为 Lambda handler）；(3) Google Cloud Run——构建 Docker 镜像，推送到 Container Registry，一键部署，自动 HTTPS、自动扩缩容、按请求计费，最推荐的无服务器容器方案；(4) Azure——App Service 或 Container Apps。所有平台都需设置 DATABASE_URL、SECRET_KEY 等环境变量。",
+      "tags": [],
+      "question": "请简述如何将 FastAPI 应用部署到云平台？（如 Heroku, AWS, Google Cloud Run）"
+    },
+    {
+      "number": 77,
+      "id": "FastAPI 框架-077",
+      "category": "FastAPI 框架",
+      "answer": "监控生产环境 FastAPI 应用：(1) 健康检查端点——@app.get('/health') 检查数据库连接和关键服务可达性，用于负载均衡器和 Kubernetes 探针；(2) 结构化日志——使用 structlog 或 python-json-logger 输出 JSON 格式日志，方便接入 ELK/Loki/CloudWatch；(3) APM 工具——Sentry（异常追踪）、DataDog/New Relic（性能监控）、OpenTelemetry（分布式追踪）——通过 FastAPI 中间件自动收集请求指标；(4) Prometheus + Grafana——使用 prometheus-fastapi-instrumentator 暴露 /metrics 端点，可视化请求速率、延迟 P50/P99、错误率；(5) Uvicorn/Gunicorn 日志——记录 worker 重启、连接超时等基础设施事件。",
+      "tags": [],
+      "question": "请简述如何监控生产环境中的 FastAPI 应用？"
+    },
+    {
+      "number": 78,
+      "id": "FastAPI 框架-078",
+      "category": "FastAPI 框架",
+      "answer": "优化 FastAPI 应用性能：(1) 数据库优化——使用连接池（SQLAlchemy pool_size + max_overflow）、优化查询（添加索引、使用 selectinload 避免 N+1、合理使用 lazy/eager loading）、使用 Redis 缓存热点数据；(2) 异步操作——I/O 操作（数据库查询、HTTP 调用、文件读取）使用 async/await，CPU 密集型任务使用 run_in_executor 或 Celery 异步执行；(3) 响应优化——使用 gzip 中间件压缩响应、设置合理的分页大小（避免一次返回数千条记录）、使用 response_model 过滤不必要的字段；(4) 基础设施——启用 HTTP/2、CDN 缓存静态 API 响应、增加 Gunicorn worker 数量（通常 2*CPU+1）；(5) Python 层面——使用 uvloop + httptools（Uvicorn[standard]），使用 Pydantic v2（基于 Rust 的验证核心，快 5-50 倍）。",
+      "tags": [],
+      "question": "请简述如何优化 FastAPI 应用的性能？（数据库优化、缓存、异步操作）"
+    },
+    {
+      "number": 79,
+      "id": "FastAPI 框架-079",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 自动生成 API 文档的原理：(1) 应用启动时，FastAPI 遍历所有注册的路径操作，从类型提示、Pydantic 模型、Depends 参数、装饰器元数据中提取信息；(2) 构建 OpenAPI（原 Swagger）规范的 JSON Schema——包含路径、HTTP 方法、请求参数（查询/路径/body/header）、响应模型、认证方案等；(3) 通过 /openapi.json 端点暴露完整的 OpenAPI 规范；(4) /docs 端点嵌入 Swagger UI 加载 /openapi.json 提供交互式文档（可直接在浏览器中测试 API）；(5) /redoc 端点嵌入 ReDoc 提供更美观的只读文档。整个过程完全自动，开发者无需编写任何文档代码。",
+      "tags": [],
+      "question": "请简述FastAPI 如何自动生成 API 文档？"
+    },
+    {
+      "number": 80,
+      "id": "FastAPI 框架-080",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 自动生成的文档路径：(1) /docs——交互式 Swagger UI 文档，支持 Try it out（在浏览器中发送请求测试 API）；(2) /redoc——ReDoc 只读文档，格式更整洁，适合对外公开的 API 文档；(3) /openapi.json——原始 OpenAPI 规范的 JSON 格式，可供其他工具消费（如生成客户端 SDK、Postman 导入）。可通过 app = FastAPI(docs_url='/api-docs', redoc_url=None) 自定义或禁用文档路径。",
+      "tags": [],
+      "question": "请简述FastAPI 的自动生成的文档路径是什么？（通常是 /docs 和 /redoc）"
+    },
+    {
+      "number": 81,
+      "id": "FastAPI 框架-081",
+      "category": "FastAPI 框架",
+      "answer": "FastAPI 的文档基于 OpenAPI 规范（以前叫 Swagger）自动生成。OpenAPI 是 REST API 的标准化描述格式（JSON/YAML），定义了路径、操作、参数、响应、认证等 API 元信息。FastAPI 利用 Python 类型提示和 Pydantic 模型自动将代码中的类型信息转换为 OpenAPI Schema——路径操作函数参数的类型注解决定请求参数的 schema，Pydantic 模型定义决定请求体和响应体的 schema。生成的 OpenAPI JSON 可导入 Postman、生成多语言 SDK、用作 API 网关配置等，实现了文档即代码（Documentation as Code）。",
+      "tags": [],
+      "question": "请简述FastAPI 的文档是基于什么标准生成的？（OpenAPI，以前叫 Swagger）"
+    },
+    {
+      "number": 82,
+      "id": "FastAPI 框架-082",
+      "category": "FastAPI 框架",
+      "answer": "向自动文档中添加描述和摘要：\n```python\n@app.get(\n    '/items/',\n    summary='获取商品列表',\n    description='返回分页的商品列表。支持按关键词搜索和分类筛选。',\n    response_description='商品对象列表',\n    tags=['商品'],\n    deprecated=True,  # 标记为已弃用\n)\nasync def list_items(...): ...\n```\n也可在文档字符串中描述（FastAPI 自动提取）：\n```python\nasync def list_items(q: str = Query(description='搜索关键词')):\n    \"\"\"获取商品列表。\n    \n    返回分页的商品列表。支持按关键词搜索。\n    \"\"\"\n```\nPydantic 模型中：class Item(BaseModel): name: str = Field(description='商品名称', examples=['Widget'])。",
+      "tags": [],
+      "question": "请简述FastAPI 如何向自动文档中添加描述和摘要？"
+    },
+    {
+      "number": 83,
+      "id": "FastAPI 框架-083",
+      "category": "FastAPI 框架",
+      "answer": "从文档中排除路径操作：(1) 单个端点——使用 include_in_schema=False：@app.get('/internal/', include_in_schema=False)；(2) 整个路由器——app.include_router(internal_router, include_in_schema=False)；(3) 动态判断——根据环境变量决定是否包含：include_in_schema=(ENV == 'development')；(4) 排除的端点——/openapi.json 中不包含该路由信息，Swagger UI 和 ReDoc 中不显示，但端点仍然可正常访问。常用于内部管理接口、健康检查、调试端点等不适合暴露在公开文档中的路径。",
+      "tags": [],
+      "question": "请简述FastAPI 如何从文档中排除一个路径操作？"
+    },
+    {
+      "number": 84,
+      "id": "FastAPI 框架-084",
+      "category": "FastAPI 框架",
+      "answer": "为模型字段添加示例值：\n```python\nfrom pydantic import BaseModel, Field\n\nclass Item(BaseModel):\n    name: str = Field(examples=['超级小工具'])\n    price: float = Field(examples=[19.99])\n    tags: list[str] = Field(examples=[['电子', '工具']])\n\n    model_config = {\n        'json_schema_extra': {\n            'examples': [{\n                'name': '示例商品',\n                'price': 29.99,\n                'tags': ['示例']\n            }]\n        }\n    }\n```\n字段级 examples（Pydantic v2 新增）在 Swagger UI 中显示为各字段的独立示例；model_config 中的 json_schema_extra 定义完整的请求体示例。examples 而非 example（复数），支持多个示例（Swagger UI 中可切换）。",
+      "tags": [],
+      "question": "请简述FastAPI 如何为模型字段添加示例值？"
+    },
+    {
+      "number": 85,
+      "id": "FastAPI 框架-085",
+      "category": "FastAPI 框架",
+      "answer": "API 版本化策略：(1) URL 路径前缀——/api/v1/users, /api/v2/users，最直观但 URL 随版本增长；(2) 请求头——Accept: application/vnd.company.v1+json，URL 不变，通过自定义媒体类型区分；(3) 查询参数——/users?version=1，简单但可能污染 API 语义；(4) 子域名——v1.api.example.com，适合大规模 API。FastAPI 推荐方式一（路径前缀）：app_v1 = FastAPI(); app_v2 = FastAPI(); main_app = FastAPI(); main_app.mount('/api/v1', app_v1); main_app.mount('/api/v2', app_v2)。APIRouter(prefix='/v1') 也可实现。版本化应尽早设计，v1 和 v2 独立演进不互相破坏。",
+      "tags": [],
+      "question": "请简述FastAPI 如何版本化你的 API？"
+    },
+    {
+      "number": 86,
+      "id": "FastAPI 框架-086",
+      "category": "FastAPI 框架",
+      "answer": "组织大型 FastAPI 项目结构使用 APIRouter：\n```\nproject/\n├── app/\n│   ├── __init__.py\n│   ├── main.py          # FastAPI 实例、中间件、应用启动\n│   ├── core/\n│   │   ├── config.py    # 配置（Pydantic Settings）\n│   │   ├── security.py  # 认证/授权工具\n│   │   └── database.py  # 数据库引擎、会话\n│   ├── models/          # SQLAlchemy ORM 模型\n│   ├── schemas/         # Pydantic 模型（请求/响应）\n│   ├── api/\n│   │   ├── v1/\n│   │   │   ├── __init__.py\n│   │   │   ├── users.py # 用户相关端点\n│   │   │   ├── items.py # 商品相关端点\n│   │   │   └── router.py  # APIRouter 汇总\n├── tests/\n├── alembic/             # 数据库迁移\n├── requirements.txt\n└── Dockerfile\n```\n分离关注点：core 是基础架构，models 是数据库层，schemas 是 API 契约，api 是路由和业务逻辑。",
+      "tags": [],
+      "question": "请简述FastAPI 如何组织一个大型 FastAPI 项目结构？（使用 APIRouter）"
+    },
+    {
+      "number": 87,
+      "id": "FastAPI 框架-087",
+      "category": "FastAPI 框架",
+      "answer": "APIRouter 是 FastAPI 的路由器类，用于模块化大型应用。作用：(1) 分组相关端点——将用户 API、商品 API、订单 API 的端点分别定义在独立的 APIRouter 实例中；(2) 共享前缀——user_router = APIRouter(prefix='/users', tags=['用户'])，该路由器下所有端点的 URL 自动添加 /users 前缀；(3) 共享依赖——路由器级别的 dependencies 参数；(4) 独立文档标签——每个路由器可以有独立的 tags 和响应模型；(5) 嵌套——路由器可以嵌套包含子路由器。用法：在 users.py 中创建 router = APIRouter()，定义端点 @router.get(...)，在 main.py 中 app.include_router(router)。",
+      "tags": [],
+      "question": "请简述什么是 APIRouter？它如何帮助模块化一个大型应用？"
+    },
+    {
+      "number": 88,
+      "id": "FastAPI 框架-088",
+      "category": "FastAPI 框架",
+      "answer": "将多个 APIRouter 包含到主应用中：\n```python\n# main.py\nfrom fastapi import FastAPI\nfrom app.api.v1 import users, items, orders\n\napp = FastAPI()\n\napp.include_router(users.router, prefix='/api/v1')\napp.include_router(items.router, prefix='/api/v1')\napp.include_router(orders.router, prefix='/api/v1')\n\n# 也可以从路由器汇总模块导入\nfrom app.api.v1.router import api_router\napp.include_router(api_router, prefix='/api/v1')\n```\n其中 router.py 汇总所有子路由器：\n```python\n# api/v1/router.py\nfrom fastapi import APIRouter\nfrom . import users, items, orders\n\napi_router = APIRouter()\napi_router.include_router(users.router)\napi_router.include_router(items.router)\napi_router.include_router(orders.router)\n```",
+      "tags": [],
+      "question": "请简述FastAPI 如何将多个 APIRouter 包含到主应用中？"
+    },
+    {
+      "number": 89,
+      "id": "FastAPI 框架-089",
+      "category": "FastAPI 框架",
+      "answer": "使用 Pydantic 的 Settings 管理应用配置（Pydantic v2 用 pydantic-settings）：\n```python\n# pip install pydantic-settings\nfrom pydantic_settings import BaseSettings\n\nclass Settings(BaseSettings):\n    app_name: str = 'My FastAPI App'\n    debug: bool = False\n    database_url: str\n    secret_key: str\n    redis_url: str = 'redis://localhost:6379'\n    \n    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')\n\nsettings = Settings()  # 自动从 .env 和环境变量读取\n\napp = FastAPI(title=settings.app_name, debug=settings.debug)\n```\n优势：(1) 自动从环境变量读取（DATABASE_URL → settings.database_url）；(2) 支持 .env 文件；(3) 类型验证（端口号必须是整数）；(4) 所有配置集中管理，一处修改全局生效。",
+      "tags": [],
+      "question": "请简述FastAPI 如何使用 Pydantic 的 Settings 管理应用配置？"
+    },
+    {
+      "number": 90,
+      "id": "FastAPI 框架-090",
+      "category": "FastAPI 框架",
+      "answer": "在启动和关闭时执行事件处理程序：\n```python\n@app.on_event('startup')\nasync def startup_event():\n    # 应用启动时执行：初始化数据库连接池、预热模型、连接外部服务\n    await database.connect()\n    print('Application started')\n\n@app.on_event('shutdown')\nasync def shutdown_event():\n    # 应用关闭时执行：关闭数据库连接、清理资源\n    await database.disconnect()\n    print('Application shutting down')\n```\n替代方案（推荐，FastAPI 最新版本）：使用 lifespan 上下文管理器：\n```python\nfrom contextlib import asynccontextmanager\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    # startup\n    await database.connect()\n    yield\n    # shutdown\n    await database.disconnect()\n\napp = FastAPI(lifespan=lifespan)\n```\nlifespan 方式更清晰，支持异常处理和状态共享。",
+      "tags": [],
+      "question": "请简述FastAPI 如何在启动和关闭时执行事件处理程序？（使用 @app.on_event(\"startup\") 和 @app.on_event(\"shutdown\")）"
+    },
+    {
+      "number": 91,
+      "id": "FastAPI 框架-091",
+      "category": "FastAPI 框架",
+      "answer": "为路径操作函数和依赖项添加自定义标签和元数据：\n```python\n@app.get('/items/', tags=['商品'], summary='商品列表', deprecated=False)\nasync def list_items(): ...\n\n@app.post('/items/', tags=['商品'], response_model=ItemOut)\nasync def create_item(): ...\n\napp = FastAPI(\n    title='电商 API',\n    description='在线商城后端 API',\n    version='1.0.0',\n    terms_of_service='https://example.com/terms',\n    contact={'name': 'API Support', 'email': 'support@example.com'},\n    license_info={'name': 'MIT'},\n    openapi_tags=[\n        {'name': '商品', 'description': '商品管理相关操作'},\n        {'name': '用户', 'description': '用户注册、登录和个人信息'},\n    ],\n)\n\n# APIRouter 级别\nrouter = APIRouter(prefix='/admin', tags=['管理后台'])\n```\n这些元数据全部反映在 OpenAPI 规范和自动文档中。",
+      "tags": [],
+      "question": "请简述FastAPI 如何为路径操作函数和依赖项添加自定义标签和元数据？"
+    },
+    {
+      "number": 92,
+      "id": "FastAPI 框架-092",
+      "category": "FastAPI 框架",
+      "answer": "处理异步路径操作函数及使用时机：(1) 使用 async def——路径操作函数为异步，FastAPI 在 asyncio 事件循环中直接执行，适合 I/O 密集型操作（数据库查询、HTTP 调用、文件读取等）；(2) 使用 def——同步函数，FastAPI 在线程池（ThreadPoolExecutor）中执行，避免阻塞事件循环，适合 CPU 密集型操作或有同步依赖库的场景；(3) 选择——如果函数内部使用了 await（如 await db.execute()、await httpx.get()），必须用 async def；如果函数内的操作都是同步的（纯计算、老的同步 ORM），直接 def 即可，FastAPI 自动在线程池中运行；(4) 误区——不要为了 async 而 async，如果内部没有 await，async def 和 def 性能差异极小。",
+      "tags": [],
+      "question": "请简述FastAPI 如何处理异步路径操作函数？什么时候应该使用它们？"
+    },
+    {
+      "number": 93,
+      "id": "FastAPI 框架-093",
+      "category": "FastAPI 框架",
+      "answer": "响应模型（response_model）参数的作用：(1) 过滤响应数据——只返回模型定义中声明的字段，额外的敏感字段（如 password_hash、internal_status）自动排除；(2) 验证响应数据——确保返回的数据结构符合模型定义，类型不匹配时返回服务器错误而非向客户端暴露脏数据；(3) 文档生成——响应体的 JSON Schema 来自 response_model，Swagger UI 显示正确的响应格式；(4) 序列化转换——自动将 ORM 对象、dataclass 转为 JSON-compatible dict（需设置 from_attributes=True）；(5) 性能——比不加 response_model 时手动转为 dict 通常更快（Pydantic v2 基于 Rust 的验证核心）。使用：@app.get('/users/{id}', response_model=UserOut)。",
+      "tags": [],
+      "question": "请简述解释 FastAPI 中的“响应模型”参数？它如何帮助过滤和验证响应数据？"
+    },
+    {
+      "number": 94,
+      "id": "FastAPI 框架-094",
+      "category": "FastAPI 框架",
+      "answer": "jsonable_encoder 是 FastAPI 提供的工具函数，用于将复杂对象（ORM 模型、datetime、ObjectId 等）转换为可被 JSON 序列化的 Python 标准类型：\n```python\nfrom fastapi.encoders import jsonable_encoder\n\nuser = db.query(User).first()  # SQLAlchemy ORM 对象\nuser_dict = jsonable_encoder(user)\n# datetime -> str, ObjectId -> str, Enum -> value, set -> list\n```\n典型场景：(1) 将 ORM 查询结果存入 Redis（需要 JSON 序列化）；(2) 手动构造响应体绕过 response_model 的自动处理；(3) 在路径操作函数内部需要 JSON 兼容数据做额外处理时。注意：配合 response_model 时通常不需要手动调用 jsonable_encoder，FastAPI 内部已自动处理。",
+      "tags": [],
+      "question": "请简述FastAPI 如何使用 jsonable_encoder？"
+    },
+    {
+      "number": 95,
+      "id": "FastAPI 框架-095",
+      "category": "FastAPI 框架",
+      "answer": "SQL 注入是一种通过在用户输入中嵌入恶意 SQL 代码来操纵数据库的攻击。ORM（如 SQLAlchemy）通过参数化查询自动防止 SQL 注入：db.query(User).filter(User.name == user_input) 的内部实现是生成参数化 SQL（SELECT ... WHERE name = ?，? 被转义的用户输入替代），用户输入不会被解释为 SQL 代码的一部分。注意事项：即使使用 ORM，拼接原始 SQL 字符串（如 execute(text(f\"SELECT * FROM users WHERE name = '{name}'\"))）仍存在 SQL 注入风险。始终使用参数绑定：execute(text('SELECT * FROM users WHERE name = :name'), {'name': user_input})。",
+      "tags": [
+        "SQL"
+      ],
+      "question": "请简述什么是 SQL 注入？使用 ORM（如 SQLAlchemy）如何帮助防止它？"
+    },
+    {
+      "number": 96,
+      "id": "FastAPI 框架-096",
+      "category": "FastAPI 框架",
+      "answer": "XSS（跨站脚本攻击）允许攻击者在受害者的浏览器中执行恶意脚本。FastAPI/Pydantic 默认的防御措施：(1) FastAPI 默认返回 JSON 响应（Content-Type: application/json），浏览器不会将 JSON 解释为 HTML/JavaScript 执行；(2) Pydantic 的严格类型验证确保输入数据的类型符合预期（如 int 字段不接受字符串），减少恶意脚本注入的机会；(3) 所有字符串输出都经过 JSON 编码（特殊字符被转义），不会直接被浏览器解析。注意事项：如果返回 HTML 响应（HTMLResponse）且包含用户输入，必须手动进行 HTML 实体转义（如使用 Jinja2 的自动转义或 bleach 库清洗 HTML）。",
+      "tags": [],
+      "question": "请简述什么是 XSS？FastAPI/Pydantic 如何默认帮助防范它？"
+    },
+    {
+      "number": 97,
+      "id": "FastAPI 框架-097",
+      "category": "FastAPI 框架",
+      "answer": "保护应用免受 CSRF（跨站请求伪造）攻击：(1) FastAPI 的 JSON API 默认不受传统 CSRF 攻击——因为浏览器不会在跨域 JSON 请求中自动携带 Cookie（除非设置了 withCredentials），且 JSON API 通常使用 Authorization: Bearer 头而非 Cookie 进行认证；(2) 传统 Web 应用（使用 Cookie-session 认证）需要 CSRF 保护——使用 fastapi-csrf-protect 或 starlette-csrf 中间件生成和验证 CSRF token；(3) SameSite Cookie 策略——设置 response.set_cookie('session', value, samesite='strict' 或 'lax')，现代浏览器会阻止跨站请求携带 Cookie；(4) 双重确认——关键操作（支付、删除）加二次认证或验证码。",
+      "tags": [],
+      "question": "请简述FastAPI 如何保护你的应用免受 CSRF 攻击？"
+    },
+    {
+      "number": 98,
+      "id": "FastAPI 框架-098",
+      "category": "FastAPI 框架",
+      "answer": "确保应用使用 HTTPS：(1) 生产环境——始终在反向代理层（Nginx、AWS ALB、Cloudflare）配置 SSL/TLS 终止，通过 HTTP 端口转发到 FastAPI；(2) 强制 HTTPS——在 Nginx 中配置 HTTP → HTTPS 重定向（301 redirect）；(3) HSTS 头——添加 Strict-Transport-Security: max-age=31536000; includeSubDomains 头，告诉浏览器始终使用 HTTPS；(4) 安全 Cookie——设置 cookie 的 secure=True（仅在 HTTPS 下发送）和 httponly=True（防止 JS 访问）；(5) FastAPI 本身不需要处理 SSL——这是反向代理的职责，FastAPI 只监听内网 HTTP 端口。开发环境不需要 HTTPS。",
+      "tags": [],
+      "question": "请简述FastAPI 如何确保你的应用使用 HTTPS？"
+    },
+    {
+      "number": 99,
+      "id": "FastAPI 框架-099",
+      "category": "FastAPI 框架",
+      "answer": "JWT 中应该存储的信息：(1) sub（subject）——用户唯一标识（user_id 或 username）；(2) exp（过期时间）——token 过期时间戳；(3) iat（签发时间）；(4) iss（签发者）；(5) scope/permissions——用户的权限范围（如 'read write'）。不应存储的信息：(1) 敏感个人信息——密码哈希、身份证号、银行卡号等，JWT 仅被 base64 编码而非加密（除非使用 JWE），payload 对任何获取 token 的人可读；(2) 大量数据——JWT 随每个请求发送，payload 太大会增加带宽消耗和延迟，大型数据应存数据库，JWT 中仅存 ID 引用；(3) 可变状态——用户的实时余额、当前积分等频繁变化的数据，JWT 签发后内容不变，应实时从数据库查询。JWT 最佳实践：payload 尽量小（< 1KB），配合短过期时间（15分钟）+ refresh token。",
+      "tags": [],
+      "question": "请简述在 JWT 中应该存储什么信息？什么信息不应该存储？"
+    }
+  ]
+}

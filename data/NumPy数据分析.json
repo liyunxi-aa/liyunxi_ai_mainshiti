@@ -1,0 +1,981 @@
+{
+  "category": "NumPy数据分析",
+  "questions": [
+    {
+      "id": "NumPy数据分析-001",
+      "number": 1,
+      "question": "请简述Flask 解释 Jinja2 模板中的控制.. ?",
+      "answer": "Jinja2模板的控制结构主要包括条件判断（{% if %}...{% elif %}...{% else %}...{% endif %}）和循环（{% for item in iterable %}...{% endfor %}），它们允许在模板中根据数据动态渲染内容。此外，还支持宏（{% macro %}）和模板继承（{% block %}）等高级控制，用于复用代码和定义布局。这些控制语句通常与Flask的render_template配合使用，通过传入的上下文变量实现逻辑分支与迭代输出。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-002",
+      "number": 2,
+      "question": "请简述解释 NumPy 的“数组”与 Python 原生“列表”的主要区别？ ?",
+      "answer": "NumPy数组是同类型数据的连续内存块，支持元素类型一致，而Python列表是异构对象的指针数组，每个元素是独立对象。这使得NumPy数组在内存占用和计算速度上远优于列表，尤其适合数值计算。此外，NumPy提供了广播、向量化操作等高级功能，而列表仅支持逐元素循环。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-003",
+      "number": 3,
+      "question": "请简述如何安装和导入 NumPy？ ?",
+      "answer": "安装NumPy通常通过pip命令：pip install numpy，或在conda环境中使用conda install numpy。导入时使用import numpy as np，这是约定俗成的别名，以便调用其函数和数组对象。确保安装成功后，可在交互环境或脚本中通过np.array()等API使用其核心功能。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-004",
+      "number": 4,
+      "question": "请简述什么是 ndarray？它的核心属性有哪些？（shape, dtype, ndim, size） ?",
+      "answer": "ndarray是NumPy中用于存储同质数据的多维数组对象，其底层基于C语言实现，支持高效的向量化运算。核心属性包括：shape表示各维度的大小，如(3,4)；dtype描述元素的数据类型，如float64；ndim指示数组的维度数，即len(shape)；size给出数组中元素的总个数，即shape各维度乘积。这些属性共同决定了数组在内存中的布局与运算行为。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-005",
+      "number": 5,
+      "question": "请简述NumPy 如何查看一个数组的形状、数据类型、维数和元素总数？ ?",
+      "answer": "使用数组的shape属性查看形状，返回一个元组；dtype属性查看数据类型；ndim属性查看维数（轴的数量）；size属性查看元素总数。这些属性均为NumPy ndarray的内置属性，无需调用函数即可获取。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-006",
+      "number": 6,
+      "question": "请简述NumPy 如何创建一个指定形状的全零、全一或未初始化的数组？ ?",
+      "answer": "使用np.zeros(shape)创建全零数组，np.ones(shape)创建全一数组，np.empty(shape)或np.require不初始化值，返回随机内存数据但速度更快。指定形状如(3,4)传入元组即可，数据类型可通过dtype参数控制。注意empty数组未初始化，使用前必须赋值，否则包含不可预测的垃圾值。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-007",
+      "number": 7,
+      "question": "请简述NumPy 如何创建一个单位矩阵？ ?",
+      "answer": "NumPy 中创建单位矩阵最直接的方法是使用 `numpy.eye(N)`，它返回一个 N×N 的主对角线为 1、其余元素为 0 的二维数组。`numpy.identity(N)` 功能与之类似，但仅支持方阵且不含参数 `k` 来偏移对角线。此外，也可以利用 `numpy.diag(numpy.ones(N))` 构造，但多了一步创建全 1 数组的开销，复杂度均为 O(N²) 的空间占用。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-008",
+      "number": 8,
+      "question": "请简述NumPy 如何创建一个等差数组？（np.arange） ?",
+      "answer": "np.arange是NumPy中通过指定起始值、终止值（不含）和步长来创建等差数组的核心函数，默认步长为1。它接受start（可选，默认0）、stop和step（可选，默认1）三个参数，返回一维ndarray。例如np.arange(0, 10, 2)生成[0,2,4,6,8]。需注意stop为开区间，且支持整数和浮点数步长，但浮点步长可能因精度问题导致元素个数偏差。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\n# 从列表创建\na = np.array([1, 2, 3, 4, 5])\n\n# 特殊数组\nzeros = np.zeros((2, 3))           # 全0\nones = np.ones((2, 3))             # 全1\neye = np.eye(3)                    # 单位矩阵\nrand = np.random.rand(2, 3)        # [0,1) 均匀\nrandn = np.random.randn(2, 3)      # 标准正态\narange = np.arange(0, 10, 2)       # 等差数列\nlinspace = np.linspace(0, 1, 5)    # 等间距\n\nprint(ones)\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-009",
+      "number": 9,
+      "question": "请简述NumPy 如何创建一个等间隔数组？（np.linspace） ?",
+      "answer": "np.linspace(start, stop, num) 通过指定起始值、终止值和元素个数生成等间隔数组，默认包含终点。与 np.arange 的步长控制不同，linspace 适用于需要精确控制点数或避免浮点误差的场景，例如在绘图坐标轴或科学计算中生成采样点。通过 endpoint 参数可控制是否包含终点，dtype 可指定输出类型。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-010",
+      "number": 10,
+      "question": "请简述NumPy 如何创建随机数组？（使用 np.random） ?",
+      "answer": "NumPy的np.random模块提供了多种创建随机数组的方法：`np.random.rand(d0, d1, ...)`生成[0,1)均匀分布的浮点数数组，`np.random.randn(d0, d1, ...)`生成标准正态分布的浮点数数组，而`np.random.randint(low, high, size)`生成指定范围内的随机整数数组。此外，`np.random.uniform`和`np.random.normal`可控制分布参数，并通过`np.random.seed`设置随机种子以复现结果。这些函数依赖高效的伪随机数生成算法（如Mersenne Twister），适用于蒙特卡洛模拟、权重初始化等场景。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-011",
+      "number": 11,
+      "question": "请简述NumPy 如何从 Python 列表或元组创建数组？ ?",
+      "answer": "使用numpy.array()函数，传入Python列表或元组即可创建ndarray对象，例如np.array([1,2,3])或np.array((4,5,6))。该函数会自动推断数据类型（dtype），也可通过dtype参数显式指定，例如np.array([1,2,3], dtype=float)。对于嵌套列表或元组，将生成多维数组，且所有子序列长度必须一致以保证同质性。此外，numpy.asarray()可将现有序列转换为数组而避免复制，但接受更宽泛的输入类型。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\n# 从列表创建\na = np.array([1, 2, 3, 4, 5])\n\n# 特殊数组\nzeros = np.zeros((2, 3))           # 全0\nones = np.ones((2, 3))             # 全1\neye = np.eye(3)                    # 单位矩阵\nrand = np.random.rand(2, 3)        # [0,1) 均匀\nrandn = np.random.randn(2, 3)      # 标准正态\narange = np.arange(0, 10, 2)       # 等差数列\nlinspace = np.linspace(0, 1, 5)    # 等间距\n\nprint(ones)\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-012",
+      "number": 12,
+      "question": "请简述NumPy 如何改变数组的形状？（reshape） ?",
+      "answer": "reshape通过返回新视图或拷贝来改变数组的维度结构，总元素数必须保持不变。核心参数是目标形状元组，其中-1表示自动推断该维度大小。底层调用C语言级别的内存重排，因此操作高效。注意reshape返回的是视图（除非无法连续访问），此时修改原数组会影响结果，可用copy()强制拷贝。若需改变形状同时重排数据，使用resize或ravel+reshape组合。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-013",
+      "number": 13,
+      "question": "请简述NumPy 的reshape 和 resize 有什么区别？ ?",
+      "answer": "reshape返回一个新数组而不改变原始数据，要求变换前后元素总数相同；resize则直接修改原数组（或返回新数组取决于调用方式），允许元素总数不同，通过重复或截断填充数据。核心区别在于是否创建副本以及是否保持总元素数不变，resize在ndarray对象上就地操作时无返回值，而np.resize函数返回新数组。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\n# 从列表创建\na = np.array([1, 2, 3, 4, 5])\n\n# 特殊数组\nzeros = np.zeros((2, 3))           # 全0\nones = np.ones((2, 3))             # 全1\neye = np.eye(3)                    # 单位矩阵\nrand = np.random.rand(2, 3)        # [0,1) 均匀\nrandn = np.random.randn(2, 3)      # 标准正态\narange = np.arange(0, 10, 2)       # 等差数列\nlinspace = np.linspace(0, 1, 5)    # 等间距\n\nprint(ones)\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-014",
+      "number": 14,
+      "question": "请简述NumPy 如何将多维数组展平为一维数组？（flatten 和 ravel） ?",
+      "answer": "NumPy中flatten和ravel都用于将多维数组展平为一维，核心区别在于返回的是副本还是视图。flatten总是返回新的连续内存副本，不共享原数据，修改不会影响原数组；ravel则尽可能返回视图（当原数组为C或F连续时），修改视图会同步到原数组，但若需副本则返回副本。因此，在只需读取或需保留原数组不变时用flatten，在追求性能且允许共享内存时用ravel。此外，两者都支持指定order参数控制展平顺序（C/Fortran）。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-015",
+      "number": 15,
+      "question": "请简述NumPy 的flatten 和 ravel 有什么区别？（返回拷贝 vs 返回视图） ?",
+      "answer": "flatten()总是返回原数组的一份拷贝，修改它不影响原数组；ravel()在可能时返回视图（即与原数组共享内存），修改视图会改变原数组，仅在数组不连续或顺序非C风格时可能返回拷贝。因此，ravel()通常更高效（节省内存），但需谨慎处理视图的副作用。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-016",
+      "number": 16,
+      "question": "请简述NumPy 如何访问一维数组中的元素？ ?",
+      "answer": "NumPy 一维数组通过整数索引直接访问单个元素，索引从0开始，支持负索引从末尾计数。使用切片语法 start:stop:step 可获取子数组，返回原数组的视图而非副本，因此修改视图会影响原数组。此外，支持花式索引（整数列表或数组）和布尔索引，它们返回原数组的副本。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-017",
+      "number": 17,
+      "question": "请简述NumPy 如何对数组进行切片？（start:stop:step） ?",
+      "answer": "NumPy切片语法为arr[start:stop:step]，start是起始索引（包含），stop是终止索引（不包含），step是步长，默认值为1。切片返回原数组的视图而非副本，修改切片会影响原数组。支持多维切片，例如arr[0:2, 1:3]对行和列分别切片。负索引从末尾计数，负步长可实现反向输出。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-018",
+      "number": 18,
+      "question": "请简述NumPy 如何访问二维数组中的元素、行和列？ ?",
+      "answer": "访问二维数组元素使用arr[i,j]或arr[i][j]，其中i为行索引，j为列索引；行切片arr[i,:]或arr[i]返回第i行，列切片arr[:,j]返回第j列为列向量。切片操作遵循左闭右开规则，支持负索引与步长。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-019",
+      "number": 19,
+      "question": "请简述什么是“布尔索引”？如何使用它来过滤数组？ ?",
+      "answer": "布尔索引是NumPy中利用与数组形状相同的布尔型数组作为索引来选取数据的机制，本质上是基于元素级条件筛选的掩码操作。使用时直接将布尔数组作为索引传入目标数组，如arr[arr > 5]会返回所有大于5的元素，支持多条件组合如(arr > 3) & (arr < 10)。该方法的优势在于避免显式循环，且能高效处理高维数组的过滤。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-020",
+      "number": 20,
+      "question": "请简述什么是“花式索引”？如何使用整数数组进行索引？ ?",
+      "answer": "花式索引是NumPy中使用整数数组而不是切片来选择元素子集的方法，它返回数据的副本而非视图。要使用整数数组索引，只需将包含目标索引的列表或数组传递给数组的索引运算符，例如arr[[0,2,4]]会选取索引位置0、2、4的元素。对于多维数组，可以传入多个整数数组，每个数组对应一个轴的索引，从而实现如选取特定行和列交叉点等复杂操作。这种方法支持使用布尔数组或整数数组的组合，但需要注意返回结果总是新数组，修改它不会影响原数组。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-021",
+      "number": 21,
+      "question": "请简述NumPy 如何使用布尔掩码从数组中选择元素？ ?",
+      "answer": "NumPy通过构造一个与原数组形状相同的布尔数组作为索引，实现基于条件的元素选择；该布尔数组通常由比较运算或逻辑运算生成，如arr[arr > 0]会返回所有正值的一维视图。这种掩码索引方式支持多维数组和广播机制，能够高效进行复杂数据筛选，且不会产生数据复制，直接引用原数组内存。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-022",
+      "number": 22,
+      "question": "请简述NumPy 如何修改数组中满足特定条件的元素？ ?",
+      "answer": "NumPy利用布尔索引实现条件修改：先通过比较运算生成与数组形状相同的布尔掩码，再将该掩码直接用于索引赋值，例如arr[arr > 0] = 0。这种方法避免了显式循环，底层采用向量化操作，内存连续访问，效率远高于逐元素迭代。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-023",
+      "number": 23,
+      "question": "请简述NumPy 如何访问二维数组的对角线元素？（np.diag） ?",
+      "answer": "使用np.diag函数可以提取二维数组的主对角线元素，它返回一个一维数组（副本而非视图），也可通过k参数指定偏移量提取上副对角线或下副对角线。若输入一维数组，np.diag则将其转换为以该数组为对角线的二维对角矩阵。该函数基于底层C实现，操作高效，但需注意返回结果是新数组，对大数组的重复访问可能产生额外内存开销。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-024",
+      "number": 24,
+      "question": "请简述解释数组的“视图”和“副本”概念？ ?",
+      "answer": "视图是数组数据的另一种表示方式，共享底层内存，因此修改视图会影响原始数组。副本则是通过复制数据创建的独立数组，拥有独立内存，修改副本不会影响原始数组。视图通常通过切片、转置或广播等操作产生，而副本常由显式调用copy()或某些高级索引（如花式索引）生成。判断方式是检查数组的base属性：若为None，则是副本；否则为视图指向原始数组。理解这一点对避免无意数据污染和优化内存使用至关重要。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-025",
+      "number": 25,
+      "question": "请简述NumPy 如何判断一个数组切片是视图还是副本？ ?",
+      "answer": "判断数组切片是视图还是副本，可通过检查其`base`属性：若`arr.base`不为None，则切片为视图，共享内存；若为None且`arr.flags.owndata`为True，则为副本。常规切片（连续或步长切片）通常返回视图，而高级索引（如布尔索引、花式索引）总是返回副本。检查`np.shares_memory(arr, view)`可直接验证是否共享内存。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-026",
+      "number": 26,
+      "question": "请简述为什么理解视图和副本对于性能很重要？ ?",
+      "answer": "视图是原数组的引用，不复制数据，操作更快且节省内存；副本是独立的数据拷贝，占用额外内存但避免修改原始数据。理解两者的区别能帮助避免意外修改导致的数据污染，同时在处理大规模数据时能显著提升内存效率和计算性能。错误使用可能引发难以调试的逻辑错误或内存瓶颈，因此是高性能计算的基石。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-027",
+      "number": 27,
+      "question": "请简述解释 NumPy 的“广播”规则？ ?",
+      "answer": "广播是NumPy对不同形状数组进行算术运算时自动扩展维度的机制，其规则是：从尾部维度开始对比，若维度相等或其中一个为1，则可进行运算，否则报错。具体地，如果两个数组的形状在某维度上不匹配且都不为1，则无法广播；维度为1的轴会沿该方向复制以匹配较大的一方。广播避免了显式数据拷贝，提高了内存和计算效率，是实现向量化操作的核心基础。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-028",
+      "number": 28,
+      "question": "请简述NumPy 在什么情况下广播会失败？（形状不兼容） ?",
+      "answer": "NumPy广播失败发生在进行数组运算时，两个数组的维度无法通过广播规则对齐。具体来说，广播要求从尾部维度开始比较，每个维度要么长度相等，要么其中一个为1，否则就会抛出ValueError报形状不兼容。例如形状为(3,2)与(3,)的数组可以广播，但(3,2)与(2,3)则无法匹配，因为尾部维度2≠3且两者均不为1。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-029",
+      "number": 29,
+      "question": "请简述NumPy 如何对两个数组进行元素级的加法、减法、乘法和除法？ ?",
+      "answer": "使用NumPy的算术运算符+、-、*、/可直接对两个数组进行逐元素运算，要求数组形状兼容或满足广播规则。当形状不同时，NumPy会自动广播扩展维度使操作合法，但需避免因广播导致意外结果。对于复数数组或特定数据类型，运算符会保持类型一致并处理溢出。若需避免创建新数组，可使用np.add、np.subtract等ufunc函数并指定out参数进行原地操作。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-030",
+      "number": 30,
+      "question": "请简述NumPy 的数组的 * 操作和矩阵的 @ 或 np.dot 操作有什么区别？ ?",
+      "answer": "* 操作是逐元素乘法（element-wise），遵循广播规则，要求形状兼容；而 @ 或 np.dot 执行的是矩阵乘法（dot product），要求满足线性代数中的维度匹配（前列=后行）。前者适用于对应位置运算，后者用于线性组合或投影，二者在语义和结果形状上完全不同，混淆会导致维度错误或非预期结果。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-031",
+      "number": 31,
+      "question": "请简述NumPy 如何计算两个数组的点积？ ?",
+      "answer": "NumPy计算两个数组的点积主要使用np.dot或@运算符，本质上是线性代数中的矩阵乘法：对于一维数组，直接计算内积；对于二维，按行与列对应元素相乘求和；更高维则依据后两维的矩阵乘法规则，前导维广播。这要求第一个数组的最后一维大小等于第二个数组的倒数第二维，否则会引发ValueError。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-032",
+      "number": 32,
+      "question": "请简述NumPy 如何计算数组元素的平方根、指数和对数？ ?",
+      "answer": "NumPy通过通用函数（ufunc）提供向量化运算：np.sqrt()计算平方根，np.exp()计算自然指数，np.log()计算自然对数，均能直接作用于数组而无需显式循环。这些函数基于C语言底层实现，支持广播机制，可高效处理任意维度的ndarray，对于其他底数如log2、log10可使用np.log2()、np.log10()。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-033",
+      "number": 33,
+      "question": "请简述NumPy 如何对数组进行三角函数计算？ ?",
+      "answer": "NumPy通过通用函数（ufunc）如np.sin、np.cos、np.tan直接对数组进行逐元素三角函数计算，输入可为标量或数组，输出形状与输入一致，且底层采用C语言优化实现，具备向量化运算和广播能力。默认输入单位为弧度，若需角度需先通过np.deg2rad转换，或使用np.radians。这些函数支持浮点数和复数数组，对NaN和无穷值按IEEE规范处理，整体性能远优于纯Python循环。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-034",
+      "number": 34,
+      "question": "请简述NumPy 如何计算数组元素的总和、均值、标准差和方差？ ?",
+      "answer": "NumPy通过np.sum()、np.mean()、np.std()和np.var()分别计算数组的总和、均值、标准差和方差，均支持axis参数实现沿指定轴计算。这些函数底层基于C语言优化和向量化指令，避免Python层循环，同时内部采用数值稳定的算法（如两遍法计算方差）以减少舍入误差，并能通过ddof参数调整自由度（默认总体标准差，ddof=1为样本标准差）。对大规模数据，其计算效率远优于原生Python实现。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-035",
+      "number": 35,
+      "question": "请简述NumPy 如何计算数组沿特定轴的和、均值等？（axis 参数） ?",
+      "answer": "NumPy的axis参数指定了沿哪个轴（维度）进行聚合操作，如`np.sum(arr, axis=0)`对第一个维度（行）求和，结果降维为列向量；`axis=1`则沿第二个维度（列）求和，结果降维为行向量。对于多维数组，axis对应数组的轴索引，聚合时该轴被压缩，其余维度保留。理解axis本质是操作沿哪个“方向”进行，例如二维数组axis=0跨行操作，axis=1跨列操作。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-036",
+      "number": 36,
+      "question": "请简述NumPy 如何找到数组的最大值、最小值及其索引？ ?",
+      "answer": "NumPy使用np.max(array)和np.min(array)返回数组的最大值与最小值；通过np.argmax(array)和np.argmin(array)获取扁平化后索引，若需沿指定轴操作则传递axis参数，且可结合np.unravel_index将扁平索引转换为多维坐标。这些函数均基于C级遍历，时间复杂度为O(n)。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-037",
+      "number": 37,
+      "question": "请简述NumPy 如何对数组进行排序？（np.sort） ?",
+      "answer": "NumPy 的 np.sort 函数返回输入数组的排序副本，默认沿最后一个轴升序排列，可通过 axis 参数指定排序轴（axis=0 按列排序，axis=1 按行排序），也可使用 kind 参数选择快速排序（quicksort，默认）、归并排序（mergesort）或堆排序（heapsort）算法。对于原地排序，可使用 ndarray.sort() 方法；若需获取排序索引，则用 np.argsort。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\narr = np.array([3, 1, 4, 1, 5, 9, 2, 6])\n\n# 排序（返回副本）\nsorted_arr = np.sort(arr)\nprint(f\"排序后: {sorted_arr}\")  # [1 1 2 3 4 5 6 9]\n\n# 获取排序索引\narr2 = np.array([3, 1, 4, 1, 5])\nindices = np.argsort(arr2)\nprint(f\"排序索引: {indices}\")  # [1 3 0 2 4]\nprint(f\"按索引取值: {arr2[indices]}\")\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-038",
+      "number": 38,
+      "question": "请简述NumPy 的np.sort 和 ndarray.sort 有什么区别？ ?",
+      "answer": "主要区别在于操作方式：np.sort是函数，返回输入数组的排序副本，原数组不变；而ndarray.sort是方法，直接对原数组进行原地排序并返回None。此外，两者都支持通过axis参数指定排序轴，并可通过kind参数选择排序算法（如quicksort、mergesort、heapsort）。性能上，原地排序更节省内存，但会丢失原始数据；若需保留原数据，应使用np.sort。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-039",
+      "number": 39,
+      "question": "请简述NumPy 如何连接多个数组？（np.concatenate） ?",
+      "answer": "np.concatenate 沿指定轴将多个数组拼接为一个新数组，不复制数据仅创建视图。需保证除拼接轴外各数组形状一致，axis 参数默认 0。底层通过调整内存布局实现连续存储，适用于批量数据合并。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-040",
+      "number": 40,
+      "question": "请简述NumPy 如何沿新轴堆叠数组？（np.vstack, np.hstack, np.dstack） ?",
+      "answer": "NumPy中，np.vstack沿第一轴（axis=0）垂直堆叠，np.hstack沿第二轴（axis=1）水平堆叠，np.dstack沿第三轴（axis=2）深度堆叠；它们本质上通过np.concatenate实现，但自动处理维度兼容性：vstack和dstack会将低维数组扩充到目标维度，而hstack对一维数组直接拼接。注意，堆叠时除指定轴外的所有维度需保持一致。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-041",
+      "number": 41,
+      "question": "请简述NumPy 如何分割数组？（np.split, np.hsplit, np.vsplit） ?",
+      "answer": "NumPy提供np.split按轴均匀划分数组，需指定分段数或分段点；np.hsplit专用于水平分割（axis=1），等价于np.split(axis=1)；np.vsplit专用于垂直分割（axis=0），等价于np.split(axis=0)。三者的核心区别在于默认轴向不同，且hsplit/vsplit仅适用于二维及以上数组，而split适用于任意维度并支持不等长分割。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-042",
+      "number": 42,
+      "question": "请简述什么是“ufunc”？为什么它们很高效？ ?",
+      "answer": "ufunc（通用函数）是NumPy中对数组执行逐元素运算的向量化函数，本质上是C语言实现的高效循环。其高效性源于：底层用编译好的C代码替代Python层级的循环，避免了Python解释器开销；同时利用广播机制灵活处理不同形状的数组，并常调用高度优化的BLAS/LAPACK等线性代数库，实现内存连续存取与CPU缓存友好操作。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-043",
+      "number": 43,
+      "question": "请简述列举一些常见的 ufunc。（np.add, np.subtract, np.multiply, np.divide, np.power） ?",
+      "answer": "通用函数（ufunc）是NumPy中对ndarray进行逐元素操作的向量化函数，其核心优势在于由C语言实现的高性能循环。常见的一元ufunc包括np.abs、np.exp、np.log、np.sqrt，以及三角函数如np.sin、np.cos；二元ufunc如np.add、np.subtract、np.multiply、np.divide、np.power实现基本算术，此外还有np.mod、np.greater等比较函数。ufunc支持广播机制，并可通过reduce、accumulate等方法实现归约和累积计算，显著提升代码效率与可读性。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-044",
+      "number": 44,
+      "question": "请简述NumPy 如何创建自定义的 ufunc？（np.frompyfunc） ?",
+      "answer": "使用np.frompyfunc可将任意Python函数转换为支持广播的ufunc：首先定义一个处理标量的函数，然后调用np.frompyfunc(func, nin, nout)指定输入输出参数个数。返回的ufunc会对元素逐一调用原函数，但输出为object类型，通常需再调用.astype转换。此方法牺牲了性能（依赖Python循环），但能快速实现自定义元素级操作，适合原型开发。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-045",
+      "number": 45,
+      "question": "请简述NumPy 如何计算数组的累积和、累积积？（np.cumsum, np.cumprod） ?",
+      "answer": "np.cumsum和np.cumprod分别沿指定轴（默认展平）计算数组元素的累积和与累积积，返回与输入形状相同的数组，每个元素是前序所有元素（含自身）的累加或累乘结果。注意累积积对大数可能溢出，且精度受浮点类型影响，通常配合axis参数实现多维更精细控制。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-046",
+      "number": 46,
+      "question": "请简述NumPy 如何计算数组元素的差分？（np.diff） ?",
+      "answer": "np.diff计算数组沿指定轴相邻元素的差值，默认沿最后一个轴，返回的数组长度比原数组少一。它支持n阶差分通过设置n参数实现，内部通过连续执行一阶差分完成，复杂度O(N)。例如np.diff([1,3,6])返回[2,3]。该函数底层调用C语言实现，数据拷贝少且高效。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-047",
+      "number": 47,
+      "question": "请简述NumPy 如何对数组进行四舍五入？（np.round） ?",
+      "answer": "np.round 对数组元素执行标准的四舍五入，通过 decimials 参数指定小数位数（默认0）。底层调用 C 库的 round 函数，遵循“四舍六入五成双”的银行家舍入规则。对于浮点数数组，返回同形状的新数组，不修改原数组。当输入为整数类型时，直接返回原数组副本。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-048",
+      "number": 48,
+      "question": "请简述NumPy 如何获取数组元素的整数部分和小数部分？（np.trunc, np.modf） ?",
+      "answer": "np.trunc 用于获取数组元素的整数部分，其原理是向零方向截断小数，即直接舍弃小数部分，返回与输入同形状的浮点数组。np.modf 则同时返回小数部分和整数部分，结果为两个数组的元组，小数部分与输入同符号，整数部分向零取整。两者的核心区别在于 np.trunc 只输出整数部分，而 np.modf 能同时获取两部分，适合需要对小数部分进行单独操作的场景。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-049",
+      "number": 49,
+      "question": "请简述NumPy 如何执行矩阵乘法？ ?",
+      "answer": "NumPy 通过 `np.dot` 函数或 `@` 运算符执行矩阵乘法，底层调用高度优化的 BLAS 库（如 OpenBLAS、MKL）实现矢量化计算。对于二维数组，它按照行与列的点积规则进行运算，支持广播机制处理高维张量的批量乘法。核心优势在于利用预编译的 C/Fortran 代码避免 Python 循环，达到接近硬件极限的性能。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-050",
+      "number": 50,
+      "question": "请简述NumPy 如何计算矩阵的转置？（.T 属性或 np.transpose） ?",
+      "answer": "NumPy 中计算矩阵转置有两种主要方式：使用数组的 `.T` 属性或调用 `np.transpose` 函数。`.T` 是二维数组的简便属性，返回原始数据的转置视图（不复制内存）；`np.transpose` 更通用，支持通过 `axes` 参数指定任意维度重排，对多维数组同样返回视图。两者均基于调整内存中的步长（strides）实现，因此计算几乎零开销，但注意对非连续数组或特定操作可能需要副本。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-051",
+      "number": 51,
+      "question": "请简述NumPy 如何计算矩阵的逆？（np.linalg.inv） ?",
+      "answer": "NumPy的np.linalg.inv函数通过调用底层LAPACK库实现，核心采用LU分解（带选主元的高斯消元）求解矩阵的逆。具体步骤：先对输入矩阵进行LU分解并计算行列式以检查奇异性，再通过解线性方程组AX=I得到逆矩阵X。该算法复杂度为O(n^3)，数值稳定性由选主元策略保证，对病态矩阵会提前报错。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-052",
+      "number": 52,
+      "question": "请简述NumPy 如何计算矩阵的行列式？（np.linalg.det） ?",
+      "answer": "np.linalg.det通过调用底层LAPACK库中的LU分解算法高效计算行列式，对输入矩阵自动进行双精度浮点运算。对于方阵A，该函数返回其行列式值；若矩阵接近奇异（行列式趋近0），结果可能因浮点误差而不精确。本质上，它基于高斯消元后的主元乘积，复杂度为O(n^3)。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-053",
+      "number": 53,
+      "question": "请简述NumPy 如何计算矩阵的特征值和特征向量？（np.linalg.eig） ?",
+      "answer": "NumPy的np.linalg.eig函数通过调用底层LAPACK库（如DGEEV或ZGEEV例程）计算一般方阵的特征值和右特征向量，返回一个包含特征值的一维数组和一个列向量为对应特征向量的二维数组。该函数适用于实数或复数矩阵，但若矩阵为对称或Hermitian，推荐使用np.linalg.eigh以利用更高效的数值算法。计算复杂度通常为O(n³)，且对于非对称矩阵，特征向量可能为复数。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-054",
+      "number": 54,
+      "question": "请简述NumPy 如何计算矩阵的迹？ ?",
+      "answer": "使用np.trace函数可直接计算矩阵的迹，即对角元素之和。支持二维数组及指定轴参数，如axis1, axis2用于多维矩阵的迹计算。底层通过C实现，时间复杂度O(n)，空间复杂度O(1)。对于非方阵，仅取最小维度的主对角线元素求和。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-055",
+      "number": 55,
+      "question": "请简述NumPy 如何求解线性方程组？（np.linalg.solve） ?",
+      "answer": "NumPy通过np.linalg.solve求解形如Ax=b的线性方程组，其底层调用LAPACK的gesv例程，基于LU分解与部分主元消去法直接求解，适用于系数矩阵A为方阵且非奇异的情况。该函数先对A进行PA=LU分解（P为置换矩阵），再依次通过前向代入解Ly=Pb、回代求解Ux=y得到精确解，时间复杂度为O(n^3)。对于欠定或超定方程组，应使用np.linalg.lstsq通过最小二乘法处理。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-056",
+      "number": 56,
+      "question": "请简述NumPy 如何计算矩阵的范数？（np.linalg.norm） ?",
+      "answer": "np.linalg.norm通过参数ord指定范数类型，默认计算Frobenius范数（即所有元素平方和开方）。对矩阵，ord=2返回谱范数（最大奇异值），ord=1返回最大列绝对值之和，ord=inf返回最大行绝对值之和，ord='fro'显式指定Frobenius范数。该函数先将矩阵展平为一维数组（除非指定axis按行或列计算），再应用所选范数计算公式，最终返回标量或沿指定轴的结果向量。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-057",
+      "number": 57,
+      "question": "请简述NumPy 如何计算矩阵的秩？（np.linalg.matrix_rank） ?",
+      "answer": "NumPy 的 `np.linalg.matrix_rank` 通过奇异值分解（SVD）计算矩阵的秩，默认将大于阈值（max(shape) * S[0] * eps）的奇异值视为非零，其中 S[0] 为最大奇异值，eps 为机器精度。这种方法数值稳定，能处理浮点误差，对于精确整数矩阵也可指定 tol 参数手动设置阈值。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-058",
+      "number": 58,
+      "question": "请简述NumPy 如何执行奇异值分解？（np.linalg.svd） ?",
+      "answer": "np.linalg.svd 将输入数组分解为 U、S 和 Vh 三个矩阵，满足 A = U @ diag(S) @ Vh。函数默认对 M×N 矩阵进行完全分解，通过 full_matrices 参数控制是否输出完整 U 和 Vh；S 返回的是奇异值的一维数组，按降序排列。该实现基于 LAPACK 的 gesdd 例程，数值稳定且高效，适用于矩阵降维、PCA 与推荐系统。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-059",
+      "number": 59,
+      "question": "请简述NumPy 如何设置随机数种子以确保结果可重现？（np.random.seed 或使用 RandomState） ?",
+      "answer": "NumPy可以通过np.random.seed(整数)设置全局随机数种子，确保每次调用随机函数时生成相同序列。更推荐使用np.random.RandomState(种子)创建独立的状态对象，避免全局状态污染，适合多线程或模块化场景。两者本质上都基于梅森旋转算法，通过固定种子初始化内部状态机，从而保证结果完全可重现。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-060",
+      "number": 60,
+      "question": "请简述NumPy 如何生成均匀分布的随机数？ ?",
+      "answer": "NumPy通过`numpy.random.uniform`生成指定区间内的连续均匀分布随机数，参数包括低值、高值和形状；`numpy.random.rand`生成[0,1)区间均匀分布，可指定多维形状；而`numpy.random.randint`用于生成离散均匀分布的整数。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-061",
+      "number": 61,
+      "question": "请简述NumPy 如何生成标准正态分布的随机数？ ?",
+      "answer": "使用numpy.random.randn函数可以生成标准正态分布（均值为0，标准差为1）的随机数，例如np.random.randn(d0, d1, ...)返回指定形状的数组。也可用numpy.random.normal(loc=0.0, scale=1.0, size=None)指定均值和标准差。底层使用Box-Muller变换或Ziggurat算法实现高效采样，支持多种随机数生成器（如默认的MT19937或通过Generator接口指定的PCG64）。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-062",
+      "number": 62,
+      "question": "请简述NumPy 如何生成指定均值和标准差的正态分布随机数？ ?",
+      "answer": "使用numpy.random.normal(loc, scale, size)即可，其中loc指定均值，scale指定标准差，size指定输出形状。该函数基于Box-Muller变换或Ziggurat算法生成服从高斯分布的伪随机数序列，内部依赖numpy的随机数生成器状态。若要保证可复现，可先调用numpy.random.seed设置种子。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-063",
+      "number": 63,
+      "question": "请简述NumPy 如何从二项分布、泊松分布生成随机数？ ?",
+      "answer": "使用numpy.random.binomial(n, p, size)从二项分布生成随机数，参数n为试验次数，p为成功概率；使用numpy.random.poisson(lam, size)从泊松分布生成随机数，参数lam为平均发生率。两种函数底层均调用NumPy的C扩展实现，基于伪随机数生成器（默认Mersenne Twister）转换均匀分布采样。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-064",
+      "number": 64,
+      "question": "请简述NumPy 如何随机打乱数组的顺序？（np.random.shuffle） ?",
+      "answer": "np.random.shuffle()用于原地随机打乱数组元素顺序，直接修改传入数组而不返回新数组。对于多维数组，它仅沿第一个轴（行方向）进行洗牌，不会打乱内部子数组的结构。该函数依赖伪随机数生成器，可通过np.random.seed设定种子确保可重复性。使用时应避免对非数组对象或需要保留原数组的场景调用。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-065",
+      "number": 65,
+      "question": "请简述NumPy 如何从数组中进行随机选择？（np.random.choice） ?",
+      "answer": "np.random.choice可以从给定的一维数组或整数范围中，按指定概率分布（可选）进行有放回或无放回的随机采样，返回单个值或指定大小的数组。核心参数包括a（源数组或整数n表示范围0到n-1）、size（输出形状）、replace（是否重复采样，默认True）、p（各元素被选中的概率分布）。该函数底层基于NumPy的随机数生成器，通过累加概率分布并二分查找实现高效采样。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-066",
+      "number": 66,
+      "question": "请简述NumPy 如何将数组保存到文本文件？（np.savetxt） ?",
+      "answer": "np.savetxt用于将一维或二维NumPy数组以文本格式写入文件，默认以空格分隔并采用科学计数法。常用参数包括文件名、数组、分隔符fmt（如'%.6f'）以及header/comment字符串。该函数通过遍历数组并调用格式化字符串逐行写入，适合保存中低精度数值数据便于跨平台查看。对于高维数组或二进制需求，应改用np.save或np.tofile。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-067",
+      "number": 67,
+      "question": "请简述NumPy 如何从文本文件加载数组？（np.loadtxt） ?",
+      "answer": "np.loadtxt用于从文本文件加载数据到NumPy数组，支持指定分隔符、跳过行头和缺失值处理，默认以空格分隔。它逐行读取文件，将每一行分割为数值并转换为浮点型数组，可配合usecols、dtype等参数控制列选择和数据类型。对于大型文件，建议使用pandas.read_csv的迭代分块读取，因为np.loadtxt完全加载到内存。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-068",
+      "number": 68,
+      "question": "请简述NumPy 如何以 NumPy 原生格式保存和加载数组？（.npy, .npz 格式，使用 np.save, np.load） ?",
+      "answer": "NumPy的原生格式包括.npy和.npz：.npy存储单个数组的二进制数据及元数据，支持高效序列化；.npz是多个.npy文件的压缩归档。使用np.save(filename, array)保存为.npy，默认为未压缩二进制；使用np.savez或np.savez_compressed保存多个数组为.npz，后者使用压缩。加载时，np.load能自动识别.npy或.npz格式，若加载.npz返回类似字典的NpzFile对象，可通过键索引数组。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-069",
+      "number": 69,
+      "question": "请简述NumPy 的保存为 .npy 和 .npz 有什么区别？ ?",
+      "answer": ".npy格式用于保存单个NumPy数组，以未压缩的二进制形式存储，加载速度快；而.npz格式是多个.npy文件的压缩存档，支持同时保存多个数组，并可选择是否使用压缩（通过savez_compressed实现）。两者核心区别在于：npy只能存一个数组，npz可存多个并默认压缩以减小文件体积，但加载时会增加解压开销。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-070",
+      "number": 70,
+      "question": "请简述什么是“结构化数组”？如何创建它们？ ?",
+      "answer": "结构化数组是NumPy中允许每列拥有不同数据类型的数组，本质上是包含多个命名字段的同构元组集合。创建方式包括使用dtype参数指定字段名和类型，如np.array([(1,2.0), (3,4.0)], dtype=[('x', int), ('y', float)])，或通过np.dtype类定义复杂结构。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-071",
+      "number": 71,
+      "question": "请简述NumPy 如何对数组进行条件判断？（np.where） ?",
+      "answer": "np.where 是 NumPy 中基于条件进行向量化选择或索引的核心函数，返回满足条件元素的索引元组或根据条件从两个数组中选取元素。其基本用法为 np.where(condition, x, y)，对应元素若 condition 为 True 则取 x 中同位置值，否则取 y 中值，完全避免显式循环且底层用 C 实现，性能远优于 Python 原生条件判断。当只传入 condition 时，np.where 返回满足条件的元素坐标的元组，常用于高级索引或去重定位。该函数要求 condition 为布尔数组，且 x 和 y 可广播至相同形状，逻辑清晰，是数据清洗和特征工程中高效处理缺失值或异常值的利器。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\narr = np.array([1, 5, 2, 8, 3, 7])\n\n# 获取满足条件的索引\nindices = np.where(arr > 3)\nprint(f\"大于3的索引: {indices}\")\nprint(f\"大于3的值: {arr[indices]}\")\n\n# 条件替换\nresult = np.where(arr > 3, arr, -1)\nprint(f\"条件替换: {result}\")  # [-1 5 -1 8 -1 7]\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-072",
+      "number": 72,
+      "question": "请简述NumPy 如何使用 np.select 根据多个条件选择元素？ ?",
+      "answer": "np.select 接收 condlist（条件列表）和 choicelist（选择列表），以及可选默认值 default，首先按顺序检查每个条件数组的真值，对每个位置返回第一个为 True 的条件所对应的选择值，若所有条件均为 False 则返回 default。使用前需确保 condlist 与 choicelist 长度一致，且每个数组形状兼容。该方法能替代嵌套 np.where，简洁实现多条件多维数组的元素级选择。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\narr = np.array([1, 5, 2, 8, 3, 7])\n\n# 获取满足条件的索引\nindices = np.where(arr > 3)\nprint(f\"大于3的索引: {indices}\")\nprint(f\"大于3的值: {arr[indices]}\")\n\n# 条件替换\nresult = np.where(arr > 3, arr, -1)\nprint(f\"条件替换: {result}\")  # [-1 5 -1 8 -1 7]\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-073",
+      "number": 73,
+      "question": "请简述NumPy 如何对数组进行重复？（np.repeat, np.tile） ?",
+      "answer": "NumPy提供两种重复数组的方式：np.repeat沿指定轴重复单个元素，例如np.repeat([1,2], 3)生成[1,1,1,2,2,2]；而np.tile则沿指定轴重复整个数组，类似瓦片拼接，如np.tile([1,2], 3)生成[1,2,1,2,1,2]。核心区别在于np.repeat操作的是元素级别，np.tile操作的是数组级别，这决定了它们在处理高维数据和广播时的不同应用场景。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-074",
+      "number": 74,
+      "question": "请简述NumPy 如何找到数组中满足条件的元素的索引？（np.argwhere, np.nonzero） ?",
+      "answer": "np.argwhere返回满足条件的元素索引的转置数组，即每个索引为一行，适用于任意维数组；np.nonzero返回一个元组，每个元素对应一个维度的索引数组，两者本质相同但输出格式不同，argwhere更直观地呈现坐标对。选择时，若需直接遍历坐标用argwhere，若需用在高级索引或稀疏矩阵操作则nonzero效率更高。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\narr = np.array([1, 5, 2, 8, 3, 7])\n\n# 获取满足条件的索引\nindices = np.where(arr > 3)\nprint(f\"大于3的索引: {indices}\")\nprint(f\"大于3的值: {arr[indices]}\")\n\n# 条件替换\nresult = np.where(arr > 3, arr, -1)\nprint(f\"条件替换: {result}\")  # [-1 5 -1 8 -1 7]\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-075",
+      "number": 75,
+      "question": "请简述NumPy 如何计算数组元素的直方图？（np.histogram） ?",
+      "answer": "np.histogram通过将数据范围划分为等宽的区间（bins），然后统计每个区间内的元素数量来生成直方图。其核心参数包括输入数组、bins数量或区间边界，以及可选的权重和密度标志。函数返回两个数组：每个区间的频数（或密度值）和对应的区间边界数组。底层实现使用快速排序或分区算法进行元素到区间的分配，时间复杂度为O(n log n)（排序）或O(n)（使用预设边界时）。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-076",
+      "number": 76,
+      "question": "请简述NumPy 如何对数组进行向量化操作以避免 Python 循环？ ?",
+      "answer": "NumPy通过底层C实现和内存连续性，将数组运算委托给编译好的向量化函数（如ufunc），这些函数直接利用SIMD指令对整块数据并行操作，从而避免了Python循环的解释开销。用户只需调用数组级的算术运算、广播或聚合函数（如np.sum），系统自动将循环下沉到C层高效执行。这种设计使得代码更简洁且性能接近C语言，尤其适合大数据集上的元素级操作。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-077",
+      "number": 77,
+      "question": "请简述为什么向量化操作通常比循环快得多？ ?",
+      "answer": "向量化操作利用底层C/Fortran实现的连续内存访问和SIMD指令集，一次性处理整个数组，消除了Python解释器的循环开销和类型检查。而Python循环每步都涉及动态类型解析和函数调用，导致显著性能损失。此外，NumPy的向量化函数经过高度优化，能最大化缓存利用率并减少内存分配次数。因此，向量化通常能获得数十到数百倍的速度提升。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-078",
+      "number": 78,
+      "question": "请简述解释 NumPy 数组的内存布局（C顺序 vs F顺序）？ ?",
+      "answer": "C顺序（行优先）将数组元素按行连续存储，即先行后列；F顺序（列优先）按列连续存储，即先列后行。区别在于内存遍历的维度顺序不同，C顺序在按行访问时缓存友好，F顺序适合按列操作的Fortran代码。NumPy默认C顺序，可通过dtype的order参数或ndarray的flags属性控制布局。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-079",
+      "number": 79,
+      "question": "请简述NumPy 如何创建一个具有特定内存顺序的数组？（order 参数） ?",
+      "answer": "NumPy 的 `order` 参数通过指定数组元素在内存中的存储顺序来控制数据布局，可选值为 'C'（行优先，C 风格）、'F'（列优先，Fortran 风格）或 'A'（原序）。'C' 顺序按行连续存储，适合逐行遍历；'F' 顺序按列连续存储，能提升列操作性能。'A' 则根据输入数组的原有顺序自动选择。创建时使用 `np.array(data, order='F')` 或 `np.empty((m,n), order='C')` 即可显式控制。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-080",
+      "number": 80,
+      "question": "请简述NumPy 如何检查数组的内存布局？（.flags 属性） ?",
+      "answer": "NumPy的ndarray.flags属性返回一个包含数组内存布局信息的对象，关键标志包括C_CONTIGUOUS（行优先连续）、F_CONTIGUOUS（列优先连续）、OWNDATA（是否拥有数据内存）和WRITEABLE（是否可写）。通过检查这些布尔值，可以判断数组在内存中的存储顺序和数据所有权，从而优化性能或避免不必要的副本。例如，连续内存布局的数组在向量化运算和C扩展调用中效率更高。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-081",
+      "number": 81,
+      "question": "请简述什么情况下 F顺序数组比 C顺序数组更有优势？ ?",
+      "answer": "F顺序（列优先）数组的优势主要体现在以列为单位进行连续内存访问的场景，例如逐列处理数据、对列向量执行广播或归约操作，以及某些线性代数库（如LAPACK）默认使用列主序的算法中。由于此时内存布局与操作顺序一致，能充分利用CPU缓存行并减少缺页中断，从而获得比C顺序（行优先）更高的数据局部性和访问效率。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-082",
+      "number": 82,
+      "question": "请简述NumPy 如何创建数组的视图并修改其步幅？ ?",
+      "answer": "使用切片操作如arr[::2]会返回一个共享内存的视图，其步幅自动调整；若要手动修改步幅，可直接设置数组的strides属性，但须确保新步幅与数据形状和内存连续性一致；更灵活但需谨慎的做法是调用np.lib.stride_tricks.as_strided，它允许指定任意形状和步幅，但可能产生越界访问和数据重叠。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-083",
+      "number": 83,
+      "question": "请简述NumPy 如何对大型数组进行内存映射？（np.memmap） ?",
+      "answer": "np.memmap通过创建一个与磁盘文件关联的ndarray对象，实现按需加载，避免一次性将整个数组读入内存。其关键原理是操作系统按页（page）管理虚拟内存，访问数组元素时触发缺页中断，自动从磁盘读取对应数据块。使用步骤：首先指定文件路径、数据类型和形状创建memmap，然后像普通数组一样读写，修改后调用flush()或del确保写入磁盘。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\n# 从列表创建\na = np.array([1, 2, 3, 4, 5])\n\n# 特殊数组\nzeros = np.zeros((2, 3))           # 全0\nones = np.ones((2, 3))             # 全1\neye = np.eye(3)                    # 单位矩阵\nrand = np.random.rand(2, 3)        # [0,1) 均匀\nrandn = np.random.randn(2, 3)      # 标准正态\narange = np.arange(0, 10, 2)       # 等差数列\nlinspace = np.linspace(0, 1, 5)    # 等间距\n\nprint(ones)\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-084",
+      "number": 84,
+      "question": "请简述NumPy 如何计算两个数组的欧几里得距离？ ?",
+      "answer": "使用NumPy计算两个数组的欧几里得距离时，通常利用向量化运算：先计算对应元素差值的平方和，再开平方。例如，`dist = np.sqrt(np.sum((a - b) ** 2))`。更简洁的方式是使用`np.linalg.norm(a - b)`，该函数默认计算L2范数即欧几里得距离。对于高维数组，需注意`axis`参数指定计算的维度。算法复杂度为O(n)且原生支持广播，效率远高于Python循环。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-085",
+      "number": 85,
+      "question": "请简述NumPy 如何计算数组的移动平均值？ ?",
+      "answer": "NumPy本身没有直接的移动平均函数，但可通过卷积np.convolve(a, np.ones(window)/window, mode='valid')实现，mode='valid'确保只输出完整窗口的平均值。对于高效计算，特别是大数组，可使用累积和差分法：先计算cumsum = np.cumsum(a)，然后moving_avg = (cumsum[window:] - cumsum[:-window]) / window，时间复杂度O(n)，空间复杂度O(n)。需注意边界处理，若需与原数组等长，可用mode='same'或手动填充。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-086",
+      "number": 86,
+      "question": "请简述NumPy 如何实现一个卷积操作？（使用 np.convolve） ?",
+      "answer": "np.convolve通过滑动窗口计算两个一维数组的离散线性卷积，内部实现基于直接求和与相乘，其mode参数控制输出长度：full返回完全重叠结果，same返回与输入a等长的中心部分，valid仅返回完全重叠的无填充区域。对于大数据，更推荐使用FFT加速的卷积方法如scipy.signal.fftconvolve，但np.convolve在小规模或教学场景下足够直观高效，时间复杂度为O(n*m)。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-087",
+      "number": 87,
+      "question": "请简述NumPy 如何对数组进行填充？（np.pad） ?",
+      "answer": "np.pad通过指定填充宽度和模式，在数组边界外扩展元素。常用参数包括pad_width定义各轴前后的填充长度，mode控制填充方式，如’constant’用常数值填充（默认0），’edge’复制边界值，’reflect’镜像反射。对于多维数组，pad_width可传元组列表分别指定每轴填充量，支持对称或非对称填充。需注意填充后数组形状为原始各维度加上对应两侧填充宽度之和。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-088",
+      "number": 88,
+      "question": "请简述NumPy 支持哪些数据类型？（int32, int64, float32, float64, complex, bool_, object_ 等） ?",
+      "answer": "NumPy 支持的数据类型体系基于 C 语言的基本类型，包括有符号整型（如 int8、int16、int32、int64）、无符号整型（uint8 至 uint64）、浮点型（float16、float32、float64）、复数型（complex64、complex128）、布尔型（bool_）、对象型（object_）、字节型（bytes_）以及字符串型（str_）等。此外还提供精确尺寸的类型别名（如 np.int_ 对应平台默认 int64），并允许通过 dtype 对象自定义结构化数据类型，以满足内存对齐和混合字段场景需求。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-089",
+      "number": 89,
+      "question": "请简述NumPy 如何指定数组的数据类型？（dtype 参数） ?",
+      "answer": "在NumPy中，可以通过dtype参数在创建数组时指定数据类型，例如np.array([1,2,3], dtype=np.float32)或使用字符串如'dtype=\"float32\"'。dtype支持原生类型（int32, float64）、复合类型及自定义结构化类型。指定dtype能精确控制内存占用和计算精度，避免隐式类型转换带来的性能开销与精度损失。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-090",
+      "number": 90,
+      "question": "请简述NumPy 如何更改数组的数据类型？（astype 方法） ?",
+      "answer": "NumPy通过数组的astype(dtype)方法更改数据类型，该方法返回一个拷贝副本而非原地修改，原始数组保持不变。转换时遵循类型提升规则，例如浮点转整型会截断小数部分，字符串转数值失败则引发ValueError。astype支持指定dtype为内置类型、自定义类型或类型别名，也接受可选的copy参数（默认True），若为False且原始数组类型匹配则返回原数组。实际应用中需注意内存布局和性能开销，尤其是大数据量时建议使用view或astype(..., copy=False)在安全场景下节省资源。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-091",
+      "number": 91,
+      "question": "请简述为什么需要注意数据类型对内存和精度的影响？ ?",
+      "answer": "数据类型直接决定每个元素占用的字节数（如float32占4字节，float64占8字节），错误选择会导致不必要的内存膨胀或内存不足。浮点类型精度有限（如float32仅约7位有效数字），不当使用会引发舍入误差累积、梯度消失或计算稳定性问题。整数类型若超出范围则发生溢出，破坏数据完整性。因此，在内存受限或精度敏感的数值计算与模型训练中，需权衡选择合适的数据类型以平衡效率与准确性。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-092",
+      "number": 92,
+      "question": "请简述NumPy 如何检查数组的数据类型？ ?",
+      "answer": "NumPy 通过数组对象的 `dtype` 属性检查数据类型，该属性返回一个 `numpy.dtype` 对象，描述数组中元素的类型（如 `int32`、`float64`）。例如，`arr.dtype` 直接获取数据类型。也可以通过 `arr.dtype.name` 获取字符串形式的类型名称，或使用 `isinstance()` 结合 `np.dtype` 进行类型比较。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-093",
+      "number": 93,
+      "question": "请简述NumPy 如何处理数组中的 NaN 和 Inf 值？（np.isnan, np.isinf, np.isfinite） ?",
+      "answer": "NumPy通过np.isnan检测NaN（非数字）、np.isinf检测正负无穷、np.isfinite判断元素是否为有限数（既非NaN也非Inf），这些函数返回布尔数组，常用于掩码过滤或缺失值替换。典型处理流程包括：先用np.isnan或np.isinf定位异常值，然后结合布尔索引、np.nan_to_num或np.where进行剔除或填充（如用0或均值替换），从而确保后续计算（如均值、线性代数运算）的数值稳定性。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-094",
+      "number": 94,
+      "question": "请简述NumPy 如何用特定值替换数组中的 NaN？（np.nan_to_num） ?",
+      "answer": "np.nan_to_num函数将数组中的NaN替换为0，正无穷替换为极大值，负无穷替换为极小值，同时保留有限数值不变。它返回一个拷贝，不修改原数组。可以通过nan、posinf、neginf参数分别指定NaN、正无穷、负无穷的替换值，例如np.nan_to_num(arr, nan=0.0)。此函数适用于浮点数组，常用于数据预处理中清理缺失和异常值。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-095",
+      "number": 95,
+      "question": "请简述NumPy 如何标准化一个数组？（减去均值，除以标准差） ?",
+      "answer": "使用NumPy标准化数组可通过公式 (x - mean) / std 实现，先调用 np.mean(arr) 和 np.std(arr) 计算均值和标准差，再执行向量化运算。注意默认参数 ddof=0 计算总体标准差，若需样本标准化应设 ddof=1。标准化后数组均值为0，标准差为1，常用于机器学习特征缩放。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-096",
+      "number": 96,
+      "question": "请简述NumPy 如何归一化一个数组到 [0, 1] 范围？ ?",
+      "answer": "使用最小-最大缩放实现：归一化后的数组等于 (arr - arr.min()) / (arr.max() - arr.min())。通过np.min和np.max计算全局极值，利用NumPy广播机制逐元素运算。需注意当最大值等于最小值时除零风险，可添加极小常数eps=1e-8避免。此方法保持数据相对比例，对异常值敏感。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-097",
+      "number": 97,
+      "question": "请简述NumPy 如何计算两个数组的协方差矩阵和相关系数矩阵？ ?",
+      "answer": "使用numpy.cov函数计算协方差矩阵，默认每行代表一个变量，设置rowvar=False可改为列变量；numpy.corrcoef计算相关系数矩阵，本质是协方差矩阵的归一化版本。需要关注ddof参数控制无偏估计，且输入数组需形状对齐。\n\n> 📖 参考链接：[/LayerNormalization_h5/](/LayerNormalization_h5/)",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-098",
+      "number": 98,
+      "question": "请简述NumPy 如何实现一个简单的图像处理操作（如灰度化、翻转）？ ?",
+      "answer": "NumPy 通过多维数组表示图像，灰度化可利用加权平均公式（如 0.299*R + 0.587*G + 0.114*B）对 RGB 各通道进行点乘求和，得到单通道数组；水平翻转通过切片 img[:, ::-1] 实现，垂直翻转使用 img[::-1, :]，旋转则用 np.rot90 指定 k 次。这些操作均基于数组索引和广播，时间复杂度 O(H*W)，且无需显式循环。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-099",
+      "number": 99,
+      "question": "请简述NumPy 如何计算 softmax 函数？ ?",
+      "answer": "使用NumPy计算softmax时，首先对输入数组减去其最大值以维持数值稳定性，然后对每个元素取指数，最后除以所有指数之和。具体实现为：`exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))`，`softmax_x = exp_x / np.sum(exp_x, axis=-1, keepdims=True)`。该操作利用向量化避免循环，同时通过广播机制高效处理多维数组。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-100",
+      "number": 100,
+      "question": "请简述NumPy 如何计算一个数组的分位数？（np.quantile 或 np.percentile） ?",
+      "answer": "NumPy 通过 `np.quantile`（分位数区间 0~1）或 `np.percentile`（百分位区间 0~100）计算数组的分位数，内部先对数组进行排序，然后根据分位点位置采用线性插值（默认方法‘linear’）得到精确值。支持 `axis` 参数沿指定维度计算，也可通过 `method` 参数选择不同插值策略（如‘lower’、‘higher’、‘midpoint’等）。对于大数据集，该操作时间复杂度为 O(n log n) 主要由排序决定。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-101",
+      "number": 101,
+      "question": "请简述NumPy 如何找到数组中的唯一值及其计数？（np.unique） ?",
+      "answer": "np.unique函数通过排序数组并扫描相邻元素差异来高效识别唯一值；设置参数return_counts=True可同时返回每个唯一值出现的频次。该函数内部采用排序算法（默认快速排序），将去重和计数合并为单次遍历操作，时间复杂度为O(n log n)，空间复杂度为O(n)。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-102",
+      "number": 102,
+      "question": "请简述NumPy 如何对两个数组进行元素级的比较？（np.equal, np.greater 等） ?",
+      "answer": "NumPy通过通用函数（ufunc）如np.equal、np.greater等实现元素级比较，这些函数对两个数组的对应元素逐位应用比较操作，返回布尔数组。它们支持广播机制，自动对齐不同形状的数组，并利用向量化计算避免Python循环，效率远高于列表推导。例如，np.greater(a, b)返回与a形状相同的布尔数组，标记a中大于b对应元素的位置。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-103",
+      "number": 103,
+      "question": "请简述NumPy 如何判断两个数组是否相等？（np.array_equal） ?",
+      "answer": "np.array_equal 是 NumPy 中用于判断两个数组是否精确相等的函数，它返回布尔值，要求两个数组形状完全相同且对应元素全部相等。与 np.allclose 不同，它不引入容差，因此适用于精确比对，但需注意 dtype 不同时也可能返回 False，例如整数与浮点数的 1.0 会视为不等。此外，对于包含 NaN 的数组，array_equal 认为 NaN 不等于自身，若要忽略 NaN 可使用 np.array_equal(a, b, equal_nan=True)。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-104",
+      "number": 104,
+      "question": "请简述NumPy 如何复制一个数组？（np.copy 或 copy 方法） ?",
+      "answer": "NumPy 提供 np.copy() 和数组的 .copy() 方法，两者功能等价，均返回数组的深拷贝，即新数组与原数组在内存中完全独立，修改新数组不会影响原数组。深拷贝通过分配新内存并复制所有数据实现，适用于需要避免共享内存视图的场景。此外，浅拷贝（如切片或 .view()）仅创建映射，修改会影响原数组，应区分使用。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-105",
+      "number": 105,
+      "question": "请简述NumPy 如何创建一个与给定数组形状相同、数据类型相同的全零数组？（np.zeros_like） ?",
+      "answer": "np.zeros_like是NumPy中用于快速创建与输入数组形状和数据类型完全一致的全零数组的函数，通过复制原数组的shape和dtype属性并填充0值实现。它内部调用np.zeros，但省去了手动指定形状和数据类型的步骤，适用于需要保持结构一致的初始化和内存预分配场景。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-106",
+      "number": 106,
+      "question": "请简述NumPy 如何创建一个与给定数组形状相同、数据类型相同的全一数组？（np.ones_like） ?",
+      "answer": "np.ones_like 是 NumPy 中创建与给定数组具有相同形状和数据类型全一数组的函数。它通过接收一个参考数组作为参数，自动解析其 shape 和 dtype，并返回对应形状的填充为 1 的新数组。与 np.ones 需要显式传入形状不同，np.ones_like 更适用于需要保持输入数组结构一致性的场景，如初始化与输入同形状的掩码或偏置值。内部实现上，它等价于 np.ones(array.shape, dtype=array.dtype)，但效率通常更高且代码更简洁。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-107",
+      "number": 107,
+      "question": "请简述NumPy 如何创建一个与给定数组形状相同、数据类型相同的未初始化数组？（np.empty_like） ?",
+      "answer": "使用 np.empty_like(arr) 即可创建一个与 arr 形状、数据类型一致但未初始化的数组，其元素为内存中的随机值，因此速度比 np.zeros_like 或 np.ones_like 更快，适用于后续会立即覆盖全部元素的场景。该函数默认保持 arr 的 dtype 和 order，也可通过 dtype 和 order 参数进行覆盖。未初始化不代表全零，故使用时需注意数据安全性。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-108",
+      "number": 108,
+      "question": "请简述NumPy 如何计算数组元素的绝对值？（np.abs） ?",
+      "answer": "np.abs是NumPy中逐元素计算绝对值的通用函数，底层通过向量化C实现完成高效运算，支持整数、浮点数和复数等类型。对于复数数组，np.abs返回每个元素的模长（sqrt(real²+imag²)）。该函数与np.absolute等价，并通常在内部调用`absolute`的ufunc实例。使用时直接传入数组即可，返回新数组，不修改原数据。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-109",
+      "number": 109,
+      "question": "请简述NumPy 如何对数组元素进行向上、向下取整？（np.ceil, np.floor） ?",
+      "answer": "np.ceil 实现向上取整，返回不小于输入元素的最小整数；np.floor 实现向下取整，返回不大于输入元素的最大整数。两者均逐元素操作，支持广播，返回浮点型数组，对无穷和NaN保持原值。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-110",
+      "number": 110,
+      "question": "请简述NumPy 如何计算数组元素的最小值、最大值沿特定轴？ ?",
+      "answer": "NumPy通过`np.min()`和`np.max()`函数并指定`axis`参数实现沿特定轴的计算。当`axis=0`时，沿行方向（即跨行）对每一列聚合；当`axis=1`时，沿列方向（即跨列）对每一行聚合。底层基于C语言循环优化，对于多维数组，`axis`参数指定要坍缩的维度，结果维度减少一阶。例如，形状为(2,3)的数组，`np.min(a, axis=0)`返回长度为3的一维数组，计算每列最小值。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-111",
+      "number": 111,
+      "question": "请简述NumPy 如何计算数组的 argmin 和 argmax（最小值/最大值的索引）？ ?",
+      "answer": "NumPy的argmin和argmax函数通过扫描数组元素，返回最小值或最大值第一次出现的扁平索引，或沿指定axis的索引。底层使用C语言实现的线性遍历，时间复杂度为O(n)，空间复杂度O(1)（除输出数组外）。若指定axis，函数会沿该维度遍历其余维度，返回对应位置的最值索引数组。在包含NaN时，它们会将NaN视为无穷大，因此argmin/skip NaN需用nanargmin/nanargmax。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-112",
+      "number": 112,
+      "question": "请简述NumPy 如何对数组进行条件计数？（例如，计算大于某个值的元素个数） ?",
+      "answer": "在NumPy中，条件计数通常利用布尔索引与求和函数实现，例如np.sum(arr > threshold)会生成一个布尔数组，其中True为1、False为0，求和即得元素个数。亦可使用np.count_nonzero(arr > threshold)或np.where(arr > threshold)[0].shape[0]直接统计非零值。原理上，条件表达式返回同形状布尔数组，聚合操作将True计数为1，性能高效且支持多条件组合如np.sum((arr > a) & (arr < b))。\n\n**示例代码：**\n\n```python\nimport numpy as np\n\narr = np.array([1, 5, 2, 8, 3, 7])\n\n# 获取满足条件的索引\nindices = np.where(arr > 3)\nprint(f\"大于3的索引: {indices}\")\nprint(f\"大于3的值: {arr[indices]}\")\n\n# 条件替换\nresult = np.where(arr > 3, arr, -1)\nprint(f\"条件替换: {result}\")  # [-1 5 -1 8 -1 7]\n\n\n\n```\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-113",
+      "number": 113,
+      "question": "请简述NumPy 如何将多个一维数组作为列组合成一个二维数组？（np.column_stack） ?",
+      "answer": "np.column_stack 是 NumPy 中将多个一维数组按列堆叠成二维数组的函数，其本质是将输入的一维数组视为列向量，在第二轴上进行拼接。对于多个长度相同的1D数组，它会将它们作为列依次排列形成二维数组；若输入为2D数组，则直接沿列方向拼接。该操作等价于先用 np.atleast_2d 将各1D数组转为列向量（shape (n,1)），再调用 np.hstack 合并。与 np.stack(axis=1) 相比，column_stack 自动将1D数组视为列而无需手动调整维度，更加简洁。时间复杂度为 O(N*M)，其中 N 为数组长度，M 为数组个数。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-114",
+      "number": 114,
+      "question": "请简述NumPy 如何将多个一维数组作为行组合成一个二维数组？（np.row_stack） ?",
+      "answer": "np.row_stack 本质上等同于 np.vstack，接受一个可迭代对象（如列表）中的多个一维数组，沿第一个轴（行方向）堆叠，将它们作为新二维数组的每一行。要求所有输入数组长度一致，否则会抛出维度不匹配错误。其内部先确保所有数组至少是二维的（通过将一维数组视为行向量），然后执行垂直拼接。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-115",
+      "number": 115,
+      "question": "请简述NumPy 如何交换数组的两个轴？（np.swapaxes） ?",
+      "answer": "np.swapaxes(a, axis1, axis2) 返回数组 a 交换两个指定轴后的视图（view），不复制底层数据。它通过重新排列数组的 strides（步长）来实现维度置换，因此时间复杂度为 O(1)。例如，对形状 (3,4,5) 的数组交换轴 0 与 2，得到形状 (5,4,3) 的视图，数据在内存中的存储顺序不变，仅索引映射方式改变。该操作常用于调整数组轴顺序以适配广播、矩阵运算或数据重塑。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-116",
+      "number": 116,
+      "question": "请简述NumPy 如何滚动数组的元素？（np.roll） ?",
+      "answer": "np.roll沿指定轴循环移动数组元素，超出边界的元素会回绕到另一端，类似于环形缓冲区的移位操作。它返回一个新数组，不修改原数组，shift参数控制位移量（正数向右/向下，负数向左/向上），axis参数指定作用轴（默认为展平后滚动）。需要注意的是，np.roll只是移动元素位置，并不改变数组形状，适合周期性数据处理如傅里叶变换前的相位校正。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-117",
+      "number": 117,
+      "question": "请简述NumPy 如何删除数组中形状为1的维度？（np.squeeze） ?",
+      "answer": "np.squeeze函数用于移除NumPy数组中所有长度为1的维度，返回一个降维后的新数组或视图。它通过检查数组的shape中值为1的轴，并自动删除这些轴来压缩数据。可以通过axis参数指定仅删除特定的单维度，避免误删其他形状为1的轴。该操作不会改变原数组的数据，而是返回一个共享内存的视图（如果可能）或拷贝。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-118",
+      "number": 118,
+      "question": "请简述NumPy 如何在一维数组中插入新元素？（np.insert） ?",
+      "answer": "NumPy的np.insert函数用于在指定位置沿给定轴插入值，对一维数组而言，它会返回一个新的数组，原数组保持不变。其核心参数包括被插入的数组、插入位置的索引（支持单个索引或索引序列）以及要插入的值（可以是标量或数组，会广播到与指定位置匹配）。插入位置索引遵循Python负索引和超出范围的处理规则，例如索引-1表示在最后一个元素之前插入。时间复杂度为O(n)，因为需要移动后续元素创建新数组。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-119",
+      "number": 119,
+      "question": "请简述NumPy 如何删除数组的特定元素？（np.delete） ?",
+      "answer": "np.delete通过指定数组、要删除的索引或切片以及可选轴参数，返回原数组的一个新副本，其中删除了对应位置的元素。一维数组时直接传入一维索引列表；多维数组需通过axis参数控制沿哪个轴删除，例如axis=0则删除行。该函数不修改原数组，时间复杂度为O(n)（n为剩余元素数），空间复杂度相同，适用于数据预处理中移除异常值或无关索引的场景。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-120",
+      "number": 120,
+      "question": "请简述NumPy 如何追加元素到数组？（np.append） ?",
+      "answer": "NumPy的np.append函数通过创建一个新的数组来实现元素追加，其核心机制是将原始数组与待追加值在指定轴上进行拼接，返回一个全新数组而非原地修改。若axis未指定，则先展平所有输入为一维数组再拼接，这会导致形状改变；若指定axis，则要求除拼接轴外其他维度一致。由于涉及内存重新分配，频繁追加效率较低，对于大量数据建议预分配数组或使用列表收集后统一转换。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-121",
+      "number": 121,
+      "question": "请简述NumPy 如何将数组的元素限制在某个范围内？（np.clip） ?",
+      "answer": "np.clip 是 NumPy 中用于将数组元素限制在指定区间内的函数，它通过将小于下界的元素替换为下界、大于上界的元素替换为上界来实现。使用时只需传入待处理数组、下界和上界参数，返回一个新数组，不会修改原数组。该操作常用于数据预处理中的异常值截断，例如在图像处理中将像素值裁剪到[0,255]区间。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    },
+    {
+      "id": "NumPy数据分析-122",
+      "number": 122,
+      "question": "请简述NumPy 如何计算数组元素的符号？（np.sign） ?",
+      "answer": "np.sign 是 NumPy 中计算数组元素符号的通用函数，对数组的每个元素应用符号函数：正数返回1，负数返回-1，零返回0，NaN返回NaN。它通过比较每个元素与0的大小关系实现，内部使用向量化操作避免Python循环，性能高效。对于复数输入，返回复数符号，即元素除以其模长（若模为0则返回0）。该函数常用于数据清洗、特征工程或条件筛选，可直接处理ndarray、Series等张量结构。\n",
+      "category": "NumPy数据分析",
+      "tags": []
+    }
+  ]
+}

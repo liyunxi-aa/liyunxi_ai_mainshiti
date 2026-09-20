@@ -1,0 +1,373 @@
+{
+  "category": "Deepseek_API",
+  "questions": [
+    {
+      "id": "Deepseek_API-001",
+      "number": 1,
+      "question": "请简述GPT 系列模型（如 GPT-3, GPT-.. ?",
+      "answer": "GPT系列模型（如GPT-3、GPT-4）是OpenAI开发的基于Transformer解码器架构的自回归语言模型，通过堆叠多层自注意力机制和海量文本预训练实现生成式任务。其核心是使用因果掩码（causal masking）进行单向语言建模，并在大规模数据上学习上下文依赖，随后通过指令微调（instruction tuning）和强化学习对齐（RLHF）提升可控性。从GPT-1到GPT-4，模型参数量从1.17亿增至数万亿规模，训练数据量和上下文窗口显著扩大，推理能力、多轮对话和工具使用能力逐步增强。\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-002",
+      "number": 2,
+      "question": "请简述列举 DeepSeek 提供的主要大模型系列（如 DeepSeek-V2, DeepSeek-Chat, DeepSeek-Coder）？ ?",
+      "answer": "DeepSeek提供的主要大模型系列包括DeepSeek-V2、DeepSeek-Chat和DeepSeek-Coder。DeepSeek-V2是通用基座模型，采用MoE架构并引入Multi-head Latent Attention与Multi-Token Prediction技术，兼顾高效推理与长上下文能力。DeepSeek-Chat是在DeepSeek-V2基础上经过SFT与RLHF对齐的对话模型，专为多轮交互与指令跟随优化。DeepSeek-Coder则针对代码生成与理解任务训练，覆盖多种编程语言，支持仓库级代码补全。此外，还有DeepSeek-R1等推理增强模型，通过强化学习提升复杂逻辑推理性能。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-003",
+      "number": 3,
+      "question": "请简述DeepSeek-V2 模型的主要技术特点和优势是什么？（例如：高性价比的混合专家模型） ?",
+      "answer": "DeepSeek-V2 是一款基于混合专家（MoE）架构的高性价比大语言模型，其核心特点是通过稀疏激活和动态路由实现低计算开销与高推理效率。该模型创新性地引入 Multi-Head Latent Attention (MLA)，显著压缩 KV 缓存并降低显存占用，同时支持长上下文处理。它的优势在于同等参数量下推理成本仅为传统稠密模型的几分之一，且在数学推理、代码生成和多语言任务上保持领先性能，非常适合大规模部署与商业应用。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-004",
+      "number": 4,
+      "question": "请简述DeepSeek 模型在哪些领域表现出色？（如通用对话、代码生成、数学推理） ?",
+      "answer": "DeepSeek模型在通用对话、代码生成和数学推理领域均表现出色。通用对话方面，其长上下文（如1M tokens）和指令遵循能力支持复杂多轮交互；代码生成上，它可生成高质量、原生支持中文的代码及注释；数学推理则受益于强化学习训练，能处理多步逻辑推导和符号计算，在竞赛级题目中表现优异。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-005",
+      "number": 5,
+      "question": "请简述如何访问 DeepSeek 的开发者平台和文档？ ?",
+      "answer": "访问DeepSeek开发者平台可通过官网deepseek.com进入，点击顶部导航栏的“开发者平台”或“API”入口。文档位于平台内的“文档”板块，也可直接访问官方文档站点如platform.deepseek.com/docs。注册账号后即可获取API密钥，在控制台中管理配额并查看接口调用示例。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-006",
+      "number": 6,
+      "question": "请简述如何获取 DeepSeek API Key？ ?",
+      "answer": "首先访问DeepSeek官方网站或开发者平台，注册或登录账户后进入API管理控制台；然后在控制台中选择创建API Key，系统会生成一串唯一的密钥；最后复制并妥善保管该Key，用于后续API调用时的身份验证。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-007",
+      "number": 7,
+      "question": "请简述DeepSeek Chat Completion API 的基本端点（URL）是什么？ ?",
+      "answer": "DeepSeek Chat Completion API 的基本端点（URL）是 https://api.deepseek.com/chat/completions。该端点用于发送用户消息并获取模型生成的回复，支持流式与非流式两种模式。调用时需在请求头中携带有效的 API Key，请求体需包含 model 和 messages 等必要参数。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-008",
+      "number": 8,
+      "question": "请简述描述一个完整的 DeepSeek Chat Completions API 请求的 JSON 结构？ ?",
+      "answer": "一个完整的DeepSeek Chat Completions API请求JSON结构必须包含model字段指定模型名称（如deepseek-chat）和messages数组，其中每个元素为包含role（如user、assistant或system）和content（字符串或多模态内容列表）的对象。可选参数包括temperature、max_tokens、top_p、frequency_penalty等控制生成行为的字段，以及stream布尔值用于流式输出。此外，可以传入stop序列、presence_penalty以及tools（函数调用定义）等高级配置。整体结构呈现为模型标识、对话历史与生成参数的三层嵌套，确保API能准确理解上下文并生成符合预期的回复。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-009",
+      "number": 9,
+      "question": "请简述model 参数有哪些常用的选项？（如 deepseek-chat, deepseek-coder, deepseek-v2） 你如何根据任务类型选择合适的模型？ ?",
+      "answer": "DeepSeek API的model参数常用选项包括deepseek-chat（通用对话）、deepseek-coder（代码生成与理解）、deepseek-v2（高阶推理与长上下文）等。选择时需根据任务类型：通用问答或客服场景选deepseek-chat；编程、调试或代码补全选deepseek-coder；复杂推理、数学或长文档分析选deepseek-v2。任务若需极低延迟或更高性价比，也可搭配特定轻量模型如deepseek-lite。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-010",
+      "number": 10,
+      "question": "请简述messages 参数的结构是怎样的？ 它是否支持多轮对话？ ?",
+      "answer": "messages参数是一个由字典组成的列表，每个字典必须包含role和content字段，role可选system、user、assistant等，content为字符串。它天然支持多轮对话，只需按顺序添加不同角色的消息即可维持上下文，从而实现连续交互。\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-011",
+      "number": 11,
+      "question": "请简述DeepSeek API 的输入输出计费模式是怎样的？它与上下文长度有何关系？ ?",
+      "answer": "DeepSeek API 采用按 token 计费模式，输入和输出分别按不同单价结算。上下文长度直接影响输入 token 数量，因此更长的上下文会导致输入费用线性增加，而输出费用取决于模型生成长度，与上下文长度无直接关联。超长上下文虽可能消耗更多计算资源，但计费依然以实际传输的 token 数为准。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-012",
+      "number": 12,
+      "question": "请简述解释 temperature 参数在 DeepSeek API 中的作用？ 在代码生成和创意写作任务中，你会如何设置它？ ?",
+      "answer": "temperature参数控制输出概率分布的平滑程度，值越高（如0.8-1.5）生成内容越随机、富有创意，适合创意写作；值越低（如0.0-0.2）输出越确定、聚焦于高概率词，适合代码生成以保证准确性和一致性。常用做法：代码生成设为0.1-0.2，创意写作设为0.7-1.0。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-013",
+      "number": 13,
+      "question": "请简述top_p（核采样）参数的作用是什么？ 它与 temperature 有何区别和联系？ ?",
+      "answer": "top_p（核采样）通过动态选择累积概率达到阈值p的最小token集合进行采样，从而过滤掉低概率的尾部噪音，保留高质量的候选词。与temperature不同，temperature通过缩放logits的softmax温度系数来整体平滑或锐化概率分布，控制随机性；而top_p直接截断分布尾部。二者本质联系在于都用于调节生成多样性与确定性之间的平衡，且常组合使用——先经temperature调整分布形状，再通过top_p进行硬性截断。\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-015",
+      "number": 15,
+      "question": "请简述DeepSeek API 中stream 参数有什么用？ 描述在客户端实现流式响应的大致逻辑？ ?",
+      "answer": "stream参数控制API是否以流式（Server-Sent Events）形式逐步返回生成内容，而非一次性等待完整响应。客户端实现时需建立EventSource或fetch流式连接，逐块解析data字段中的token片段并实时追加到前端界面，同时需处理连接中断与重连逻辑以保障可靠性。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-016",
+      "number": 16,
+      "question": "请简述DeepSeek API 中stop 参数的作用是什么？ 在代码生成中，你会如何设置它？ ?",
+      "answer": "stop参数用于指定一个或多个字符串作为生成终止信号，当模型输出中出现任一匹配字符串时立即停止生成，从而精确控制输出边界。在代码生成中，我会根据语言特性设置停止标记，例如生成Python函数时设为\"\\n\\n\"、\"def \"或三重反引号，避免模型输出多余解释或后续代码块，确保生成内容干净完整。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-017",
+      "number": 17,
+      "question": "请简述DeepSeek API 是否支持 response_format 参数来约束输出格式（如 JSON）？ ?",
+      "answer": "DeepSeek API 支持 response_format 参数，通过设置 {\"type\": \"json_object\"} 可约束模型输出为有效 JSON 格式。启用后需在 prompt 中明确要求返回 JSON 对象，否则模型可能输出非 JSON 内容。该参数为非必需选项，适用于需要结构化解析的场景，但不会自动验证 JSON 模式。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-018",
+      "number": 18,
+      "question": "请简述DeepSeek API 是否支持 function calling 或 tools 参数？如果支持，如何使用？ ?",
+      "answer": "DeepSeek API 支持 function calling 和 tools 参数。使用时，在请求中传入 tools 数组，每个工具按 OpenAI 格式定义 name、description 和 parameters（JSON Schema），模型会返回 tool_calls 字段指示需要调用的函数及参数，开发者需自行执行调用并将结果以 tool 角色消息传回以继续对话。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-019",
+      "number": 19,
+      "question": "请简述DeepSeek 模型是否支持联网搜索？ 如何通过 API 启用这个功能？（可能需要特定的模型或参数，如 web_search） ?",
+      "answer": "DeepSeek 模型支持联网搜索功能，用户可通过 API 调用时设置 `web_search` 参数为 `true` 来启用，通常需要搭配特定的模型版本（如 DeepSeek-Chat 或 DeepSeek-Web）。启用后，模型会实时查询互联网信息以增强回答的时效性和准确性，适用于需要最新知识或动态数据的场景。注意该功能可能涉及额外计费或权限要求，建议查阅官方文档确认具体实现。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-020",
+      "number": 20,
+      "question": "请简述deepseek-coder 模型在代码生成方面有哪些特别的能力或优化？ ?",
+      "answer": "DeepSeek-Coder通过大规模代码语料预训练、填充中段（Fill-in-the-Middle）训练目标以及仓库级上下文窗口优化，显著提升了代码补全、生成和跨文件依赖理解的准确性。其采用多阶段训练策略，先以海量代码和自然语言进行通用预训练，再通过指令微调增强任务遵循能力，并支持最长128K token的上下文，能够理解项目级代码结构，生成更符合实际工程规范的完整代码。这些优化使其在代码生成与补全任务上达到开源模型的领先水平。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-021",
+      "number": 21,
+      "question": "请简述deepseek-v2 作为混合专家模型，在 API 调用成本上有何优势？ ?",
+      "answer": "DeepSeek-V2作为混合专家模型，其核心优势在于稀疏激活机制：每次推理仅激活少数专家，大幅降低计算量，从而显著压缩单次API调用的计算成本。这使得在保持高模型容量的同时，能以更低的单价提供响应服务，且对高并发场景更友好。此外，其共享注意力层设计进一步优化了KV缓存效率，减少内存开销，最终实现比同规模稠密模型更经济的API定价。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-022",
+      "number": 22,
+      "question": "请简述DeepSeek 模型的上下文窗口有多大？这对处理长文档任务有何意义？ ?",
+      "answer": "DeepSeek模型的上下文窗口大小为128K tokens（约20万汉字）。这意味模型能一次性处理如整本《三体》三部曲的长文本，无需分块或截断，从而在长文档摘要、跨章节推理和知识密集问答中保持完整的语义连贯性，显著提升对复杂长程依赖关系的理解精度。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-023",
+      "number": 23,
+      "question": "请简述DeepSeek 模型是否支持多模态输入（如图像理解）？ ?",
+      "answer": "DeepSeek LLM系列（如DeepSeek-V2、DeepSeek-R1）为纯文本模型，默认不支持图像等多模态输入；但DeepSeek-VL（视觉语言模型）系列专为多模态任务设计，支持图像理解与文本联合处理。因此，需区分具体模型版本：标准推理模型无多模态能力，而视觉版本具备该功能。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-024",
+      "number": 24,
+      "question": "请简述DeepSeek API 使用哪种认证方式？（Bearer Token） ?",
+      "answer": "DeepSeek API 采用 Bearer Token 进行身份认证，这是一种基于 HTTP 请求头 Authorization 字段的令牌机制。用户在平台申请 API Key 后，将该 Key 作为 Bearer Token 附加在每次请求的 Authorization: Bearer <your_api_key> 头部中传递给服务端。该方式无需每次携带用户名密码，仅通过单一令牌完成鉴权，具有轻量、易用的特点，同时要求客户端妥善保管 Token 以防止泄露。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-025",
+      "number": 25,
+      "question": "请简述DeepSeek API 中在代码中安全地管理 API Key 的最佳实践是什么？ ?",
+      "answer": "最佳实践的核心是绝对避免在代码中硬编码API Key，而应通过操作系统环境变量或专用的密钥管理服务（如AWS Secrets Manager、Vault）来注入。其次，使用.ignore文件（如.gitignore）确保包含密钥的配置文件不被提交到版本控制系统，同时为每个API Key分配最小必要权限并定期轮换以降低泄露风险。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-026",
+      "number": 26,
+      "question": "请简述列出几种常见的 DeepSeek API 错误码（如 400, 401, 429, 500）及其含义？ ?",
+      "answer": "常见 DeepSeek API 错误码包括：400 表示请求参数格式错误或缺失必要字段；401 表示认证失败，通常因 API Key 无效或未提供；429 表示请求频率超过速率限制，需等待后重试；500 表示服务器内部错误，一般需稍后重试或联系支持。这些错误码反映了从客户端到服务端的常见故障点。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-027",
+      "number": 27,
+      "question": "请简述DeepSeek API 中如何处理 429（速率限制）错误？ 你会如何设计重试逻辑？ ?",
+      "answer": "429错误表明请求速率超过了API配额。处理时需解析响应头中的Retry-After字段或采用指数退避策略，初始等待1秒，每次重试间隔翻倍并添加随机抖动（jitter），最大重试次数设为3-5次。同时建议使用异步队列和令牌桶算法在客户端侧主动限流，避免触发限制。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-028",
+      "number": 28,
+      "question": "请简述DeepSeek API 中如何优雅地处理网络超时等非预期错误？ ?",
+      "answer": "在DeepSeek API中优雅处理网络超时等非预期错误的核心是采用指数退避重试与合理超时配置。首先为每个API调用设置合理的超时时间，如connect_timeout和read_timeout，避免长时间阻塞。其次捕获请求异常如requests.exceptions.Timeout或ConnectionError，并在重试时使用指数退避策略，例如首次等待1秒，后续加倍至最大间隔，同时限制最大重试次数（如3次）以防雪崩。最后记录详细错误日志并考虑熔断降级，若连续失败超出阈值则暂时跳过该API调用，从而在提升稳定性的同时不显著增加延迟。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-029",
+      "number": 29,
+      "question": "请简述描述一个你使用（或设想使用）DeepSeek API 构建的应用场景？ ?",
+      "answer": "我设计了一个基于DeepSeek API的智能代码审查助手，集成到CI/CD流水线中，自动分析Pull Request的代码变更，识别潜在bug、性能瓶颈和风格违规，并生成具体修改建议。该应用利用DeepSeek的长上下文能力处理整个文件差异，并通过few-shot prompting控制输出格式，显著减少了人工审查时间，同时保持了高于90%的误报过滤率。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-030",
+      "number": 30,
+      "question": "请简述如何使用 Python 的 requests 库发送一个简单的 DeepSeek API 请求？ ?",
+      "answer": "首先需要安装requests库并获取DeepSeek API密钥，然后在POST请求的headers中设置Authorization为Bearer加密钥，请求体为JSON格式包含model、messages等字段，最后调用requests.post函数发送请求并处理响应中的choices字段提取生成文本。示例代码思路：`response = requests.post(url, headers=headers, json=data); result = response.json()['choices'][0]['message']['content']`。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-031",
+      "number": 31,
+      "question": "请简述DeepSeek API 中如何构建一个支持多轮对话的聊天应用，并正确管理对话历史？ ?",
+      "answer": "构建多轮对话应用需维护一个消息列表，将每条用户输入和API返回的助手回复依次追加到列表中作为上下文。每次请求时将完整列表作为messages参数传入，同时根据模型的最大上下文长度设置轮数上限或采用滑动窗口丢弃早期消息，也可在超出限制时对历史进行摘要压缩后继续对话。正确管理的关键是确保历史消息的顺序与角色（user/assistant）准确对应，并动态控制token总量以避免截断。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-032",
+      "number": 32,
+      "question": "请简述如何利用 deepseek-coder 模型构建一个代码补全或代码解释工具？ ?",
+      "answer": "利用 deepseek-coder 模型构建代码补全工具时，核心在于通过其自回归生成能力，将光标前的上下文作为前缀输入，模型逐token生成补全内容，并用正则或语法解析限制输出范围以避免无效代码。构建代码解释工具则需设计prompt模板，将代码块与任务指令（如“解释这段代码的作用”）拼接后输入模型，并利用其填充或聊天模式输出结构化解释，可额外加入few-shot示例提升准确率。关键优化点包括：针对补全场景使用中间填充（FIM）能力，对解释场景控制输出长度并过滤重复或无关内容。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-033",
+      "number": 33,
+      "question": "请简述在构建一个生产级应用时，你会如何设计架构来封装和管理对 DeepSeek API 的调用？ ?",
+      "answer": "核心设计是分层抽象与容错：底层通过连接池和指数退避重试封装HTTP调用，中层实现请求拦截统一处理鉴权、限流和日志，上层提供业务接口并集成断路器与降级策略（如缓存或本地模型兜底）。同时通过配置中心动态管理API Key轮换、模型版本和Prompt模板，配合OpenTelemetry实现全链路可观测性，确保高可用与弹性。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-034",
+      "number": 34,
+      "question": "请简述DeepSeek API 中如何实现一个带有流式输出的聊天界面？（前端与后端的配合） ?",
+      "answer": "后端使用Server-Sent Events或WebSocket持续推送DeepSeek API返回的流式响应块，前端通过EventSource或WebSocket API监听数据事件，将每个chunk实时追加到对话气泡中，并利用CSS动画或虚拟滚动保持界面流畅，同时需处理连接中断、错误重试和最终消息拼接。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-035",
+      "number": 35,
+      "question": "请简述DeepSeek API 中如何估算一次 API 调用的成本？ ?",
+      "answer": "成本估算基于输入和输出的token总数，乘以对应模型每百万token的单价。输入token数可通过DeepSeek官方tokenizer预计算，输出token数需根据任务预估（如设置max_tokens上限）。实际成本 = (输入tokens + 输出tokens) / 1,000,000 * 单价。注意对话历史中的多轮输入会累加，且部分模型区分输入/输出定价。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-036",
+      "number": 36,
+      "question": "请简述有哪些策略可以优化 DeepSeek API 的使用成本？ ?",
+      "answer": "优化DeepSeek API成本的核心策略包括：优先使用缓存结果避免重复调用，对高频相似查询实施本地缓存或批量处理；合理选择模型规格，如用轻量模型处理简单任务，仅在复杂推理时调用更强模型；控制输入输出长度，通过精简prompt和限制max_tokens减少计费；利用异步调用和请求合并降低API调用次数，并监控使用量设置预算警报。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-037",
+      "number": 37,
+      "question": "请简述DeepSeek API 中缓存重复或相似的请求结果？ ?",
+      "answer": "DeepSeek API的缓存机制通过存储历史请求的输入-输出对，对完全重复的请求直接返回缓存结果，同时利用语义相似度匹配（如向量检索）判断近似请求，跳过模型推理，从而降低延迟和计算成本。该设计对高频重复或语义相近的查询能显著提升吞吐量，但需注意缓存覆盖范围与过期策略的平衡。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-038",
+      "number": 38,
+      "question": "请简述DeepSeek API 中优化提示词，减少不必要的输入令牌？ ?",
+      "answer": "在DeepSeek API中优化提示词以减少输入令牌，关键在于精简指令并移除冗余：使用明确简洁的动词和名词，避免背景描述或重复示例；多轮对话可压缩为摘要而非完整历史；将固定格式要求置于system prompt而非每次user消息中；长文本先提取核心段落再输入。这些方法直接降低Token消耗且不影响任务质量。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-039",
+      "number": 39,
+      "question": "请简述为任务选择合适的模型（例如，用 deepseek-chat 处理一般问答，用 deepseek-coder 处理编程问题）？ ?",
+      "answer": "为任务选择合适的模型需基于模型预训练目标和能力边界：deepseek-chat针对通用对话优化，覆盖开放域问答和常识推理，适合日常交互；deepseek-coder在代码生成、调试和算法题上经过专项训练，编程任务表现更优。核心原则是匹配任务类型与模型专长，避免将代码需求交给通用模型导致精度下降，或反将简单问答交给专精模型造成资源浪费。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-040",
+      "number": 40,
+      "question": "请简述DeepSeek API 中在处理长文档总结或分析时，如果文档长度超过了模型的上下文窗口，你会采用什么策略？（例如，分块处理、递归总结） ?",
+      "answer": "主要采用分块与递归总结策略：先将文档按段落或固定长度切分为块，对每块独立调用API提取核心信息，再对生成的摘要进行二次融合或分层合并，直至得到完整总结。为避免上下文断裂，可在分块时保留首尾重叠区域，并设定合理的最大块大小以适配API的输入限制。若文档结构性强，也可基于章节做分层摘要，优先保留高信息密度内容。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-041",
+      "number": 41,
+      "question": "请简述为 DeepSeek 模型编写有效提示词的基本原则有哪些？ ?",
+      "answer": "为DeepSeek模型编写有效提示词的核心原则包括：明确指令、提供上下文、分解复杂任务、指定输出格式，以及必要时使用示例引导。具体而言，清晰定义任务目标并避免模糊表述能减少歧义；提供相关背景信息或角色设定可提升回答的针对性；将多步推理拆解为子步骤可增强模型对复杂逻辑的处理能力；要求结构化输出（如列表、JSON）便于结果解析。此外，通过Few-shot示例或思维链提示能有效激发模型的推理与生成质量。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-042",
+      "number": 42,
+      "question": "请简述如何设计一个系统提示（system message）来让 deepseek-coder 模型更好地扮演一个资深工程师的角色？ ?",
+      "answer": "设计系统提示时，需明确角色定位、行为规范与输出标准，例如：You are a senior software engineer with 15+ years of experience in full-stack development, known for writing clean, maintainable code and conducting thorough code reviews. 应包含具体技术领域、问题解决风格（如优先考虑可扩展性与性能）、以及沟通方式（如提供设计决策依据、指出潜在风险）。 可附加约束如“避免冗余注释”“输出时附带复杂度分析”，从而引导模型产出专家级回答。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-043",
+      "number": 43,
+      "question": "请简述DeepSeek API 中如何通过少样本学习来引导模型生成特定格式的输出？ ?",
+      "answer": "在DeepSeek API中，少样本学习通过向chat completions请求的messages列表里插入少量包含输入和期望输出的示例对来实现，这些示例通常放在系统消息之后、用户查询之前。模型会从这些示例中隐式学习输出格式的规律，并在回答新问题时自动遵循相同的结构。关键在于示例要覆盖格式的典型变体，并且顺序上应让模型先看到完整示例再遇到实际查询，以避免格式漂移。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-044",
+      "number": 44,
+      "question": "请简述DeepSeek API 中在调试 API 调用时，如果模型的输出不理想，你的排查思路是什么？ ?",
+      "answer": "首先检查输入参数，确认请求格式、提示词清晰度及温度等超参是否合理；其次对比模型版本与预期行为，验证是否有上下文截断或指令冲突；然后通过逐轮打印日志定位异常响应，测试简化用例排除外部干扰；最后考虑调用频率限制或网络延迟，必要时升维使用更精准的模型或调整采样策略。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-045",
+      "number": 45,
+      "question": "请简述对比 DeepSeek API 和 OpenAI API 在模型能力、成本和开发者体验上的异同？ ?",
+      "answer": "DeepSeek API在数学、代码等推理任务上表现强劲，支持128K超长上下文，且成本仅为OpenAI API的十分之一左右，性价比极高；OpenAI API则在通用能力、多模态和生态成熟度上占优，配套SDK和文档更完善。两者接口格式高度兼容，开发者迁移成本低，但DeepSeek的稳定性和社区支持仍处于追赶阶段。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-046",
+      "number": 46,
+      "question": "请简述你认为 DeepSeek 在国内大模型市场中的主要竞争优势是什么？ ?",
+      "answer": "DeepSeek的核心竞争优势在于其极致性价比与开源生态的叠加效应。通过MoE稀疏架构和自研训练优化，DeepSeek以远低于同类模型的推理成本实现了媲美GPT-4级别的性能，尤其在中长文本和多任务场景下表现突出。同时，坚持全参数开源并开放API，大幅降低了企业接入和二次开发的门槛，形成了从开发者到垂直应用的社区护城河。此外，其原生支持的128K上下文窗口和高效语言对齐能力，在金融、法律等专业领域中建立了差异化壁垒。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    },
+    {
+      "id": "Deepseek_API-047",
+      "number": 47,
+      "question": "请简述作为开发者，你如何确保你的应用在使用 DeepSeek API 时符合安全规范和法律法规？ ?",
+      "answer": "确保应用符合安全规范与法律法规需从三方面入手：一是严格遵循数据最小化原则，仅传输必要请求参数，并对敏感数据（如用户身份信息）进行脱敏或加密后再调用API；二是在应用层实现内容安全过滤，对DeepSeek API的输入输出进行合规审查，屏蔽侵犯隐私、违法或敏感内容；三是定期审计API使用日志，确保符合《个人信息保护法》《数据安全法》及DeepSeek服务条款，并建立应急响应机制处理违规或异常调用。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_URL = \"https://api.deepseek.com/v1/chat/completions\"\nheaders = {\n    \"Authorization\": \"Bearer YOUR_DEEPSEEK_API_KEY\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"model\": \"deepseek-chat\",\n    \"messages\": [\n        {\"role\": \"user\",\n         \"content\": \"用Python写一个冒泡排序\"}\n    ],\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_URL, json=payload,\n                         headers=headers)\nprint(response.json()[\"choices\"][0][\"message\"][\"content\"])\n\n\n\n```\n",
+      "category": "Deepseek_API",
+      "tags": []
+    }
+  ]
+}

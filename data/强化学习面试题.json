@@ -1,0 +1,797 @@
+{
+  "category": "强化学习面试题",
+  "questions": [
+    {
+      "id": "RL-001",
+      "number": 1,
+      "question": "请对比动态规划(DP)、蒙特卡洛(MC)、时间差分(TD)三者的核心区别。",
+      "answer": "### 核心对比\n\n| 维度 | DP (动态规划) | MC (蒙特卡洛) | TD (时间差分) |\n|------|-------------|-------------|-------------|\n| 模型依赖 | **有模型**，需已知状态转移和奖励 | **无模型**，靠采样交互 | **无模型**，靠采样交互 |\n| 更新方式 | 全宽备份（遍历所有后继状态） | 采样完整Episode轨迹后更新 | 单步交互即可更新 |\n| 偏差 | 无偏（精确模型下） | **无偏估计** | **有偏估计**（用估计值替代真实回报） |\n| 方差 | 低 | **高**（完整轨迹叠加大量随机噪声） | **低**（仅单步随机因素） |\n\n### 补充说明\n- DP 在小状态空间、已知环境模型时可直接求解。\n- MC 适合轨迹短、奖励明确的任务；方差虽高但无偏，可用于Q值准确度要求高的场景。\n- TD 是工业主流基础，几乎全部现代RL算法均基于TD思想构建。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "DP/MC/TD"
+      ]
+    },
+    {
+      "id": "RL-002",
+      "number": 2,
+      "question": "什么是 On-Policy 和 Off-Policy？分别有哪些代表算法？",
+      "answer": "### On-Policy（同策略）\n- **定义**：采集数据的**行为策略**和训练更新的**目标策略**为同一个。\n- **优点**：值函数评估简单，收敛效果好；样本与策略一致，无需修正。\n- **缺点**：策略收敛后探索能力持续下降，容易陷入局部最优。\n- **代表算法**：Sarsa、A3C、PPO、TRPO、GA3C。\n\n### Off-Policy（异策略）\n- **定义**：行为策略与目标策略相互独立，可利用历史数据、不同策略产生的样本。\n- **优点**：灵活度高，可平衡探索与利用（如DQN用ε-greedy探索但学贪心策略）；可复用历史经验。\n- **缺点**：样本来自不同分布，存在**分布偏移**问题，需使用**重要性采样**修正；整体收敛速度偏慢。\n- **代表算法**：Q-Learning、DQN、DDPG、TD3、IMPALA。\n\n### 一句话总结\n> On-Policy「边做边学」，Off-Policy「吃百家饭长见识」。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "On-Policy/Off-Policy"
+      ]
+    },
+    {
+      "id": "RL-003",
+      "number": 3,
+      "question": "On-Policy 和 Off-Policy 各自的优缺点是什么？工程中如何选择？",
+      "answer": "| 维度 | On-Policy | Off-Policy |\n|------|-----------|------------|\n| 样本效率 | 低（每轮策略更新后旧样本不可复用） | 高（历史样本可循环利用） |\n| 训练稳定性 | 高（样本与当前策略一致） | 低（分布偏移导致震荡） |\n| 收敛速度 | 快（无分布修正开销） | 慢（需重要性采样/其他修正） |\n| 探索能力 | 弱（策略收敛后探索衰减） | 强（行为策略可独立设计探索机制） |\n| 复杂度 | 低 | 高（需经验回放等额外组件） |\n\n### 工程选型建议\n- **数据采集成本高**（如机器人、自动驾驶）→ 优先 Off-Policy，复用历史数据。\n- **环境交互成本低**（游戏、仿真）→ On-Policy 更稳定可靠。\n- **要求训练最稳定**（安全攸关场景）→ 选 On-Policy（PPO）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "On-Policy/Off-Policy"
+      ]
+    },
+    {
+      "id": "RL-004",
+      "number": 4,
+      "question": "请对比 Value-Based 和 Policy-Based 方法的原理、优缺点和适用场景。",
+      "answer": "### Value-Based（基于值）\n- **原理**：先学习状态/动作值函数 $Q(s,a)$ 或 $V(s)$，再根据值推导策略（如ε-greedy取max Q的动作）。\n- **优点**：方差小，有偏但训练稳定；Q表/网络直观可解释。\n- **缺点**：**仅适配离散动作空间**；对连续动作需额外处理。\n- **代表**：Q-Learning、DQN、Double DQN、Dueling DQN、Rainbow。\n\n### Policy-Based（基于策略）\n- **原理**：直接优化策略网络 $\\pi_\theta(a|s)$，输出动作概率分布，沿梯度方向更新。\n- **优点**：**天然适配连续动作空间**；收敛快；可学习随机策略。\n- **缺点**：无偏估计导致方差大，容易陷入局部最优。\n- **代表**：REINFORCE、PPO、TRPO。\n\n### Actor-Critic（融合方案）\n结合两者优点：Actor（Policy-Based）输出动作，Critic（Value-Based）评估动作并指导Actor更新，实现**单步更新**，方差更低。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "Value-Based/Policy-Based"
+      ]
+    },
+    {
+      "id": "RL-005",
+      "number": 5,
+      "question": "请说明确定性策略和随机性策略的区别，以及各自适用的场景。",
+      "answer": "### 随机性策略 (Stochastic Policy)\n- **形式**：$\\pi(a|s)$ 输出动作的**概率分布**。\n- **探索机制**：天然自带探索能力（按分布采样），无需额外加噪声。\n- **代表算法**：PPO、A3C、SAC（Soft Actor-Critic）。\n- **适用场景**：探索需求高、多模态最优动作环境。\n\n### 确定性策略 (Deterministic Policy)\n- **形式**：$\\mu(s)$ 每个状态仅输出**一个固定动作**。\n- **探索机制**：**必须人为添加噪声**（如DDPG中加Ornstein-Uhlenbeck噪声）。\n- **代表算法**：DDPG、TD3。\n- **适用场景**：连续控制（机器人关节角度、方向盘转角），高维动作空间。\n\n### 补充\n- SAC 是一个特例：既是 Off-Policy 又是随机策略（最大熵强化学习），平衡探索与利用。\n- 代码层面，两者最终都输出具体动作值执行。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "确定性/随机性策略"
+      ]
+    },
+    {
+      "id": "RL-006",
+      "number": 6,
+      "question": "Model-Based (有模型) 和 Model-Free (无模型) 的核心区别是什么？工业界为什么更偏向 Model-Free？",
+      "answer": "### Model-Based（有模型强化学习）\n- **做法**：先学习/搭建环境模型（状态转移概率 $p(s'|s,a)$ 和奖励模型 $r(s,a)$），再用模型虚拟交互生成样本。\n- **优点**：样本效率极高（虚拟环境可无限生成）；泛化能力强；可用于规划。\n- **缺点**：环境建模难度极大；模型误差累积，复杂场景下泛化差；通用性差。\n- **代表**：World Model、Dreamer、MuZero。\n\n### Model-Free（无模型强化学习）\n- **做法**：不构建环境模型，直接与真实环境交互学习策略/值函数。\n- **优点**：通用性强，落地简单；无需建模，不存在模型偏差；工业主流。\n- **缺点**：样本利用率低；部分场景真实交互数据获取困难/成本高。\n\n### 工业界偏向 Model-Free 的原因\n1. **通用性**：一套算法可应用于不同任务，无需针对每个环境单独建模。\n2. **可靠性**：不存在模型误差累积导致的策略崩溃。\n3. **成熟工具**：OpenAI Gym、RLlib、SB3 等框架开箱即用。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "Model-Based/Model-Free"
+      ]
+    },
+    {
+      "id": "RL-007",
+      "number": 7,
+      "question": "强化学习与监督学习、无监督学习的核心区别是什么？",
+      "answer": "| 维度 | 强化学习 | 监督学习 | 无监督学习 |\n|------|---------|---------|-----------|\n| 核心驱动 | **奖励信号** (Reward) | 人工标签 (Label) | 数据内在结构 |\n| 数据获取 | 智能体与**环境实时交互**产生 | 预先收集固定训练/测试集 | 无标签数据 |\n| 数据特性 | 时序相关 (Markov) | 独立同分布 (i.i.d.) | 独立同分布 |\n| 任务类型 | **序列决策问题** | 分类/回归 | 聚类/降维/密度估计 |\n| 反馈形式 | 延迟反馈（可能几轮后才知结果） | 即时反馈（已知标签） | 无反馈 |\n\n### 关键区别\n- RL 没有固定的训练集/测试集——数据是交互产生的，分布随策略更新而变化。\n- RL 的奖励可能是稀疏、延迟的（如围棋最终胜负只在最后一步得知）。\n- RL 的训练目标最大化长期累积奖励，而非单步预测精度。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "RL vs SL/UL"
+      ]
+    },
+    {
+      "id": "RL-008",
+      "number": 8,
+      "question": "什么是马尔可夫性质？MDP 和 POMDP 的区别是什么？",
+      "answer": "### 马尔可夫性质 (Markov Property)\n下一状态 $S_{t+1}$ 的概率分布**仅由当前状态 $S_t$ 和动作 $A_t$ 决定**，与历史所有状态无关：\n$$P(S_{t+1}|S_t, A_t) = P(S_{t+1}|S_t, A_t, S_{t-1}, A_{t-1}, ..., S_0)$$\n\n### MDP（马尔可夫决策过程）\n- 标准RL建模框架，由 $(S, A, P, R, \\gamma)$ 五元组定义。\n- **前提**：状态**完全可观测**（Agent能看到环境的全部信息）。\n- 如：棋盘游戏（围棋、国际象棋），状态信息完整。\n\n### POMDP（部分可观测马尔可夫决策过程）\n- **前提**：状态**无法完整观测**，Agent只能看到观测 $O_t$（$O_t \neq S_t$）。\n- **解法**：使用 RNN/LSTM 或 Attention 建模历史信息的序列，近似还原隐藏状态。\n- **现实场景**：自动驾驶（传感器无法看到被遮挡物体）、对话系统（用户意图是隐变量）。\n\n### 一句话总结\n> MDP 是全知视角，POMDP 是管中窥豹。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "MDP/POMDP"
+      ]
+    },
+    {
+      "id": "RL-009",
+      "number": 9,
+      "question": "有哪些主流的探索与利用（Exploration & Exploitation）方法？",
+      "answer": "### 1. ε-greedy（ε-贪心）\n- **做法**：以概率 $1-\u000barepsilon$ 选择最优动作，概率 $\u000barepsilon$ 随机选择一个动作。\n- **优点**：最简单、最常用；易于实现和调试。\n- **缺点**：探索无方向性（纯随机），效率低；$\u000barepsilon$ 固定时后期无效探索浪费样本。\n\n### 2. UCB（置信上界）\n- **做法**：选择 $a_t = \u0007rg\\max_a \\left[Q(s,a) + c\\sqrt{\frac{\\ln t}{N(s,a)}}\right]$\n- **特点**：平衡奖励均值 + 探索不确定性；被访问次数越少的动作，置信上界越宽，越有可能被选择。\n- **优点**：有理论保证，探索有方向性。\n\n### 3. 熵正则（Entropy Regularization）\n- **做法**：在损失函数中加入策略熵项 $H(\\pi)$，鼓励动作分布更均匀。\n- **代表**：SAC（Soft Actor-Critic），在Actor损失中加入 $\u0007lpha H(\\pi)$ 项。\n\n### 4. 好奇心机制 (Curiosity-Driven)\n- **做法**：设计**内在奖励**（Intrinsic Reward），奖励Agent访问预测误差大/新奇的区域。\n- **公式**：$R_{total} = R_{ext} + \beta \\cdot R_{int}$，其中 $R_{int}$ 为状态预测误差。\n- **优点**：在奖励稀疏环境下尤为有效。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "探索与利用"
+      ]
+    },
+    {
+      "id": "RL-010",
+      "number": 10,
+      "question": "什么是多臂老虎机(MAB)问题？有哪些经典算法？",
+      "answer": "### 问题定义\nMAB是RL的**极简版本**（仅一个状态），核心问题：在有限资源下，如何在**探索未知摇臂**与**利用已知最优臂**之间取得平衡。\n\n### 经典算法\n\n**1. ε-greedy**\n- 以概率 $\u000barepsilon$ 随机探索，$1-\u000barepsilon$ 选择当前最优臂。\n- 最简单，但探索无方向。\n\n**2. UCB（置信上界）**\n- 选择规则：$a_t = \u0007rg\\max_a \\left[ \\hat{\\mu}_a + c\\sqrt{\frac{\\ln t}{N_a}} \right]$\n- 优先选择高均值+高不确定性（被选次数少）的臂。\n\n**3. 汤普森采样 (Thompson Sampling)**\n- 对每个臂维护奖励的后验分布（Beta分布），每次采样后按最大采样值选臂。\n- 贝叶斯方法，探索更自然。\n\n### 与完整RL的关系\nMAB → Contextual Bandit（多状态但无状态转移）→ 完整MDP（状态间转移），可视为从简到繁的三级递进。",
+      "category": "强化学习面试题",
+      "tags": [
+        "基础概念",
+        "多臂老虎机"
+      ]
+    },
+    {
+      "id": "RL-011",
+      "number": 11,
+      "question": "请写出贝尔曼期望方程和贝尔曼最优方程，并说明两者使用场景的区别。",
+      "answer": "### 贝尔曼期望方程（Bellman Expectation Equation）\n用于**策略评估**——评估给定策略 $\\pi$ 下的值函数。\n\n状态值函数：\n$$V_\\pi(s) = \\sum_{a} \\pi(a|s) \\sum_{s',r} p(s',r|s,a)\big[r + \\gamma V_\\pi(s')\big]$$\n\n动作值函数：\n$$Q_\\pi(s,a) = \\sum_{s',r} p(s',r|s,a)\big[r + \\gamma \\sum_{a'} \\pi(a'|s')Q_\\pi(s',a')\big]$$\n\n### 贝尔曼最优方程（Bellman Optimality Equation）\n用于**求解最优策略**——求全局最优值函数。\n\n$$V_*(s) = \\max_a \\sum_{s',r} p(s',r|s,a)\big[r + \\gamma V_*(s')\big]$$\n\n$$Q_*(s,a) = \\sum_{s',r} p(s',r|s,a)\big[r + \\gamma \\max_{a'} Q_*(s',a')\big]$$\n\n### 使用场景区分\n| 方程类型 | 用途 | 对应算法 |\n|---------|------|---------|\n| 期望方程 | 策略评估（给定策略求值） | 策略迭代的评估步骤 |\n| 最优方程 | 求最优策略 | 值迭代、Q-Learning |\n\n> Q-Learning 的本质就是用采样方式逼近贝尔曼最优方程的解。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "贝尔曼方程"
+      ]
+    },
+    {
+      "id": "RL-012",
+      "number": 12,
+      "question": "请对比值迭代和策略迭代的区别与联系。",
+      "answer": "### 策略迭代 (Policy Iteration)\n分两步交替进行：\n1. **策略评估**：用贝尔曼**期望方程**计算当前策略 $\\pi$ 的 $V_\\pi(s)$（直至收敛）。\n2. **策略改善**：$\\pi'(s) = \u0007rg\\max_a \\sum_{s',r} p(s',r|s,a)[r + \\gamma V_\\pi(s')]$，贪心更新策略。\n\n迭代至策略不再变化时得到最优策略。\n\n### 值迭代 (Value Iteration)\n- 直接使用贝尔曼**最优方程**迭代更新 $V(s) \\leftarrow \\max_a \\sum_{s',r} p(s',r|s,a)[r + \\gamma V(s')]$\n- 一步到位，无需显式的策略评估步骤，最后从最优值函数提取策略。\n- **效率更高**——不需要评估每一步的完整策略。\n\n### 关键对比\n| 维度 | 策略迭代 | 值迭代 |\n|------|---------|--------|\n| 每轮计算量 | 大（需收敛策略评估） | 小（一次扫描） |\n| 收敛轮数 | 少（通常几次迭代即可） | 多 |\n| 使用的方程 | 贝尔曼期望方程 | 贝尔曼最优方程 |\n| 策略更新 | 显式交替更新 | 隐式（最后由V导出策略） |\n\n### 联系\n两者都是**有模型DP方法**，在表格型MDP下均保证收敛到最优策略。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "值迭代/策略迭代"
+      ]
+    },
+    {
+      "id": "RL-013",
+      "number": 13,
+      "question": "蒙特卡洛(MC)算法的原理是什么？首次访问MC和每次访问MC的区别？",
+      "answer": "### 原理\n- 无模型方法，**采样完整一条Episode轨迹**后，利用整段实际回报更新值函数。\n- 更新公式（每次访问MC）：$V(S_t) \\leftarrow V(S_t) + \u0007lpha \big[G_t - V(S_t)\big]$\n- 其中 $G_t = R_{t+1} + \\gamma R_{t+2} + \\gamma^2 R_{t+3} + ...$ 为完整轨迹的真实回报。\n- **核心特性**：无偏估计（$G_t$ 是真实的完整回报），但方差大（一条轨迹包含大量随机事件）。\n\n### 首次访问 MC（First-Visit MC）\n- 每个Episode中对每个状态，**只记录第一次访问**时的回报用于更新。\n- 更常用，理论性质好。\n\n### 每次访问 MC（Every-Visit MC）\n- 每个Episode中对状态**每次被访问**都记录并更新，数据利用率高。\n- 但同一条轨迹内的多次访问存在相关性，估计有偏（但在极限下也收敛）。\n\n### MC 的优缺点\n- **优点**：无偏估计，不需要环境模型，对马尔可夫性不敏感。\n- **缺点**：方差极大；必须等Episode结束才能更新（不适合在线学习/无限任务）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "蒙特卡洛"
+      ]
+    },
+    {
+      "id": "RL-014",
+      "number": 14,
+      "question": "时间差分 TD(0) 的更新公式和原理是什么？与 MC 的关键区别？",
+      "answer": "### TD(0) 更新公式\n状态值更新：\n$$V(s) \\leftarrow V(s) + \u0007lpha \big[r + \\gamma V(s') - V(s)\big]$$\n\n动作值更新（Sarsa 形式）：\n$$Q(s,a) \\leftarrow Q(s,a) + \u0007lpha \big[r + \\gamma Q(s',a') - Q(s,a)\big]$$\n\n其中 $\\delta = r + \\gamma V(s') - V(s)$ 称为 **TD误差（TD-error）**。\n\n### 核心原理\n- 用当前估计的 $V(s')$（或 $Q(s',a')$）替代未知的真实长期回报。\n- **仅需单步交互**即可更新，无需等待Episode结束。\n\n### MC vs TD 核心区别\n| 维度 | MC | TD |\n|------|-----|-----|\n| 更新时机 | Episode结束后 | 每一步 |\n| 更新目标 | 真实完整回报 $G_t$（无偏） | 估计值 $r+\\gamma V(s')$（有偏） |\n| 方差 | **高**（轨迹级随机） | **低**（单步级随机） |\n| 偏差 | **无偏** | **有偏**（Maximization Bias + 估计偏差） |\n| 适合场景 | 轨迹短、需精确Q值 | 长时序、在线学习、连续任务 |\n\n### 一句话总结\n> MC 用真实数据做真但噪声大的估计；TD 用估计值做有偏但稳定的估计。TD 是现代RL的基石。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "TD学习"
+      ]
+    },
+    {
+      "id": "RL-015",
+      "number": 15,
+      "question": "什么是 n-step TD？n 越大，偏差和方差如何变化？",
+      "answer": "### n-step 回报定义\n$$G_{t:t+n} = R_{t+1} + \\gamma R_{t+2} + ... + \\gamma^{n-1}R_{t+n} + \\gamma^n V(S_{t+n})$$\n\n- 前 $n$ 步用真实奖励，第 $n+1$ 步用估计值 $V(S_{t+n})$ 截断。\n- n-step TD 更新：$V(S_t) \\leftarrow V(S_t) + \u0007lpha[G_{t:t+n} - V(S_t)]$\n\n### n 与偏差/方差的关系\n| n 的值 | 偏差 | 方差 | 本质 |\n|--------|------|------|------|\n| $n=1$ | 最大（完全依赖带偏的估计值） | 最小 | 标准TD(0) |\n| $1 < n < T$ | 中等 | 中等 | 折中方案 |\n| $n=T$（完整Episode） | 无偏 | 最大 | 等价MC |\n\n### 规律\n> **n 越大 → 使用更多真实奖励 → 偏差越小、方差越大**。\n\n### 工程实践\n- n=1~5 为常见实践值，平衡偏差与方差。\n- 工业中更常用 **GAE**（广义优势估计），可以看作 n-step TD 的指数加权版本。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "n-step TD"
+      ]
+    },
+    {
+      "id": "RL-016",
+      "number": 16,
+      "question": "什么是 TD(λ)？λ 的取值含义是什么？",
+      "answer": "### TD(λ) 回报定义\n$$G^\\lambda_t = (1-\\lambda)\\sum_{n=1}^{\\infty} \\lambda^{n-1} G_{t:t+n}$$\n\n- 本质：对 1-step, 2-step, ..., ∞-step 的 TD 回报做**指数加权平均**。\n- 权重以 $\\lambda$ 呈指数衰减：n 越大，权重 $\\lambda^{n-1}$ 越小（$\\lambda < 1$ 时）。\n\n### λ 取值的含义\n| λ | 等价算法 | 特性 |\n|----|---------|------|\n| $\\lambda = 0$ | 1-step TD(0) | 最大偏差、最小方差 |\n| $\\lambda = 1$ | 蒙特卡洛 MC | 无偏、最大方差 |\n| $0 < \\lambda < 1$ | 多步TD的折中 | 平衡偏差与方差 |\n\n### 工程取值建议\n- 常用 $\\lambda = 0.9 \\sim 0.95$（例如 PPO 中使用 GAE λ = 0.95）。\n- 追求低方差（稳定训练）取小 λ；追求无偏（精确估计）取大 λ。\n\n### 与 GAE 的关系\n- **GAE（广义优势估计）** 本质是 TD(λ) 思想在**优势函数**上的应用：\n  $$\\hat{A}_t^{GAE} = \\sum_{l=0}^\\infty (\\gamma\\lambda)^l \\delta_{t+l}$$\n  其中 $\\delta_t = r_t + \\gamma V(s_{t+1}) - V(s_t)$ 为单步TD误差。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "TD(λ)"
+      ]
+    },
+    {
+      "id": "RL-017",
+      "number": 17,
+      "question": "请对比 Sarsa 和 Q-Learning 的更新公式和算法特性。",
+      "answer": "### 更新公式对比\n\n**Sarsa（On-Policy）**：\n$$Q(s,a) \\leftarrow Q(s,a) + \u0007lpha \big[r + \\gamma Q(s',a') - Q(s,a)\big]$$\n- $a'$ 由**当前策略**（如 ε-greedy）在 $s'$ 下实际选出。\n- 行为策略 = 目标策略。\n\n**Q-Learning（Off-Policy）**：\n$$Q(s,a) \\leftarrow Q(s,a) + \u0007lpha \big[r + \\gamma \\max_{a} Q(s',a) - Q(s,a)\big]$$\n- 目标动作直接取 $\\max Q(s',a)$（贪心策略），与实际行为策略选择的动作无关。\n- 行为策略（如 ε-greedy）≠ 目标策略（贪心）。\n\n### 关键行为差异\n| 维度 | Sarsa | Q-Learning |\n|------|-------|-----------|\n| 策略类型 | On-Policy | Off-Policy |\n| 探索风格 | **保守/安全**（考虑探索风险） | **激进/贪心**（直接学最优） |\n| 悬崖行走表现 | 学走安全路径（远离悬崖） | 学最短路径（紧贴悬崖） |\n| 适用场景 | 安全攸关（机器人、自动驾驶） | 竞技/游戏（追求最优策略） |\n\n### 一句话总结\n> Sarsa 说「我走这条路要小心风险」，Q-Learning 说「最短路线就是最优路线，不考虑风险」。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "Sarsa/Q-Learning"
+      ]
+    },
+    {
+      "id": "RL-018",
+      "number": 18,
+      "question": "Q-Learning 为什么不需要重要性采样？n-step Q-Learning 需要吗？",
+      "answer": "### 1-step Q-Learning 不需要重要性采样的原因\n\nQ-Learning 更新公式：\n$$Q(s,a) \\leftarrow Q(s,a) + \u0007lpha \big[r + \\gamma \\max_a Q(s',a) - Q(s,a)\big]$$\n\n关键点：\n1. TD target 端使用 $\\max_a Q(s',a)$（**目标策略 = 贪心策略**）。\n2. 这个 max 操作**完全不依赖行为策略**选出的动作 $a'$。\n3. 即时奖励 $r$ 和环境转移 $s \rightarrow s'$ 也仅依赖于已执行的 $(s,a)$，与后续行为策略无关。\n4. 因此不存在「两个策略采样出的动作分布不一致」的问题，**无需重要性采样修正**。\n\n### n-step Q-Learning 必须加重要性采样\n\nn-step 回报中，后续的 $n-1$ 步动作都是用**行为策略**选出的：\n$$G_{t:t+n} = r_{t+1} + \\gamma r_{t+2} + ... + \\gamma^{n-1} \\max_a Q(s_{t+n}, a)$$\n\n而这 n-1 步动作在目标策略（贪心）下的概率分布与行为策略不同 → **分布偏移累积** → 必须用重要性采样：\n$$\rho_{t:t+n-1} = \\prod_{k=t}^{t+n-1} \frac{\\pi(a_k|s_k)}{\beta(a_k|s_k)}$$\n\n### 一句话总结\n> 1-step Q-Learning「只看眼前」不涉及策略差异；n-step「望得更远」累积了策略偏差，需要修正。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "重要性采样"
+      ]
+    },
+    {
+      "id": "RL-019",
+      "number": 19,
+      "question": "什么是重要性采样？它在 RL 中有什么用？权重公式是什么？",
+      "answer": "### 定义\n重要性采样（Importance Sampling）是一种统计技术，用于在 Off-Policy 设置下修正**行为策略 $\beta$** 与**目标策略 $\\pi$** 分布不一致导致的偏差。\n\n### 权重公式\n$$\rho_t = \frac{\\pi(a_t|s_t)}{\beta(a_t|s_t)}$$\n\n- $\rho = 1$：两策略在该动作上概率一致，无需修正。\n- $\rho < 1$：行为策略更偏好该动作 → 降低样本权重，抑制行为策略的偏好。\n- $\rho > 1$：目标策略更偏好该动作 → 放大样本权重，鼓励目标策略。\n\n### 多步权重\n对于 n-step 更新，累积权重为：\n$$\rho_{t:t+n-1} = \\prod_{k=t}^{t+n-1} \frac{\\pi(a_k|s_k)}{\beta(a_k|s_k)}$$\n\n### 在 RL 中的应用\n| 算法 | 是否使用 | 用途 |\n|------|---------|------|\n| 1-step Q-Learning | **不需要** | TD target 直接用 max Q |\n| n-step Q-Learning | **需要** | 后续动作来自行为策略 |\n| Off-Policy MC | **需要** | 整条轨迹修正 |\n| PPO | **需要**（clip限制） | 新旧策略差异修正 |\n| IMPALA | **需要**（V-trace） | 离线策略修正 |\n\n### 限制\n如果 $\beta(a|s) = 0$ 而 $\\pi(a|s) > 0$（行为策略永远不会选的动作但目标策略需要），重要性权重无穷大，方法失效。",
+      "category": "强化学习面试题",
+      "tags": [
+        "核心算法",
+        "重要性采样"
+      ]
+    },
+    {
+      "id": "RL-020",
+      "number": 20,
+      "question": "RL 中为什么不使用 Batch Normalization（BN）？",
+      "answer": "### 核心原因：RL 数据不满足 BN 的前提假设\n\n**BN 的前提**：数据独立同分布（i.i.d.），统计量（均值、方差）稳定。\n\n**RL 训练数据的特点**：\n1. **时序相关性**：相邻时刻的状态高度相关，不满足独立性假设。\n2. **分布漂移**：随着策略更新，智能体访问的状态分布持续变化，统计量不稳定。\n3. **在线学习特性**：无法预先计算整个数据集的均值/方差。\n\n### 实际后果\n- BN 在 RL 中会导致训练不稳定、收敛效果变差。\n- 不同时间步计算的 running mean/var 对应的是不同策略下的状态分布，相互矛盾。\n\n### RL 中的替代方案\n- **Layer Normalization (LN)**：对每个样本单独归一化，不依赖batch统计量，RL训练中更稳定。\n- **对状态特征做常规归一化**（如 Min-Max缩放、Z-score）：预处理阶段完成，特征尺度固定。\n- **值函数缩放**：对目标Q值或回报做归一化，防止梯度爆炸。\n\n### 例外\n在 Offline RL 中，数据来自固定数据集，分布相对稳定，部分工作会尝试使用 BN，但仍需谨慎。",
+      "category": "强化学习面试题",
+      "tags": [
+        "工程调优",
+        "归一化/BN"
+      ]
+    },
+    {
+      "id": "RL-021",
+      "number": 21,
+      "question": "原生 DQN 的三大核心改进是什么？解决了什么问题？",
+      "answer": "### 背景\n传统表格型 Q-Learning 在状态/动作空间大时无法处理（维度爆炸）。DQN 将深度学习引入 Q-Learning。\n\n### 三大核心改进\n\n**1. 神经网络拟合值函数**\n- **问题**：表格型Q-table无法处理大状态空间（如图像输入）。\n- **方案**：用 CNN/DNN 拟合 $Q(s,a;\theta)$，输入原始状态，输出各动作Q值。\n- **意义**：使 RL 能处理高维原始输入（Atari游戏像素、传感器数据）。\n\n**2. 经验回放 (Experience Replay)**\n- **问题**：RL 交互数据时序强相关，不满足神经网络的 i.i.d. 假设。\n- **方案**：存储历史样本 $(s_t, a_t, r_t, s_{t+1}, done)$ 到回放池，训练时随机采样批次。\n- **意义**：\n  - 打破数据时序相关性\n  - 提高样本利用率（每个样本可被多次学习）\n\n**3. 目标网络 (Target Network)**\n- **问题**：Q-Learning 的 TD target $r + \\gamma \\max_a Q(s',a;\theta)$ 和训练网络用的是同一套参数 $\theta$，更新目标持续变动，训练震荡。\n- **方案**：引入独立的 Target 网络 $\theta^-$ 计算 target，每隔 C 步从 $\theta$ 复制参数。\n- **意义**：固定一段时间内的优化目标，稳定训练。\n\n### 伪代码流程\n```\n1. 初始化 Q 网络 θ 和目标网络 θ⁻ = θ，初始化回放池 D\n2. for episode = 1, M:\n3.     获取初始状态 s₁\n4.     for t = 1, T:\n5.         以 ε-greedy 选择 a_t（用 θ 网络）\n6.         执行 a_t，观察 r_t, s_{t+1}\n7.         存入 D ← (s_t, a_t, r_t, s_{t+1})\n8.         从 D 随机采样 minibatch\n9.         计算 target: y = r + γ·max Q(s',a;θ⁻)（非终止状态）\n10.        SGD 更新 θ: minimize MSE(Q(s,a;θ), y)\n11.        每 C 步: θ⁻ ← θ\n```",
+      "category": "强化学习面试题",
+      "tags": [
+        "DQN系列",
+        "DQN"
+      ]
+    },
+    {
+      "id": "RL-022",
+      "number": 22,
+      "question": "DQN 中 Q 值过估计（Overestimation）的原因和后果是什么？",
+      "answer": "### 原因\nQ-Learning 更新时取 $\\max_a Q(s',a)$：\n$$Q(s,a) \\leftarrow Q(s,a) + \u0007lpha[r + \\gamma \\max_a Q(s',a) - Q(s,a)]$$\n\n即使 Q 估计无偏，但 **max 操作天然偏向正误差**：\n$$\\mathbb{E}[\\max_a Q(s',a)] \\geq \\max_a \\mathbb{E}[Q(s',a)]$$\n\n### 过估计的累积放大\n1. 每次更新取 max → 轻微过估计。\n2. 过估计的 Q 值被用于计算下一个 TD target → 又取 max → 误差进一步放大。\n3. 循环往复 → **Q 值系统性虚高**，远超真实回报。\n\n### 后果\n- Q 值不可信，无法用于准确评估动作好坏。\n- 策略可能学到次优行为（被虚高的Q值误导）。\n- 训练不稳定，收敛效果差。\n\n### 解决方案\n- **Double DQN**：用预测网络选最优动作，目标网络计算Q值——解耦 max 操作中的选动作和估值。\n- **TD3**（连续动作场景）：双 Critic 取较小值，抑制过估计。",
+      "category": "强化学习面试题",
+      "tags": [
+        "DQN系列",
+        "Q值过估计"
+      ]
+    },
+    {
+      "id": "RL-023",
+      "number": 23,
+      "question": "Double DQN 如何解决 Q 值过估计问题？与原生 DQN 的核心区别？",
+      "answer": "### 核心思想\n将 max 操作中的**动作选择**和**动作评估**解耦到两个不同的网络。\n\n### 更新对比\n\n**DQN（原版）**：\n$$y = r + \\gamma \\max_{a'} Q(s', a'; \theta^-)$$\n同一个目标网络既选动作又估值 → 过估计。\n\n**Double DQN**：\n$$y = r + \\gamma Q\big(s', \u0007rg\\max_{a'} Q(s', a'; \theta); \theta^-\big)$$\n- **步骤1**：用预测网络 $\theta$ 选最优动作 $a^* = \u0007rg\\max Q(s', a; \theta)$\n- **步骤2**：用目标网络 $\theta^-$ 评估该动作的Q值 $Q(s', a^*; \theta^-)$\n\n### 为什么有效\n- 两个网络的误差大概率不在同一方向上。\n- 一个网络高估的动作，另一个网络未必高估 → 有效抑制系统性过估计。\n\n### 代码实现（相比DQN的唯一改动）\n```python\n# DQN: 目标网络选动作 + 估值\ntarget = r + gamma * target_net(s_next).max(dim=1)[0]\n\n# Double DQN: 预测网络选动作，目标网络估值\nbest_a = q_net(s_next).argmax(dim=1)  # 用 Q 网络选动作\ntarget = r + gamma * target_net(s_next).gather(1, best_a.unsqueeze(1))\n```\n\n> Double DQN 改动极小，效果显著，几乎可以**零成本替代**原生 DQN。",
+      "category": "强化学习面试题",
+      "tags": [
+        "DQN系列",
+        "Double DQN"
+      ]
+    },
+    {
+      "id": "RL-024",
+      "number": 24,
+      "question": "Dueling DQN 的核心改进是什么？为什么拆分 Q=V+A 有效？",
+      "answer": "### 核心改进\n将 Q 函数拆分为两个独立部分：\n$$Q(s,a) = V(s) + A(s,a) - \frac{1}{|\\mathcal{A}|}\\sum_{a'} A(s,a')$$\n\n其中：\n- $V(s)$：**状态值函数**，评估状态本身的\"好坏\"。\n- $A(s,a)$：**优势函数**，评估某个动作相对平均水平的优劣。\n- 减去均值是为了保证可辨识性（$V$ 和 $A$ 的拆分在差一个常数时等价）。\n\n### 为什么有效\n\n**1. 状态值独立学习**\n- 很多状态下，无论选什么动作，回报都差不多（如在空旷的公路上）。\n- $V(s)$ 可以独立学习「这个状态好不好」，不与动作耦合。\n\n**2. 泛化能力强**\n- 对于某些状态，不需要精确评估每个动作的 Q 值，只需知道状态本身的价值。\n- 减少冗余计算，提升样本效率。\n\n**3. 网络结构**\n```\n输入 s → 共享特征提取层 → ├→ V(s) 分支（输出 1 个标量）\n                           └→ A(s,a) 分支（输出 |A| 个值）\n                              → Q(s,a) = V + A - mean(A)\n```\n\n### 适用场景\n状态数量远多于动作对状态价值的影响程度——此时单独评估状态价值能大幅提升效率。",
+      "category": "强化学习面试题",
+      "tags": [
+        "DQN系列",
+        "Dueling DQN"
+      ]
+    },
+    {
+      "id": "RL-025",
+      "number": 25,
+      "question": "PER（优先经验回放）的原理是什么？为什么用 TD-error 作为优先级？",
+      "answer": "### 核心原理\n不是从回放池均匀随机采样，而是**按 TD-error 大小赋予不同采样权重**，让高价值样本更频繁地参与训练。\n\n### 采样权重\n样本 $i$ 的优先级：$p_i = |\\delta_i| + \\epsilon$（$\\epsilon$ 保证极小概率被采样）\n采样概率：$P(i) = \frac{p_i^\u0007lpha}{\\sum_k p_k^\u0007lpha}$\n\n- $\u0007lpha = 0$：退化为均匀采样\n- $\u0007lpha = 1$：完全按优先级采样\n\n### 重要性采样修正（PER内部）\n非均匀采样引入偏差，需要用重要性权重修正：\n$$w_i = \\left(\frac{1}{N} \\cdot \frac{1}{P(i)}\right)^\beta$$\n$\beta$ 从初始值（如 0.4）逐步退火到 1，以消除偏差。\n\n### 为什么用 TD-error\n- **TD-error 越大** → 模型对该样本的预测偏差越大 → **学习价值越高**。\n- 相当于「哪里不会学哪里」，优先攻克模型当前最困惑的样本。\n- 类比：学生优先复习错题，而非平均发力。\n\n### 效果\n- 加速收敛（尤其奖励稀疏场景）\n- 提升样本利用率\n- 自带探索增强（模型不熟悉的样本被反复学习）",
+      "category": "强化学习面试题",
+      "tags": [
+        "DQN系列",
+        "PER DQN"
+      ]
+    },
+    {
+      "id": "RL-026",
+      "number": 26,
+      "question": "请简要介绍 C51 / 分位数 DQN 和 Rainbow 的核心思路。",
+      "answer": "### C51（Categorical DQN）\n- **核心**：不再预测单个 Q 值标量，而是预测 Q 值的**概率分布**。\n- **做法**：将 Q 值范围（如 $[-10, 10]$）离散化为 51 个区间（atoms），网络输出每个区间的概率。\n- 损失函数使用分布间的 KL 散度（而非 MSE）。\n- **优势**：捕捉回报的不确定性，建模更精细；对随机性环境鲁棒。\n\n### 分位数 DQN (QR-DQN)\n- C51 使用固定区间，分位数 DQN 使用可学习的分位数位置。\n- 用分位数回归（Quantile Regression）直接估计 Q 值的分位数分布。\n\n### Rainbow\n- **本质**：将 DQN 的所有改进技巧**集成到一个算法**中。\n- 包含的组件：\n  1. Double DQN（解耦动作选择与估值）\n  2. Dueling DQN（Q = V + A 拆分）\n  3. PER（优先经验回放）\n  4. N-step TD（多步回报）\n  5. Noisy DQN（参数噪声探索）\n  6. C51（分布建模）\n- **效果**：在 Atari 等基准上大幅超过单个改进，是 DQN 系列的**终极形态**。",
+      "category": "强化学习面试题",
+      "tags": [
+        "DQN系列",
+        "C51/Rainbow"
+      ]
+    },
+    {
+      "id": "RL-027",
+      "number": 27,
+      "question": "Noisy DQN 是如何实现探索的？相比 ε-greedy 有什么优势？",
+      "answer": "### 原理\n在网络参数中添加可学习的噪声，替代 ε-greedy 的随机探索。\n\n- 全连接层替换为 **Noisy Linear**：\n  $$y = (W_\\mu + W_\\sigma \\odot \u000barepsilon^w)x + (b_\\mu + b_\\sigma \\odot \u000barepsilon^b)$$\n- $\u000barepsilon$ 为标准正态随机噪声，$W_\\mu, W_\\sigma, b_\\mu, b_\\sigma$ 可训练。\n- 噪声随网络的训练自行调节强度。\n\n### 相比 ε-greedy 的优势\n| 维度 | ε-greedy | Noisy DQN |\n|------|----------|-----------|\n| 探索方式 | 与状态无关的纯随机 | **状态相关**（网络决定的探索） |\n| 探索衰减 | 需要手工设计衰减策略 | 自动学习调节 |\n| 探索质量 | 无方向性，「无头苍蝇」 | 有方向性，网络学到何时该探索 |\n| 长期效果 | 后期随机动作浪费样本 | 后期噪声会自然减小 |\n\n### 一句话总结\n> ε-greedy 是「乱试」，Noisy DQN 是「有针对性地试」。",
+      "category": "强化学习面试题",
+      "tags": [
+        "DQN系列",
+        "Noisy DQN"
+      ]
+    },
+    {
+      "id": "RL-028",
+      "number": 28,
+      "question": "DQN 训练不稳定的常见原因和解决方案是什么？",
+      "answer": "### 常见不稳定原因\n\n1. **Q 值过估计** → 使用 Double DQN / TD3 双网络。\n2. **数据时序相关** → 使用经验回放随机采样打破。\n3. **TD target 持续变动** → 使用 Target Network 延迟更新。\n4. **奖励尺度不当** → 奖励归一化/缩放，$[-1, 1]$ 区间最佳。\n5. **学习率过大** → 降低学习率（DQN 常用 1e-4 ~ 5e-4）。\n6. **梯度爆炸** → 使用梯度裁剪（gradient clipping）。\n7. **探索不足/过度** → 调整 ε 衰减策略或改用 Noisy DQN。\n\n### 通用稳定训练 checklist\n- [ ] 经验回放池容量足够（≥ 10k）\n- [ ] 目标网络更新频率合理（1000~10000 步）\n- [ ] 奖励 clip 到 [-1, 1]\n- [ ] Batch Size ≥ 32\n- [ ] 折扣因子 γ 适合任务时间跨度\n- [ ] 使用 Double DQN + Dueling 架构\n- [ ] Huber Loss 替代 MSE（对异常值鲁棒）\n\n### 快速诊断\n- Q 值持续升高 → 过估计，上 Double DQN\n- Q 值剧烈震荡 → 降低学习率，增大目标网络更新间隔\n- 方差膨胀 → 增大 batch size，减小学习率",
+      "category": "强化学习面试题",
+      "tags": [
+        "DQN系列",
+        "训练稳定性"
+      ]
+    },
+    {
+      "id": "RL-029",
+      "number": 29,
+      "question": "Actor-Critic 架构的基本原理是什么？Actor 和 Critic 各自的职责？",
+      "answer": "### 架构概览\nAC 架构融合 Policy-Based 和 Value-Based 的优点：\n\n```\n           ┌──────────┐\n   s ─────▶│  Critic  │──▶ V(s) 或 Q(s,a)（评估器）\n           └────┬─────┘\n                │ 提供梯度指导（TD-error / Advantage）\n           ┌────▼─────┐\n   s ─────▶│  Actor   │──▶ a ~ π(a|s)（执行器）\n           └──────────┘\n```\n\n### Actor（策略网络）\n- **职责**：输出动作，与环境交互。\n- **学习目标**：最大化累积奖励 → 梯度上升。\n- **更新方向**：由 Critic 提供的 Advantage / TD-error 引导。\n- **优点**：天然适配连续动作空间。\n\n### Critic（值网络）\n- **职责**：评估当前策略的好坏，为 Actor 提供梯度指导。\n- **学习目标**：更准确地估计状态/动作值 → 最小化 TD-error（MSE）。\n- **好处**：提供**单步更新**信号，无需等 Episode 结束，降低 Actor 梯度方差。\n\n### 核心优势\n| 单独 Policy Gradient | AC 框架 |\n|---------------------|---------|\n| 需等完整 Episode 计算回报 | 单步即可更新 |\n| 方差极大 | 方差低 |\n| 收敛慢 | 收敛快 |\n\n### 一句话总结\n> Actor 是「运动员」，Critic 是「教练」——教练实时反馈，运动员据此调整动作。",
+      "category": "强化学习面试题",
+      "tags": [
+        "Actor-Critic",
+        "AC基础"
+      ]
+    },
+    {
+      "id": "RL-030",
+      "number": 30,
+      "question": "什么是优势函数（Advantage Function）？为什么使用它？",
+      "answer": "### 定义\n$$A(s,a) = Q(s,a) - V(s)$$\n\n- $A(s,a) > 0$：动作 $a$ **优于**平均水平（鼓励）。\n- $A(s,a) < 0$：动作 $a$ **差于**平均水平（抑制）。\n- $A(s,a) = 0$：动作 $a$ 不优不劣无所谓。\n\n### 为什么使用优势函数\n\n**1. 降低方差**\n- 用 $Q(s,a)$ 做梯度更新时，方差包含状态本身的价值波动。\n- 减去 $V(s)$ 只留下「动作相对优劣」信号 → 方差显著降低。\n\n**2. 保证单调改进**（TRPO/PPO 的理论基础）\n- 使用优势函数的策略梯度：\n  $$\nabla_\theta J = \\mathbb{E}[\nabla_\theta \\log \\pi_\theta(a|s) \\cdot A(s,a)]$$\n- 在 TRPO 中，约束新旧策略差异，配合优势函数，保证每轮更新后期待回报不会下降。\n\n### 实际估计方法\n- **MC 估计**：$A_t \u0007pprox G_t - V(s_t)$——无偏但方差大。\n- **TD 估计**：$A_t \u0007pprox \\delta_t = r_t + \\gamma V(s_{t+1}) - V(s_t)$——有偏但方差小。\n- **GAE**：对多步 TD 误差做指数加权，平衡偏差与方差。",
+      "category": "强化学习面试题",
+      "tags": [
+        "Actor-Critic",
+        "优势函数"
+      ]
+    },
+    {
+      "id": "RL-031",
+      "number": 31,
+      "question": "A3C（异步优势演员评论家）的架构和工作原理是什么？",
+      "answer": "### 全称\nAsynchronous Advantage Actor-Critic\n\n### 核心架构\n```\nGlobal Network (θ_global)\n    │\n    ├── Worker 1 ──→ Env 1 ──→ 交互数据 ──→ 计算梯度 ──→ 异步更新 θ_global\n    ├── Worker 2 ──→ Env 2 ──→ 交互数据 ──→ 计算梯度 ──→ 异步更新 θ_global\n    ├── ...\n    └── Worker N ──→ Env N ──→ 交互数据 ──→ 计算梯度 ──→ 异步更新 θ_global\n```\n\n### 工作流程\n1. 每个 Worker 从 Global Network 复制参数到本地。\n2. Worker 独立与环境交互收集样本（无需经验回放）。\n3. 计算策略梯度 + 值函数梯度。\n4. **异步**更新 Global Network（无锁机制，依赖 Hogwild! 算法）。\n5. 重复：拉取最新参数 → 采集 → 计算 → 推送梯度。\n\n### 核心特点\n- **On-Policy**：每个 Worker 用自己的当前策略采集数据。\n- **无需经验回放**：多 Worker 并行采集不同环境 → 天然打破数据相关性。\n- **异步更新**：Worker 间不需要等彼此，提升吞吐。\n- **CPU 友好**：Worker 在 CPU 上运行，无需 GPU。\n\n### 一句话总结\n> A3C 像「多个独立探索者各自学习，知识共享到一个中央大脑」。",
+      "category": "强化学习面试题",
+      "tags": [
+        "Actor-Critic",
+        "A3C"
+      ]
+    },
+    {
+      "id": "RL-032",
+      "number": 32,
+      "question": "DDPG（深度确定性策略梯度）的原理是什么？它适合什么场景？",
+      "answer": "### 核心特点\n- **Off-Policy** + **确定性策略** + Actor-Critic 架构。\n- 专为**连续动作空间**设计。\n- 借鉴 DQN 的经验回放 + 双目标网络。\n\n### 算法组件\n1. **Actor（确定性策略）**：$a = \\mu(s|\theta^\\mu)$，输出具体动作值。\n2. **Critic（Q网络）**：$Q(s,a|\theta^Q)$，评估动作值。\n3. **探索机制**：动作添加噪声 $a = \\mu(s) + \\mathcal{N}$（Ornstein-Uhlenbeck 或有简单高斯噪声）。\n4. **目标网络**：Actor 和 Critic 各有一个目标网络 $\theta^{\\mu-}, \theta^{Q-}$，软更新：$\theta^- \\leftarrow \tau\theta + (1-\tau)\theta^-$（$\tau \\ll 1$，如 0.001）。\n\n### Critic 更新\n$$y = r + \\gamma Q'(s', \\mu'(s'|\theta^{\\mu-})|\theta^{Q-})$$\n$$L = \frac{1}{N}\\sum (y - Q(s,a|\theta^Q))^2$$\n\n### Actor 更新（确定性策略梯度）\n$$\nabla_{\theta^\\mu} J \u0007pprox \frac{1}{N}\\sum \nabla_a Q(s,a|\theta^Q)|_{a=\\mu(s)} \nabla_{\theta^\\mu} \\mu(s|\theta^\\mu)$$\n\n### 适用场景\n- 连续控制（机器人关节、自动驾驶方向盘/油门）\n- 需要高样本效率的场景（Off-Policy + 经验回放）\n- 确定性环境（如 MuJoCo 物理仿真任务）",
+      "category": "强化学习面试题",
+      "tags": [
+        "Actor-Critic",
+        "DDPG"
+      ]
+    },
+    {
+      "id": "RL-033",
+      "number": 33,
+      "question": "TD3 相比 DDPG 做了哪些改进？",
+      "answer": "TD3（Twin Delayed DDPG）针对 DDPG 的三大缺陷进行改进：\n\n### 改进1：双 Critic 网络（Twin）\n- **问题**：DDPG 单 Critic 容易 Q 值过估计（取 max 操作）。\n- **方案**：同时训练两个 Critic $Q_1, Q_2$，取**较小值**作为 TD target：\n  $$y = r + \\gamma \\min_{i=1,2} Q'_i(s', \tilde{a})$$\n- **效果**：抑制过估计（比 Double Q-Learning 更保守）。\n\n### 改进2：策略延迟更新（Delayed）\n- **问题**：Critic 不稳定时 Actor 频繁更新 → 误差传播。\n- **方案**：Critic 更新 d 次后，Actor 才更新 1 次（通常 d=2）。\n- **直觉**：先让 Critic 学到较准确的值估计，再指导 Actor 更新。\n\n### 改进3：目标策略平滑正则化\n- **问题**：确定性策略容易过拟合到窄的 Q 值峰值。\n- **方案**：在目标动作上添加裁剪噪声：\n  $$\tilde{a} = \\mu'(s') + \text{clip}(\u000barepsilon, -c, c), \\quad \u000barepsilon \\sim \\mathcal{N}(0, \\sigma)$$\n- **效果**：鼓励 Critic 在动作附近区域学得更平滑，提升鲁棒性。\n\n### 总结\n| 改进 | 解决问题 | 核心手段 |\n|------|---------|---------|\n| Twin Critic | Q值过估计 | min(Q1, Q2) |\n| Delayed Update | Actor-Critic耦合震荡 | Critic多更新 |\n| Target Smoothing | 确定性策略过拟合 | 目标动作加噪声 |\n\n> TD3 是 DDPG 的「工程成熟版」，改动小但效果显著，是连续控制任务的基线之一。",
+      "category": "强化学习面试题",
+      "tags": [
+        "Actor-Critic",
+        "TD3"
+      ]
+    },
+    {
+      "id": "RL-034",
+      "number": 34,
+      "question": "请简述 DPG 理论，以及为什么确定性策略梯度不需要重要性采样？",
+      "answer": "### DPG（确定性策略梯度定理）\nDavid Silver 提出的理论：确定性策略 $\\mu(s)$ 的梯度为：\n$$\nabla_\theta J(\\mu_\theta) = \\mathbb{E}_{s \\sim \rho^\\mu}\\left[\nabla_\theta \\mu_\theta(s) \nabla_a Q^\\mu(s,a)|_{a=\\mu_\theta(s)}\right]$$\n\n关键特性：\n- 梯度仅依赖于对**状态分布**的期望（无需对动作分布积分）。\n- 随机策略梯度需要对动作空间积分（或采样），确定性策略无需。\n\n### 为什么不需要重要性采样\n- DPG 是 Off-Policy，行为策略 $\beta$ 用于采样状态 $s$，目标策略 $\\mu$ 给出确定动作。\n- Actor 梯度 $\nabla_\theta J$ 只对 **状态分布 $s \\sim \rho^\beta$** 取期望，不涉及动作分布比值。\n- 即：行为策略只决定了访问哪些状态，而目标策略告诉在该状态做什么动作——这两者不需要修正比值。\n\n### 与随机策略梯度的对比\n| 维度 | 随机策略梯度 | 确定性策略梯度 |\n|------|------------|--------------|\n| 动作 | $a \\sim \\pi(\\cdot|s)$（需采样） | $a = \\mu(s)$（固定） |\n| 梯度公式 | $\\mathbb{E}[\nabla\\log\\pi\\cdot Q]$ | $\\mathbb{E}[\nabla\\mu\\cdot \nabla_a Q]$ |\n| 探索 | 自带（分布采样） | 需额外噪声 |\n| 重要性采样 | Off-Policy时需要 | **不需要** |\n\n> DPG 是 DDPG 的理论基础，解释了为什么 DDPG 虽然是 Off-Policy 却不需要重要性采样。",
+      "category": "强化学习面试题",
+      "tags": [
+        "Actor-Critic",
+        "DPG"
+      ]
+    },
+    {
+      "id": "RL-035",
+      "number": 35,
+      "question": "策略梯度（Policy Gradient）的原理和核心公式是什么？",
+      "answer": "### 优化目标\n最大化策略的期望累积回报：\n$$J(\\pi_\theta) = \\mathbb{E}_{\tau \\sim \\pi_\theta}[R(\tau)] = \\mathbb{E}_{\tau \\sim \\pi_\theta}\\left[\\sum_{t=0}^T \\gamma^t r_t\right]$$\n\n### 策略梯度定理（核心公式）\n$$\nabla_\theta J(\\pi_\theta) = \\mathbb{E}_{(s,a)\\sim\\pi_\theta}\big[\nabla_\theta \\log\\pi_\theta(a|s) \\cdot Q^\\pi(s,a)\big]$$\n\n简化形式（引入基线 $b(s)$ 降低方差）：\n$$\nabla_\theta J = \\mathbb{E}\big[\nabla_\theta \\log\\pi_\theta(a|s) \\cdot (Q^\\pi(s,a) - b(s))\big]$$\n\n最常用形式（取 $b(s) = V(s)$，即优势函数）：\n$$\nabla_\theta J = \\mathbb{E}\big[\nabla_\theta \\log\\pi_\theta(a|s) \\cdot A(s,a)\big]$$\n\n### 直觉理解\n- $\nabla_\theta \\log\\pi_\theta(a|s)$ 是**梯度方向**（增大该动作概率的方向）。\n- $A(s,a)$ 是**放大/缩小系数**（好动作放大梯度，坏动作抑制/反转梯度）。\n- 本质：增大好动作的概率，降低差动作的概率。\n\n### 特点\n- **无偏估计**（从分布采样，无截断偏差）。\n- **高方差**（完整轨迹的累积回报波动大）——需要 Critic / 基线来缓解。\n- **适配连续动作**（输出分布参数，不需离散化）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "策略梯度",
+        "PG基础"
+      ]
+    },
+    {
+      "id": "RL-036",
+      "number": 36,
+      "question": "TRPO 的核心思想和约束机制是什么？为什么它比普通策略梯度更稳定？",
+      "answer": "### 核心思想\n置信域策略优化（Trust Region Policy Optimization）：**限制新旧策略的更新幅度**，保证每一轮更新后期望回报单调不减。\n\n### 优化问题\n$$\\max_\theta \\mathbb{E}_{s,a \\sim \\pi_{\text{old}}}\\left[\frac{\\pi_\theta(a|s)}{\\pi_{\text{old}}(a|s)}A^{\\pi_{\text{old}}}(s,a)\right]$$\n$$\text{s.t. } \\mathbb{E}_s[D_{KL}(\\pi_{\text{old}}(\\cdot|s) \\| \\pi_\theta(\\cdot|s))] \\leq \\delta$$\n\n- 目标函数：使用重要性采样修正，最大化新策略的期望优势。\n- 约束条件：新旧策略的 KL 散度不超过阈值 $\\delta$。\n\n### 为什么更稳定\n普通策略梯度的典型失败模式：一次更新过大 → 策略突变 → 新策略访问的状态分布剧变 → 后续更新方向错误 → 崩溃。\n\nTRPO 通过 KL 约束将更新限制在「置信域」内，确保：\n1. 新策略与旧策略的行为差异在可控范围。\n2. 策略改进满足「单调不减」的理论保证。\n\n### 局限性\n- 约束优化求解复杂（需二阶优化（Fisher 矩阵）、共轭梯度法）。\n- 工程落地困难，代码实现复杂。\n- 对大型网络不友好（二阶信息计算量大）。\n\n> TRPO 给了理论最优解，PPO 给了工程最优解。",
+      "category": "强化学习面试题",
+      "tags": [
+        "策略梯度",
+        "TRPO"
+      ]
+    },
+    {
+      "id": "RL-037",
+      "number": 37,
+      "question": "PPO-CLIP 的损失函数是什么样的？它如何实现 TRPO 的约束效果？",
+      "answer": "### PPO-CLIP 损失函数\n$$L^{CLIP}(\theta) = \\mathbb{E}_t\\left[\\min\\left(r_t(\theta)A_t, \text{clip}(r_t(\theta), 1-\\epsilon, 1+\\epsilon)A_t\right)\right]$$\n\n其中：\n- $r_t(\theta) = \frac{\\pi_\theta(a_t|s_t)}{\\pi_{\text{old}}(a_t|s_t)}$：重要性权重（新旧策略概率比）。\n- $\\epsilon$：裁剪范围（通常 0.1~0.2）。\n- $A_t$：优势函数估计（通常用 GAE）。\n\n### 裁剪逻辑（分情况讨论）\n\n**情况1：$A_t > 0$（好动作，应增大概率）**\n$$L = \\min(r_t, 1+\\epsilon) \\cdot A_t$$\n- 如果 $r_t > 1+\\epsilon$，损失被裁剪在 $(1+\\epsilon)A_t$，阻止策略变化太大。\n\n**情况2：$A_t < 0$（坏动作，应降低概率）**\n$$L = \\max(r_t, 1-\\epsilon) \\cdot A_t$$\n- 如果 $r_t < 1-\\epsilon$，损失被裁剪在 $(1-\\epsilon)A_t$，阻止策略变化太大。\n\n### 关键优势\n| 对比 | TRPO | PPO-CLIP |\n|------|------|----------|\n| 约束方式 | KL 散度硬约束 + 二阶优化 | 简单截断 |\n| 实现复杂度 | 极高 | **极简** |\n| 训练速度 | 慢 | **快** |\n| 效果 | 理论最优 | 实际与TRPO相当 |\n\n### 一句话总结\n> PPO 用一行 `clip` 替代了 TRPO 中复杂的二阶优化，实现了同样的约束效果，是工业界 RL 的事实标准。",
+      "category": "强化学习面试题",
+      "tags": [
+        "策略梯度",
+        "PPO"
+      ]
+    },
+    {
+      "id": "RL-038",
+      "number": 38,
+      "question": "PPO 为什么是 On-Policy？它不使用经验回放吗？",
+      "answer": "### 标准 PPO 是 On-Policy\n- 每次采集一批样本（使用当前策略 $\\pi_{\text{old}}$），用这些样本做**多轮梯度更新**后**立即丢弃**。\n- 下次采集使用新策略，旧样本不再复用。\n- 所以是 On-Policy——采集数据的策略和训练更新的策略相同。\n\n### 为什么可以用同一批数据更新多次？\nPPO 使用重要性采样比率 $r_t(\theta)$ 和 clip 机制：\n- 更新开始时 $r_t = 1$（新旧策略相同）。\n- 随着梯度更新，策略改变，$r_t$ 偏离 1。\n- clip 操作确保当 $r_t$ 偏离太多时梯度截断，防止利用旧样本训练出偏离过远的策略。\n\n所以 PPO 可以对每批数据做 3~5 个 epoch 的更新（用 minibatch SGD），而不至于策略偏移过大。\n\n### PPO 不使用经验回放的原因\n- On-Policy 的核心约束：训练样本必须来自**当前策略**的策略分布。\n- 若使用回放池中的旧样本，它们的策略分布与当前策略差异太大，clip 机制也无法有效修正。\n- 强行使用经验回放会使 PPO 的 On-Policy 理论保证失效。\n\n### PPO 的分布式变体\n- **DPPO**：多个 Worker 并行采集，分别计算梯度，汇总更新全局策略——仍是 On-Policy（Worker 用最新全局策略采集）。\n- **IMPALA**：Off-Policy Actor-Critic，允许经验回放 + V-trace 修正。",
+      "category": "强化学习面试题",
+      "tags": [
+        "策略梯度",
+        "PPO"
+      ]
+    },
+    {
+      "id": "RL-039",
+      "number": 39,
+      "question": "什么是 GAE（广义优势估计）？它在 PPO 中起什么作用？",
+      "answer": "### GAE 公式\n$$\\hat{A}_t^{GAE(\\gamma,\\lambda)} = \\sum_{l=0}^\\infty (\\gamma\\lambda)^l \\delta_{t+l}$$\n\n其中 $\\delta_t = r_t + \\gamma V(s_{t+1}) - V(s_t)$ 为单步 TD 误差。\n\n### 本质\n- 对 **1-step, 2-step, ..., ∞-step** 的优势估计做**指数加权平均**。\n- $\\lambda$ 控制不同步数优势的权重分配：\n  - $\\lambda = 0$：仅用 $\\delta_t$（1-step TD，高偏差低方差）\n  - $\\lambda = 1$：等价 MC 优势估计（无偏高方差）\n  - 常用 $\\lambda = 0.95$ 左右\n\n### 在 PPO 中的作用\nPPO 标配 GAE 作为优势估计器，原因：\n1. **降低方差**：单步 TD 方差低，虽然多步 TD 有偏差，但加权平均后整体方差可控。\n2. **保持训练的稳定性**：纯 MC 优势估计方差极大，导致 PPO 更新不稳定。\n3. **可调节偏差-方差平衡**：通过 $\\lambda$ 自由调节。\n\n### 计算流程\n```\n1. 收集完整轨迹 T 步\n2. 计算每步 TD 误差 δ_t\n3. 用 GAE 公式递归计算优势：A_t = δ_t + γλ·A_{t+1}\n4. 用 A_t 在 PPO 中更新策略\n```\n\n### 一句话总结\n> GAE 是一个「偏差-方差旋钮」——根据任务特性调节 $\\lambda$，获得最稳定的优势估计。",
+      "category": "强化学习面试题",
+      "tags": [
+        "策略梯度",
+        "GAE"
+      ]
+    },
+    {
+      "id": "RL-040",
+      "number": 40,
+      "question": "什么是模仿学习（Imitation Learning）？行为克隆和 DAgger 的区别？",
+      "answer": "### 模仿学习\n利用**专家轨迹数据**训练智能体，不依赖人工设计奖励函数。\n\n### 行为克隆（Behavior Cloning）\n- **做法**：将专家轨迹 $(s_t, a_t^{expert})$ 视为监督学习数据，训练 $\\pi_\theta$ 拟合专家动作：\n  $$\\min_\theta \\mathbb{E}_{(s,a^{expert})}\big[\\|\\pi_\theta(s) - a^{expert}\\|^2\big]$$\n- **优点**：简单、快速、无需环境交互。\n- **致命缺陷**：**分布偏移（Covariate Shift）**——模型在自己预测的动作引导下进入专家数据没见过的状态 → 误差累积 → 偏离越来越远。\n\n### DAgger（Dataset Aggregation）\n- **做法**：迭代优化，每轮：\n  1. 用当前策略 $\\pi_\theta$ 与环境交互，收集状态 $s$。\n  2. 请专家在该状态给出动作标注 $a^{expert}$。\n  3. 将 $(s, a^{expert})$ 加入训练集。\n  4. 重新训练策略。\n- **效果**：通过迭代增加「错误恢复样本」，覆盖策略可能进入的所有状态区域，缓解分布偏移。\n\n### 对比总结\n| 维度 | 行为克隆 | DAgger |\n|------|---------|--------|\n| 数据需求 | 仅离线专家数据 | 需要在线专家标注 |\n| 泛化性 | 差（遇到新状态崩溃） | 好（覆盖更多状态） |\n| 实现难度 | 极简 | 中等（需在线专家） |",
+      "category": "强化学习面试题",
+      "tags": [
+        "进阶话题",
+        "模仿学习"
+      ]
+    },
+    {
+      "id": "RL-041",
+      "number": 41,
+      "question": "什么是逆强化学习（IRL）？GAIL 的原理是什么？",
+      "answer": "### 逆强化学习（IRL）\n- **目标**：从专家轨迹中**反推奖励函数**，而非人工设计奖励。\n- **动机**：很多任务中设计奖励函数比执行任务更难（如自动驾驶的安全性与舒适性权衡）。\n\n### GAIL（Generative Adversarial Imitation Learning）\n将 GAN 思想引入 RL——让判别器充当奖励函数。\n\n**架构**：\n- **生成器** = 策略网络 $\\pi_\theta$（生成轨迹，试图「骗过」判别器）。\n- **判别器** $D(s,a)$ = 区分专家轨迹和生成轨迹的二分类器。\n\n**训练**：\n1. 判别器试图区分专家数据 $(s,a) \\sim expert$ 和生成数据 $(s,a) \\sim \\pi_\theta$。\n2. 策略用判别器的输出作为奖励——「欺骗」判别器 → 即生成越来越像专家的行为。\n3. 交替训练生成器和判别器。\n\n**奖励信号**：$r(s,a) = -\\log(1 - D(s,a))$ 或 $r(s,a) = \\log D(s,a)$\n\n### GAIL 的优势\n- 自动学习类专家行为的奖励函数。\n- 比行为克隆更鲁棒（对抗训练覆盖更多状态分布）。\n- 在复杂运动（行走、抓取）中表现优异。",
+      "category": "强化学习面试题",
+      "tags": [
+        "进阶话题",
+        "逆强化学习"
+      ]
+    },
+    {
+      "id": "RL-042",
+      "number": 42,
+      "question": "什么是 Model-Based 强化学习？有哪些代表工作？优缺点是什么？",
+      "answer": "### 核心思想\n学习环境动力学模型 $p(s_{t+1}|s_t, a_t)$ 和奖励模型 $r(s_t, a_t)$，用虚拟环境生成训练样本。\n\n### 代表工作\n\n**1. World Model**\n- 使用 VAE 编码观测 → RNN 建模时序转移 → 控制器在学到的特征空间中规划/学习。\n- 核心：在「梦境」中训练，效率极高。\n\n**2. Dreamer（系列：DreamerV1/V2/V3）**\n- 使用世界模型学习隐状态动力学，Actor 和 Critic 在学到的世界模型中进行「潜在想象」（latent imagination）。\n- DreamerV3 能在 Minecraft 等复杂环境中仅靠世界模型学习。\n\n**3. MuZero**\n- 不显式建模观测，而是学习隐状态 + 转移模型 + 策略/值函数。\n- 在围棋、Atari 等多种任务上达到 SOTA，无需知道游戏规则。\n\n### 优缺点\n| 优点 | 缺点 |\n|------|------|\n| **样本效率极高**（虚拟环境无限样本） | 环境建模难度大 |\n| 泛化能力强 | 模型误差累积→策略偏差 |\n| 可迁移（学到通用动力学） | 训练复杂，超参敏感 |\n| 可做规划（MCTS + 世界模型） | 复杂场景建模不精确 |",
+      "category": "强化学习面试题",
+      "tags": [
+        "进阶话题",
+        "Model-Based RL"
+      ]
+    },
+    {
+      "id": "RL-043",
+      "number": 43,
+      "question": "什么是离线强化学习（Offline RL）？核心难点和主流解决方案是什么？",
+      "answer": "### 定义\n不与环境交互，仅使用**预先收集的固定数据集**训练策略。\n\n### 与 Off-Policy 的区别\n| 维度 | Off-Policy RL | Offline RL |\n|------|--------------|-----------|\n| 环境交互 | 有（可在线采集新数据） | **完全无** |\n| 数据来源 | 在线采集 + 历史混合 | 纯固定数据集 |\n| 核心挑战 | 分布偏移 | **外推误差**（更严重） |\n\n### 核心难点：外推误差（Extrapolation Error）\n- 数据集**未覆盖**的 $(s,a)$ 区域，Q 函数估计不可信（外推而非内插）。\n- 训练时策略可能倾向于选择这些 Q 值被高估但实际未经验证的动作。\n- 执行时进入 unknown 区域 → 策略崩溃。\n\n### 主流解决方案\n\n**1. 策略约束（Policy Constraint）**\n- 限制策略不偏离数据分布太远（KL 散度约束 / 支持集约束）。\n- 代表：BCQ、BEAR。\n\n**2. 保守 Q 学习（Conservative Q-Learning, CQL）**\n- 在损失函数中惩罚未见过动作的高 Q 值：\n  $$L_{CQL} = \\mathbb{E}_{s \\sim D}\\left[\\log\\sum_a \\exp Q(s,a) - \\mathbb{E}_{a \\sim D}[Q(s,a)]\right]$$\n- 对分布内动作保持准确，对外推动作压低估。\n\n**3. 隐式 Q 学习 (IQL)**\n- 使用期望回归，避免查询数据集外的动作值。\n- 简单有效，调参友好。\n\n### 应用场景\n- 医疗（不能拿病人做实验采集数据）\n- 自动驾驶（安全关键场景数据珍贵）\n- 推荐系统（用户行为日志只有历史数据）",
+      "category": "强化学习面试题",
+      "tags": [
+        "进阶话题",
+        "离线RL"
+      ]
+    },
+    {
+      "id": "RL-044",
+      "number": 44,
+      "question": "分布式强化学习中 IMPALA 和 SEED RL 各有什么特点？",
+      "answer": "### IMPALA（Importance Weighted Actor-Learner Architecture）\n**架构**：Actor 采集数据 + 计算梯度 → Learner 汇总训练。\n\n**核心机制——V-trace**：\n- Actor 可能在 Learner 更新后才同步新策略 → Actor 使用的策略相对于 Learner 是「旧策略」。\n- V-trace 使用重要性采样修正 Off-Policy 偏差，公式：\n  $$v_t = V(s_t) + \\sum_{k \\ge t} \\gamma^{k-t} \\left(\\prod_{i=t}^{k-1} c_i\right) \rho_t (r_k + \\gamma V(s_{k+1}) - V(s_k))$$\n  其中 $\rho_t, c_t$ 是截断的重要性权重。\n\n**特点**：\n- 高吞吐（Actor 和 Learner 解耦，Actor 只做前向传播）。\n- 支持 Off-Policy 修正，样本利用率高。\n- 大规模训练（DeepMind 用其训练数万核分布式智能体）。\n\n### SEED RL\n**架构优化**：将模型推理**全部迁移到 Learner 端**，Actor 仅做环境交互。\n\n**改进**：\n1. **推理集中化**：Actor 发送观测给 Learner 的推理引擎 → Learner 用 GPU/TPU 批量推理 → 返回动作 → Actor 只执行。\n2. **利用专用硬件**：Learner 使用 TPU Pod 进行大规模批量推理和训练。\n3. **高效通信**：使用 gRPC + 流式传输，减少通信开销。\n\n### 对比\n| 维度 | IMPALA | SEED RL |\n|------|--------|---------|\n| Actor 职责 | 采集 + 本地前向推理 | 仅采集（动作由 Learner 推理） |\n| 推理位置 | 分散（Actor本地CPU） | 集中（Learner GPU/TPU） |\n| 硬件利用 | 中等 | 高（GPU/TPU 专用于推理） |\n| 带宽效率 | 一般 | 高 |\n| 规模 | 数万核 | 数万核+大规模TPU集群 |",
+      "category": "强化学习面试题",
+      "tags": [
+        "进阶话题",
+        "分布式RL"
+      ]
+    },
+    {
+      "id": "RL-045",
+      "number": 45,
+      "question": "多智能体强化学习（MARL）有哪些主流方法？",
+      "answer": "### 任务分类\n1. **合作型**（Cooperative）：所有智能体共享同一奖励函数（如多机器人协作搬运）。\n2. **竞争型**（Competitive）：零和博弈（如围棋、星际争霸）。\n3. **混合型**（Mixed）：部分合作部分竞争（如 MOBA 游戏中的团队对抗）。\n\n### 主流方法\n\n**1. IQL（Independent Q-Learning）**\n- 每个智能体独立运行 Q-Learning，**将其他智能体视为环境的一部分**。\n- 最简单但问题最多：从单个智能体视角看，环境是非平稳的（其他智能体的策略在变化）。\n\n**2. MADDPG（Multi-Agent DDPG）**\n- **中心化训练、分布式执行（CTDE）**：训练时 Critic 可访问所有智能体的全局信息，执行时 Actor 仅用局部观测。\n- 有效应对环境非平稳性问题。\n\n**3. 值分解（Value Decomposition）系列**\n- **VDN**：$Q_{tot} = \\sum_i Q_i$——联合 Q 等于个体 Q 之和。\n- **QMIX**：$Q_{tot} = f(Q_1, Q_2, ..., Q_n; s)$——用混合网络计算联合 Q，约束单调性（$\\partial Q_{tot}/\\partial Q_i \\ge 0$）。\n- **QTRAN**：放宽 QMIX 的单调性约束，表达能力更强。\n\n**4. COMA（Counterfactual Multi-Agent Policy Gradient）**\n- 使用反事实基线（baseline）：对比「所有智能体都做了动作 a」vs「其他人不变，我改了动作」的收益差异。\n- 解决多智能体 Credit Assignment 问题。\n\n**5. 通信类算法**\n- **RIAL/DIAL**：智能体间通过通信通道交换信息，学习「说什么、对谁说」。\n- **BiCNet**：双向 RNN 通信网络，用于星际争霸微操。",
+      "category": "强化学习面试题",
+      "tags": [
+        "进阶话题",
+        "多智能体RL"
+      ]
+    },
+    {
+      "id": "RL-046",
+      "number": 46,
+      "question": "什么是元强化学习（Meta-RL）？核心思想是什么？",
+      "answer": "### 定义\n学习**快速适应新任务**的能力——「Learning to Learn」。\n\n### 核心思想\n1. 在一组**不同但相关的任务** $\\mathcal{T}_1, \\mathcal{T}_2, ..., \\mathcal{T}_n$ 上预训练。\n2. 提取跨任务的通用策略/先验知识。\n3. 面对新任务 $\\mathcal{T}_{new}$ 时，仅需**少量交互**即可快速适应。\n\n### 与普通RL的对比\n| 维度 | 普通 RL | Meta-RL |\n|------|---------|---------|\n| 训练 | 在一个固定任务上 | 在大量不同任务上 |\n| 泛化 | 仅当前任务 | 快速适应新任务 |\n| 目标 | 最大化单任务累积奖励 | 最大化「快速学习能力」 |\n\n### 代表算法\n- **Reptile**：简单的一阶梯度的元学习方法，在每个任务上做几轮 SGD，用参数变化方向作为元梯度。\n- **MAML**（Model-Agnostic Meta-Learning）：寻找一个好的初始化参数，使得在新任务上几步梯度下降就能得到好策略。\n\n### Meta-RL 的特殊设计\n- 策略网络除了观测 $o_t$，还需输入**任务记忆**（如 $r_{t-1}, a_{t-1}$ 或隐状态 $h_t$）。\n- RNN 隐状态隐式编码了当前任务的特性，实现 Few-shot 适应。\n\n### 落地难点\n- 任务分布的多样性和质量难以保证。\n- 元训练的计算开销大（内外双层优化）。\n- 现实场景中构建大量不同任务难度大。",
+      "category": "强化学习面试题",
+      "tags": [
+        "进阶话题",
+        "元RL"
+      ]
+    },
+    {
+      "id": "RL-047",
+      "number": 47,
+      "question": "什么是 Go-Explore 算法？它解决了什么核心问题？",
+      "answer": "### 核心问题：硬探索（Hard Exploration）\n当奖励**极度稀疏**且有**欺骗性局部最优**（deceptive reward）时，传统RL探索方法（ε-greedy、好奇心）全部失效。\n\n经典例子：蒙特祖玛的复仇（Atari游戏），需要穿过多个房间、爬梯子、拿钥匙，中间几乎无任何奖励信号。\n\n### Go-Explore 核心思想\n**「先探索后鲁棒化」**——分两阶段：\n\n**阶段1：存档遍历（Archive Exploration）**\n1. 维护一个状态存档（archive），记录所有访问过的「有趣」状态及其到达路径。\n2. 每次从存档中**随机选择一个存档状态** → **重置环境到该状态**（利用确定性模拟器或领域知识）→ 从该状态继续探索。\n3. 新发现的状态加入存档。\n4. 核心机制：**永不忘记**，可以回到任何有趣状态继续探索。\n\n**阶段2：鲁棒化（Robustification）**\n- 用阶段1收集的存档轨迹作为专家数据。\n- 训练模仿学习策略，使策略能从初始状态复现存档中的优秀路径。\n- 让策略对噪声和随机性鲁棒。\n\n### 为什么有效\n- 传统方法一旦离开有趣区域就再也回不去（没有返回机制）。\n- Go-Explore 显式维护可达状态，有「回头路」，遍历更系统。\n\n### 局限性\n- 需要确定性模拟器（能回到任意状态）。\n- 随机环境中需要领域知识模拟复位。",
+      "category": "强化学习面试题",
+      "tags": [
+        "前沿专项",
+        "Go-Explore"
+      ]
+    },
+    {
+      "id": "RL-048",
+      "number": 48,
+      "question": "什么是分层强化学习（HRL）？Option-Critic 架构是怎样的？",
+      "answer": "### 核心思想\n将复杂长时序任务**拆分为多层**：高层制定子目标 → 底层执行具体动作。\n\n### 两层架构\n- **高层元控制器（Meta-Controller）**：选择子目标/选项（Option），决策间隔较长。\n- **底层控制器（Low-Level Controller）**：根据当前选项执行具体动作，决策间隔短。\n\n### 优势\n- 降低单层学习难度（每个子任务更简单）。\n- 缓解奖励稀疏（高层给底层提供中间信号）。\n- 时间抽象（Temporal Abstraction）：高层以子任务为时间单位，大幅缩减有效决策步数。\n\n### Option-Critic 架构\n- **Option**：一个具有启动条件、内部策略、终止条件的子策略。\n- **Actor** = 选择 Option + 执行 Option 内的动作。\n- **Critic** = 评估 Option 选择和内部动作的好坏。\n- Option-Critic 是一种**端到端**学习 Option 的方法——Option 的划分、执行、切换全部自动学习。\n\n### 应用\n- 迷宫导航（高层：选择去哪个区域；底层：走路）\n- 机器人操作（高层：抓取/放置/推；底层：关节控制）",
+      "category": "强化学习面试题",
+      "tags": [
+        "前沿专项",
+        "HRL"
+      ]
+    },
+    {
+      "id": "RL-049",
+      "number": 49,
+      "question": "什么是 Reward Shaping？势函数形式的奖励塑造为什么不会改变最优策略？",
+      "answer": "### Reward Shaping\n人工设计辅助奖励 $F(s,a,s')$ 加速训练，原始奖励变为：$R'(s,a,s') = R(s,a,s') + F(s,a,s')$\n\n### 势函数理论（Ng et al., 1999）\n**核心结论**：当且仅当 $F$ 是势函数之差时，最优策略不变：\n$$F(s,a,s') = \\gamma\\Phi(s') - \\Phi(s)$$\n\n其中 $\\Phi(s)$ 是任意实值势函数（衡量状态\"好坏\"）。\n\n### 证明直觉\n将这个 F 加入回报后，累积折扣奖励为：\n$$\\sum_{t=0}^\\infty \\gamma^t (r_t + \\gamma\\Phi(s_{t+1}) - \\Phi(s_t)) = \\sum_{t=0}^\\infty \\gamma^t r_t - \\Phi(s_0)$$\n\n$\\Phi(s_0)$ 对所有策略相同（同一初始状态），因此策略的偏好排序不变 → **最优策略不变**。\n\n### 常见应用\n- 距离目标越近给正奖励（$\\Phi(s) = -dist(s, goal)$）\n- 离障碍物越远给正奖励\n- 网格世界中使用 Manhattan 距离作为势函数\n\n### 注意\n- 非势函数形式的 Reward Shaping 可能**改变最优策略**，导致学到次优行为。\n- 势函数形式的 Shaping 只改变学习速度（引导探索），不改变最终答案。",
+      "category": "强化学习面试题",
+      "tags": [
+        "前沿专项",
+        "Reward Shaping"
+      ]
+    },
+    {
+      "id": "RL-050",
+      "number": 50,
+      "question": "Transformer 在 RL 中的应用和优势是什么？",
+      "answer": "### 应用场景\n1. **长时序决策**：Transformer 的自注意力机制能建模远距离依赖，替代 RNN/LSTM 处理长轨迹。\n2. **多智能体建模**：用 Attention 建模智能体间的交互关系（如 Attention-based MADDPG）。\n3. **组合优化**：Pointer Network + RL 解决 TSP、VRP 等 NP-hard 问题。\n4. **Decision Transformer**：将 RL 问题建模为序列预测问题（给定回报-状态-动作序列，预测最优动作）。\n\n### 核心优势\n- **长程依赖**：自注意力可直接连接任意距离的时序位置。\n- **并行化**：训练时可并行处理序列（vs RNN 必须串行）。\n- **上下文学习**：类似 LLM 的 In-Context Learning，Decision Transformer 可根据期望回报调节行为。\n- **统一架构**：可处理多模态输入（视觉+状态+文本指令）。\n\n### 代表工作\n- **Decision Transformer**：将 RL 当做给定(R, s, a)序列的条件生成任务。\n- **Trajectory Transformer**：用 Transformer + 离散化状态/动作做模型预测控制。\n- **Gato**：单一 Transformer 策略处理 600+ 不同任务（游戏、机器人、对话等）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "前沿专项",
+        "Transformer+RL"
+      ]
+    },
+    {
+      "id": "RL-051",
+      "number": 51,
+      "question": "请写出策略梯度定理的推导和最终梯度公式。",
+      "answer": "### 优化目标\n$$J(\\pi_\theta) = \\mathbb{E}_{\tau \\sim \\pi_\theta}[R(\tau)]$$\n\n### 推导核心步骤\n1. 轨迹概率：\n$$P(\tau|\theta) = \rho_0(s_0) \\prod_{t=0}^{T-1} \\pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)$$\n\n2. 对数技巧（Log-Derivative Trick）：\n$$\nabla_\theta \\log P(\tau|\theta) = \\sum_{t=0}^{T-1} \nabla_\theta \\log \\pi_\theta(a_t|s_t)$$\n\n3. 梯度推导：\n$$\nabla_\theta J = \\int \nabla_\theta P(\tau|\theta) R(\tau) d\tau = \\int P(\tau|\theta) \nabla_\theta \\log P(\tau|\theta) R(\tau) d\tau$$\n$$= \\mathbb{E}_{\tau \\sim \\pi_\theta}\\left[\\sum_{t=0}^{T-1} \nabla_\theta \\log \\pi_\theta(a_t|s_t) R(\tau)\right]$$\n\n### 最终公式（引入Baseline降低方差）\n$$\nabla_\theta J = \\mathbb{E}_{(s,a)\\sim\\pi_\theta}\big[\nabla_\theta \\log\\pi_\theta(a|s) \\cdot A(s,a)\big]$$\n\n其中 $A(s,a) = Q(s,a) - V(s)$ 为优势函数。\n\n### 代码实现要点\n```python\n# 伪代码：策略梯度更新\nlog_probs = policy_net(states).log_prob(actions)  # [batch,]\nadvantages = compute_gae(rewards, values, gamma, lam)\nloss = -(log_probs * advantages).mean()\nloss.backward()\noptimizer.step()\n```",
+      "category": "强化学习面试题",
+      "tags": [
+        "公式代码",
+        "策略梯度公式"
+      ]
+    },
+    {
+      "id": "RL-052",
+      "number": 52,
+      "question": "请写出 PPO-CLIP 的完整损失函数，并解释 clip 机制如何工作。",
+      "answer": "### PPO-CLIP 损失函数\n$$L^{CLIP}(\theta) = \\mathbb{E}_t\\left[\\min\\left(r_t(\theta)A_t, \text{clip}(r_t(\theta), 1-\\epsilon, 1+\\epsilon)A_t\right)\right]$$\n\n其中 $r_t(\theta) = \frac{\\pi_\theta(a_t|s_t)}{\\pi_{\text{old}}(a_t|s_t)}$，$\\epsilon \u0007pprox 0.1 \\sim 0.2$。\n\n### Clip 机制详解\n\n**当 $A_t > 0$（这个动作好，想增大其概率）：**\n$$\\min(r_t, 1+\\epsilon) \\cdot A_t$$\n- 若 $r_t < 1+\\epsilon$，正常更新（增大概率）。\n- 若 $r_t \\ge 1+\\epsilon$，损失被截断，梯度为 0 → 阻止概率继续变大。\n\n**当 $A_t < 0$（这个动作差，想减小其概率）：**\n$$\\max(r_t, 1-\\epsilon) \\cdot A_t$$\n- 若 $r_t > 1-\\epsilon$，正常更新（减小概率）。\n- 若 $r_t \\le 1-\\epsilon$，损失被截断，梯度为 0 → 阻止概率继续变小。\n\n### 完整的 PPO 损失\n实际实现中通常包含三项：\n$$L^{total} = L^{CLIP} + c_1 L^{V} - c_2 H[\\pi_\theta]$$\n\n- $L^V$：值函数损失（MSE：$(V_\theta(s) - V_{target})^2$）\n- $H[\\pi_\theta]$：策略熵正则（鼓励探索）\n\n### Python 伪代码\n```python\nratio = torch.exp(new_log_prob - old_log_prob)\nsurr1 = ratio * advantage\nsurr2 = torch.clamp(ratio, 1 - eps, 1 + eps) * advantage\npolicy_loss = -torch.min(surr1, surr2).mean()\nvalue_loss = F.mse_loss(values, returns)\nentropy_bonus = -entropy.mean()\nloss = policy_loss + 0.5 * value_loss - 0.01 * entropy_bonus\n```",
+      "category": "强化学习面试题",
+      "tags": [
+        "公式代码",
+        "PPO公式"
+      ]
+    },
+    {
+      "id": "RL-053",
+      "number": 53,
+      "question": "请写出 GAE（广义优势估计）的公式和计算方式。",
+      "answer": "### GAE 公式\n$$\\hat{A}_t^{GAE(\\gamma,\\lambda)} = \\sum_{l=0}^\\infty (\\gamma\\lambda)^l \\delta_{t+l}$$\n\n其中 $\\delta_t = r_t + \\gamma V(s_{t+1}) - V(s_t)$ 是单步TD误差。\n\n### 参数含义\n- $\\gamma$：折扣因子（控制未来奖励的重要性）\n- $\\lambda$：GAE 参数（平衡偏差和方差）\n  - $\\lambda=0$：$A_t = \\delta_t$（1-step TD，高偏差低方差）\n  - $\\lambda=1$：$A_t = \\sum \\gamma^l r_{t+l} - V(s_t)$（MC，无偏高方差）\n\n### 递推计算（从后往前，O(T) 复杂度）\n```python\ndef compute_gae(rewards, values, dones, gamma, lam):\n    advantages = []\n    gae = 0\n    for t in reversed(range(len(rewards))):\n        delta = rewards[t] + gamma * values[t+1] * (1 - dones[t]) - values[t]\n        gae = delta + gamma * lam * (1 - dones[t]) * gae\n        advantages.insert(0, gae)\n    returns = [adv + val for adv, val in zip(advantages, values[:-1])]\n    return advantages, returns\n```\n\n### 在 PPO 中的使用\n1. 采集完整 rollout（T 步）。\n2. 计算 GAE 优势 $\\hat{A}_t$。\n3. 计算目标回报 $G_t = \\hat{A}_t + V(s_t)$。\n4. 用 $\\hat{A}_t$ 更新 Actor（PPO-CLIP 损失），用 $G_t$ 更新 Critic（MSE 损失）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "公式代码",
+        "GAE公式"
+      ]
+    },
+    {
+      "id": "RL-054",
+      "number": 54,
+      "question": "请写出简易 Q-Learning 和 Sarsa 的代码实现（表格版）。",
+      "answer": "### Q-Learning（Off-Policy，表格版）\n```python\nimport numpy as np\n\n# 初始化\nn_states, n_actions = 100, 4\nQ = np.zeros((n_states, n_actions))\nalpha = 0.1    # 学习率\ngamma = 0.9    # 折扣因子\nepsilon = 0.1  # 探索率\n\ndef choose_action(s):\n    if np.random.uniform() < epsilon:\n        return np.random.choice(n_actions)\n    return np.argmax(Q[s])\n\n# 单步 Q-Learning 更新\ndef q_learning_update(s, a, r, s_next, done):\n    if done:\n        target = r\n    else:\n        target = r + gamma * np.max(Q[s_next])\n    Q[s, a] += alpha * (target - Q[s, a])\n```\n\n### Sarsa（On-Policy，表格版）\n```python\n# 与 Q-Learning 的唯一区别在更新公式\ndef sarsa_update(s, a, r, s_next, a_next, done):\n    if done:\n        target = r\n    else:\n        target = r + gamma * Q[s_next, a_next]  # 用实际选的 a_next\n    Q[s, a] += alpha * (target - Q[s, a])\n\n# Sarsa 的交互循环\ns = env.reset()\na = choose_action(s)\nfor _ in range(max_steps):\n    s_next, r, done = env.step(a)\n    a_next = choose_action(s_next)  # 用当前策略选下一步动作\n    sarsa_update(s, a, r, s_next, a_next, done)\n    s, a = s_next, a_next\n    if done:\n        break\n```\n\n### 核心区别\n| | Q-Learning | Sarsa |\n|---|---|---|\n| target | $\\max_a Q(s',a)$ | $Q(s', a')$ |\n| $a'$ 来源 | 无（直接 max） | 行为策略采样 |\n| 策略类型 | Off-Policy | On-Policy |",
+      "category": "强化学习面试题",
+      "tags": [
+        "公式代码",
+        "Q-Learning/Sarsa代码"
+      ]
+    },
+    {
+      "id": "RL-055",
+      "number": 55,
+      "question": "请写出经验回放（Replay Buffer）的简易实现。",
+      "answer": "```python\nfrom collections import deque\nimport random\n\nclass ReplayBuffer:\n    def __init__(self, capacity=100000):\n        self.buffer = deque(maxlen=capacity)\n\n    def add(self, state, action, reward, next_state, done):\n        # 存储一条转移样本\n        self.buffer.append((state, action, reward, next_state, done))\n\n    def sample(self, batch_size):\n        # 随机采样一批样本\n        batch = random.sample(self.buffer, batch_size)\n        # 解压为各列\n        states, actions, rewards, next_states, dones = zip(*batch)\n        return (\n            np.array(states),\n            np.array(actions),\n            np.array(rewards, dtype=np.float32),\n            np.array(next_states),\n            np.array(dones, dtype=np.float32)\n        )\n\n    def __len__(self):\n        return len(self.buffer)\n\n# 使用示例\nbuffer = ReplayBuffer(capacity=50000)\n# 交互时存入\nbuffer.add(s, a, r, s_next, done)\n# 训练时采样\nif len(buffer) >= batch_size:\n    states, actions, rewards, next_states, dones = buffer.sample(batch_size)\n```\n\n### PER（优先经验回放）的关键补充\n```python\n# 优先级以 |TD-error| + epsilon 定义\npriority = abs(td_error) + 1e-6\n# 采样概率正比于 priority^alpha\nprob = priority ** alpha / sum(all_priorities ** alpha)\n# 重要性采样权重用于修正非均匀采样的偏差\nweight = (1 / len(buffer) / prob) ** beta\n```",
+      "category": "强化学习面试题",
+      "tags": [
+        "公式代码",
+        "Replay Buffer代码"
+      ]
+    },
+    {
+      "id": "RL-056",
+      "number": 56,
+      "question": "为什么 Sarsa 比 Q-Learning 更保守？在悬崖行走问题中分别表现如何？",
+      "answer": "### 悬崖行走（Cliff Walking）经典例子\n- 网格世界，起点左下，终点右下，中间有一排悬崖（掉入悬崖 = 大负奖励 -100）。\n- Q-Learning 学到**紧贴悬崖的最短路径**（贪婪最优）。\n- Sarsa 学到**远离悬崖的安全路径**（考虑 ε-greedy 探索的随机性）。\n\n### 为什么 Sarsa 更保守？\n\nSarsa 更新时使用行为策略选出的 $a'$：\n$$Q(s,a) \\leftarrow Q(s,a) + \u0007lpha[r + \\gamma Q(s',a') - Q(s,a)]$$\n\n- $a'$ 可能是一个**随机探索动作**（ε-greedy 中 ε 概率随机选）。\n- 如果 $a'$ 导致掉入悬崖，$Q(s',a')$ 会很小 → $Q(s,a)$ 被压低。\n- Sarsa「预判」到探索可能带来的风险 → 自动规避危险区域。\n\nQ-Learning 更新时用 $\\max Q(s',a)$：\n$$Q(s,a) \\leftarrow Q(s,a) + \u0007lpha[r + \\gamma \\max_a Q(s',a) - Q(s,a)]$$\n\n- 假设在 $s'$ 永远采取最优动作（不考虑探索）。\n- 即使探索中有概率掉入悬崖，Q-Learning 仍然按最优动作估值。\n- 忽略探索风险 → 学到的策略更大胆/激进。\n\n### 一句话总结\n> Sarsa 学的是「带着探索怎么做最好」，Q-Learning 学的是「假设不探索怎么做最好」。",
+      "category": "强化学习面试题",
+      "tags": [
+        "深度追问",
+        "Sarsa vs Q-Learning"
+      ]
+    },
+    {
+      "id": "RL-057",
+      "number": 57,
+      "question": "TD(λ) 中 λ 应该如何选择？工程常用值是多少？",
+      "answer": "### λ 取值原则\n\n| λ 值 | 等价 | 偏差 | 方差 | 适用场景 |\n|------|------|------|------|---------|\n| 0.0 | 1-step TD | 最大 | 最小 | 需要最稳定训练 |\n| 0.3~0.6 | 偏TD | 中等偏低 | 中等偏低 | 状态转移随机性大 |\n| 0.8~0.95 | 偏MC | 中等偏高 | 中等偏高 | 环境相对确定 |\n| 1.0 | MC | 无偏 | 最大 | 轨迹短、奖励明确 |\n\n### 工程实践\n- **PPO 标配**：$\\lambda_{GAE} = 0.95$（OpenAI 基线默认值）\n- **状态转移很随机** → 降 λ（如 0.8），更多依赖单步信号\n- **奖励稀疏/延迟长** → 升 λ（如 0.98），更多纳入远期信息\n\n### 决策框架\n1. 先以 $\\lambda=0.95$ 作为默认起点。\n2. 如果训练方差大、震荡：降 λ（0.8~0.9）。\n3. 如果收敛慢、信息利用不足：升 λ（0.97~0.99）。\n\n### 注意\nλ 和 γ 不同：γ 控制未来奖励的**绝对**重要度，λ 控制多步TD的**相对**权重。两个参数独立调优。",
+      "category": "强化学习面试题",
+      "tags": [
+        "深度追问",
+        "TD(λ)选值"
+      ]
+    },
+    {
+      "id": "RL-058",
+      "number": 58,
+      "question": "离散动作和连续动作场景分别用什么算法？选型依据是什么？",
+      "answer": "### 离散动作空间\n**可选算法**：DQN 系列、Sarsa、Q-Learning、A3C、PPO（离散版）\n\n**核心问题**：动作数量可能极大（如推荐系统候选集=百万级商品）。\n\n**解决方案**：\n- DQN 直接输出各动作Q值 → 动作数不能太多。\n- Action Embedding + 近邻搜索 → 处理大规模离散动作。\n\n### 连续动作空间\n**可选算法**：DDPG、TD3、PPO（连续版）、SAC、A3C\n\n**核心问题**：动作是无限连续值（舵机角度 [-1, 1]、速度 [0, 5]）。\n\n**输出方式**：\n- 确定性策略（DDPG/TD3）：直接输出具体动作值。\n- 随机策略（PPO/SAC）：输出高斯分布参数 $(\\mu, \\sigma)$，从分布中采样。\n\n**探索方式**：\n- 确定性策略必须额外添加噪声。\n- 随机策略自带探索（分布采样）。\n\n### 快速选型决策表\n| 动作类型 | 首选算法 | 备选 |\n|---------|---------|------|\n| 离散（小规模） | DQN / Double DQN | Rainbow |\n| 离散（大规模） | DQN + Action Embedding | PPO 离散版 |\n| 连续（确定性环境） | TD3 | DDPG |\n| 连续（随机环境） | SAC / PPO | TD3 |\n| 连续+安全关键 | PPO | TRPO |\n| 混合动作空间 | PPO 参数化输出 | 分层 RL |",
+      "category": "强化学习面试题",
+      "tags": [
+        "深度追问",
+        "离散/连续选型"
+      ]
+    },
+    {
+      "id": "RL-059",
+      "number": 59,
+      "question": "强化学习中的几种常见训练不稳定现象如何排查？",
+      "answer": "### 常见问题 & 诊断 & 解决方案\n\n| 现象 | 诊断 | 解决方案 |\n|------|------|---------|\n| **Q值持续升高不收敛** | Q 过估计 | Double DQN / TD3 双Critic |\n| **奖励剧烈震荡** | 方差过大 | GAE 增大 λ、增大 batch size |\n| **奖励先升后断崖下跌** | 策略更新幅度过大 | 降低 PPO clip ϵ、降低学习率 |\n| **奖励长期不动** | 学不到东西 | 排查奖励是否为0、增大探索、检查状态表征 |\n| **收敛速度极慢** | 样本效率低 | PER、n-step TD、增大折扣因子 |\n| **策略不探索** | 探索系数过小/衰减太快 | 增大 ε、使用熵正则、NoisyNet |\n| **每轮波动极大** | 环境/策略随机性大 | 增加评估轮数取均值、平滑曲线 |\n| **val 集变差** | 过拟合到训练环境 | 环境随机化、数据增强、正则化 |\n\n### 通用排查流程\n1. **检查奖励函数**：是否合理？是否有稀疏问题？尺度是否合适？\n2. **检查超参**：学习率 > γ > 探索系数 > batch size > 网络结构。\n3. **检查数据**：状态/奖励是否有 NaN？是否有异常值？\n4. **检查架构**：Critic 是否过拟合？Actor 输出是否退化？\n\n### 一句话口诀\n> 不收敛看奖励，震荡调 Clip，不学习加探索，不稳定降学习率。",
+      "category": "强化学习面试题",
+      "tags": [
+        "工程调优",
+        "故障排查"
+      ]
+    },
+    {
+      "id": "RL-060",
+      "number": 60,
+      "question": "RL 模型如何部署到生产环境？推理阶段需要注意什么？",
+      "answer": "### 部署架构\n```\n训练环境                          推理环境\n┌──────────┐                    ┌──────────┐\n│ 多线程采集 │                    │ 单线程推理 │\n│ GPU 训练   │ ── 导出模型 ──▶   │ 关闭探索   │\n│ 日志监控   │                    │ 模型量化   │\n└──────────┘                    └──────────┘\n```\n\n### 推理优化\n1. **关闭探索噪声**：推理时 ε=0 或 σ=0（确定性策略直接输出动作值）。\n2. **模型量化**：FP32 → INT8/FP16，减少推理延迟和内存。\n3. **算子融合**：合并网络中的多层操作，减少 kernel 调度开销。\n4. **去除训练专用组件**：\n   - 目标网络（仅训练时需要）\n   - 经验回放池（推理不需要）\n   - 探索噪声层（NoisyNet 的噪声参数固定）\n5. **批量推理**：如果多个环境实例同时运行，Batch Inference 提升吞吐。\n\n### 生产环境注意事项\n- **动作平滑**：对连续动作加低通滤波，防止突变（如机器人关节抖动）。\n- **安全约束**：对输出动作做硬裁剪（torch.clamp），防止越过物理/安全边界。\n- **Fallback 策略**：模型异常时切换到规则策略或安全动作。\n- **A/B 测试**：RL 模型与旧规则系统对比评估，逐步放量。\n\n### 监控指标\n- 推理延迟（P99）\n- 动作分布变化（检测模型 drift）\n- 业务 key metrics（点击率、成功率、安全指标）",
+      "category": "强化学习面试题",
+      "tags": [
+        "工程调优",
+        "模型部署"
+      ]
+    },
+    {
+      "id": "RL-061",
+      "number": 61,
+      "question": "如何为一个推荐系统场景做 MDP 建模？请定义 State、Action、Reward。",
+      "answer": "### 推荐系统 MDP 建模\n\n**Agent**：推荐引擎\n\n**State（状态）**：\n- 用户画像（年龄、性别、兴趣标签）\n- 用户历史行为序列（最近 N 次点击/购买/收藏）\n- 当前会话上下文（时间段、设备类型、网络环境）\n- 候选物品特征（价格、类目、热度、CTR）\n\n**Action（动作）**：\n- 返回一个推荐列表（Top-K 物品排序）\n- 可以是物品 ID 列表，也可先粗排再精排\n\n**Reward（奖励）**：\n- 点击：+1\n- 收藏/加购：+2\n- 下单/转化：+5\n- 停留时长：按秒计正奖励\n- 负反馈（点踩/不感兴趣/快速划走）：-1\n- 综合公式：$R = w_1 \\cdot click + w_2 \\cdot collect + w_3 \\cdot purchase - w_4 \\cdot skip$\n\n**Transition（状态转移）**：\n- 用户看到推荐列表后发生行为 → 用户画像/行为序列更新 → 新状态。\n\n### 关键挑战\n- 动作空间极大（百万级商品）→ 需要 action embedding 或分层决策。\n- 奖励延迟（推荐 → 浏览 → 加购 → 下单，可能跨多天）。\n- 离线评估困难（策略部署前无法确定真实效果）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "项目问答",
+        "场景建模"
+      ]
+    },
+    {
+      "id": "RL-062",
+      "number": 62,
+      "question": "面试中如何介绍你做过的 RL 项目？请给出标准回答模板。",
+      "answer": "### 推荐回答框架（STAR 变体）\n\n**1. 项目背景（一句话）**\n> 我在XX业务中使用PPO/DQN解决XX序列决策问题，目标是优化XX指标。\n\n**2. MDP 建模（核心）**\n> 首先完成MDP建模——定义State为XX（用户画像+行为序列+候选特征），Action为XX（推荐列表/控制量），Reward设计结合业务目标（点击/转化/安全得分）。\n\n**3. 算法选型（说清楚为什么）**\n> 因为动作空间是连续的/需要在线学习/安全要求高，所以选择了XX算法而非XX算法。主要考虑了XX因素。\n\n**4. 工程实现（体现落地能力）**\n> 基于Stable-Baselines3/RLLib搭建训练框架；使用经验回放+GAE稳定训练；针对XX问题，使用了XX优化手段（PER / 奖励塑造 / 分布式采集）。\n\n**5. 效果与难点（数据说话）**\n> 最终上线后，XX指标提升X%；过程中遇到的最大难点是XX（奖励稀疏/训练震荡），通过XX方法解决（n-step TD / Reward Shaping / GAE）。\n\n### 项目描述的加分项\n- 提到具体**数字**（提升百分比、延迟 ms 数）。\n- 展示对**失败尝试**的反思（算法不work → 分析原因 → 改进方案）。\n- 体现**端到端能力**（建模 → 训练 → 调优 → 部署 → 监控）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "项目问答",
+        "面试话术"
+      ]
+    },
+    {
+      "id": "RL-063",
+      "number": 63,
+      "question": "RL 项目中遇到的最大难点是什么？给出3个典型难点及其解决方案。",
+      "answer": "### 难点1：奖励稀疏\n\n**问题**：任务完成才有奖励（如「成功到达目标」），中途无信号 → 模型随机探索几乎不可能碰到正奖励 → 永远学不会。\n\n**解决方案**：\n1. **Reward Shaping**：添加距离目标越近的中间奖励（势函数形式：$F = \\gamma\\Phi(s') - \\Phi(s)$）。\n2. **n-step TD / GAE**：多步回报传递远期奖励信号。\n3. **HER（事后经验回放）**：失败轨迹重标记目标 → 自动生成正样本。\n4. **好奇心驱动**：内在奖励鼓励访问新颖状态。\n\n### 难点2：训练不稳定 / 奖励震荡\n\n**问题**：学习曲线大幅波动，甚至突然断崖下跌。\n\n**解决方案**：\n1. **降低学习率**（4e-4 → 1e-4）。\n2. **增大 batch size**（降低梯度方差）。\n3. **PPO clip 范围调小**（0.2 → 0.1）。\n4. **使用 GAE** 替代纯 MC 优势估计。\n5. **奖励归一化**（除以 running std）。\n\n### 难点3：收敛到局部最优（不够好）\n\n**问题**：策略学到还行但远非最优的解，不再进步。\n\n**解决方案**：\n1. **熵正则**：损失中加入 $-\beta H(\\pi)$ 鼓励继续探索。\n2. **增大探索**：提高 ε / 降低探索衰减速度。\n3. **ε-greedy → UCB / 参数噪声**：更有方向性的探索。\n4. **课程学习**：从简单任务逐步升级难度。\n5. **多策略集成**：训练多个策略，选最优。",
+      "category": "强化学习面试题",
+      "tags": [
+        "项目问答",
+        "难点解决"
+      ]
+    },
+    {
+      "id": "RL-064",
+      "number": 64,
+      "question": "如何判断 RL 模型已经收敛？学习曲线应该怎么读？",
+      "answer": "### 收敛判断标准\n1. **Episode 总奖励**：长期稳定在某个高区间，波动幅度<10%均值。\n2. **值函数估计**：TD-error 收敛到接近 0 且稳定。\n3. **策略熵**：不再持续下降（说明探索和利用达成平衡）。\n4. **滑动平均**：100-Episode 滑动均线趋于平稳。\n\n### 学习曲线解读\n\n```\n奖励\n │    ╭──────────────────────  好的曲线：上升快、后期平稳、峰值高\n │   ╱\n │  ╱\n │╱\n └────────────────────────  Episode\n\n奖励\n │    ╱╲  ╱╲  ╱╲  ╱╲         差的曲线：剧烈震荡，无上升趋势\n │   ╱  ╲╱  ╲╱  ╲╱  ╲\n │\n └────────────────────────  Episode\n\n奖励\n │       ╱╲\n │      ╱  ╲                 差的曲线：先升后断崖下跌（训练崩溃）\n │  ╱╱╱      ╲________________\n └────────────────────────  Episode\n```\n\n### 优质学习曲线特征\n- **快速上升阶段**：模型学到基本策略。\n- **平稳高原阶段**：策略趋于最优，波动小。\n- **奖励峰值高**：接近或超过 baseline / 人类水平。\n\n### 注意\n- 不要只看 raw 曲线（噪声大），务必做**滑动平均**（window=50~100 episodes）。\n- 阴影区域（±1 std）揭示训练稳定性。",
+      "category": "强化学习面试题",
+      "tags": [
+        "项目问答",
+        "收敛判断"
+      ]
+    },
+    {
+      "id": "RL-065",
+      "number": 65,
+      "question": "RL 中的超参数有哪些？调整优先级是什么？",
+      "answer": "### 超参调整优先级（从高到低）\n\n| 优先级 | 超参 | 调整建议 |\n|--------|------|---------|\n| **1（最高）** | 奖励函数设计 | 先确保奖励能引导正确行为 |\n| **2** | 学习率 | 3e-4 ~ 1e-3（Adam）是安全起点 |\n| **3** | 折扣因子 $\\gamma$ | 短任务 0.9~0.95，长任务 0.95~0.99 |\n| **4** | GAE $\\lambda$ | 默认 0.95，震荡大调低(0.8) |\n| **5** | 探索系数 | ε 初始 1.0，线性衰减到 0.01~0.05 |\n| **6** | PPO clip ϵ | 默认 0.2，震荡大调低(0.1) |\n| **7** | 网络结构 | 2~3 层 MLP/CNN，最后调试 |\n| **8（最低）** | Batch Size | 32~256，受硬件限制 |\n\n### 常用默认值参考（PPO）\n- 学习率：3e-4\n- $\\gamma$：0.99\n- GAE $\\lambda$：0.95\n- Clip ϵ：0.2\n- Entropy coef：0.01\n- Value loss coef：0.5\n- Rollout steps：2048\n- Minibatch size：64\n- Epochs per rollout：10\n\n### 调参原则\n1. **先确保奖励函数正确**——奖错了调什么都没用。\n2. **一次只调一个参数**——否则不知道哪个改变起作用。\n3. **用随机种子做 3~5 次实验取均值**——RL 训练方差大，单次结果不可靠。",
+      "category": "强化学习面试题",
+      "tags": [
+        "工程调优",
+        "超参调优"
+      ]
+    },
+    {
+      "id": "RL-066",
+      "number": 66,
+      "question": "折扣因子 γ 如何选择？γ=0 和 γ=1 分别代表什么？",
+      "answer": "### γ 的含义\n$$\text{Return} = r_0 + \\gamma r_1 + \\gamma^2 r_2 + \\gamma^3 r_3 + ...$$\n\nγ 决定「未来奖励对当前决策的影响权重」。\n\n### 取值建议\n| γ 值 | 含义 | 适用场景 |\n|------|------|---------|\n| 0.9 | 偏重短期 | 推荐系统（短期点击）、实时竞价 |\n| 0.95 | 中等 | 游戏 AI、机器人控制 |\n| 0.99 | 偏重长期 | 围棋、导航（几百步后才达到目标） |\n| 1.0 | 全部等权 | 有限步长固定长度的 Episode |\n\n### γ=0 的含义\n$$Return = r_0$$\n- 智能体**完全短视**，只关注即时奖励。\n- 等价于**多臂老虎机**（不考虑状态转移）。\n- 无法学到需要规划/延迟满足的策略。\n\n### γ=1 的问题\n$$Return = \\sum_{t=0}^\\infty r_t$$\n- 无限任务中**发散**（值函数无界 → Q 值爆炸）。\n- 所有时间步的奖励**等权**，不会优先近期。\n- 训练数值不稳定。\n- 解决：仅在有限步长的 Episodic 任务中使用 γ=1（如棋类游戏局结束即终止）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "工程调优",
+        "折扣因子"
+      ]
+    },
+    {
+      "id": "RL-067",
+      "number": 67,
+      "question": "什么是 HER（事后经验回放）？它如何解决稀疏奖励问题？",
+      "answer": "### HER（Hindsight Experience Replay）\n**核心思想**：失败的轨迹换个视角看就是成功的轨迹。\n\n### 工作原理\n假设任务是「将 A 物体移动到位置 g」。\n\n1. Agent 尝试但失败了，轨迹：$(s_1, a_1, s_2, a_2, ..., s_T)$，A 最终移动到位置 $g' \neq g$。\n2. 从原始目标 g 看，这条轨迹奖励为 0（没成功）。\n3. **事后重新标注**：假设目标就是 $g'$（A 实际到达的位置），那这条轨迹是**成功的**——奖励为 +1。\n4. 将重标注的轨迹 $(s_t, a_t, g', r')$ 存入回放池。\n\n### 为什么有效\n- 即使初始策略纯随机，几乎不可能碰到精确目标 → 没有正样本。\n- HER 自动从失败的探索中**创造正样本**——Agent 学到了「怎么移动物体到某位置」。\n- 随着经验增加，策略越来越准确，原始目标也能命中。\n\n### 实现要点\n```python\n# 原始 target: g\n# 新 target: g_new = achieved_goal (实际到达的状态)\n# 新 reward: 1 if achieved_goal == g_new else 0\n# 存入 buffer: (s, a, g_new, r=1, s')\n```\n\n### 适用场景\n- 多目标 RL（每个 Episode 有不同目标）。\n- 稀疏二进制奖励（完成/未完成）。\n- 机器人操作（抓取、放置、推动）。\n\n> HER 是稀疏奖励场景的「数据增强」技术——把负样本自动变成正样本。",
+      "category": "强化学习面试题",
+      "tags": [
+        "工程调优",
+        "HER"
+      ]
+    },
+    {
+      "id": "RL-068",
+      "number": 68,
+      "question": "什么是 SAC（Soft Actor-Critic）？它有什么独特优势？",
+      "answer": "### SAC 核心特点\n- **Off-Policy** + **随机策略** + **最大熵框架**。\n- Actor 优化目标：最大化累积奖励 + 策略熵。\n- 当前连续控制任务的 SOTA 算法之一。\n\n### 最大熵目标\n$$J(\\pi) = \\sum_t \\mathbb{E}_{(s_t,a_t)\\sim\\pi}\big[r(s_t,a_t) + \u0007lpha H(\\pi(\\cdot|s_t))\big]$$\n\n其中 $H(\\pi) = -\\mathbb{E}_a[\\log\\pi(a|s)]$ 为策略熵，$\u0007lpha$ 自动调节（温度系数）。\n\n### 独特优势\n\n1. **自带探索**：最大熵鼓励策略保持随机性 → 自动平衡探索与利用。\n2. **训练稳定**：Off-Policy + 双 Critic + 目标网络，训练平滑。\n3. **对超参不敏感**：相比 PPO，SAC 对学习率和 batch size 更鲁棒。\n4. **样本效率高**：Off-Policy 可复用历史经验。\n\n### 与 PPO / DDPG 对比\n\n| 算法 | 策略类型 | 策略类别 | 样本效率 | 稳定性 | 实现难度 |\n|------|---------|---------|---------|--------|---------|\n| PPO | On-Policy | 随机 | 低 | **最高** | 低 |\n| DDPG | Off-Policy | 确定 | 高 | 低 | 中 |\n| TD3 | Off-Policy | 确定 | 高 | 中 | 中 |\n| SAC | Off-Policy | **随机** | **高** | 高 | 中 |\n\n### 适用场景\n- 需要高样本效率 + 连续控制 + 需要探索的任务。\n- 机器人仿真（MuJoCo、PyBullet）。\n- 需要随机策略的场景（对手不确定的博弈）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "进阶话题",
+        "SAC"
+      ]
+    },
+    {
+      "id": "RL-069",
+      "number": 69,
+      "question": "给出一个完整的 RL 算法选型决策框架。",
+      "answer": "### 算法选型决策树\n\n```\n动作空间类型？\n├── 离散动作\n│   ├── 需要离线训练（无环境交互）→ Offline RL (CQL / IQL)\n│   ├── 需要最先进性能 → Rainbow\n│   ├── 基础场景 → Double DQN + Dueling\n│   └── 动作数极大 → DQN + Action Embedding\n│\n└── 连续动作\n    ├── 需要离线训练 → Offline RL (CQL / IQL)\n    ├── 样本效率优先（Off-Policy）\n    │   ├── 确定性策略 → TD3\n    │   └── 随机策略（推荐）→ SAC\n    ├── 训练稳定性优先（On-Policy）→ PPO\n    └── 安全攸关（最保守）→ PPO / TRPO\n```\n\n### 速查表\n| 场景 | 首选 | 次选 |\n|------|------|------|\n| 离散动作小游戏 | Rainbow / Double DQN | Dueling DQN |\n| 连续控制（机器人） | SAC | TD3 / PPO |\n| 安全攸关控制 | PPO | TRPO |\n| 奖励极度稀疏 | PPO + GAE + 好奇心 | Go-Explore |\n| 离线固定数据集 | CQL | IQL |\n| 多智能体合作 | QMIX | MADDPG |\n| 分布式大规模 | SEED RL | IMPALA / DPPO |\n| 需要快速适应新任务 | Meta-RL (MAML) | SAC + Fine-tune |\n\n### 一句话建议\n> 不确定用什么算法 → 先用 **PPO**（离散/连续通吃，最稳）；追求性能 → 换 **SAC**（连续）或 **Rainbow**（离散）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "算法选型",
+        "决策框架"
+      ]
+    },
+    {
+      "id": "RL-070",
+      "number": 70,
+      "question": "RL 面试通用话术总结：如何组织你的回答体系？",
+      "answer": "### 回答体系建议\n\n#### 概念类问题（如「什么是 PPO？」）\n**3 步回答法**：\n1. **一句话定义**：PPO 是 On-Policy 策略梯度算法，通过 clip 机制限制更新幅度。\n2. **核心公式**：写出 clip 损失函数。\n3. **对比分析**：相比 TRPO 去掉了复杂 KL 约束，相比 DDPG 是随机策略更稳定。\n\n#### 对比类问题（如「PPO vs DQN」）\n**3 步回答法**：\n1. **根本区别**：PPO 是 Policy-Based / On-Policy，DQN 是 Value-Based / Off-Policy。\n2. **适用场景**：PPO 连续动作，DQN 离散动作。\n3. **工程特性**：PPO 更稳定但样本效率低，DQN 样本效率高但需谨慎调参。\n\n#### 解决问题类（如「训练不收敛怎么办？」）\n**4 步回答法**：\n1. **分类诊断**：值函数问题？策略问题？数据问题？超参问题？\n2. **常见原因**：奖励函数最可能出问题。\n3. **解决方案**：按优先级列出（奖励 → 学习率 → γ → 探索 → 网络）。\n4. **验证方法**：如何确认是这个问题（如 Q 值持续升高 → 确认过估计 → Double DQN）。\n\n### 答题时的加分项\n- 能写出**关键公式**（如贝尔曼方程、PPO loss）。\n- 能写出**极简代码**（Q-Learning 更新、Replay Buffer）。\n- 提到**实际项目中遇到过的坑**和解决方案。\n- 用**一句话总结**做结尾（面试官印象更深）。",
+      "category": "强化学习面试题",
+      "tags": [
+        "面试技巧",
+        "答题话术"
+      ]
+    },
+    {
+      "id": "RL-071",
+      "number": 71,
+      "question": "什么是 Sim2Real（仿真到现实迁移）？有哪些解决域差异的方法？",
+      "answer": "### 问题定义\n在仿真环境（Simulator）中训练好的 RL 策略，部署到真实环境（Real World）时性能大幅下降。\n\n**原因**：仿真与现实存在「域差异」（Domain Gap）：\n- 物理参数不准（摩擦系数、质量、弹力）\n- 传感器噪声模型简化\n- 视觉纹理/光照差异\n- 动力学延迟/未建模效应\n\n### 解决方案\n\n**1. 域随机化（Domain Randomization）**\n- 在仿真中随机化环境参数（摩擦、质量、光照、纹理），强迫策略对变化鲁棒。\n- 代表工作：OpenAI 的 Rubik's Cube 机械手。\n\n**2. 域自适应（Domain Adaptation）**\n- 使用 GAN / 特征对齐，将仿真特征空间对齐到真实特征空间。\n- 使策略在仿真中学到的表征也能在真实数据上通用。\n\n**3. 系统辨识（System Identification）**\n- 用真实环境的数据校准仿真环境参数，使仿真更接近现实。\n- 在更准确的仿真中微调策略。\n\n**4. 渐进式迁移**\n- 先用简单仿真训练 → 逐步增加仿真复杂度 → 最终迁移到真实。\n- 在每一步微调策略。\n\n**5. 少量真实数据 Fine-tune**\n- 仿真预训练 + 少量真实环境交互数据 Fine-tune。\n- 现实数据采集成本高但效果好。",
+      "category": "强化学习面试题",
+      "tags": [
+        "前沿专项",
+        "Sim2Real"
+      ]
+    },
+    {
+      "id": "RL-072",
+      "number": 72,
+      "question": "RL 中如何处理多目标/多任务权衡？",
+      "answer": "### 问题场景\n真实任务往往不止一个目标，如自动驾驶需要同时考虑：安全、速度、舒适性、交规遵守。\n\n### 方法1：加权和奖励\n$$R = w_1 R_{safety} + w_2 R_{speed} + w_3 R_{comfort}$$\n- 简单但需手动调权，权重难以平衡所有目标。\n- 不同权重组合对应不同策略（Pareto 前沿）。\n\n### 方法2：约束 MDP（CMDP）\n- 优化主目标，同时约束辅助目标不低于阈值。\n- 代表算法：CPO（Constrained Policy Optimization）。\n\n### 方法3：多策略 + 偏好条件\n- 训练时同时输入偏好向量 $w$，策略学习 $\\pi(a|s, w)$。\n- 推理时调节 $w$ 获得不同的策略风格。\n- 只需训练一次，适应多种偏好组合。\n\n### 方法4：多任务 RL（Multi-Task RL）\n- 多个任务共享特征提取网络，各自有独立的任务 head。\n- 如 Genesis 工作：一个模型玩 50+ Atari 游戏。\n\n### 方法5：分层 RL\n- 高层决定当前优先级（如「现在安全为主还是效率为主」）。\n- 底层根据优先级选择具体动作。",
+      "category": "强化学习面试题",
+      "tags": [
+        "工程调优",
+        "多目标RL"
+      ]
+    }
+  ]
+}

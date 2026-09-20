@@ -1,0 +1,605 @@
+{
+  "category": "Polars数据处理",
+  "questions": [
+    {
+      "id": "Polars数据处理-001",
+      "number": 1,
+      "question": "请简述解释 NumPy 的“数组”与 Python.. ?",
+      "answer": "NumPy数组是同质数据类型、定长且支持向量化运算，底层用C实现连续内存存储，性能远优于Python列表；Python列表是异质、动态类型、存储对象引用，灵活性高但计算慢且内存占用大。核心区别在于内存布局、类型约束和操作效率。\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-002",
+      "number": 2,
+      "question": "请简述解释 Polars 的“惰性求值”模式。它与“急切执行”有什么区别？ ?",
+      "answer": "Polars的惰性求值模式是指查询在构建阶段不立即执行，而是构建一个逻辑计划，直到调用.collect()或类似方法时才触发优化和执行。与急切执行（如Pandas）不同，惰性求值允许Polars自动进行谓词下推、投影消除等查询优化，减少内存占用和冗余计算；而急切执行每步操作立即返回结果，便于调试但缺乏全局优化，性能通常更低。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-003",
+      "number": 3,
+      "question": "请简述Polars 的两种主要执行模式是什么？（惰性 API 和急切 API） ?",
+      "answer": "Polars的两种执行模式是急切API（eager API）和惰性API（lazy API）。急切API在调用每个操作方法时立即执行计算并返回结果，适合探索性分析和调试。惰性API通过构建查询计划并延迟执行，直到需要输出时才进行优化和并行计算，从而提升复杂查询的性能。核心区别在于执行时机与优化能力：惰性API支持自动谓词下推、投影消除等查询优化，而急切API更直观但可能产生不必要的中间结果。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-004",
+      "number": 4,
+      "question": "请简述如何安装 Polars？ ?",
+      "answer": "安装 Polars 最直接的方式是使用 pip：`pip install polars`。若需加速且支持所有功能，可安装具有完整依赖的版本：`pip install \"polars[all]\"`。也可通过 conda 安装：`conda install polars -c conda-forge`。建议使用 Python 3.8 及以上版本以确保兼容性。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-005",
+      "number": 5,
+      "question": "请简述Polars 的核心数据结构是什么？（DataFrame, Series, Expr） ?",
+      "answer": "Polars的核心数据结构包括DataFrame（二维表格）、Series（一维数组）和Expr（表达式对象）。DataFrame由多个Series组成，支持列式存储和并行操作；Series是带标签的同质化数据序列；Expr则用于定义延迟计算的列操作逻辑，是Polars实现查询优化和向量化执行的关键抽象。这三者共同构成了Polars高效数据处理的基础。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-006",
+      "number": 6,
+      "question": "请简述解释 Polars 中“表达式”的概念。为什么表达式 API 如此强大？ ?",
+      "answer": "在Polars中，表达式是对数据列进行变换、过滤或聚合的懒求值计算单元，它封装了操作逻辑而非具体数据。表达式API的强大之处在于其组合性与优化能力：你可以通过链式调用将多个表达式组合成复杂的数据处理流水线，同时Polars的查询优化器会在执行前对整个表达式树进行谓词下推、投影消除等重写，极大减少中间计算开销。此外，表达式是原生并行且可向量化的，能自动利用多核CPU和SIMD指令，相比逐行或逐列迭代的API（如Pandas）在性能上提升数倍。这种声明式设计也让代码更简洁、可读性更强，且易于跨集群扩展。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-007",
+      "number": 7,
+      "question": "请简述Polars 是如何利用 Apache Arrow 的？这带来了什么好处？ ?",
+      "answer": "Polars 以其核心的列式内存格式直接构建在 Apache Arrow 之上，所有数据都存储为 Arrow 数组，并通过 Arrow 的零拷贝接口进行数据交换。这带来了跨进程无序列化开销、高效的内存压缩与缓存局部性，以及原生支持 SIMD 向量化运算，从而在单机与分布式场景中实现了极低的延迟和内存占用。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-008",
+      "number": 8,
+      "question": "请简述为什么 Polars 在处理大型数据集时通常比 Pandas 更快和更节省内存？ ?",
+      "answer": "Polars 的性能优势源于其底层基于 Apache Arrow 列式内存格式，实现了高效的零拷贝数据共享和矢量化计算；同时采用惰性求值（Lazy API）自动优化查询计划，支持多线程并行执行，避免了 Pandas 中频繁的 Python 层循环和副本开销，从而大幅降低内存占用并提升吞吐量。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-009",
+      "number": 9,
+      "question": "请简述Polars 支持哪些编程语言？（Rust, Python, Node.js） ?",
+      "answer": "Polars 核心由 Rust 编写，利用其零成本抽象和内存安全实现极致性能。它原生提供了 Python 和 Node.js 的高阶绑定，允许用户通过 py-polars 和 nodejs-polars 直接调用。同时，Polars 也支持 Rust 语言本身作为库嵌入。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-010",
+      "number": 10,
+      "question": "请简述如何从 Pandas DataFrame 创建 Polars DataFrame？如何转换回去？ ?",
+      "answer": "使用 polars.from_pandas(pandas_df) 可将 Pandas DataFrame 转换为 Polars DataFrame，该操作会复制数据并自动推断列类型。反向转换则调用 to_pandas() 方法，Polars 会零拷贝地将列数据转换为 Pandas 的 Series，但需注意 Polars 的惰性模式需先 collect() 为 eager 模式。两种转换均支持自定义数据类型映射，但大量数据时建议直接使用 Polars 原生的 CSV/Parquet 读取以避免中间内存开销。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-011",
+      "number": 11,
+      "question": "请简述Polars 如何从 CSV、JSON、Parquet 文件读取数据？ ?",
+      "answer": "Polars通过`pl.read_csv()`读取CSV文件，可指定分隔符、编码、跳过行数等参数，其底层使用多线程流式解析；`pl.read_json()`支持JSON和NDJSON格式，通过`pl.read_ndjson()`可高效读取换行分隔的JSON；`pl.read_parquet()`利用Apache Arrow列式布局实现零拷贝加载，支持谓词下推和列投影以优化内存与I/O。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-012",
+      "number": 12,
+      "question": "请简述在读取 CSV 文件时，有哪些重要的参数可以优化性能和内存使用？（如 infer_schema_length, n_rows） ?",
+      "answer": "读取CSV时，`infer_schema_length`控制扫描行数推断列类型，设置较小值（如100）可快速采样减少内存开销；`n_rows`限制仅读取前N行用于预览或小样本分析；`low_memory`逐块读取而非一次性加载到内存，适合超大文件；`use_pyarrow`启用Arrow引擎能加速解析并降低内存占用；`dtypes`手动指定列类型可避免推导开销与类型错误；`skip_rows`跳过无关行进一步加速。\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-013",
+      "number": 13,
+      "question": "请简述为什么 Parquet 格式通常比 CSV 更适合 Polars？ ?",
+      "answer": "Parquet采用列式存储、内置压缩和编码，与Polars的列式引擎和惰性查询完美配合，支持谓词下推和列裁剪，实现极速IO和内存效率；而CSV是纯文本行式格式，解析开销大且缺乏schema，导致读取和过滤性能远低于Parquet。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-014",
+      "number": 14,
+      "question": "请简述Polars 如何将数据写入到 CSV、Parquet 文件？ ?",
+      "answer": "使用Polars的DataFrame.write_csv()方法写入CSV，可通过参数控制分隔符、压缩等；写入Parquet则使用write_parquet()，支持压缩算法和分区写入。两者均支持流式写入大数据集，且Parquet写入时自动保留数据类型和压缩效率。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-015",
+      "number": 15,
+      "question": "请简述如何从数据库（如 SQL）读取数据到 Polars DataFrame？ ?",
+      "answer": "从数据库读取数据到Polars DataFrame通常使用polars.read_database函数，它接受一个SQL查询字符串和数据库连接对象（如SQLAlchemy engine或connectorx连接）。对于高性能场景，推荐使用connectorx的read_sql，它利用Rust原生驱动实现零拷贝传输，避免中间序列化开销。此外，Polars也支持通过polars.from_arrow或直接读取pandas DataFrame间接导入，但直接读取数据库的方式更高效。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-016",
+      "number": 16,
+      "question": "请简述如何从 Python 字典或列表创建 Polars DataFrame？ ?",
+      "answer": "从Python字典创建Polars DataFrame时，直接传入字典，键作为列名，值（需为列表或标量）作为列数据，例如pl.DataFrame({'col1': [1,2], 'col2': [3,4]})。从列表创建时，若列表由字典组成，用法相同；若为嵌套列表（如[[1,2],[3,4]]），需通过schema参数显式指定列名，如pl.DataFrame(data, schema=['a','b'])。Polars在创建过程中自动推断数据类型，并利用零拷贝机制提高效率。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-017",
+      "number": 17,
+      "question": "请简述Polars 如何选择单个列、多个列？ ?",
+      "answer": "在Polars中，选择单个列可通过df[\"col\"]或df.select(pl.col(\"col\"))实现；选择多个列可使用df[[\"col1\",\"col2\"]]或df.select(pl.col(\"col1\",\"col2\"))。更灵活的方式是使用select配合通配符如pl.col(\"*\")或正则表达式进行模式匹配。Polars的列选择基于惰性计算框架，支持链式操作和表达式优化，避免中间拷贝。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-018",
+      "number": 18,
+      "question": "请简述Polars 解释 select() 和 with_columns() 方法的区别。 ?",
+      "answer": "select()用于从DataFrame中返回仅包含指定列的新DataFrame，适用于投影或列重命名，而with_columns()在当前DataFrame上添加或替换列，保留所有原有列。前者会丢弃未选中的列，后者仅修改或新增列，不影响其他列结构。在性能上，两者都支持惰性求值，但语义不同：select()侧重列子集选择，with_columns()侧重列级变换。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-019",
+      "number": 19,
+      "question": "请简述Polars 如何通过条件表达式过滤行？（使用 filter() 方法） ?",
+      "answer": "Polars 的 `filter()` 方法接受一个列表达式（如 `pl.col('age') > 30`）作为参数，该表达式在底层会被编译为 lazy 逻辑计划，仅保留满足条件的行。使用时需注意表达式必须返回布尔列，多个条件可通过 `&`、`|` 组合，并利用括号明确优先级。该方法支持链式调用，能在 DataFrame 或 LazyFrame 上高效执行，性能优势源于列式内存布局与向量化运算。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-020",
+      "number": 20,
+      "question": "请简述Polars 如何使用 [] 索引？（注意：Polars 不推荐像 Pandas 那样广泛使用 []） ?",
+      "answer": "在Polars中，`[]`索引主要用于列选择（如`df[\"col\"]`）和布尔索引筛选（如`df[df[\"col\"] > 0]`），但其使用受限且不推荐，因为Polars设计强调表达式链和惰性求值，`[]`可能触发立即执行、隐藏类型转换或破坏查询优化。更优做法是使用`select()`、`filter()`、`with_columns()`等显式方法，这些方法能利用Polars的查询计划和并行计算能力，提升性能和可读性。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-021",
+      "number": 21,
+      "question": "请简述Polars 如何根据字符串模式选择列？（使用 select() 与 pl.col() 通配符） ?",
+      "answer": "在Polars中，可以通过`select()`结合`pl.col()`的通配符（如`*`匹配任意字符序列，`?`匹配单个字符）或正则表达式（用`^`和`$`）实现按模式选择列。例如，`df.select(pl.col('^sales_.*$'))`会选择所有以`sales_`开头的列，而`pl.col('*')`匹配全部列。这种方法高效且直观，避免了手动枚举列名。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-022",
+      "number": 22,
+      "question": "请简述Polars 如何使用 head(), tail(), sample() 方法查看数据？ ?",
+      "answer": "Polars中，head(n)返回前n行（默认5行），tail(n)返回后n行，两者均为惰性求值并立即触发计算。sample(n, with_replacement=False)从DataFrame中随机抽取n行，支持指定随机种子(seed参数)以实现可重复采样，三者均返回DataFrame对象。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-023",
+      "number": 23,
+      "question": "请简述Polars 如何通过列名或数据类型选择列？ ?",
+      "answer": "Polars通过`select`和`with_columns`结合列名字符串或表达式选择列，例如`df.select(\"col1\", \"col2\")`或使用正则`df.select(pl.col(\"^col.*$\"))`；按数据类型选择则使用`pl.col(pl.Int64)`或`df.select(pl.col(pl.Float32))`，内部基于schema的dtype匹配实现零拷贝视图，性能优于pandas的逐列过滤。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-024",
+      "number": 24,
+      "question": "请简述Polars 如何添加新列或修改现有列？（使用 with_columns()） ?",
+      "answer": "Polars的with_columns()方法用于在DataFrame的上下文中批量添加或替换列，接受表达式或列表，返回新DataFrame且不修改原数据。通过expr.alias()定义新列名即可添加，若列名已存在则替换；常用场景包括基于现有列衍生计算（如pl.col('a').mean()）、使用条件逻辑（pl.when().then()）或调用内置函数。其优势在于惰性求值支持并行优化且与上下文中的其他操作融合，性能优于逐列赋值。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-025",
+      "number": 25,
+      "question": "请简述Polars 如何重命名列？（使用 rename()） ?",
+      "answer": "Polars的rename()方法用于重命名列，支持两种主要形式：传入字典映射旧列名到新列名，或使用**kwargs键值对。例如df.rename({\"old\":\"new\"})或df.rename(old=\"new\")。该方法返回新DataFrame，不修改原数据，底层通过列名替换实现内存高效操作。对于链式操作，建议使用with_columns配合alias()替代以实现更清晰的转换逻辑。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-026",
+      "number": 26,
+      "question": "请简述Polars 如何删除列？（使用 drop()） ?",
+      "answer": "Polars的drop()方法用于删除DataFrame中的列，返回一个新DataFrame，不修改原数据。它接受单个列名、列名列表或表达式作为参数，例如df.drop(\"col_name\")或df.drop([\"a\",\"b\"])。支持通过pl.col(\"col\")等表达式进行条件过滤，如df.drop(pl.col(\"col\").name.suffix(\"_\"))。默认inplace=False，若要原地修改需结合with_columns+select或使用赋值操作。与select(-col)相比，drop语义更明确，推荐在明确删除列时使用。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-027",
+      "number": 27,
+      "question": "请简述Polars 如何对数据进行排序？（使用 sort()） ?",
+      "answer": "在Polars中，sort()用于按一个或多个列对DataFrame或Series进行升序或降序排序，通过设置参数by指定排序列，descending控制排序方向；支持多列排序时传递列表，默认稳定排序且丢失原始索引，可通过maintain_order=False调整；底层采用多线程并行归并排序，对大数据集高效。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-028",
+      "number": 28,
+      "question": "请简述Polars 如何对列进行聚合操作（如 sum(), mean(), max()）？ ?",
+      "answer": "Polars通过表达式API在select或groupby的agg方法中使用pl.col(\"col\").sum()等操作进行聚合，支持链式调用与惰性求值。聚合可配合分组、窗口函数及条件过滤，利用并行计算引擎高效执行且零拷贝。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-029",
+      "number": 29,
+      "question": "请简述Polars 如何按组进行聚合操作？（使用 group_by() 后跟 agg()） ?",
+      "answer": "在Polars中，按组聚合通过两步完成：首先调用`group_by()`指定分组列，生成`GroupBy`对象；然后链式调用`agg()`传入聚合表达式，例如`pl.col('value').sum()`，并支持同时指定多个不同聚合。该操作利用Polars的列式存储和惰性计算特性，仅在最终调用`collect()`时执行，内部将分组和聚合编译为高效的内存计算，避免不必要的数据复制。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-030",
+      "number": 30,
+      "question": "请简述Polars 在分组聚合中，如何对不同的列应用不同的聚合函数？ ?",
+      "answer": "在 Polars 中，对分组后的不同列应用不同聚合函数，通常使用 `group_by().agg()` 方法，并传入一个字典，其中键为列名，值为聚合函数（如 `pl.sum()`、`pl.mean()`）或它们的列表。也可以使用命名聚合表达式，例如 `pl.col(\"A\").sum().alias(\"A_sum\")`，在 `agg()` 内同时指定多个这样的表达式，实现灵活且类型安全的组合聚合。这种方法避免了多步合并，性能优于逐个聚合后再连接。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-031",
+      "number": 31,
+      "question": "请简述Polars 如何创建数据透视表？（使用 pivot()） ?",
+      "answer": "Polars中使用pivot()创建数据透视表，需先指定index（行索引列）、columns（列分组的列）和values（聚合值列），并通过aggregate_function（如sum、mean）定义聚合逻辑，返回一个宽表格式的DataFrame；该方法底层基于列式存储高效实现分组和重组，避免了循环和多次转置，适用于大数据场景下的高维聚合分析。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-032",
+      "number": 32,
+      "question": "请简述Polars 如何融合数据（宽变长）？（使用 melt()） ?",
+      "answer": "Polars的melt()函数将宽表转换为长表（Unpivot），通过固定标识符列，将其他列名称作为变量列、对应值作为值列，实现数据融合。调用时需指定id_vars（保持不变的列）和value_vars（要旋转的列），或使用variable_name与value_name参数自定义输出列名。其核心原理类似于SQL的UNPIVOT或Python pandas的melt，但利用Polars的LazyFrame支持延迟执行与并行优化，处理大规模数据时效率更高。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-033",
+      "number": 33,
+      "question": "请简述Polars 如何连接多个 DataFrame？（使用 concat()） ?",
+      "answer": "Polars 的 `pl.concat()` 函数用于连接多个 DataFrame，通过 `how` 参数控制连接方向：`how='vertical'` 垂直拼接（增加行），要求各表列名一致；`how='horizontal'` 水平拼接（增加列），要求行数匹配。还可使用 `rechunk=True` 重新合并底层内存块以优化性能。此外，`pl.concat()` 支持系列（Series）连接，且默认会进行异步计算，适合处理大规模数据。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-034",
+      "number": 34,
+      "question": "请简述Polars 如何根据键列连接两个 DataFrame？（使用 join()） ?",
+      "answer": "Polars的join()通过指定on参数传入键列名或列表执行等值连接，支持inner、left、right、outer等类型，返回合并后的新DataFrame。实现上利用惰性计算和列式存储，在多个键列或重复列名时可通过suffix参数自动添加后缀避免冲突。其连接操作在底层编译为高效的查询计划，避免了Pandas的多线程开销。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-035",
+      "number": 35,
+      "question": "请简述Polars 支持哪些连接类型？（inner, left, outer, cross 等） ?",
+      "answer": "Polars 支持所有标准 SQL 连接类型，包括 inner（内连接）、left（左连接）、outer（全外连接）、cross（交叉连接），以及半连接（semi）和反连接（anti）。此外还支持自定义连接谓词，允许在非等值条件上进行连接操作，这在内存计算和流式处理中依然保持高效的内存管理与矢量化执行。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-036",
+      "number": 36,
+      "question": "请简述Polars 如何对字符串列进行操作？（使用 str 命名空间） ?",
+      "answer": "Polars通过 `.str` 命名空间提供统一的字符串操作方法，如 `.str.starts_with()`, `.str.contains()`, `.str.to_uppercase()` 等，所有操作均基于零拷贝的列式计算，返回新列而非原地修改，支持链式调用。此外还支持正则表达式、提取子串及缺失值处理，性能优于逐行迭代的Pandas风格操作。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-037",
+      "number": 37,
+      "question": "请简述Polars 如何对日期时间列进行操作？（使用 dt 命名空间） ?",
+      "answer": "Polars 的 `dt` 命名空间专门用于对日期时间列（`Datetime` 或 `Date` 类型）进行组件提取和转换操作，例如通过 `.dt.year()`、`.dt.month()`、`.dt.day()` 获取年、月、日，或使用 `.dt.weekday()` 获取星期几。此外，`dt.strftime()` 用于格式化输出，`dt.truncate()` 可将时间戳按指定粒度（如小时、天）截断，常用于时间序列聚合。这些方法均返回新列，且底层采用向量化计算，性能优于逐行操作。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-038",
+      "number": 38,
+      "question": "请简述Polars 如何开启一个惰性查询？（使用 lazy() 方法） ?",
+      "answer": "在Polars中，通过调用DataFrame或Series的.lazy()方法可以将当前的数据操作转换为惰性查询，返回一个LazyFrame对象。后续的转换操作（如filter、select等）会构建查询计划而不立即执行，直到调用.collect()方法才会触发实际计算。这种惰性执行模式允许Polars进行查询优化，例如谓词下推和投影下推，从而提升大数据集上的处理效率。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-039",
+      "number": 39,
+      "question": "请简述Polars 的惰性查询的优势是什么？（查询优化、延迟计算、更好的内存控制） ?",
+      "answer": "Polars惰性查询的核心优势在于构建查询计划而非立即执行，从而允许自动优化（如谓词下推、投影下推），减少数据扫描与中间结果。同时，延迟计算仅在调用collect()时触发执行，可合并多个操作并智能分配内存，避免不必要的数据拷贝。这种设计显著提升大规模数据集上的性能，并降低内存峰值占用。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-040",
+      "number": 40,
+      "question": "请简述Polars 如何执行一个惰性查询以获取结果？（使用 collect()） ?",
+      "answer": "Polars的惰性查询通过构建查询计划（LazyFrame）延迟计算，调用collect()时触发执行：框架会优化查询计划（如谓词下推、投影下推），然后并行或分布式地执行，将结果收集为DataFrame，从而提升性能并降低内存占用。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-041",
+      "number": 41,
+      "question": "请简述Polars 如何查看惰性查询的逻辑计划？（使用 describe_plan()） ?",
+      "answer": "在Polars的惰性API中，`.describe_plan()`方法用于返回一个字符串，展示当前查询的逻辑计划（Logical Plan），即优化器未应用物理优化前的抽象语法树。调用该方法无需执行查询，例如`lazy_df.describe_plan()`会输出步骤序列，帮助调试和验证数据转换逻辑。该计划仅描述操作链，不包含数据读取和计算的具体执行细节。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-042",
+      "number": 42,
+      "question": "请简述Polars 如何查看优化后的物理计划？（使用 describe_optimized_plan() 或 show_graph()） ?",
+      "answer": "在Polars中，查看优化后的物理计划可以通过`describe_optimized_plan()`方法获取文本形式的计划描述，或使用`show_graph()`生成图形化表示（需安装graphviz）。两者均基于查询优化器生成的物理执行计划，`describe_optimized_plan()`适合快速调试，`show_graph()`直观展示算子依赖与数据流。调用时，先构建查询如`df.group_by(\"col\").agg(...)`，再对结果调用`explain(optimized=True)`或直接调用`.describe_optimized_plan()`，即可输出优化后的计划。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-043",
+      "number": 43,
+      "question": "请简述在惰性模式下，常见的优化策略有哪些？（谓词下推、投影下推、聚合下推） ?",
+      "answer": "在Polars惰性模式下，优化策略通过延迟计算重写查询计划以提升性能。谓词下推将filter条件尽早应用于底层数据源，减少后续操作处理的行数；投影下推仅选择查询所需的列，避免加载无关数据；聚合下推则提前聚合部分结果，减少中间数据量。这些策略共同降低I/O与计算开销，实现高效执行。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-044",
+      "number": 44,
+      "question": "请简述什么是“谓词下推”？它如何提升查询性能？ ?",
+      "answer": "谓词下推是一种查询优化技术，将过滤条件（谓词）尽可能早地应用于数据源，在数据读取或扫描阶段就排除不满足条件的行。它通过减少后续操作（如join、聚合）需要处理的数据量，显著降低IO和计算开销，从而提升查询性能。尤其在大数据场景下，这一优化能避免不必要的数据传输和内存占用，加速整个查询执行。\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-045",
+      "number": 45,
+      "question": "请简述什么是“投影下推”？它如何减少内存使用？ ?",
+      "answer": "投影下推是一种查询优化技术，指在执行过程中将列选择（投影）操作尽早应用到数据读取阶段。它只从数据源读取后续计算真正需要的列，从而避免加载整行或整个表的所有字段。通过只加载必要的列，大幅减少了从磁盘或内存中读取的数据量，降低中间行缓存的压力，最终显著减少内存占用和I/O开销。\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-046",
+      "number": 46,
+      "question": "请简述如何强制 Polars 立即执行计算？（在急切 API 中自动执行，或在惰性 API 中使用 collect()） ?",
+      "answer": "在急切API中，所有操作默认立即执行，无需额外调用，因为其本质是逐条处理并即时返回结果。在惰性API中，需通过调用.collect()方法将查询计划编译并执行，从而强制触发计算并返回DataFrame；此外，.fetch()可强制执行并仅返回指定行数的子集，适用于调试或预览。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-047",
+      "number": 47,
+      "question": "请简述Polars 如何对窗口函数进行操作？（使用 over()） ?",
+      "answer": "在Polars中，窗口函数通过`over()`方法指定分区键，对每个分组内的行执行聚合或排名等操作，例如`pl.col('value').sum().over('group')`会为每行计算其所在组的总和。`over()`支持多个列作为分区，也可与`order_by()`结合定义窗口内的排序，从而实现累加、移动平均等动态计算。底层基于Arrow列式引擎实现，避免了数据洗牌，性能优于Pandas的`groupby`+`transform`。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-048",
+      "number": 48,
+      "question": "请简述Polars 如何计算滚动统计量？（使用 rolling()） ?",
+      "answer": "Polars使用rolling()方法基于时间或索引窗口计算滚动统计量，核心参数包括index_column指定排序键、window_size定义窗口长度（如'3d'或整数行数），并配合group_by('col')实现分组滚动。支持聚合函数如mean()、sum()、std()等，通过.agg()组合调用，底层采用列式惰性计算与窗口函数优化，避免数据复制，性能优于Pandas。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-049",
+      "number": 49,
+      "question": "请简述Polars 如何处理缺失值？（使用 fill_null(), drop_nulls()） ?",
+      "answer": "Polars中缺失值用null表示，处理主要通过DataFrame/Series的fill_null()进行填充（如常数值或插值）和drop_nulls()进行删除（默认去除含任意null的行）。fill_null()可指定填充策略（向前/向后填充），drop_nulls()支持subset参数按列筛选，二者均返回新对象，不修改原数据。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-050",
+      "number": 50,
+      "question": "请简述Polars 如何对数据进行分箱操作？（使用 cut() 或 qcut()） ?",
+      "answer": "Polars 的 cut() 根据指定的边界值进行等距或自定义分箱，而 qcut() 基于分位数实现等频分箱，两者均返回 Categorical 类型列。使用 cut() 时需传入 bins 参数（列表或整数）并可选 labels；qcut() 需指定 q 参数（分位数个数），底层通过排序后按分位数位置切割实现。例如 `df.with_columns(pl.col(\"value\").cut(bins=[0,10,20], labels=[\"低\",\"高\"]))` 即可完成分箱操作。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-051",
+      "number": 51,
+      "question": "请简述Polars 如何应用自定义函数？（使用 map_elements() 或 apply()） ?",
+      "answer": "Polars 中应用自定义函数主要通过 map_elements() 对 Series 逐元素转换，返回新 Series；早期 apply() 方法已废弃，用于 DataFrame 按行或列操作，现推荐使用 map_rows()（逐行）或 map_groups()（分组）。关键区别：map_elements() 接受返回标量的函数，性能优于 Python 循环但弱于原生表达式；apply() 曾按 axis 操作但易导致类型推断问题。实际开发应优先用 pl.col().map_elements() 或 pl.Expr 的内置方法，仅在必要时才用自定义函数。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-052",
+      "number": 52,
+      "question": "请简述map_elements() 和 apply() 有什么区别？为什么应谨慎使用它们？ ?",
+      "answer": "在Polars中，map_elements()用于对Series的每个元素应用Python函数，而apply()用于对整个DataFrame或GroupBy对象逐行或逐组应用函数。两者都会触发Python级别的循环，破坏Polars的列式向量化执行引擎，导致性能显著下降；此外，它们会引入Python全局解释器锁（GIL）限制，并阻止查询优化器进行下推优化，因此应优先使用原生表达式或pl.element()等内置方法处理。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-053",
+      "number": 53,
+      "question": "请简述什么是“表达式流水线”？为什么它比逐行操作更高效？ ?",
+      "answer": "表达式流水线是Polars中通过链式组合一系列表达式（如列选择、过滤、聚合、转换等）来构建整个查询计划的方式，它并非立即执行，而是先构建一个逻辑计划。相比逐行操作（如Python原生循环或逐行apply），表达式流水线之所以更高效，是因为Polars可以在查询优化阶段进行谓词下推、投影消除等全局优化，并且底层使用列式存储与向量化执行引擎，利用CPU缓存和SIMD指令并行处理整个列的数据，避免了逐行迭代带来的Python解释器开销和数据复制。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-054",
+      "number": 54,
+      "question": "请简述Polars 如何检查 DataFrame 的模式（列名和数据类型）？ ?",
+      "answer": "在 Polars 中，可以通过调用 DataFrame 的 `.schema` 属性直接获取一个有序字典，键为列名，值为对应的数据类型（`pl.DataType`）。若只需要列名列表，可使用 `.columns` 属性；若要查看每列的非空值数量与数据类型概览，可调用 `.dtypes` 或更详细的 `.describe()` 方法（返回统计摘要，包含数据类型）。这些方法均惰性求值，不触发计算。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-055",
+      "number": 55,
+      "question": "请简述Polars 如何获取 DataFrame 的形状（行数和列数）？ ?",
+      "answer": "在Polars中，获取DataFrame的形状直接使用`.shape`属性，它返回一个包含行数和列数的元组，例如`(rows, cols)`。与Pandas类似，但Polars的`shape`是惰性计算的，仅在必要时触发行列统计，性能更优。此外，也可以通过`df.height`获取行数，`df.width`获取列数，但`shape`更通用。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-056",
+      "number": 56,
+      "question": "请简述Polars 如何获取 DataFrame 的简要统计信息？（使用 describe()） ?",
+      "answer": "在Polars中，DataFrame的简要统计信息通过调用`describe()`方法获取，该方法默认计算数值列的数量、均值、标准差、最小值、四分位数和最大值，并支持`percentiles`参数自定义分位点。与Pandas不同，Polars的`describe()`默认仅作用于数值列，且返回的DataFrame结构与统计量呈行式排列，便于后续链式操作。对于非数值列，可通过`include='all'`或`include=['str', 'category']`显式指定以计算频次、唯一值等摘要。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-057",
+      "number": 57,
+      "question": "请简述Polars 如何查找和删除重复行？（使用 unique() 和 drop_duplicates()） ?",
+      "answer": "Polars 中删除重复行主要通过 `unique()` 方法实现，它返回不重复的行，并支持 `keep` 参数（'first'、'last'、'none'）控制保留策略。`drop_duplicates()` 是 `unique()` 的别名，功能完全一致，但官方推荐使用 `unique()` 以保持API统一。如需标记而非删除重复行，可使用 `is_duplicated()` 生成布尔序列进行过滤或统计。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-058",
+      "number": 58,
+      "question": "请简述Polars 如何处理分类数据？（使用 cast(pl.Categorical)） ?",
+      "answer": "在Polars中，分类数据通过pl.Categorical类型实现，底层使用整数索引映射到唯一字符串，节省内存并加速分组和排序操作。使用cast(pl.Categorical)可将列转换为分类类型，例如df.with_columns(pl.col(\"col\").cast(pl.Categorical))。转换后，Polars会为每个唯一值分配一个整数代码，并在字典中维护字符串映射，支持有序分类（Categorical(\"lexical\")）或自定义排序。这种表示适合有限类别数据的统计分析，但需注意不同字符串集合的类别列在拼接时可能需重新编码。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-059",
+      "number": 59,
+      "question": "请简述从 Pandas 迁移到 Polars 时，最大的思维转变是什么？ ?",
+      "answer": "从Pandas迁移到Polars最大的思维转变是从“立即执行的数据框操作”转向“惰性求值的查询计划”。Pandas默认急切执行，每一步都立即计算并返回结果；而Polars通过LazyFrame构建执行计划，仅在调用collect()时才优化并执行，从而获得查询优化、内存复用及并行调度优势。开发者需要习惯先链式构建操作，再触发执行，并主动利用explain()检查执行计划。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-060",
+      "number": 60,
+      "question": "请简述比较 Polars 的 select/with_columns 和 Pandas 的列赋值。 ?",
+      "answer": "核心区别在于Polars通过select/with_columns实现惰性执行与列式并行，返回新DataFrame而不修改原对象；而Pandas的列赋值是原地修改且触发即时计算。Polars的表达式API支持链式调用与查询优化（如谓词下推），Pandas则依赖Python逐列操作，内存与性能开销更大。此外，Polars对于列别名、多列变换及跨列条件赋值更简洁，而Pandas在按索引赋值时可能引发SettingWithCopyWarning。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-061",
+      "number": 61,
+      "question": "请简述比较 Polars 的 filter 和 Pandas 的布尔索引。 ?",
+      "answer": "Polars filter 是基于表达式系统的惰性操作，支持并行计算和查询优化，而 Pandas 布尔索引是立即求值的数组索引。Polars 通过列式内存布局和向量化处理在大型数据集上性能更优，且 filter 语法更接近 SQL 风格，便于链式调用；Pandas 布尔索引则依赖 Python 循环或 NumPy 运算，可读性高但扩展性受限。两者核心区别在于执行模型与底层优化策略。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-062",
+      "number": 62,
+      "question": "请简述比较 Polars 的 group_by().agg() 和 Pandas 的 groupby。 ?",
+      "answer": "Polars的group_by().agg()是懒执行且利用列式内存布局，通过查询计划优化实现极速聚合，适合大规模数据；Pandas的groupby是即时执行，依赖行式索引和Python循环，在小数据或内存充足时灵活易用，但大数据的性能瓶颈明显。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-063",
+      "number": 63,
+      "question": "请简述在 Polars 中，如何实现类似 Pandas 的 apply（行方向）功能？ ?",
+      "answer": "Polars 中实现类似 Pandas 行方向 apply 的功能主要使用 `map_rows` 方法，它接受一个接受一行（元组或命名元组）并返回标量或 Series 的 Python 函数。但需注意，这本质上是 Python 级循环，会破坏矢量化优化，性能远低于内置表达式。更推荐的做法是尽可能用 `when/then`、`apply`（列方向）或 `struct` 字段展开等表达式语言来避免逐行迭代。若必须逐行操作，可考虑利用 `pl.Series.to_list()` 导出后用 Python 处理再写回。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-064",
+      "number": 64,
+      "question": "请简述为什么在 Polars 中应避免使用 iterrows() 或 itertuples()？ ?",
+      "answer": "在 Polars 中应避免使用 iterrows() 或 itertuples()，因为这些方法将 DataFrame 的列式、向量化计算退化为逐行的 Python 循环，完全丧失了 Polars 基于 Apache Arrow 的并行执行和惰性求值优化，导致性能急剧下降。正确的做法是使用 Polars 原生的列式表达式（如 .with_columns()、.filter()）或结构化的 .map_elements() 进行逐行处理，以最大限度利用底层引擎的批量处理能力。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-065",
+      "number": 65,
+      "question": "请简述Polars 在内存效率方面相比 Pandas 有哪些改进？ ?",
+      "answer": "Polars采用Arrow列式内存格式，支持零拷贝操作和惰性查询优化，可显著减少内存占用和中间副本；其多线程并行计算和内存池机制进一步提升了缓存利用率和数据加载效率，在大数据集场景下比Pandas节省30-50%内存。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-066",
+      "number": 66,
+      "question": "请简述描述一个你使用 Polars 处理大型数据集的项目。 ?",
+      "answer": "在一个涉及数十亿行电商交易数据的ETL项目中，我使用Polars的惰性API与流式查询（fetch/sink_parquet）规避了内存瓶颈，通过group_by_dynamic和rolling窗口高效完成时间序列聚合，将处理时间从Spark的12分钟压缩至3分钟，且代码量减少40%。关键优化包括列裁剪、谓词下推及自动并行化，配合表达式系统的零拷贝特性显著降低了CPU开销。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-067",
+      "number": 67,
+      "question": "请简述当你的 Polars 查询运行缓慢时，你会如何调试和优化？ ?",
+      "answer": "首先使用.explain()检查查询计划，确认是否使用了谓词下推、投影下推等优化；再利用profile()定位耗时操作，通常瓶颈在group_by、join或自定义函数。优化时优先使用惰性API链式调用，确保数据类型紧凑且无object类型，对大表提前排序或设置适当的索引。对于超大数据集，考虑增加并行度或调整chunk大小，并避免在宽表上频繁进行转置或pivot操作。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-068",
+      "number": 68,
+      "question": "请简述如何监控 Polars 操作的内存使用情况？ ?",
+      "answer": "监控Polars内存使用可借助其惰性执行引擎：通过`pl.Config.set_profile()`开启查询计划分析，并配合系统工具如`memory_profiler`或`psutil`在关键节点采样；或利用`LazyFrame.profile()`返回每个操作的内存和时间统计。对于流式或大文件处理，设置`streaming=True`并监控`pl.Config.set_streaming_chunk_size()`可控制批处理内存。生产环境建议结合`grafana`或`prometheus`的进程级指标进行持续观测。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-069",
+      "number": 69,
+      "question": "请简述如何确保 Polars 操作的可重复性？（例如，设置随机种子） ?",
+      "answer": "要确保Polars操作的可重复性，主要是在涉及随机性的函数（如`sample`、`shuffle`）中显式设置种子。可以使用`pl.set_random_seed(42)`设定全局随机种子，或在调用函数时传入`seed`参数。需要注意的是，Polars的随机生成依赖于底层实现和版本，多线程或并行执行时可能引入不确定性，因此建议在脚本开头统一设置种子并锁定Polars版本。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-070",
+      "number": 70,
+      "question": "请简述如何处理 Polars 中的异常和错误？ ?",
+      "answer": "Polars 异常主要来自类型不匹配、表达式求值失败或底层计算错误，处理方式包括：使用 `try-except` 捕获特定异常类如 `polars.exceptions.PolarsPanicError`；在表达式链中通过 `.cast()` 或 `.str.strptime(...)` 的 strict=False 参数容忍错误；利用 `pl.col().is_null()` 结合 `pl.when().then().otherwise()` 在数据层面优雅降级；对于大规模数据流错误，可使用 `polars.Config.set_streaming_mode(True)` 配合日志监控。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-071",
+      "number": 71,
+      "question": "请简述如何将 Polars 与机器学习库（如 Scikit-learn）结合使用？ ?",
+      "answer": "将Polars DataFrame转换为NumPy数组（使用`.to_numpy()`）或pandas DataFrame（使用`.to_pandas()`）后，直接传入scikit-learn的fit和predict方法。建议在Polars中完成特征工程和预处理，利用其惰性计算和列式操作提升效率，再转换数据供模型训练，注意保存列名或索引映射以便结果解释。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-072",
+      "number": 72,
+      "question": "请简述如何将 Polars DataFrame 转换为 NumPy 数组？ ?",
+      "answer": "使用Polars的to_numpy()方法即可将DataFrame转换为NumPy数组，该方法返回一个二维ndarray，默认按列主序（C-contiguous）存储。如果需要特定列的子集，可先通过select()或列索引选取，再调用to_numpy()。对于大规模数据，该转换会触发数据复制，因此需注意内存开销。如果DataFrame包含多种数据类型，转换时Polars会自动进行类型提升以兼容NumPy的统一类型要求。\n    import polars as pl\n\n    # 创建 DataFrame\n    df = pl.DataFrame({\n        \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n        \"age\": [25, 30, 35],\n        \"score\": [85, 92, 78]\n    })\n\n    # 过滤\n    adults = df.filter(pl.col(\"age\") >= 30)\n\n    # 分组统计\n    grouped = df.group_by(\"age\").agg(\n        pl.col(\"score\").mean().alias(\"avg_score\")\n    )\n\n    # 链式操作\n    result = (df\n        .filter(pl.col(\"score\") > 80)\n        .sort(\"age\")\n        .select([\"name\", \"score\"])\n    )\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-073",
+      "number": 73,
+      "question": "请简述如何在 Polars 中实现条件逻辑？（使用 when().then().otherwise()） ?",
+      "answer": "在Polars中，条件逻辑通过pl.when(condition).then(value).otherwise(alternative)实现，返回一个Expr。例如，df.with_columns(pl.when(pl.col('score') > 80).then('pass').otherwise('fail').alias('result'))。该方法编译为列式操作，无Python级循环，时间复杂度为O(n)，空间复杂度为O(1)，适用于大规模数据。支持链式多个when条件，但不支持else if语法，需嵌套otherwise或使用pl.coalesce。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-074",
+      "number": 74,
+      "question": "请简述Polars 如何对多个列同时应用同一个操作？ ?",
+      "answer": "使用 `pl.all()` 或 `pl.col(['col1', 'col2', ...])` 结合 `with_columns` 或 `select` 方法，可对多个列同时应用同一表达式，例如 `df.with_columns(pl.all().shift(1))`。也可通过 `pl.Expr` 的 `map` 或 `apply` 实现自定义操作，但推荐优先使用内置表达式以利用Polars的查询优化和并行计算。此外，支持使用 `pl.Exclude` 或 `pl.Exception` 进行列过滤后统一处理。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    },
+    {
+      "id": "Polars数据处理-075",
+      "number": 75,
+      "question": "请简述Polars 如何计算多个列之间的相关性？ ?",
+      "answer": "Polars可通过DataFrame的corr方法直接计算两列之间的皮尔逊相关系数，或将其应用到多列上借助select与pl.corr生成上三角相关矩阵。若需完整相关矩阵，可使用df.corr()返回所有数值列间的相关系数DataFrame，内部自动处理缺失值并支持method参数选择spearman或pearson。更高效的方式是先用groupby动态计算，或结合pivot实现自定义相关分析，但df.corr()已覆盖多数场景。\n\n**示例代码：**\n\n```python\nimport polars as pl\n\n# 创建 DataFrame\ndf = pl.DataFrame({\n    \"name\": [\"Alice\", \"Bob\", \"Charlie\"],\n    \"age\": [25, 30, 35],\n    \"score\": [85, 92, 78]\n})\n\n# 过滤\nadults = df.filter(pl.col(\"age\") >= 30)\n\n# 分组统计\ngrouped = df.group_by(\"age\").agg(\n    pl.col(\"score\").mean().alias(\"avg_score\")\n)\n\n# 链式操作\nresult = (df\n    .filter(pl.col(\"score\") > 80)\n    .sort(\"age\")\n    .select([\"name\", \"score\"])\n)\n\nprint(result)\n\n\n\n```\n",
+      "category": "Polars数据处理",
+      "tags": []
+    }
+  ]
+}

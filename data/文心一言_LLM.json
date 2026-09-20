@@ -1,0 +1,341 @@
+{
+  "category": "文心一言_LLM",
+  "questions": [
+    {
+      "id": "文心一言_LLM-002",
+      "number": 2,
+      "question": "请简述文心一言由哪家公司开发？它的英文名是什么？ ?",
+      "answer": "文心一言由百度公司开发，其英文名称为ERNIE Bot。作为百度自主研发的知识增强大语言模型，它基于文心大模型技术，支持多轮对话、内容生成等多种自然语言处理任务。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-003",
+      "number": 3,
+      "question": "请简述解释“文心一言”这个名字的含义？ ?",
+      "answer": "“文心一言”取自中国古代文学理论经典《文心雕龙》的“文心”二字，意指为文之用心，强调文章创作的深度与匠心；“一言”则源自“一言九鼎”“一言以蔽之”，象征语言的分量与精准。整体寓意百度大模型以中华文化底蕴为根基，追求用简洁、有力的一句话回答用户问题，体现技术对语言本质的深刻理解与人性化表达。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-004",
+      "number": 4,
+      "question": "请简述文心一言主要面向哪些用户群体？（消费者、开发者、企业客户） ?",
+      "answer": "文心一言作为百度的大语言模型，主要面向三类用户群体：消费者通过对话式AI助手获取信息、创作辅助和日常服务；开发者利用API和模型工具进行应用集成与二次开发；企业客户则依托私有化部署、行业定制和知识增强方案实现业务智能化升级。不同群体的需求差异化明显，消费者侧重易用性与交互体验，开发者关注开放能力和技术文档，企业客户则强调安全性、可定制性与成本效益。这种分层设计使文心一言在C端、B端和G端均能提供针对性价值。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-005",
+      "number": 5,
+      "question": "请简述通过哪些渠道可以使用文心一言？（网页版、移动端App、API） ?",
+      "answer": "文心一言的访问渠道主要分为三类：网页版通过浏览器访问官方站点直接对话；移动端App可在iOS和Android应用商店下载，支持语音与图文交互；API接口则面向开发者提供模型调用、流式输出、微调等能力，便于集成到自有系统中。企业用户还可通过百度智能云申请私有化部署。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-006",
+      "number": 6,
+      "question": "请简述文心一言的当前主要版本有哪些？（例如：文心一言 4.0） ?",
+      "answer": "文心一言目前的主力版本以文心一言 4.0 为代表，该版本在知识理解、逻辑推理和多模态能力上实现显著升级。此前还经历了文心一言 1.0、2.0 和 3.0 的迭代，其中 3.0 奠定了大语言模型的基础能力，而 4.0 进一步增强了复杂任务处理和实时交互表现。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-007",
+      "number": 7,
+      "question": "请简述文心一言的技术基石是什么？它与百度的“文心大模型”有什么关系？ ?",
+      "answer": "文心一言是百度推出的对话式AI产品，其技术基石是百度自研的文心大模型体系，具体包括基于飞桨深度学习平台、采用Transformer架构、融合知识增强与检索增强（如ERNIE系列）以及多模态能力，并经过海量中文语料预训练。它与“文心大模型”的关系是：文心大模型是百度研发的通用大模型家族（如ERNIE 3.0、ERNIE-ViLG等），而文心一言是基于这些基础模型专门针对对话交互场景调优后的产品化应用，可以视为文心大模型面向用户端的落地服务。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-008",
+      "number": 8,
+      "question": "请简述解释“知识增强”大模型的含义？文心一言如何实现知识增强？ ?",
+      "answer": "知识增强大模型是指在预训练语言模型基础上，显式融合结构化、非结构化知识（如知识图谱、文档库），以提升模型在知识密集型任务上的事实准确性和推理能力。文心一言通过多源知识融合实现知识增强：在预训练阶段引入大规模知识图谱与网页文本的联合学习，利用实体链接和关系抽取将知识注入模型参数；在推理阶段结合检索增强生成（RAG）技术，动态调用外部知识库进行实时知识补全与校验，从而减少幻觉并增强逻辑性。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-009",
+      "number": 9,
+      "question": "请简述提示：结合海量数据和知识图谱？ ?",
+      "answer": "提示结合海量数据与知识图谱，本质是通过结构化外部知识增强LLM的推理准确性与事实一致性，具体方法包括将知识图谱三元组嵌入提示上下文，或利用海量数据微调后通过检索增强生成（RAG）动态引入知识。这能有效缓解幻觉问题，并提升复杂逻辑推理与多跳问答的能力。\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-010",
+      "number": 10,
+      "question": "请简述文心一言具备哪些核心能力？ ?",
+      "answer": "文心一言的核心能力涵盖多领域知识问答、长文本理解与生成、多轮对话与逻辑推理，以及代码编写与数学计算。它支持多模态输入理解，能结合图像、文本进行内容创作，并具备工具调用和插件扩展能力，可联网获取实时信息。此外，它在中文语义理解和文学创作方面表现出色，能有效处理复杂指令和上下文。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-011",
+      "number": 11,
+      "question": "请简述多模态生成（文生图、图生文） ?",
+      "answer": "多模态生成是指利用深度学习模型在文本与图像两种模态间进行转换。文生图（如Stable Diffusion）通过文本编码器提取语义特征，再经扩散模型逐步去噪生成图像；图生文（如BLIP）则通过视觉编码器提取图像特征，结合语言模型生成描述性文本。二者均依赖大规模图文对训练，核心挑战在于跨模态语义对齐与细粒度控制。\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-012",
+      "number": 12,
+      "question": "请简述文心一言的“多模态”能力具体体现在哪些方面？ ?",
+      "answer": "文心一言的多模态能力指其能够同时理解和生成文本、图像、语音等多种模态信息，实现跨模态交互。具体体现在：文本生成图像，通过自然语言描述直接创建符合语义的视觉内容；图像理解与问答，可分析图片中的物体、场景和逻辑关系并给出解释；图文联合推理，例如根据图表或表格数据生成总结或解答问题；以及语音交互，支持语音输入识别和语音合成输出，提供多模态对话体验。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-013",
+      "number": 13,
+      "question": "请简述文心一言如何处理长文本理解和生成任务？ ?",
+      "answer": "文心一言通过分块（chunking）策略将长文本切分为语义完整的片段，利用稀疏注意力或渐进式注意力机制降低计算复杂度，在理解阶段对关键段落进行加权编码，生成阶段则采用分段生成（如先摘要后扩写）或动态上下文窗口技术，确保长程依赖信息的有效捕获与输出连贯性。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-014",
+      "number": 14,
+      "question": "请简述文心一言在代码生成和理解方面能力如何？ ?",
+      "answer": "文心一言在代码生成与理解方面具备较强能力，能处理多种编程语言并生成符合逻辑的代码片段；其基于大规模代码语料训练，在函数补全、错误查找、算法解释等任务上表现良好；但在复杂多步逻辑或罕见框架上仍可能存在局限性，需结合具体场景验证。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-015",
+      "number": 15,
+      "question": "请简述文心一言有哪些区别于其他大模型的特色功能？ ?",
+      "answer": "文心一言的核心特色在于其强大的中文理解与生成能力，深度融合了百度搜索、知识图谱及百度生态（如百科、文库、地图等），可提供实时联网搜索、多模态创作（图文结合）以及结构化知识问答功能。此外，它内置了“言犀”对话系统，支持长文本、多轮对话与逻辑推理，在中文语境下的上下文连贯性、文化常识和方言处理上表现优于多数国际大模型。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-016",
+      "number": 16,
+      "question": "请简述插件生态： 支持联网搜索、图表生成、PDF文档对话等？ ?",
+      "answer": "插件生态是指围绕大语言模型构建的第三方功能扩展体系，通过标准化的API或工具接口实现模型能力的动态增强。典型插件如联网搜索实时检索最新信息，图表生成将结构化数据转化为可视化图形，PDF文档对话则支持解析非结构化文档并进行多轮交互。该生态解决了模型知识静态性与封闭性问题，使其能够与外部系统实时协作，显著提升在信息检索、数据分析和文档处理等专业场景的适用性。\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-017",
+      "number": 17,
+      "question": "请简述提示词库/模板： 降低用户使用门槛？ ?",
+      "answer": "提示词库/模板是预定义的、经过优化的指令集合，通过结构化任务描述、角色设定和输出格式，减少用户自行设计提示词时的试错成本与认知负担。它封装了最佳实践，让非专业用户无需理解模型弱点或提示工程技巧，即可快速获得稳定、高质量的生成结果，从而显著降低使用门槛。\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-018",
+      "number": 18,
+      "question": "请简述文心一言如何利用百度的知识图谱来提升回答的准确性和丰富性？ ?",
+      "answer": "文心一言通过将百度知识图谱中的结构化实体、关系和属性信息注入到生成过程中，增强了对事实性问题的精确匹配与逻辑推理能力，从而降低幻觉并提升回答的准确性。同时，知识图谱提供了领域深度的关联知识和多源数据支持，使模型能够围绕核心实体展开多维度、时效性强的解释，显著扩充了回答的信息丰富度与多样性。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-019",
+      "number": 19,
+      "question": "请简述文心一言在中文理解和中国文化语境下有什么优势？ ?",
+      "answer": "文心一言基于百度自研的ERNIE模型，在预训练阶段注入了大规模高质量中文语料与知识图谱，并对中文特有的词汇多义性、语法结构、长句逻辑进行了专项优化，使其在成语、古诗、歇后语等文化载体理解上表现更精准。它内置了中华文化的价值导向与表达习惯，能准确处理谦敬语、委婉语及地域民俗等隐含语境，生成自然且符合中文思维的回答。相比通用模型，它在同音字辨析、文言文转译以及历史典故的上下文推理上具备显著优势。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-020",
+      "number": 20,
+      "question": "请简述文心一言的“角色对话”功能有什么特点？ ?",
+      "answer": "文心一言的“角色对话”功能允许用户为AI设定特定角色身份、性格和对话风格，从而生成更个性化、场景化的回复。其核心特点包括灵活的上下文记忆与角色一致性维持，以及支持多轮对话中动态调整角色行为，提升了交互的沉浸感与实用性。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-021",
+      "number": 21,
+      "question": "请简述列举文心一言在办公领域的应用场景？ ?",
+      "answer": "文心一言在办公领域可应用于智能文档撰写与润色，自动生成会议纪要与摘要；支持多轮对话式知识问答，辅助快速检索企业内部数据；还能进行数据洞察与报告自动生成，以及邮件、周报等日常办公内容的智能草拟，显著提升工作效率。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-022",
+      "number": 22,
+      "question": "请简述列举文心一言在学习领域的应用场景？ ?",
+      "answer": "文心一言在学习领域可用于智能辅导，如解答学科问题、提供个性化学习路径；自动化内容生成，如总结知识点、编写练习题；语言学习辅助，例如语法纠错与对话练习；以及教育评估，通过分析学生回答提供针对性反馈，提升学习效率与深度。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-023",
+      "number": 23,
+      "question": "请简述列举文心一言在创作领域的应用场景？ ?",
+      "answer": "文心一言在创作领域可应用于内容生成，如自动撰写新闻稿、营销文案和广告语；辅助文学创作，包括诗歌、小说和剧本的情节构思；提供创意灵感，如根据关键词生成故事大纲或对白；以及代码生成与优化，辅助开发人员编写和调试程序。这些场景通过大模型的语言理解与生成能力，提升了创作效率与多样性。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-024",
+      "number": 24,
+      "question": "请简述百度如何通过“文心一言”构建其AI生态？ ?",
+      "answer": "百度以文心一言为核心，通过开放API、插件生态和行业解决方案，串联起昆仑芯片、飞桨深度学习平台及百度智能云，形成“芯片-框架-模型-应用”全栈闭环；同时，文心一言接入搜索、地图、文库等自家产品，并面向开发者提供低门槛调用的Prompt工程工具与模型微调服务，以此驱动企业级AI应用落地，构建起开放、协同、可持续的AI生态体系。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-025",
+      "number": 25,
+      "question": "请简述什么是“文心千帆”？它与文心一言的关系是什么？ ?",
+      "answer": "文心千帆是百度推出的企业级大模型服务平台，提供模型训练、部署、推理等全栈工具链，支持快速构建和调用AI应用。文心一言是基于文心大模型面向C端用户的对话式AI产品，而文心千帆则是面向B端开发者与企业客户，将文心一言背后的模型能力封装为可定制、可扩展的云服务，两者属于同一技术体系下的不同产品形态与目标客群。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-026",
+      "number": 26,
+      "question": "请简述提示：文心千帆是大模型服务平台，面向企业和开发者？ ?",
+      "answer": "文心千帆是百度推出的大模型服务平台，主要面向企业和开发者，提供模型训练、推理部署、数据管理及API调用等全流程服务。它集成了文心一言等基础大模型能力，支持用户通过零代码或低代码方式快速构建和微调垂直场景应用。该平台的核心优势在于降低大模型使用门槛，同时提供企业级的安全保障和性能优化，助力行业落地生成式AI解决方案。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-027",
+      "number": 27,
+      "question": "请简述作为开发者，如何通过API将文心一言的能力集成到自己的应用中？ ?",
+      "answer": "首先，在百度智能云平台注册并创建应用，获取API Key和Secret Key以进行身份认证。然后，通过调用文心一言的对话接口（如ERNIE-Bot），在请求中携带用户输入和参数（如temperature、top_p），并处理返回的流式或非流式响应。集成时需注意设置合理的超时与重试机制，并根据业务需求对结果进行解析和渲染，最后在应用中封装成可复用的服务模块。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-028",
+      "number": 28,
+      "question": "请简述比较文心一言与ChatGPT的主要异同？ ?",
+      "answer": "文心一言与ChatGPT的核心相同之处在于均基于大语言模型架构，通过海量文本预训练实现对话生成。主要差异体现在三方面：一是文心一言深度整合百度搜索与知识图谱，侧重中文场景与实时信息检索；ChatGPT依赖纯自回归生成，在多语言泛化性上更优；二是文心一言在中文诗词、成语等领域有专项优化，而ChatGPT的推理链与代码生成能力更强；三是两者在安全合规策略上不同，文心一言受国内监管约束，内容过滤更严格。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-029",
+      "number": 29,
+      "question": "请简述技术路线、优势市场、功能侧重？ ?",
+      "answer": "文心一言采用基于飞桨平台的Transformer架构，融合知识增强、检索增强和对话式预训练技术。其优势市场集中在中文互联网生态，尤其是搜索、智能云和企业级AI应用中。功能侧重则体现为多轮对话、知识问答、内容生成与辅助创作，强调与百度搜索及生态的深度整合。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-030",
+      "number": 30,
+      "question": "请简述比较文心一言与国内其他大模型（如阿里通义千问、讯飞星火）的优劣势？ ?",
+      "answer": "文心一言依托百度搜索与知识图谱，在中文语义理解、多模态融合（如图文生成）和实时信息检索方面有优势，但开放性生态稍弱；阿里通义千问背靠电商与云计算场景，在数据安全、企业定制化和金融等领域能力突出，但通用对话连贯性偶有不足；讯飞星火凭借语音交互与教育医疗行业积累，在长文本生成和行业专属模型上表现稳健，但多模态能力相对单一。整体上三者技术架构相近，差异主要体现在应用生态与垂直领域深度。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-031",
+      "number": 31,
+      "question": "请简述你认为文心一言在中国市场的核心竞争力是什么？ ?",
+      "answer": "文心一言是百度基于文心大模型开发的生成式AI产品。其在中国市场的核心竞争力体现在三方面：一是深度适配中文语境与政策合规，利用百度搜索、百科等海量中文语料训练，在汉字理解、文化常识和敏感内容过滤上领先；二是依托飞桨深度学习平台与百度AI全栈技术，实现从芯片到应用的端到端优化；三是融入百度云、智能驾驶等商业生态，为企业客户提供低门槛、场景化的落地解决方案。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-032",
+      "number": 32,
+      "question": "请简述文心一言在“国产化”和“信创”背景下有什么机遇？ ?",
+      "answer": "在国产化与信创背景下，文心一言的机遇主要体现在政策驱动下的政企市场替代需求，即满足党政、金融、能源等关键行业对自主可控AI大模型的首选部署；同时，其与国产芯片（如昇腾、昆仑芯）的深度适配可形成软硬一体信创解决方案，降低迁移成本；此外，国内数据主权合规要求为文心一言的本地化训练和推理提供刚需场景，加速其从通用模型向行业垂直模型的定制化落地。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-033",
+      "number": 33,
+      "question": "请简述文心一言在内容安全和控制方面做了哪些工作？ ?",
+      "answer": "文心一言在内容安全与控制方面构建了多层次防护体系：在预训练阶段通过数据清洗与过滤移除有害内容，在推理阶段采用基于规则和模型的实时审核系统拦截不安全响应，并结合用户反馈机制进行持续的模型对齐与微调，同时遵循《生成式人工智能服务管理暂行办法》等法规要求，确保输出内容的合规性与安全性。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-034",
+      "number": 34,
+      "question": "请简述文心一言如何应对和减少“幻觉”问题？ ?",
+      "answer": "文心一言主要通过多维度手段减少幻觉：一是采用高质量、可信的数据源进行预训练和精调，降低错误知识注入概率；二是引入知识增强与检索增强生成（RAG）机制，实时调用外部知识库或搜索引擎进行事实核查；三是利用人类反馈强化学习（RLHF）和基于规则的奖励模型，对模型输出的事实准确性进行惩罚和校正。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-035",
+      "number": 35,
+      "question": "请简述百度在数据隐私和保护方面有哪些政策和措施？ ?",
+      "answer": "百度在数据隐私保护上遵循《个人信息保护法》等法规，实行数据分级分类管理和最小必要原则；技术上采用差分隐私、联邦学习、同态加密等隐私计算框架，确保训练和推理中敏感数据不出域；组织层面设立数据安全委员会，定期进行合规审计与员工培训；同时，其AI模型通过脱敏、匿名化处理及用户授权机制，在保障业务功能的前提下最小化隐私风险。\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-036",
+      "number": 36,
+      "question": "请简述文心一言如何遵循中国的法律法规和社会主义核心价值观？ ?",
+      "answer": "文心一言通过训练数据筛选、安全对齐技术和实时内容过滤，确保生成内容符合中国法律法规；同时，在模型训练中融入社会主义核心价值观，例如通过强化学习对齐引导正向价值观输出，并建立人工审核机制进行合规校验。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-037",
+      "number": 37,
+      "question": "请简述你对文心一言未来的技术发展有什么展望？ ?",
+      "answer": "文心一言未来的技术发展将聚焦于多模态融合与知识增强，持续提升复杂推理和跨语言理解能力。在模型层面，预计会通过稀疏化架构和动态计算进一步压缩推理成本，同时加强长文本生成的一致性与可控性。此外，生态建设上可能深化与百度搜索、自动驾驶等场景的协同，推动大模型从通用对话向行业专家系统的垂直落地。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-038",
+      "number": 38,
+      "question": "请简述文心一言在“模型即服务”和“AI原生应用”方面有哪些机会？ ?",
+      "answer": "文心一言在“模型即服务”方面，机会在于提供灵活可扩展的API和按需计费模式，降低企业接入大模型的门槛，并依托飞桨生态实现高效微调与部署；在“AI原生应用”方面，可深度融入搜索、办公、创作等场景，打造端到端智能体验，同时通过插件和接口开放，催生教育、医疗等垂直领域的新应用范式，抢占AI基础设施与上层应用的双重价值。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-039",
+      "number": 39,
+      "question": "请简述文心一言将如何应对日益激烈的市场竞争？ ?",
+      "answer": "文心一言将通过持续优化模型性能、降低推理成本、深耕垂直行业应用、强化多模态能力，以及依托百度生态（如搜索、云、自动驾驶）打造差异化优势来应对竞争。重点在于提升中文场景理解精度和输出质量，同时利用飞桨框架和芯片适配实现软硬协同优化，降低部署门槛。此外，通过开放平台吸引开发者共建应用生态，形成数据飞轮效应，以技术护城河和场景粘性巩固市场地位。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-040",
+      "number": 40,
+      "question": "请简述如果你想用文心一言为一个电商公司开发一个智能客服助手，你会如何设计它的核心功能？ ?",
+      "answer": "核心功能设计围绕售前咨询、售中导购与售后处理三个环节：利用文心一言的语义理解与多轮对话能力，自动回答商品规格、库存、物流等常见问题，结合用户历史与商品知识库实现个性化推荐；同时集成订单查询、退换货引导与情感安抚模块，确保问题解决率与用户满意度，并通过人机协作机制将复杂问题无缝转接人工。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-041",
+      "number": 41,
+      "question": "请简述如何利用文心一言的插件功能，为一个市场分析师提升工作效率？ ?",
+      "answer": "市场分析师可通过文心一言的联网搜索插件实时抓取行业动态与竞品数据，利用数据可视化插件快速生成图表和趋势分析，再结合文档处理插件自动化整理报告，从而将重复性手动操作压缩80%以上，聚焦于战略洞察与决策支持。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-042",
+      "number": 42,
+      "question": "请简述描述一个你认为文心一言能解决但其他工具难以高效完成的特定任务？ ?",
+      "answer": "文心一言在融合百度搜索生态的复杂中文事实核查任务上表现独特，它能实时调用百度海量网页和知识图谱数据，直接比对冲突信息并给出带来源标注的结论，而其他通用模型因缺乏同等规模的中文实时索引与垂直领域结构化数据，难以高效完成这种低延迟、高精度的交叉验证任务。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    },
+    {
+      "id": "文心一言_LLM-043",
+      "number": 43,
+      "question": "请简述如果你发现文心一言对某个专业领域的问题回答不准确，你认为可能的原因是什么？如何改进？ ?",
+      "answer": "可能原因包括：预训练语料中该领域高质量数据不足或存在偏差，模型在长尾专业知识上泛化能力有限，以及缺乏实时领域知识更新。改进方向：引入领域特定微调或检索增强生成（RAG）技术，结合外部知识库进行实时验证；同时构建更细粒度的评估体系，对高频错误进行针对性强化训练。\n\n**示例代码：**\n\n```python\nimport requests\n\nAPI_KEY = \"your_api_key\"\nSECRET_KEY = \"your_secret_key\"\n\n# 获取 access_token\nurl = (\"https://aip.baidubce.com/oauth/2.0/token\"\n       f\"?grant_type=client_credentials\"\n       f\"&client_id={API_KEY}\"\n       f\"&client_secret={SECRET_KEY}\")\ntoken = requests.post(url).json().get(\"access_token\")\n\n# 调用文心一言\nurl = (\"https://aip.baidubce.com/rpc/2.0/\"\n       \"ai_custom/v1/wenxinworkshop/chat/\"\n       f\"completions?access_token={token}\")\npayload = {\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"介绍一下Python\"}\n    ]\n}\nresponse = requests.post(url, json=payload)\nprint(response.json().get(\"result\"))\n\n\n\n```\n",
+      "category": "文心一言_LLM",
+      "tags": []
+    }
+  ]
+}

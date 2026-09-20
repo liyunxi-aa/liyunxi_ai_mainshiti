@@ -1,0 +1,565 @@
+{
+  "category": "LlamaIndex",
+  "questions": [
+    {
+      "id": "LlamaIndex-001",
+      "number": 1,
+      "question": "请简述什么是对比学习它在自监督学习中是如何构建正负.. ?",
+      "answer": "对比学习是一种自监督表征学习方法，其核心是通过拉近正样本对（同一数据的不同增强视图）的表示、推远负样本对（不同数据的增强视图）的表示来学习不变且判别性的特征。在自监督学习中，正样本通过随机数据增强（如裁剪、色彩抖动）从同一实例生成，负样本则从当前批次内其他实例的增强视图采样。模型借助InfoNCE等对比损失函数，在避免模型坍塌的同时，使表征在实例级别具有高辨别力。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-002",
+      "number": 2,
+      "question": "请简述解释 LlamaIndex 的核心价值主张？（连接私有数据与大型语言模型） ?",
+      "answer": "LlamaIndex 的核心价值在于提供一套标准化的数据索引与检索框架，使大型语言模型能够安全、高效地接入私有或领域特定的非结构化数据。它通过将文档分块、生成向量化表示并组织成可查询的索引结构，解决了LLM无法直接访问实时或专有信息的问题。其最大优势是让开发者无需从零构建RAG系统，即可实现数据与模型的无缝桥接。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-003",
+      "number": 3,
+      "question": "请简述LlamaIndex 与 LangChain 在定位和功能上有何异同？ ?",
+      "answer": "LlamaIndex 专注数据索引与检索，提供结构化数据的存储、检索和查询优化，适合构建面向文档的 RAG 系统；LangChain 则侧重链式编排与智能体，通过抽象化模型调用、工具集成和流程控制，支持复杂多步骤任务。在功能上，LlamaIndex 内建了文档解析、分块、向量索引和检索器，而 LangChain 依靠其链（Chain）与代理（Agent）机制实现灵活的任务编排与外部交互。两者可互补使用：LlamaIndex 负责数据层，LangChain 负责逻辑层，但 LangChain 的生态更广，LlamaIndex 在数据检索性能上更精细。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-004",
+      "number": 4,
+      "question": "请简述描述 LlamaIndex 中的核心抽象：Document, Node, Index, QueryEngine, Retriever？ ?",
+      "answer": "Document是数据源的基本单元，通常包含文本和元数据；Node是文档切分后的最小语义单元，具有唯一ID和嵌入向量，支持递归构建。Index是对Node集合进行结构化组织（如向量索引、树索引）以支持高效检索。Retriever根据查询从Index中筛选相关Node，常用基于嵌入相似度的检索。QueryEngine整合Retriever和语言模型，将检索结果送入LLM生成最终答案，形成端到端查询流程。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-005",
+      "number": 5,
+      "question": "请简述LlamaIndex 中什么是 Document 对象？它如何表示你的数据？ ?",
+      "answer": "Document 是 LlamaIndex 中表示原始数据源的基本对象，它将文本内容与元数据（如文件名、来源、时间戳）封装在一起。每个 Document 对应一条独立的数据记录（如一段文本、一个文件），通过 `.text` 属性存储主要文本，`.metadata` 字典存储结构化元数据。这种封装方式允许 LlamaIndex 在索引构建、检索和生成过程中灵活地引用数据来源，并利用元数据实现过滤和上下文增强。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-006",
+      "number": 6,
+      "question": "请简述LlamaIndex 中什么是 Node？Node 和 Document 有什么关系？ ?",
+      "answer": "Node是LlamaIndex中表示切分后文本块的基本数据结构，每个Node包含文本内容、元数据以及其在原始文档中的位置信息。Document是用户输入的原始数据载体，一个Document经过文本分割器解析后会生成多个Node，这些Node构成了索引和检索的最小单元。Node和Document是整体与部分的关系，Document提供上下文背景，而Node支持细粒度的语义匹配与检索。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-007",
+      "number": 7,
+      "question": "请简述LlamaIndex 中Node 中除了文本内容，还可以存储什么信息？（元数据、关系、嵌入向量） ?",
+      "answer": "LlamaIndex的Node是文档片段的基本单元，除文本内容外，可以存储元数据（如文件来源、时间戳、标签等，用于过滤和上下文增强）、关系（指向父文档、前序节点或外部实体的链接，支持图结构检索）以及嵌入向量（预计算的稠密或稀疏向量，用于语义相似度匹配）等结构化信息。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-008",
+      "number": 8,
+      "question": "请简述列出构建一个简单问答应用所需的基本 LlamaIndex 组件？ ?",
+      "answer": "构建简单问答应用需要四个基本 LlamaIndex 组件：Document Loader 用于加载源文档，Text Splitter 将文档切分为可管理块，Embedding Model 将文本转化为向量，Vector Store 索引并存储向量以便语义检索；此外还需一个LLM用于生成最终答案，通过Query Engine组合上述组件完成RAG流程。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-009",
+      "number": 9,
+      "question": "请简述LlamaIndex 中什么是“数据连接器”？列举一些内置的数据连接器？ ?",
+      "answer": "数据连接器是LlamaIndex中用于从不同数据源读取和加载数据的抽象接口，它将原始数据转换为统一的文档格式以便后续索引。常见的内置连接器包括本地文件系统的SimpleDirectoryReader、网页爬虫的WebReader、PDF解析的PDFReader、Notion的NotionPageReader以及数据库的DatabaseReader，此外还支持Slack、GitHub、Google Docs等第三方服务的连接器。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-010",
+      "number": 10,
+      "question": "请简述LlamaIndex 中如何从简单的文本文件、PDF 文件、网页或数据库加载数据？ ?",
+      "answer": "LlamaIndex通过统一的`Reader`抽象层实现多源数据加载：文本和PDF文件使用`SimpleDirectoryReader`或`PDFReader`自动解析内容；网页通过`SimpleWebPageReader`或调用`BeautifulSoup`的`WebReader`提取结构化文本；数据库则依赖`DatabaseReader`配合SQLAlchemy连接执行查询并返回Document对象。所有Reader输出均为`Document`列表，便于后续索引构建，用户也可通过LlamaHub加载社区维护的300+专用Reader实现定制化数据接入。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-011",
+      "number": 11,
+      "question": "请简述LlamaIndex 中如何从目录中加载多个文档？ ?",
+      "answer": "使用`SimpleDirectoryReader`传入目录路径即可递归加载所有支持的文档格式，并自动分块。可通过`file_extractor`参数自定义解析器以处理特定扩展名文件。如需过滤文件类型或限制数量，可设置`required_exts`和`num_files_limit`参数。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-012",
+      "number": 12,
+      "question": "请简述LlamaIndex 中如何使用 SimpleDirectoryReader？ ?",
+      "answer": "SimpleDirectoryReader是LlamaIndex中用于从本地文件夹加载文档的基础数据加载器，通过指定目录路径自动读取所有支持格式的文件（如txt、pdf、docx等）并返回Document对象列表。使用时直接实例化并调用load_data()方法，例如reader = SimpleDirectoryReader(input_dir='./data')，然后documents = reader.load_data()，即可将文件夹中的文本内容转换为可供索引构建的文档集合。支持通过recursive参数递归读取子目录，并通过file_metadata参数自定义元数据提取逻辑。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-013",
+      "number": 13,
+      "question": "请简述LlamaIndex 中什么是“索引”？它在 LlamaIndex 中起什么作用？ ?",
+      "answer": "在LlamaIndex中，索引是一种数据结构，用于将原始文档拆分为可检索的节点（如文本块），并构建从这些节点到其嵌入向量或元数据的映射关系。它充当文档与查询之间的桥梁，通过高效的相似性搜索（如向量检索）或关键词匹配，快速定位与用户Query最相关的信息片段，从而支撑大模型的上下文增强生成。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-014",
+      "number": 14,
+      "question": "请简述LlamaIndex 中描述构建索引的典型流程？（加载文档 -> 解析为节点 -> 构建索引） ?",
+      "answer": "LlamaIndex 构建索引的典型流程分为三步：首先通过文档加载器（如SimpleDirectoryReader）将原始文件读入为Document对象；接着使用节点解析器（如SentenceSplitter）将Document按语义或长度切分为更细粒度的Node，每个Node包含文本及元数据；最后基于Node列表调用索引结构（如VectorStoreIndex或SummaryIndex）的from_nodes或类似方法，将Node编码并建立可检索的索引结构，同时可指定嵌入模型与存储后端。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-015",
+      "number": 15,
+      "question": "请简述LlamaIndex 中什么是“节点解析器”？它的作用是什么？ ?",
+      "answer": "节点解析器是LlamaIndex中将文档（Document）分割成更小、更结构化的基本单元——节点（Node）的组件。它负责根据预设的规则（如文本块大小、重叠窗口、文档层级结构）将原始文本切分为可独立索引和检索的片段，从而提升检索的精确度和上下文相关性。其核心作用在于控制粒度：过小的节点可能缺乏语义完整性，过大的节点会降低检索效率，解析器通过合理拆分平衡这两者，并支持后续的元数据附加与关联。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-016",
+      "number": 16,
+      "question": "请简述LlamaIndex 中SimpleNodeParser 的关键参数是什么？（chunk_size, chunk_overlap） ?",
+      "answer": "SimpleNodeParser是LlamaIndex中将文档分割为节点（Node）的核心解析器，其关键参数chunk_size控制每个文本块的最大字符数，决定了节点的粒度；chunk_overlap定义相邻块之间的重叠字符数，用于保持语义连贯性、避免因硬分割导致的关键信息丢失。合理设置这些参数可平衡检索精度与上下文完整性。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-017",
+      "number": 17,
+      "question": "请简述LlamaIndex 中如何选择合适的分块大小和重叠大小？ ?",
+      "answer": "分块大小需权衡上下文完整性与检索精度：较小的块（如128-256 tokens）提升细粒度匹配但可能丢失语义连贯性，较大的块（如512-1024 tokens）保留上下文但增加噪音和计算开销。重叠大小通常设为分块大小的10%-20%以缓解边界截断问题，确保相邻片段的关键词或实体不丢失。实践中应基于文档类型（如代码、长文）和下游任务（问答、摘要）进行实验，通过检索召回率与响应质量评估最优组合，也可利用LlamaIndex的SentenceSplitter或TokenTextSplitter预设参数快速调优。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-018",
+      "number": 18,
+      "question": "请简述LlamaIndex 中除了简单的文本分块，还有哪些高级的节点解析策略？ ?",
+      "answer": "高级节点解析策略包括语义分块（通过嵌入相似度动态合并或分割句子，保证主题内聚）、句子感知分块（以自然句子边界而非固定词数分割，避免截断语义）、递归分块（对长文本递归应用多种粒度，生成层次化节点）以及元数据增强（为节点附加文件名、标题、摘要等上下文信息以提升检索精度）。这些策略相比简单固定分块，能更有效保留语义完整性和检索相关性。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-019",
+      "number": 19,
+      "question": "请简述什么是LlamaIndex 中的“向量存储索引”？它是如何工作的？ ?",
+      "answer": "向量存储索引是LlamaIndex中将文档分块并嵌入成密集向量后存储到向量数据库中的索引结构，主要用于语义检索。其工作原理是：首先对文档进行文本分割，然后调用嵌入模型将每个块转换为固定维度的向量并存入向量数据库；查询时同样将用户问题嵌入，通过近似最近邻（ANN）算法在向量空间中快速找到语义最相似的top-k块，再将这些块作为上下文送入大模型生成答案。这种索引的优势在于支持高效的相似度搜索，适合处理大规模、非结构化文本的问答场景。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-020",
+      "number": 20,
+      "question": "请简述什么是LlamaIndex 中的“摘要索引”？它与向量存储索引有何不同？ ?",
+      "answer": "LlamaIndex中的摘要索引是一种基于文档摘要而非原始文本块进行检索的索引，它预先为每个文档生成一个概括性描述，检索时比对查询与摘要的相似度返回相关文档。与向量存储索引不同，摘要索引以文档级别的摘要作为检索单元，适用于快速筛选相关文档；而向量存储索引将文档切分为更细粒度的文本块并嵌入向量空间，支持更精确的段落级匹配。此外，摘要索引的构建成本较低但可能丢失细节，向量存储索引则更灵活但需处理高维度和语义重叠问题。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-021",
+      "number": 21,
+      "question": "请简述什么是LlamaIndex 中的“树索引”？它适用于什么场景？ ?",
+      "answer": "树索引是LlamaIndex中一种将文档块递归地聚合为层级摘要节点的索引结构，每个父节点总结其子节点的核心内容，形成一棵层次化的摘要树。它适用于需要全局理解、多步推理或对长文档进行高效摘要检索的场景，例如大型PDF问答或知识图谱构建，能够通过自顶向下的遍历快速定位相关片段。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-022",
+      "number": 22,
+      "question": "请简述什么是LlamaIndex 中的“关键字表索引”？ ?",
+      "answer": "关键字表索引是LlamaIndex中一种基于关键词匹配的检索索引结构。它通过提取每个文档的关键词并建立关键词到文档ID的映射表，在查询时利用输入的关键词直接定位相关文档。这种索引适用于需要精确关键词匹配的场景，比如法律合同或技术文档中的术语搜索，计算成本低且可解释性强，但无法处理语义相似度或同义词问题。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-023",
+      "number": 23,
+      "question": "请简述LlamaIndex 中如何为节点创建文本嵌入？（使用 Settings.embed_model） ?",
+      "answer": "在LlamaIndex中，通过全局`Settings.embed_model`指定嵌入模型后，所有节点（如`TextNode`）在索引构建时自动调用该模型的`get_text_embedding`方法生成文本嵌入。你也可以手动对单个节点调用`Settings.embed_model.get_text_embedding(node.text)`来获取向量，再赋值给节点的`embedding`属性。这种方式统一了嵌入配置，避免重复初始化，并支持多种模型（如OpenAI、HuggingFace）的无缝切换。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-024",
+      "number": 24,
+      "question": "请简述LlamaIndex 中如何将索引持久化到磁盘以及如何加载它？ ?",
+      "answer": "在LlamaIndex中，索引持久化通过调用索引对象的`persist()`方法实现，默认将索引数据存储到指定目录（如`./index_storage`）。加载时，使用`StorageContext.from_defaults(persist_dir=\"./index_storage\")`恢复存储上下文，再通过`load_index_from_storage(storage_context)`重建索引对象。整个过程依赖底层的文档存储、索引结构和元数据序列化，支持向量索引和关键字索引的完整恢复。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-025",
+      "number": 25,
+      "question": "请简述LlamaIndex 中什么是“检索器”？它的作用是什么？ ?",
+      "answer": "检索器（Retriever）是LlamaIndex中负责从索引中高效获取与用户查询最相关文本片段的核心组件。它的作用是在RAG（检索增强生成）流程中，基于嵌入相似度、关键词匹配或混合搜索等策略，从海量文档中筛选出候选上下文，从而为后续的大语言模型生成答案提供精准、精简的信息输入，减少幻觉并提升回答质量。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-026",
+      "number": 26,
+      "question": "请简述LlamaIndex 中如何从索引中获取一个检索器？ ?",
+      "answer": "在LlamaIndex中，从索引获取检索器通常通过调用索引对象的 `as_retriever()` 方法实现，该方法返回一个 `BaseRetriever` 实例。你可以通过传递参数（如 `similarity_top_k` 或 `vector_store_query_mode`）来配置检索行为。这一过程本质上是将索引的底层检索逻辑（如向量相似度搜索或关键词匹配）封装为标准检索接口，便于下游查询与响应合成。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-027",
+      "number": 27,
+      "question": "请简述LlamaIndex 中什么是“查询引擎”？它与检索器有什么关系？ ?",
+      "answer": "查询引擎是LlamaIndex中用于接收用户查询并生成最终回答的高级接口，它内部会组合检索器（Retriever）和后处理/合成模块。检索器负责从索引中高效召回最相关的文档节点或片段，而查询引擎在此基础上进一步将检索结果通过合成器（如LLM）整合成自然语言回复。简言之，检索器是查询引擎的“检索”子模块，查询引擎则是包含检索、重排序、合成的完整查询处理管线。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-028",
+      "number": 28,
+      "question": "请简述LlamaIndex 中描述使用查询引擎进行问答的典型流程？ ?",
+      "answer": "首先，加载文档并构建索引，将文档分割成节点并生成嵌入；然后，创建查询引擎，它封装了检索器和响应合成器；查询时，引擎通过检索器从索引中选取最相关的节点，再交由LLM结合查询和节点生成最终答案。整个过程实现了从原始文档到结构化问答的端到端流水线。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-029",
+      "number": 29,
+      "question": "请简述LlamaIndex 中比较“基于嵌入的检索”和“基于关键字的检索”？ ?",
+      "answer": "基于嵌入的检索使用向量相似度（如余弦相似度）匹配语义相近的文本，能捕捉同义词和上下文含义，但需要预先生成嵌入并依赖模型质量；基于关键字的检索通过词频或倒排索引匹配精确字词，速度快且可解释性强，但无法处理语义模糊或拼写变体。两者互补：嵌入式适合开放域问答，关键字适合精确匹配或结构化查询。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-030",
+      "number": 30,
+      "question": "请简述LlamaIndex 中什么是“混合检索”？它有什么优势？ ?",
+      "answer": "混合检索是结合稀疏检索（如BM25）与稠密检索（如嵌入向量相似度）的复合检索方式，通过加权融合或分阶段召回来兼顾关键词精确匹配与语义相关性。其优势在于能克服单一检索的局限性：稀疏检索擅长处理罕见词与精确短语，稠密检索擅长理解同义与上下文，两者互补可显著提升检索的鲁棒性与召回质量，尤其在长尾查询和跨领域场景中表现更稳定。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-031",
+      "number": 31,
+      "question": "请简述LlamaIndex 中如何配置检索器返回的节点数量？（similarity_top_k） ?",
+      "answer": "在LlamaIndex中，配置检索器返回的节点数量主要通过设置`similarity_top_k`参数实现，可在构建检索器时直接指定，例如`VectorIndexRetriever(index=index, similarity_top_k=5)`，或在调用`retrieve()`方法时动态传入该参数。该参数控制每次检索从向量索引中召回的最相似节点数，影响下游LLM生成响应的上下文范围。合理调整`similarity_top_k`可在检索精度与效率之间取得平衡，一般根据任务复杂度与模型上下文窗口进行调优。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-032",
+      "number": 32,
+      "question": "请简述LlamaIndex 中什么是“元数据过滤器”？如何用它来细化检索结果？ ?",
+      "answer": "元数据过滤器是LlamaIndex中基于文档元数据（如日期、作者、文件类型等）的检索条件，用于在向量相似度检索之前或之后对候选节点进行筛选。通过设置FilterCondition和元数据键值对，可以在检索时指定仅返回满足特定元数据规则的节点，从而将结果限制在相关的时间范围、类别或来源内。这能有效减少不相关文档的干扰，提升检索精度和上下文相关性。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-033",
+      "number": 33,
+      "question": "请简述LlamaIndex 中如何使用 QueryBundle 和自定义的 Postprocessor？ ?",
+      "answer": "QueryBundle 封装查询文本、嵌入及元数据，作为检索和处理的统一输入。自定义 Postprocessor 需实现 NodePostprocessor 接口的 _postprocess_nodes 方法，接收 Node 列表并返回处理后的结果。使用步骤：实例化 QueryBundle，创建自定义后处理器，在 as_query_engine 或检索过程中通过 node_postprocessors 参数传入，即可实现节点过滤、重排序等自定义逻辑。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询引擎\nquery_engine = index.as_query_engine(\n    similarity_top_k=3\n)\n# response = query_engine.query(\"文档主题?\")\n\n# 聊天引擎\nchat_engine = index.as_chat_engine()\n# response = chat_engine.chat(\"Hello\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-034",
+      "number": 34,
+      "question": "请简述什么是LlamaIndex 中的“响应合成”？ ?",
+      "answer": "响应合成是LlamaIndex中将检索到的多个知识节点整合为最终回答的核心步骤，它负责将来自不同数据源的文本片段进行融合、去重和重排，并生成连贯的自然语言输出。其实现方式包括简单拼接、多层次摘要、基于排序或得分的选择性聚合，甚至调用LLM进行动态提炼。有效的合成策略能显著提升答案的准确性和信息密度，是RAG系统成败的关键环节之一。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-035",
+      "number": 35,
+      "question": "请简述LlamaIndex 中如何为查询引擎指定响应模式？ ?",
+      "answer": "在LlamaIndex中，为查询引擎指定响应模式可通过在构建查询引擎时设置`response_mode`参数实现。常见的模式包括`tree_summarize`、`compact`、`refine`和`simple_summarize`，例如`index.as_query_engine(response_mode=\"compact\")`。`compact`模式先合并检索到的文本块再生成回答，`refine`模式则迭代地优化初始回答，而`tree_summarize`使用摘要树结构整合信息。选择模式需根据数据规模和实时性需求权衡，`compact`适合平衡效率与质量，`refine`更细致但耗时较长。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询引擎\nquery_engine = index.as_query_engine(\n    similarity_top_k=3\n)\n# response = query_engine.query(\"文档主题?\")\n\n# 聊天引擎\nchat_engine = index.as_chat_engine()\n# response = chat_engine.chat(\"Hello\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-036",
+      "number": 36,
+      "question": "请简述LlamaIndex 中在什么场景下你会选择 Refine 模式而不是 Compact 模式？ ?",
+      "answer": "选择 Refine 模式而非 Compact 模式，通常在需要按块逐步迭代生成、且各块信息存在顺序依赖或需保持中间推理状态时（例如多步推理或多文档异源摘要）。Refine 能基于前一块输出精炼当前块，避免 Compact 因一次性合并所有块导致的上下文溢出或关键细节丢失，适合处理长文档或分步骤问答。而 Compact 更适合上下文短且各块高度同质、可一次性压缩处理的场景。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-037",
+      "number": 37,
+      "question": "请简述LlamaIndex 中什么是“流式响应”？如何启用它？ ?",
+      "answer": "流式响应是指在LlamaIndex中，当调用大模型生成结果时，系统不会等待全部token生成完毕，而是逐块（chunk）或逐token地将中间结果实时推送给用户，从而降低首字延迟并提升交互流畅度。启用方式很简单：在构造QueryEngine或调用查询接口时传入参数streaming=True，然后在返回的StreamingResponse对象上通过async for循环或类似迭代器逐块读取结果即可。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询引擎\nquery_engine = index.as_query_engine(\n    similarity_top_k=3\n)\n# response = query_engine.query(\"文档主题?\")\n\n# 聊天引擎\nchat_engine = index.as_chat_engine()\n# response = chat_engine.chat(\"Hello\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-038",
+      "number": 38,
+      "question": "请简述LlamaIndex 中什么是“聊天引擎”？它与查询引擎有什么区别？ ?",
+      "answer": "聊天引擎是 LlamaIndex 中用于多轮对话交互的接口，它维护对话历史并支持上下文记忆和动态信息检索。与查询引擎的区别在于：查询引擎是单次无状态问答，接收用户查询后直接返回结果；而聊天引擎维护会话状态，能结合历史消息进行推理，并支持工具调用和主动追问。典型使用场景上，聊天引擎适合聊天机器人，查询引擎适合文档问答或无状态信息获取。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-039",
+      "number": 39,
+      "question": "请简述LlamaIndex 中如何为聊天引擎提供对话历史？ ?",
+      "answer": "在LlamaIndex中，聊天引擎通过`ChatMemoryBuffer`管理对话历史，初始化时传入`chat_history`参数或设置`memory`属性来加载历史消息；引擎内部自动将每次用户查询和助手回复追加到缓冲区，并支持通过`chat()`方法的`chat_history`参数动态传入新历史，从而维持上下文连贯性。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-040",
+      "number": 40,
+      "question": "请简述LlamaIndex 中什么是“聊天记忆”？它如何帮助维持对话上下文？ ?",
+      "answer": "聊天记忆是LlamaIndex中用于存储和检索多轮对话历史的结构化模块，它通过维护用户消息与AI响应的序列以及可选的摘要信息，使得后续查询能够引用前文内容。在每次交互时，聊天记忆将历史记录以消息列表或压缩后的上下文形式注入提示模板，让模型感知完整的对话流，从而避免遗忘并实现基于上下文的连贯回答。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-041",
+      "number": 41,
+      "question": "请简述LlamaIndex 中什么是 LlamaIndex 中的“代理”？ ?",
+      "answer": "在LlamaIndex中，代理（Agent）是一种基于大语言模型的智能体，能够自主推理并调用预定义的工具（如查询引擎、函数或外部API）来解决复杂任务。与简单的检索-生成流程不同，代理通过多步循环（如ReAct或OpenAI Function Calling）动态规划执行步骤，根据中间结果调整后续操作。其核心优势在于将静态的RAG能力扩展为可决策、可交互的自动化系统，适用于需要多源信息整合或流程编排的场景。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-042",
+      "number": 42,
+      "question": "请简述LlamaIndex 中代理与查询引擎/聊天引擎的核心区别是什么？（工具使用、推理循环） ?",
+      "answer": "查询引擎和聊天引擎是围绕固定数据源执行预定义检索或对话流程，缺乏工具调用和自主推理能力；代理则拥有工具使用权限，能根据用户目标动态规划、调用工具并迭代推理，形成循环直至任务完成。核心区别在于代理具备自主决策、多步推理和外部工具交互的能力，而查询引擎/聊天引擎仅执行静态的检索或对话生成。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-043",
+      "number": 43,
+      "question": "请简述LlamaIndex 中如何为代理创建自定义工具？ ?",
+      "answer": "在LlamaIndex中创建自定义工具需继承BaseTool类并实现call与参数schema定义，核心是封装查询引擎或任意可调用对象。首先定义工具的名称、描述及输入参数的SchemaModel，然后在call方法中实现业务逻辑并返回ToolOutput。最后通过QueryTool或FunctionTool包装，或直接注册到ReActAgent等代理的tool列表中使用。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-044",
+      "number": 44,
+      "question": "请简述描述LlamaIndex 中的 ReActAgent 的工作流程？ ?",
+      "answer": "ReActAgent在LlamaIndex中遵循推理-行动-观察的循环流程：首先接收用户查询，利用LLM生成推理轨迹（Thought）和下一步行动（Action），行动通常涉及调用工具或检索知识；然后执行行动并反馈观察结果（Observation）给LLM；模型基于新观察继续推理，重复此过程直至形成最终回答。该机制将链式思考与工具调用融合，提升复杂任务的多步推理能力。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-045",
+      "number": 45,
+      "question": "请简述什么是“OpenAI 代理”？它与 ReActAgent 有何不同？ ?",
+      "answer": "OpenAI代理通常指利用OpenAI函数调用能力构建的智能体，它通过自然语言解析用户请求并直接触发预定义工具，依赖模型对函数描述的精准理解。ReActAgent则基于ReAct范式的推理-行动循环，在执行每一步前先生成思考步骤来分析当前状态和下一步计划。核心区别在于：OpenAI代理采用函数调用机制，执行路径更直接高效，但灵活性和可解释性较弱；ReActAgent通过显式的推理链和反馈循环实现多步复杂推理，更适合需要中间规划与状态维护的长任务。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-046",
+      "number": 46,
+      "question": "请简述LlamaIndex 中在什么情况下你会选择使用代理而不是查询引擎？ ?",
+      "answer": "在LlamaIndex中，选择代理（Agent）而不是查询引擎（Query Engine）的主要场景是当任务需要多步推理、动态工具调用或基于中间结果进行决策时，例如跨多个数据源聚合信息、执行条件查询或需要实时调整检索策略。代理具备循环执行和工具编排能力，而查询引擎更适用于单一、确定性的检索任务。因此，当工作流复杂且需要适应性时，代理是更合适的选择；反之，追求高效直接回答时则用查询引擎。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询引擎\nquery_engine = index.as_query_engine(\n    similarity_top_k=3\n)\n# response = query_engine.query(\"文档主题?\")\n\n# 聊天引擎\nchat_engine = index.as_chat_engine()\n# response = chat_engine.chat(\"Hello\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-047",
+      "number": 47,
+      "question": "请简述LlamaIndex 中什么是“父子递归检索器”？它如何工作？ ?",
+      "answer": "父子递归检索器是LlamaIndex中一种层次化文档检索策略，旨在结合父级文档的上下文完整性与子级片段的细粒度相关性。它首先在父节点（如章节或段落）层面执行一次检索，选出可能相关的顶层块；然后针对这些父节点，递归地访问其内部的子节点（如句子或关键句）并进行二次检索，最终返回子层级的匹配结果。这种机制通过先粗后精的两阶段流程，有效平衡了检索的上下文深度与精度。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-048",
+      "number": 48,
+      "question": "请简述LlamaIndex 中描述“句子窗口检索器”的概念和优势？ ?",
+      "answer": "句子窗口检索器（SentenceWindowRetrieval）是一种检索策略，它首先根据查询找到最相关的单个句子作为“锚点”，然后自动扩展检索该句子前后指定窗口大小的上下文句子，形成更完整的段落。其优势在于：既保持了单句级的高精度匹配，又通过窗口机制引入了局部上下文，缓解了传统稠密检索中因句子孤立导致的语义碎片化问题，同时相比全文检索显著降低了检索噪声。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-049",
+      "number": 49,
+      "question": "请简述LlamaIndex 中什么是“自动合并检索器”？ ?",
+      "answer": "自动合并检索器（AutoMergingRetriever）是LlamaIndex中一种实现层级化检索的组件。它首先将文档按层级结构（如句子、段落、章节）切分为不同粒度的节点并建立索引，检索时先获取最细粒度的叶子节点，然后根据预设的合并策略（如基于父节点范围或相似度阈值）自动将相邻或相关的子节点合并回其父节点，以返回更完整、上下文连贯的文本块。这种设计能有效减少返回片段数量，提升检索结果的语义完整性，但需要合理配置层级切分和合并阈值以避免信息冗余或丢失。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-050",
+      "number": 50,
+      "question": "请简述LlamaIndex 中如何实现“多文档查询”？（例如，针对多个索引进行查询） ?",
+      "answer": "在LlamaIndex中，多文档查询主要通过组合多个索引或查询引擎实现。一种典型做法是创建每个文档的独立索引，然后使用RouterQueryEngine或SubQuestionQueryEngine，根据路由规则或子问题分解，将查询分发到对应的索引引擎，最后合并结果。也可以利用SummaryIndex将多个文档的摘要聚合后再查询，或者使用CompositeRetriever从多个索引检索后融合排序。关键在于通过RetrieverQueryEngine和工具函数的组合，实现多源检索、结果合并与重排序。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-051",
+      "number": 51,
+      "question": "请简述LlamaIndex 中什么是“图索引”？它如何表示节点之间的关系？ ?",
+      "answer": "图索引是LlamaIndex中一种基于图结构组织文档节点及其语义关系的索引方式。它将每个文档块或实体视为一个节点，通过LLM自动提取或用户定义的规则（如实体链接、上下文关联）构建有向或无向边来表示节点间的引用、依赖或语义相似关系。这种表示允许在检索时进行图遍历，以捕获非线性、多跳的知识依赖，提升复杂查询的回答质量。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-052",
+      "number": 52,
+      "question": "请简述LlamaIndex 如何利用元数据来增强检索的相关性？ ?",
+      "answer": "LlamaIndex通过将文档的元数据（如日期、作者、标签）与文本块一起索引，在检索时利用这些属性进行过滤、加权或重新排序。例如，在向量检索前先按时间范围过滤，或为高优先级元数据字段分配更高权重以影响相似度得分。元数据还可嵌入为向量的一部分，使语义搜索能同时对齐内容和属性，从而显著提升结果的相关性和上下文精确度。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-053",
+      "number": 53,
+      "question": "请简述LlamaIndex 如何自定义 LLM？（例如，使用非 OpenAI 的模型，如本地模型或 Anthropic） ?",
+      "answer": "在LlamaIndex中自定义LLM，核心是通过继承BaseLLM类并实现关键方法（如complete和chat），或者直接实例化已有的第三方包装类如HuggingFaceLLM、Anthropic等。使用时，只需在Settings中设置自定义的LLM实例，即可替换默认的OpenAI模型。对于本地模型，可借助HuggingFace集成或VLLM实现高效推理，而Anthropic等则通过官方SDK封装后传入API密钥和模型名称。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-054",
+      "number": 54,
+      "question": "请简述LlamaIndex 如何自定义嵌入模型？ ?",
+      "answer": "在LlamaIndex中自定义嵌入模型主要通过继承 `BaseEmbedding` 类并实现 `_get_text_embedding` 与 `_get_query_embedding` 两个核心方法，然后将其作为 `embed_model` 参数传入 `Settings` 或 `ServiceContext`。也支持直接传入一个实现了 `embed_documents` 和 `embed_query` 的外部嵌入函数，通过 `from_callable` 工厂方法快速集成。自定义时需注意嵌入向量的维度一致性，并确保模型输出为 `List[float]` 格式。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-055",
+      "number": 55,
+      "question": "请简述LlamaIndex 如何创建一个自定义的节点解析器？ ?",
+      "answer": "创建一个自定义节点解析器需继承`NodeParser`基类并实现`_parse_nodes`方法，该方法接收文本列表并返回`TextNode`对象列表。首先在`__init__`中调用父类初始化并设置必要参数如`include_metadata`，然后在`_parse_nodes`中按业务逻辑分割文本、生成节点，并可选地附加元数据。最后可通过`from_defaults`或直接实例化注册到`IngestionPipeline`中使用，注意处理节点间关系如保持完整段落。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-056",
+      "number": 56,
+      "question": "请简述LlamaIndex 如何创建一个自定义的检索器？ ?",
+      "answer": "继承BaseRetriever类，实现_retrieve方法，该方法接收QueryBundle并返回List[NodeWithScore]；通过from_args或自定义索引初始化，使用register_retriever装饰器注册到检索器注册表；在_retrieve中可调用底层向量检索或自定义逻辑，如重排序或过滤；最后通过RetrieverQueryEngine集成到查询管道中。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-057",
+      "number": 57,
+      "question": "请简述LlamaIndex 如何创建一个自定义的查询引擎？ ?",
+      "answer": "创建自定义查询引擎通常通过继承`BaseQueryEngine`并实现`_query`和`_async_query`方法。首先定义查询逻辑，例如组合检索器、节点后处理与合成器；然后实例化时传入所需组件如`Retriever`和`ResponseSynthesizer`。最后调用`as_query_engine`或直接使用该自定义类即可集成到索引中。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\n# 加载文档\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\n\n# 创建索引\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询\nquery_engine = index.as_query_engine()\n# response = query_engine.query(\"主要内容是什么？\")\nprint(\"LlamaIndex 索引创建完成\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-058",
+      "number": 58,
+      "question": "请简述LlamaIndex 如何创建一个自定义的后处理器？ ?",
+      "answer": "在LlamaIndex中创建自定义后处理器需要继承BaseNodePostprocessor类并实现_postprocess_nodes方法，该方法接收NodeWithScore列表并返回处理后的列表。你可以在_postprocess_nodes中添加自定义逻辑，如基于阈值过滤或合并冗余节点。随后通过将实例赋值给索引或查询引擎的node_postprocessors属性来启用该后处理器。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-059",
+      "number": 59,
+      "question": "请简述LlamaIndex 如何将 LlamaIndex 应用部署到生产环境？ ?",
+      "answer": "将LlamaIndex应用部署到生产环境通常需要将索引持久化（如存储到Pinecone或Weaviate等向量数据库），并通过FastAPI或Flask构建REST API以处理查询请求。此外，需配置日志监控、缓存策略（如Redis）和异步任务队列（如Celery）来应对高并发，同时确保文档更新与索引同步的可靠性。最终利用Docker容器化并配合Kubernetes进行弹性伸缩，或直接部署到云服务（如AWS Lambda）实现无服务器架构。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-060",
+      "number": 60,
+      "question": "请简述什么是“LlamaIndex 服务器”？ ?",
+      "answer": "LlamaIndex服务器是一个基于LlamaIndex库构建的轻量级推理服务，它将索引、检索与生成管道封装为可远程调用的API端点。其核心作用是通过预构建的向量索引或知识图谱，对外提供文档问答、数据检索等RAG功能，无需客户端自行加载索引。该服务器通常支持流式输出、多模态输入和异步请求，适合部署在边缘设备或微服务架构中用于生产环境下的低延迟交互。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-061",
+      "number": 61,
+      "question": "请简述如何监控 LlamaIndex 应用的性能和成本？ ?",
+      "answer": "监控LlamaIndex应用可通过集成回调系统记录每次查询的延迟、检索节点数、LLM调用次数及token消耗，并接入LangSmith或Arize Phoenix等可观测性平台进行可视化分析。成本方面，需基于记录的token数和模型定价公式动态估算，同时使用缓存策略减少重复LLM调用。建议使用CallbackManager注册自定义回调函数，在事件触发时异步写入日志或指标存储，确保监控本身对主流程性能影响最小化。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-062",
+      "number": 62,
+      "question": "请简述LlamaIndex 如何缓存嵌入向量和 LLM 响应以提高性能？ ?",
+      "answer": "LlamaIndex通过持久化缓存机制存储嵌入向量和LLM响应于本地磁盘（如使用SimpleDirectoryReader或自定义缓存后端），利用hash键值对避免重复计算：对文档和节点生成的嵌入向量按文本哈希存储，对LLM调用按输入模板与参数组合缓存结果。这显著减少了API调用次数与计算延迟，尤其在大规模文档或重复查询场景下提升吞吐量，但需注意缓存失效策略以维持数据一致性。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-063",
+      "number": 63,
+      "question": "请简述LlamaIndex 如何评估你的 RAG 管道的质量？（检索和生成两个阶段） ?",
+      "answer": "LlamaIndex通过分阶段指标评估RAG管道：检索阶段使用命中率、MRR、NDCG等衡量相关文档召回质量；生成阶段则利用LLM作为裁判或对比参考答案，评估回答的忠实度、相关性与正确性。其内置的Evaluation模块通过合成数据集或人工标注，自动计算这些指标以量化整体性能。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-064",
+      "number": 64,
+      "question": "请简述LlamaIndex 中当你的 RAG 系统返回不相关或不准确的答案时，你的调试步骤是什么？ ?",
+      "answer": "我的调试步骤是：首先检查索引构建，包括分块大小、重叠和元数据是否合理；其次验证检索参数如top-k和相似度阈值，并使用回调管理器追踪检索结果；接着检查查询转换和提示模板是否准确传递上下文；最后通过设置verbose=True或利用LlamaDebugHandler定位LLM响应截断或幻觉问题。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-065",
+      "number": 65,
+      "question": "请简述LlamaIndex 中如何优化索引的构建时间和查询延迟？ ?",
+      "answer": "优化索引构建时间可通过调整chunk_size平衡粒度与长度、利用并行处理批量嵌入，并选择低延迟的嵌入模型如bge-small或int8量化版；降低查询延迟则需选择高效的索引结构如HNSW或IVF、实现查询缓存、采用检索后重排序过滤冗余结果，以及结合轻量级LLM推理框架如vLLM或量化部署。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-067",
+      "number": 67,
+      "question": "请简述如果你想构建一个能回答关于公司 1000 页技术手册问题的聊天机器人，请描述你的技术栈和使用的 LlamaIndex 组件？ ?",
+      "answer": "使用LlamaIndex的SimpleDirectoryReader加载1000页技术手册，配合SentenceSplitter进行智能分块，通过VectorStoreIndex结合OpenAI嵌入和Chroma向量数据库构建索引，然后用ChatEngine实现多轮对话检索；技术栈核心为LlamaIndex、OpenAI GPT-4、Chroma/Pinecone，可选LangChain辅助路由，利用RecursiveRetriever处理分块重叠问题，最终以RetrieverQueryEngine输出基于上下文的精确回答。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-069",
+      "number": 69,
+      "question": "请简述你的 RAG 系统检索到了正确的文档，但 LLM 仍然给出了错误的答案？可能的原因是什么？如何解决？ ?",
+      "answer": "可能原因包括：检索到的文档包含冗余或冲突信息导致LLM注意力分散，文档内容超出上下文窗口被截断，或LLM自身产生幻觉。解决方案是优化文档切片与排序（如使用更小的chunk size和reranker），在prompt中明确指示仅依赖检索内容，并引入自一致性检查或答案验证机制。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-070",
+      "number": 70,
+      "question": "请简述你的 RAG 系统没有检索到相关文档？可能的原因是什么？如何解决？ ?",
+      "answer": "可能原因：索引构建不全（文档分块过小或重叠不足）、嵌入模型与查询语义不匹配、检索top-k过小或相似度阈值过高。解决方法：调整分块策略（如增大块大小与重叠率），使用更合适的嵌入模型（如bge-large或text-embedding-3-large），优化检索参数（增大k值、降低阈值或采用混合检索（BM25+向量）。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-071",
+      "number": 71,
+      "question": "请简述如何设计一个能够处理复杂多跳问题的 RAG 系统？（例如，“去年哪支球队赢得了冠军，他们的教练是谁？”） ?",
+      "answer": "核心是采用子问题分解与递归检索。将复杂问题拆解为多个顺序子查询，例如先用“去年哪支球队赢得了冠军”检索出实体，再以该结果作为上下文查询“他们的教练是谁”。实现上可借助LlamaIndex的SubQuestionQueryEngine配合递归检索器，将各子查询结果逐步传递，确保跨文档的知识链接与上下文一致性。\n\n**示例代码：**\n\n```python\nfrom llama_index.core import (\n    VectorStoreIndex, SimpleDirectoryReader\n)\n\ndocuments = SimpleDirectoryReader(\"data/\").load_data()\nindex = VectorStoreIndex.from_documents(documents)\n\n# 查询引擎\nquery_engine = index.as_query_engine(\n    similarity_top_k=3\n)\n# response = query_engine.query(\"文档主题?\")\n\n# 聊天引擎\nchat_engine = index.as_chat_engine()\n# response = chat_engine.chat(\"Hello\")\n\n\n\n```\n",
+      "category": "LlamaIndex",
+      "tags": []
+    },
+    {
+      "id": "LlamaIndex-072",
+      "number": 72,
+      "question": "请简述描述一下“检索增强生成”的完整流程，并指出 LlamaIndex 在哪些步骤中发挥作用？ ?",
+      "answer": "检索增强生成（RAG）的完整流程包括：文档加载与解析、文本分块、块级嵌入生成并构建索引、用户查询时同样嵌入后执行相似度检索、将检索结果与查询拼接为提示词送入大语言模型生成答案。LlamaIndex在文档解析与分块、构建多种索引（如向量索引、关键词索引）、实现检索策略（如相似度检索、递归检索）以及组装查询引擎等核心步骤中起到关键作用，提供数据连接器、索引结构和查询接口以简化RAG管道搭建。\n",
+      "category": "LlamaIndex",
+      "tags": []
+    }
+  ]
+}
